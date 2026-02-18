@@ -599,3 +599,211 @@ COMMIT;
 ### General Rule of Thumb
 
 > Start with **atomic updates** for simple operations. If the logic is too complex for a single statement, try **optimistic locking** first. Fall back to **pessimistic locking** (`FOR UPDATE`) only when contention is high and retries are too costly. Use **isolation levels** as a global safety net underneath all of these.
+
+---
+
+# Cursors & Cursor-Based Pagination in MySQL
+
+MySQL uses the word "cursor" in two very different contexts. Understanding both is important.
+
+---
+
+## 1. SQL Cursors (Stored Procedure Feature)
+
+MySQL has a built-in `CURSOR` keyword for use inside **stored procedures**. It lets you iterate over a result set **row by row**, similar to a for-each loop in application code.
+
+```sql
+DELIMITER //
+CREATE PROCEDURE process_pending_messages()
+BEGIN
+    DECLARE done INT DEFAULT FALSE;
+    DECLARE msg_id VARCHAR(50);
+    DECLARE msg_content TEXT;
+
+    -- Declare a cursor over a query
+    DECLARE msg_cursor CURSOR FOR
+        SELECT message_id, content FROM messages WHERE status = 'pending';
+
+    -- Handler that sets `done = TRUE` when no more rows
+    DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+
+    OPEN msg_cursor;
+
+    read_loop: LOOP
+        FETCH msg_cursor INTO msg_id, msg_content;
+        IF done THEN LEAVE read_loop; END IF;
+
+        -- Process each row (e.g., mark as processed)
+        UPDATE messages SET status = 'processed' WHERE message_id = msg_id;
+    END LOOP;
+
+    CLOSE msg_cursor;
+END //
+DELIMITER ;
+```
+
+### Key Points
+
+| Aspect | Detail |
+|---|---|
+| **Where it works** | Only inside stored procedures / functions |
+| **What it does** | Iterates a result set one row at a time on the server side |
+| **Read-only?** | Yes — MySQL cursors are **read-only** and **forward-only** (you cannot go backwards or update via the cursor) |
+| **When to use** | Batch processing, row-by-row transformations, data migration scripts |
+| **When NOT to use** | Pagination, APIs, anything client-facing — SQL cursors live entirely on the database server |
+
+> **Important:** SQL cursors are a **server-side database feature**. They have nothing to do with API pagination. Don't confuse the two.
+
+---
+
+## 2. Cursor-Based Pagination (API Pattern)
+
+MySQL doesn't have a native "pagination cursor" like Cassandra's paging state, but you can implement the same **cursor-based pagination pattern** using a `WHERE` clause on an indexed column.
+
+### The Problem with Offset Pagination
+
+```sql
+-- Page 1: fast
+SELECT * FROM messages WHERE conversation_id = 'conv_123'
+ORDER BY created_at DESC LIMIT 50 OFFSET 0;
+
+-- Page 100: slow — MySQL scans and discards 5,000 rows
+SELECT * FROM messages WHERE conversation_id = 'conv_123'
+ORDER BY created_at DESC LIMIT 50 OFFSET 5000;
+
+-- Page 10,000: very slow — scans and discards 500,000 rows
+SELECT * FROM messages WHERE conversation_id = 'conv_123'
+ORDER BY created_at DESC LIMIT 50 OFFSET 500000;
+```
+
+`OFFSET` forces MySQL to **read and throw away** all the skipped rows. Performance degrades linearly with the offset value.
+
+### The Solution: Cursor-Based Pagination in MySQL
+
+Instead of skipping rows, use the **last seen value** from the previous page as a cursor:
+
+```sql
+-- Page 1: no cursor, fetch the newest messages
+SELECT message_id, sender_id, content, created_at
+FROM messages
+WHERE conversation_id = 'conv_123'
+ORDER BY message_id DESC
+LIMIT 50;
+-- Returns msg_200 ... msg_151
+-- Cursor for next page = msg_151 (the last/oldest ID in this batch)
+
+-- Page 2: use cursor
+SELECT message_id, sender_id, content, created_at
+FROM messages
+WHERE conversation_id = 'conv_123'
+  AND message_id < 'msg_151'          -- ← cursor
+ORDER BY message_id DESC
+LIMIT 50;
+-- Returns msg_150 ... msg_101
+-- Cursor for next page = msg_101
+
+-- Page 3: use new cursor
+SELECT message_id, sender_id, content, created_at
+FROM messages
+WHERE conversation_id = 'conv_123'
+  AND message_id < 'msg_101'          -- ← cursor
+ORDER BY message_id DESC
+LIMIT 50;
+```
+
+### Why This Is Fast
+
+MySQL uses the **B-tree index** on `message_id` to **seek directly** to the cursor position. It doesn't scan or discard any rows. Whether you're fetching page 2 or page 2,000, the cost is the same — O(limit).
+
+**Required index for this to work efficiently:**
+
+```sql
+-- Composite index that covers the query
+CREATE INDEX idx_conv_msg ON messages (conversation_id, message_id DESC);
+```
+
+Without this index, MySQL falls back to a full table scan, and cursor pagination loses its advantage.
+
+### Offset vs Cursor — Side-by-Side
+
+| Factor | `OFFSET` Pagination | Cursor Pagination |
+|---|---|---|
+| **Page 1 speed** | Fast | Fast |
+| **Page 1,000 speed** | Slow (scans 50,000 rows) | Fast (index seek) |
+| **New rows inserted between pages** | Causes duplicates or missed rows | Stable — cursor anchors to a fixed point |
+| **Can jump to arbitrary page?** | Yes (`?page=50`) | No — must traverse sequentially |
+| **Index requirement** | Index helps but `OFFSET` still scans | **Must** have index on cursor column |
+| **Best for** | Small datasets, admin panels | Large/growing datasets, APIs, feeds, chat |
+
+### How the API Server Builds the Cursor
+
+The cursor is **not stored in MySQL**. It's derived from the query results:
+
+```
+1. Server runs:  SELECT ... ORDER BY message_id DESC LIMIT 50
+2. Gets back:    [msg_200, msg_199, ..., msg_151]
+3. Takes the LAST item:  msg_151
+4. Encodes it:   base64('{"msg_id":"msg_151"}')  →  "eyJtc2dfaWQiOiJtc2dfMTUxIn0="
+5. Returns to client:
+   {
+     "data": [ ... 50 rows ... ],
+     "next_cursor": "eyJtc2dfaWQiOiJtc2dfMTUxIn0=",
+     "has_more": true
+   }
+```
+
+The cursor is base64-encoded to keep it **opaque** — the client doesn't need to know the internal format. The server can change the cursor structure (e.g., add a timestamp field) without breaking any client.
+
+### Spring Boot / JPA Example
+
+```java
+@Repository
+public interface MessageRepository extends JpaRepository<Message, String> {
+
+    // First page (no cursor)
+    @Query("SELECT m FROM Message m WHERE m.conversationId = :convId ORDER BY m.messageId DESC")
+    List<Message> findFirstPage(@Param("convId") String convId, Pageable pageable);
+
+    // Next page (with cursor)
+    @Query("SELECT m FROM Message m WHERE m.conversationId = :convId AND m.messageId < :cursor ORDER BY m.messageId DESC")
+    List<Message> findNextPage(@Param("convId") String convId, @Param("cursor") String cursor, Pageable pageable);
+}
+```
+
+```java
+@Service
+public class MessageService {
+
+    @Autowired
+    private MessageRepository messageRepository;
+
+    public CursorPage<Message> getMessages(String conversationId, String cursor, int limit) {
+        List<Message> messages;
+
+        if (cursor == null) {
+            messages = messageRepository.findFirstPage(conversationId, PageRequest.of(0, limit));
+        } else {
+            String decodedCursor = decodeCursor(cursor);  // base64 → msg_id
+            messages = messageRepository.findNextPage(conversationId, decodedCursor, PageRequest.of(0, limit));
+        }
+
+        String nextCursor = messages.size() == limit
+            ? encodeCursor(messages.get(messages.size() - 1).getMessageId())  // last item's ID
+            : null;
+
+        return new CursorPage<>(messages, nextCursor, messages.size() == limit);
+    }
+}
+```
+
+---
+
+## SQL Cursor vs Cursor-Based Pagination — Quick Comparison
+
+| | SQL Cursor (`DECLARE CURSOR`) | Cursor-Based Pagination (`WHERE id < ?`) |
+|---|---|---|
+| **What it is** | Database feature for row-by-row iteration | API design pattern for efficient paging |
+| **Where it runs** | Inside stored procedures on the DB server | Application code / API layer |
+| **Scope** | Server-side only — never exposed to clients | Client-facing — cursor token travels in API responses |
+| **Performance** | Fine for batch jobs; not for real-time APIs | Designed for low-latency, high-scale APIs |
+| **Use case** | Data migration, batch processing | Chat history, feeds, search results, logs |
