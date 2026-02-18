@@ -1,6 +1,6 @@
 # **MySQL Data Types**
 
-MySQL provides a wide range of data types grouped into three main categories: **Numeric**, **String (Text)**, and **Date/Time**. Choosing the right data type is critical for storage efficiency, query performance, and data integrity.
+MySQL provides a wide range of data types grouped into three main categories: **Numeric**, **String (Text)**, and **Date/Time**. Choosing the right data type is critical for storage efficiency, query performance, and data integrity.
 
 ---
 
@@ -8,25 +8,243 @@ MySQL provides a wide range of data types grouped into three main categories: *
 
 ### **Integer Types**
 
-| Type | Storage | Range (Signed) |
-| --- | --- | --- |
-| `TINYINT` | 1 byte | -128 to 127 |
-| `SMALLINT` | 2 bytes | -32,768 to 32,767 |
-| `MEDIUMINT` | 3 bytes | -8,388,608 to 8,388,607 |
-| `INT` (or `INTEGER`) | 4 bytes | -2,147,483,648 to 2,147,483,647 |
-| `BIGINT` | 8 bytes | -9.2 quintillion to 9.2 quintillion |
+| Type | Storage | Range (Signed) | Range (Unsigned) |
+| --- | --- | --- | --- |
+| `TINYINT` | 1 byte | -128 to 127 | 0 to 255 |
+| `SMALLINT` | 2 bytes | -32,768 to 32,767 | 0 to 65,535 |
+| `MEDIUMINT` | 3 bytes | -8,388,608 to 8,388,607 | 0 to 16,777,215 |
+| `INT` (or `INTEGER`) | 4 bytes | -2,147,483,648 to 2,147,483,647 | 0 to 4,294,967,295 |
+| `BIGINT` | 8 bytes | -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 | 0 to 18,446,744,073,709,551,615 |
+| `BOOL` / `BOOLEAN` | 1 byte | Synonym for `TINYINT(1)` | 0 = false, 1 = true |
 
-**When to use:** Use `TINYINT` for small-range values like status flags, boolean-style columns, or age. Use `SMALLINT` for moderately small numbers like year or a limited counter. `INT` is the most commonly used integer type and works well for primary keys, counters, and general-purpose whole numbers. Reach for `BIGINT` only when you expect values to exceed the ~2 billion limit of `INT`, such as large-scale ID generators or financial transaction counts. Always pick the smallest type that safely fits your data to save storage.
+**When to use:** Use `TINYINT` for small-range values like status flags, boolean-style columns, or age. Use `SMALLINT` for moderately small numbers like year or a limited counter. `INT` is the most commonly used integer type and works well for primary keys, counters, and general-purpose whole numbers. Reach for `BIGINT` only when you expect values to exceed the ~2 billion limit of `INT`, such as large-scale ID generators or financial transaction counts. Always pick the smallest type that safely fits your data to save storage.
+
+**Signed vs Unsigned:** By default, integer columns are **signed** (allow negative values). Adding `UNSIGNED` after the type doubles the positive range by removing the negative half. Use `UNSIGNED` when a column can never be negative, like `age`, `quantity`, or auto-increment IDs. Example: `INT UNSIGNED` gives you 0 to ~4.3 billion instead of -2.1 billion to +2.1 billion.
 
 ### **Decimal / Floating-Point Types**
 
-| Type | Storage | Precision |
+| Type | Storage | Range / Precision |
 | --- | --- | --- |
-| `FLOAT` | 4 bytes | ~7 decimal digits |
-| `DOUBLE` | 8 bytes | ~15 decimal digits |
-| `DECIMAL(M,D)` | Varies | Exact precision (user-defined) |
+| `FLOAT` | 4 bytes | -3.402823466E+38 to +3.402823466E+38 (~7 decimal digits precision) |
+| `DOUBLE` (or `DOUBLE PRECISION`, `REAL`) | 8 bytes | -1.7976931348623157E+308 to +1.7976931348623157E+308 (~15 decimal digits precision) |
+| `DECIMAL(M,D)` (or `DEC`, `NUMERIC`) | Varies (~4 bytes per 9 digits) | Exact precision, max range same as DOUBLE. M = up to 65 total digits, D = up to 30 decimal places |
 
-**When to use:** Use `DECIMAL` (also known as `NUMERIC`) whenever you need exact precision, especially for financial data like prices, salaries, and account balances — it stores numbers as exact values and avoids rounding errors. Use `FLOAT` or `DOUBLE` for scientific calculations, measurements, or any scenario where a small degree of approximation is acceptable and performance matters more than pinpoint accuracy. `DOUBLE` gives you more precision than `FLOAT` at the cost of double the storage.
+**What does `DECIMAL(M,D)` mean?** `M` is the **total number of digits** (both sides of the decimal point combined), and `D` is the **number of digits after the decimal point**. So `DECIMAL(10,2)` means: up to 10 digits total, with 2 after the decimal point. The digits before the decimal = `M - D` = 8 digits, giving you a range of `-99,999,999.99` to `99,999,999.99`. If you insert `49.99`, MySQL stores exactly `49.99` with no approximation or binary conversion. Storage varies: roughly 4 bytes per 9 digits (e.g., `DECIMAL(10,2)` uses about 5 bytes). `M` can go up to 65, and `D` can go up to 30 (but `D` must always be less than or equal to `M`).
+
+**Common declarations:**
+
+| Declaration | Meaning | Range | Use Case |
+|---|---|---|---|
+| `DECIMAL(10,2)` | 8 digits before decimal, 2 after | -99,999,999.99 to 99,999,999.99 | Product prices, order totals |
+| `DECIMAL(15,4)` | 11 digits before, 4 after | -99,999,999,999.9999 to 99,999,999,999.9999 | Banking, financial calculations |
+| `DECIMAL(18,8)` | 10 digits before, 8 after | Up to 9,999,999,999.99999999 | Cryptocurrency (satoshi precision) |
+| `DECIMAL(5,2)` | 3 digits before, 2 after | -999.99 to 999.99 | Percentages, small amounts |
+
+**How is it different from FLOAT/DOUBLE internally?** `FLOAT` and `DOUBLE` convert your number to **binary (base-2)** using IEEE 754. The number `0.1` cannot be represented exactly in binary, just like `1/3` cannot be represented exactly in base-10, so you get tiny errors (`0.1 + 0.2 = 0.30000000000000004`). `DECIMAL` skips binary entirely and stores each digit **as-is in base-10**, so `0.1` is stored as exactly `0.1`. This is why `DECIMAL` is the only safe choice for money.
+
+**When to use:** Use `DECIMAL` (also known as `NUMERIC`) whenever you need exact precision, especially for financial data like prices, salaries, and account balances — it stores numbers as exact values and avoids rounding errors. Use `FLOAT` or `DOUBLE` for scientific calculations, measurements, or any scenario where a small degree of approximation is acceptable and performance matters more than pinpoint accuracy. `DOUBLE` gives you more precision than `FLOAT` at the cost of double the storage.
+
+---
+
+### **Handling Prices in Production — The Recurring Decimal Problem**
+
+Storing prices seems simple until you run into cases like:
+
+- A bill of **$100 split 3 ways** → $33.333333... (recurring)
+- **Tax calculation:** $49.99 × 7.25% = $3.624275 (needs rounding)
+- **Currency conversion:** 100 USD × 0.8333... EUR/USD (recurring)
+- **Discount:** 10% off $9.99 = $0.999 (needs rounding)
+
+These aren't edge cases — they happen in every e-commerce system, every day. Let's look at how production systems actually handle this.
+
+#### The Core Problem: Why Do Recurring Decimals Exist?
+
+Not every fraction can be represented exactly in decimal. `1/3 = 0.333...` goes on forever. When you store this in a `DECIMAL(10,2)` column, MySQL **truncates or rounds** to `0.33`. That missing `$0.003333...` per person, over millions of transactions, adds up.
+
+```sql
+-- Splitting $100 three ways
+SELECT 100 / 3;
+-- Result: 33.3333  (MySQL default 4 decimal places)
+
+SELECT CAST(100 / 3 AS DECIMAL(10,2));
+-- Result: 33.33
+
+-- But 33.33 × 3 = 99.99 — where did the missing $0.01 go?
+```
+
+#### Never Use FLOAT or DOUBLE for Money
+
+Before we solve recurring decimals, let's understand why `FLOAT`/`DOUBLE` are completely unacceptable for financial data:
+
+```sql
+-- FLOAT horror show
+CREATE TABLE bad_prices (price FLOAT);
+INSERT INTO bad_prices VALUES (0.1), (0.2);
+
+SELECT SUM(price) FROM bad_prices;
+-- Expected: 0.3
+-- Actual:   0.30000000447034836  ← WRONG
+
+-- DECIMAL does this correctly
+CREATE TABLE good_prices (price DECIMAL(10,2));
+INSERT INTO good_prices VALUES (0.1), (0.2);
+
+SELECT SUM(price) FROM good_prices;
+-- Result: 0.30  ← CORRECT
+```
+
+`FLOAT` and `DOUBLE` use **binary floating-point** (IEEE 754), which cannot represent `0.1` exactly in binary — just like `1/3` can't be represented exactly in decimal. `DECIMAL` stores each digit as-is (base-10), so `0.1` is stored as exactly `0.1`.
+
+**Rule: Always use `DECIMAL` for money. No exceptions.**
+
+#### Production Strategy 1: Store Prices in Smallest Currency Unit as INT (Most Common)
+
+The most widely used approach in production (Stripe, Shopify, Amazon) is to **avoid decimals entirely** by storing amounts in the **smallest currency unit** (cents, paise, etc.) as an integer.
+
+```sql
+-- Instead of this:
+CREATE TABLE orders (
+    price DECIMAL(10,2)    -- $49.99
+);
+
+-- Do this:
+CREATE TABLE orders (
+    price_cents INT         -- 4999 (meaning $49.99)
+);
+```
+
+**Why this works:**
+
+| Aspect | DECIMAL(10,2) | INT (cents) |
+|---|---|---|
+| Stores $49.99 as | `49.99` | `4999` |
+| Stores $100.00 as | `100.00` | `10000` |
+| Recurring decimal risk | Still possible in calculations | Eliminated — all values are whole numbers |
+| Arithmetic precision | Exact for storage, rounding needed for division | Exact — integer math has no precision loss |
+| Performance | Slightly slower (variable-length) | Faster — fixed 4 bytes, native CPU operations |
+
+**How the split-the-bill problem is solved with cents:**
+
+```sql
+-- $100.00 = 10000 cents, split 3 ways
+SELECT 10000 DIV 3;          -- Result: 3333 (integer division, no decimals)
+-- 3333 cents = $33.33
+
+-- But 3333 * 3 = 9999 cents = $99.99 — still 1 cent missing!
+-- Solution: assign the remainder to the last person
+```
+
+```java
+int totalCents = 10000;
+int people = 3;
+int perPerson = totalCents / people;         // 3333
+int remainder = totalCents % people;         // 1
+
+// Person 1: 3333 cents ($33.33)
+// Person 2: 3333 cents ($33.33)
+// Person 3: 3333 + 1 = 3334 cents ($33.34)  ← gets the extra cent
+// Total: 3333 + 3333 + 3334 = 10000
+```
+
+This is called the **"last person absorbs the remainder"** pattern. It's simple, deterministic, and accounts for every cent.
+
+**Display conversion (cents to dollars) happens only in the presentation layer:**
+
+```java
+int priceCents = 4999;
+
+// Only convert for display
+String display = String.format("$%.2f", priceCents / 100.0);  // "$49.99"
+
+// API response
+// { "price": 4999, "currency": "USD", "display": "$49.99" }
+```
+
+#### Production Strategy 2: DECIMAL with Controlled Rounding
+
+If you need to store fractional amounts (e.g., crypto prices, unit rates), use `DECIMAL` with **more precision than you display** and round explicitly.
+
+```sql
+-- Store with extra precision (4 decimal places)
+CREATE TABLE products (
+    unit_price DECIMAL(12,4)    -- $33.3333
+);
+
+-- Round to 2 decimal places only at the final step
+SELECT ROUND(unit_price, 2) AS display_price FROM products;
+-- 33.3333 becomes 33.33
+```
+
+**The key rule: carry extra precision through calculations, round only at the end.**
+
+```sql
+-- Bad: round at each step (error accumulates)
+SET @subtotal = ROUND(33.33, 2);                  -- 33.33
+SET @tax = ROUND(@subtotal * 0.0725, 2);          -- 2.42
+SET @total = @subtotal + @tax;                     -- 35.75
+
+-- Good: round only at the final result
+SET @subtotal = 33.3333;                           -- keep precision
+SET @tax = @subtotal * 0.0725;                     -- 2.41666...
+SET @total = ROUND(@subtotal + @tax, 2);           -- 35.75
+```
+
+#### Production Strategy 3: Banker's Rounding (For Financial Systems)
+
+Standard rounding (`ROUND_HALF_UP`) always rounds `0.5` up: `2.5 becomes 3`, `3.5 becomes 4`. Over millions of transactions, this introduces a systematic upward bias.
+
+**Banker's rounding** (`ROUND_HALF_EVEN`) rounds `0.5` to the nearest **even** number: `2.5 becomes 2`, `3.5 becomes 4`. Over many transactions, the rounding errors cancel out statistically.
+
+```
+Standard rounding:     2.5 -> 3,  3.5 -> 4,  4.5 -> 5,  5.5 -> 6   (always up)
+Banker's rounding:     2.5 -> 2,  3.5 -> 4,  4.5 -> 4,  5.5 -> 6   (alternates)
+```
+
+MySQL's `ROUND()` function uses **banker's rounding by default** for exact-value types (`DECIMAL`):
+
+```sql
+SELECT ROUND(2.5);   -- 2  (rounds to even)
+SELECT ROUND(3.5);   -- 4  (rounds to even)
+SELECT ROUND(4.5);   -- 4  (rounds to even)
+SELECT ROUND(5.5);   -- 6  (rounds to even)
+```
+
+In Java/Spring Boot, use `BigDecimal` with explicit rounding mode:
+
+```java
+BigDecimal price = new BigDecimal("33.3333");
+
+// Banker's rounding
+BigDecimal rounded = price.setScale(2, RoundingMode.HALF_EVEN);  // 33.33
+
+// Standard rounding
+BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
+```
+
+#### What Real Companies Do
+
+| Company / Domain | Strategy | How They Store Price |
+|---|---|---|
+| **Stripe** | Integer cents | `amount: 4999` (INT, always in smallest unit) |
+| **Shopify** | Integer cents | `price_cents: 4999` (INT) |
+| **Amazon** | Integer cents | All internal calculations in cents |
+| **Banks** | DECIMAL with banker's rounding | `DECIMAL(15,4)` with `ROUND_HALF_EVEN` |
+| **Crypto exchanges** | DECIMAL with high precision | `DECIMAL(18,8)` for satoshi-level precision |
+| **Accounting software** | DECIMAL + remainder allocation | `DECIMAL(12,4)` internally, round at invoice level |
+
+#### Quick Decision Guide for Prices
+
+| Scenario | Recommended Approach |
+|---|---|
+| E-commerce (USD, EUR, etc.) | `INT` in cents — simplest, no precision bugs |
+| Multi-currency with variable decimals | `BIGINT` in smallest unit + `currency` column (JPY has 0 decimals, BHD has 3) |
+| Financial / banking calculations | `DECIMAL(15,4)` + banker's rounding at final step |
+| Cryptocurrency | `DECIMAL(18,8)` or `DECIMAL(24,8)` |
+| Bill splitting, tax proration | `INT` in cents + remainder allocation to last line item |
+
+> **The golden rule:** Never store money as `FLOAT` or `DOUBLE`. Prefer `INT` (cents) for most applications. Use `DECIMAL` with extra precision when you genuinely need fractional amounts. Always round at the **last possible step**, never during intermediate calculations.
+
+---
 
 ### **Bit Type**
 
@@ -34,7 +252,7 @@ MySQL provides a wide range of data types grouped into three main categories: *
 | --- | --- |
 | `BIT(M)` | ~(M+7)/8 bytes |
 
-**When to use:** Use `BIT` when you need to store binary bit-field values, such as a set of on/off flags packed into a single column.
+**When to use:** Use `BIT` when you need to store binary bit-field values, such as a set of on/off flags packed into a single column.
 
 ---
 
@@ -47,9 +265,9 @@ MySQL provides a wide range of data types grouped into three main categories: *
 | `CHAR(M)` | 255 characters | Fixed-length (M bytes) |
 | `VARCHAR(M)` | 65,535 characters | Variable-length (data + 1-2 bytes) |
 
-**What does `VARCHAR(255)` mean?** The number inside the parentheses is **not** the number of bytes — it is the **maximum number of characters** you are allowing that column to hold. So `VARCHAR(255)` means "this column can store a string up to 255 characters long." If you insert `'Hello'` (5 characters), MySQL only stores those 5 characters plus a 1-byte length prefix — it does **not** pad it to 255. The `255` is simply a ceiling; it tells MySQL to reject any value longer than 255 characters. You can pick any number from 1 to 65,535 (e.g., `VARCHAR(50)`, `VARCHAR(100)`, `VARCHAR(2000)`), and you should choose a limit that reflects the realistic maximum for that data. The reason `255` is so commonly seen is historical — at 255 or below, the length prefix costs only 1 byte; at 256 and above, it costs 2 bytes. This 1-byte saving is negligible today, so pick a limit based on your data, not convention.
+**What does `VARCHAR(255)` mean?** The number inside the parentheses is **not** the number of bytes — it is the **maximum number of characters** you are allowing that column to hold. So `VARCHAR(255)` means "this column can store a string up to 255 characters long." If you insert `'Hello'` (5 characters), MySQL only stores those 5 characters plus a 1-byte length prefix — it does **not** pad it to 255. The `255` is simply a ceiling; it tells MySQL to reject any value longer than 255 characters. You can pick any number from 1 to 65,535 (e.g., `VARCHAR(50)`, `VARCHAR(100)`, `VARCHAR(2000)`), and you should choose a limit that reflects the realistic maximum for that data. The reason `255` is so commonly seen is historical — at 255 or below, the length prefix costs only 1 byte; at 256 and above, it costs 2 bytes. This 1-byte saving is negligible today, so pick a limit based on your data, not convention.
 
-**When to use:** Use `CHAR` for fixed-length strings where every row has the same length, such as country codes (`CHAR(2)`), state abbreviations, or MD5 hashes (`CHAR(32)`) — it is slightly faster for lookups because of its predictable size. Use `VARCHAR` for variable-length strings like names, email addresses, and URLs where the length differs from row to row. `VARCHAR` saves storage by only using as much space as the actual data requires plus a small length prefix.
+**When to use:** Use `CHAR` for fixed-length strings where every row has the same length, such as country codes (`CHAR(2)`), state abbreviations, or MD5 hashes (`CHAR(32)`) — it is slightly faster for lookups because of its predictable size. Use `VARCHAR` for variable-length strings like names, email addresses, and URLs where the length differs from row to row. `VARCHAR` saves storage by only using as much space as the actual data requires plus a small length prefix.
 
 ### **Text Types**
 
@@ -60,7 +278,7 @@ MySQL provides a wide range of data types grouped into three main categories: *
 | `MEDIUMTEXT` | 16,777,215 bytes (~16 MB) |
 | `LONGTEXT` | 4,294,967,295 bytes (~4 GB) |
 
-**When to use:** Use `TEXT` types when you need to store large blocks of text that exceed `VARCHAR`'s practical limits, such as blog post bodies, comments, descriptions, or articles. Use `TINYTEXT` for short notes, `TEXT` for typical content fields, `MEDIUMTEXT` for large documents, and `LONGTEXT` for extremely large data like book manuscripts or serialized JSON blobs. Keep in mind that `TEXT` columns cannot have default values and are stored off-page, which can impact query performance — so prefer `VARCHAR` when the data fits within its limits.
+**When to use:** Use `TEXT` types when you need to store large blocks of text that exceed `VARCHAR`'s practical limits, such as blog post bodies, comments, descriptions, or articles. Use `TINYTEXT` for short notes, `TEXT` for typical content fields, `MEDIUMTEXT` for large documents, and `LONGTEXT` for extremely large data like book manuscripts or serialized JSON blobs. Keep in mind that `TEXT` columns cannot have default values and are stored off-page, which can impact query performance — so prefer `VARCHAR` when the data fits within its limits.
 
 ---
 
@@ -72,38 +290,38 @@ This is one of the most common decisions developers face. Both store variable-le
 
 | Aspect | `VARCHAR(M)` | `TEXT` |
 | --- | --- | --- |
-| **Where data lives** | Stored **inline** with the row on the same data page (as long as the row fits within the page size). | Stored **off-page** — the row holds a 20-byte pointer, and the actual text lives on separate overflow pages. (InnoDB may store small `TEXT` values inline if they fit, but treats them as off-page candidates.) |
-| **Length prefix** | 1 byte if M ≤ 255, 2 bytes if M > 255. | Always a 2-byte length prefix (for `TEXT`), up to 4 bytes for `LONGTEXT`. |
-| **Max declared size** | Up to 65,535 bytes *shared across the entire row*. If you have other columns, the effective max for `VARCHAR` shrinks. | Each `TEXT` variant has its own fixed max (64 KB for `TEXT`, 16 MB for `MEDIUMTEXT`, 4 GB for `LONGTEXT`) independent of other columns. |
-| **Memory for temp tables** | When MySQL needs an in-memory temporary table (e.g., for `ORDER BY`, `GROUP BY`, `DISTINCT`), `VARCHAR` columns are allocated at their **declared max length** in the MEMORY engine. A `VARCHAR(10000)` allocates 10 KB per row even if most values are 50 bytes. | `TEXT` columns **force the temporary table to disk** (MyISAM-based temp table), because the MEMORY engine does not support `TEXT`/`BLOB` types at all. |
-| **Row size contribution** | Directly counted toward the InnoDB 8 KB page row-size limit. | Only the pointer (~20 bytes) counts toward the row size, so you can have many `TEXT` columns without hitting the row limit. |
+| **Where data lives** | Stored **inline** with the row on the same data page (as long as the row fits within the page size). | Stored **off-page** — the row holds a 20-byte pointer, and the actual text lives on separate overflow pages. (InnoDB may store small `TEXT` values inline if they fit, but treats them as off-page candidates.) |
+| **Length prefix** | 1 byte if M ≤ 255, 2 bytes if M > 255. | Always a 2-byte length prefix (for `TEXT`), up to 4 bytes for `LONGTEXT`. |
+| **Max declared size** | Up to 65,535 bytes *shared across the entire row*. If you have other columns, the effective max for `VARCHAR` shrinks. | Each `TEXT` variant has its own fixed max (64 KB for `TEXT`, 16 MB for `MEDIUMTEXT`, 4 GB for `LONGTEXT`) independent of other columns. |
+| **Memory for temp tables** | When MySQL needs an in-memory temporary table (e.g., for `ORDER BY`, `GROUP BY`, `DISTINCT`), `VARCHAR` columns are allocated at their **declared max length** in the MEMORY engine. A `VARCHAR(10000)` allocates 10 KB per row even if most values are 50 bytes. | `TEXT` columns **force the temporary table to disk** (MyISAM-based temp table), because the MEMORY engine does not support `TEXT`/`BLOB` types at all. |
+| **Row size contribution** | Directly counted toward the InnoDB 8 KB page row-size limit. | Only the pointer (~20 bytes) counts toward the row size, so you can have many `TEXT` columns without hitting the row limit. |
 
 ### **When to Use VARCHAR**
 
-- The data length is **predictable and bounded** — names (max ~100 chars), emails (max ~320 chars), URLs (max ~2,000 chars), short descriptions.
-- You need to set a **DEFAULT value** — `TEXT` columns cannot have a `DEFAULT` in most MySQL versions.
-- You want the **best query performance** — inline storage means fewer disk seeks; the data is right there in the row.
-- You need to use the column in a **`GROUP BY`, `ORDER BY`, or `DISTINCT`** frequently — `VARCHAR` keeps temp tables in memory, which is much faster than spilling to disk.
-- You want to create a **full-length index** on the column — `VARCHAR` columns can be indexed on their entire length (up to the index size limit), whereas `TEXT` requires a **prefix index** (e.g., `INDEX(col(255))`), which limits index effectiveness.
-- You want to use the column in a **`MEMORY` table** or the **`MEMORY` storage engine** — `TEXT` is not supported there.
+- The data length is **predictable and bounded** — names (max ~100 chars), emails (max ~320 chars), URLs (max ~2,000 chars), short descriptions.
+- You need to set a **DEFAULT value** — `TEXT` columns cannot have a `DEFAULT` in most MySQL versions.
+- You want the **best query performance** — inline storage means fewer disk seeks; the data is right there in the row.
+- You need to use the column in a **`GROUP BY`, `ORDER BY`, or `DISTINCT`** frequently — `VARCHAR` keeps temp tables in memory, which is much faster than spilling to disk.
+- You want to create a **full-length index** on the column — `VARCHAR` columns can be indexed on their entire length (up to the index size limit), whereas `TEXT` requires a **prefix index** (e.g., `INDEX(col(255))`), which limits index effectiveness.
+- You want to use the column in a **`MEMORY` table** or the **`MEMORY` storage engine** — `TEXT` is not supported there.
 
 ### **When to Use TEXT**
 
-- The data length is **unpredictable or very large** — blog posts, user comments, article bodies, HTML content, log messages.
-- You have **many variable-length columns** in a single table and are hitting the row-size limit (~65,535 bytes). Switching some to `TEXT` offloads them off-page and keeps the row compact.
-- You **rarely query, sort, or filter** by this column — it is mostly written and then read back as-is (e.g., a `body` column you display on a page).
-- The content can realistically be **larger than a few KB per row**.
+- The data length is **unpredictable or very large** — blog posts, user comments, article bodies, HTML content, log messages.
+- You have **many variable-length columns** in a single table and are hitting the row-size limit (~65,535 bytes). Switching some to `TEXT` offloads them off-page and keeps the row compact.
+- You **rarely query, sort, or filter** by this column — it is mostly written and then read back as-is (e.g., a `body` column you display on a page).
+- The content can realistically be **larger than a few KB per row**.
 
 ### **Pros and Cons Summary**
 
 |  | VARCHAR | TEXT |
 | --- | --- | --- |
-| **Pros** | Inline storage = faster reads. Supports `DEFAULT` values. Full-length indexing. Keeps temp tables in memory. Better for `WHERE`, `ORDER BY`, `GROUP BY`. | No impact on row-size limit. Can store very large strings. Good for write-heavy "dump and retrieve" columns. |
-| **Cons** | Eats into the shared row-size budget. Declared max length wastes memory in temp tables if set too high. | Forces temp tables to disk. Requires prefix indexes only. No `DEFAULT` value. Off-page storage adds an extra I/O hop. |
+| **Pros** | Inline storage = faster reads. Supports `DEFAULT` values. Full-length indexing. Keeps temp tables in memory. Better for `WHERE`, `ORDER BY`, `GROUP BY`. | No impact on row-size limit. Can store very large strings. Good for write-heavy "dump and retrieve" columns. |
+| **Cons** | Eats into the shared row-size budget. Declared max length wastes memory in temp tables if set too high. | Forces temp tables to disk. Requires prefix indexes only. No `DEFAULT` value. Off-page storage adds an extra I/O hop. |
 
 ### **Practical Rule of Thumb**
 
-> If the maximum realistic length is **under ~1,000 characters** and you will query/sort/filter on it, use **`VARCHAR`**. If the content is free-form, unbounded, or regularly **over a few KB**, and you mostly just store and retrieve it, use **`TEXT`**. Never use `VARCHAR(65535)` "just in case" — you get the worst of both worlds (huge memory allocation for temp tables, yet still constrained by row size). Switch to `TEXT` at that point.
+> If the maximum realistic length is **under ~1,000 characters** and you will query/sort/filter on it, use **`VARCHAR`**. If the content is free-form, unbounded, or regularly **over a few KB**, and you mostly just store and retrieve it, use **`TEXT`**. Never use `VARCHAR(65535)` "just in case" — you get the worst of both worlds (huge memory allocation for temp tables, yet still constrained by row size). Switch to `TEXT` at that point.
 > 
 
 ---
@@ -119,7 +337,7 @@ This is one of the most common decisions developers face. Both store variable-le
 | `MEDIUMBLOB` | 16,777,215 bytes (~16 MB) |
 | `LONGBLOB` | 4,294,967,295 bytes (~4 GB) |
 
-**When to use:** Use `BINARY` and `VARBINARY` for small fixed or variable-length binary data like UUIDs stored in raw form or hashed passwords. Use `BLOB` types to store binary large objects such as images, audio files, PDFs, or serialized objects directly in the database. In practice, it is often better to store large files on the filesystem or an object store and keep only a reference path in the database, but `BLOB` types are there when direct storage is necessary.
+**When to use:** Use `BINARY` and `VARBINARY` for small fixed or variable-length binary data like UUIDs stored in raw form or hashed passwords. Use `BLOB` types to store binary large objects such as images, audio files, PDFs, or serialized objects directly in the database. In practice, it is often better to store large files on the filesystem or an object store and keep only a reference path in the database, but `BLOB` types are there when direct storage is necessary.
 
 ### **Enum and Set**
 
@@ -128,7 +346,7 @@ This is one of the most common decisions developers face. Both store variable-le
 | `ENUM('val1','val2',...)` | A string object with one value from a predefined list |
 | `SET('val1','val2',...)` | A string object that can have zero or more values from a predefined list |
 
-**When to use:** Use `ENUM` when a column should only ever contain one value from a small, fixed list — such as status (`'active'`, `'inactive'`, `'pending'`), gender, or t-shirt size. It is stored internally as an integer, making it space-efficient and fast. Use `SET` when a column can hold multiple values simultaneously from a list, like user permissions (`'read'`, `'write'`, `'delete'`). Be cautious with both: changing the allowed values requires an `ALTER TABLE`, which can be expensive on large tables. If the list of values changes frequently, a separate lookup table with a foreign key is often a better design.
+**When to use:** Use `ENUM` when a column should only ever contain one value from a small, fixed list — such as status (`'active'`, `'inactive'`, `'pending'`), gender, or t-shirt size. It is stored internally as an integer, making it space-efficient and fast. Use `SET` when a column can hold multiple values simultaneously from a list, like user permissions (`'read'`, `'write'`, `'delete'`). Be cautious with both: changing the allowed values requires an `ALTER TABLE`, which can be expensive on large tables. If the list of values changes frequently, a separate lookup table with a foreign key is often a better design.
 
 ---
 
@@ -142,7 +360,7 @@ This is one of the most common decisions developers face. Both store variable-le
 | `TIMESTAMP` | `YYYY-MM-DD HH:MM:SS` | 1970-01-01 00:00:01 UTC to 2038-01-19 03:14:07 UTC |
 | `YEAR` | `YYYY` | 1901 to 2155 |
 
-**When to use:** Use `DATE` when you only care about the calendar date — birthdays, hire dates, or due dates. Use `TIME` for storing durations or time-of-day values independent of a specific date. Use `DATETIME` for general-purpose date-and-time storage such as appointment scheduling, event dates, or log entries where you want to record an absolute point in time as entered by the user. Use `TIMESTAMP` for audit columns like `created_at` and `updated_at` — it automatically converts to and from UTC, making it ideal for applications serving users across multiple time zones, and it supports auto-initialization and auto-update. Note that `TIMESTAMP` has a limited range ending in 2038, so use `DATETIME` for dates beyond that. Use `YEAR` when you only need to store a four-digit year, such as a graduation year or model year.
+**When to use:** Use `DATE` when you only care about the calendar date — birthdays, hire dates, or due dates. Use `TIME` for storing durations or time-of-day values independent of a specific date. Use `DATETIME` for general-purpose date-and-time storage such as appointment scheduling, event dates, or log entries where you want to record an absolute point in time as entered by the user. Use `TIMESTAMP` for audit columns like `created_at` and `updated_at` — it automatically converts to and from UTC, making it ideal for applications serving users across multiple time zones, and it supports auto-initialization and auto-update. Note that `TIMESTAMP` has a limited range ending in 2038, so use `DATETIME` for dates beyond that. Use `YEAR` when you only need to store a four-digit year, such as a graduation year or model year.
 
 ---
 
@@ -150,9 +368,9 @@ This is one of the most common decisions developers face. Both store variable-le
 
 | Type | Max Size |
 | --- | --- |
-| `JSON` | ~4 GB (same as `LONGTEXT`) |
+| `JSON` | ~4 GB (same as `LONGTEXT`) |
 
-**When to use:** Use the `JSON` type when you need to store semi-structured or schema-less data — such as API payloads, configuration objects, user preferences, or metadata that varies between rows. MySQL validates the JSON on insert, and provides functions like `JSON_EXTRACT()`, `->`, and `->>` for querying nested values directly. It is a great fit when the data structure is flexible, but avoid it as a replacement for properly normalized relational columns when the fields are consistent across rows, since querying and indexing JSON is less efficient than querying regular columns.
+**When to use:** Use the `JSON` type when you need to store semi-structured or schema-less data — such as API payloads, configuration objects, user preferences, or metadata that varies between rows. MySQL validates the JSON on insert, and provides functions like `JSON_EXTRACT()`, `->`, and `->>` for querying nested values directly. It is a great fit when the data structure is flexible, but avoid it as a replacement for properly normalized relational columns when the fields are consistent across rows, since querying and indexing JSON is less efficient than querying regular columns.
 
 ---
 
@@ -164,9 +382,9 @@ This is one of the most common decisions developers face. Both store variable-le
 | `POINT` | A single location (X, Y) |
 | `LINESTRING` | A curve of connected points |
 | `POLYGON` | A closed shape |
-| `MULTIPOINT`, `MULTILINESTRING`, `MULTIPOLYGON`, `GEOMETRYCOLLECTION` | Collections of the above |
+| `MULTIPOINT`, `MULTILINESTRING`, `MULTIPOLYGON`, `GEOMETRYCOLLECTION` | Collections of the above |
 
-**When to use:** Use spatial data types when you are building location-aware applications — store coordinates, map boundaries, delivery zones, or geographic regions. Combined with spatial indexes and functions like `ST_Distance()` and `ST_Contains()`, they enable efficient geospatial queries such as "find all restaurants within 5 km." If you only need to store a simple latitude/longitude pair without spatial queries, two `DECIMAL` columns may be simpler.
+**When to use:** Use spatial data types when you are building location-aware applications — store coordinates, map boundaries, delivery zones, or geographic regions. Combined with spatial indexes and functions like `ST_Distance()` and `ST_Contains()`, they enable efficient geospatial queries such as "find all restaurants within 5 km." If you only need to store a simple latitude/longitude pair without spatial queries, two `DECIMAL` columns may be simpler.
 
 ---
 
@@ -174,13 +392,13 @@ This is one of the most common decisions developers face. Both store variable-le
 
 | Scenario | Recommended Type |
 | --- | --- |
-| Primary key / auto-increment ID | `INT` or `BIGINT` |
-| True/false flag | `TINYINT(1)` or `BOOLEAN` |
-| Money / currency | `DECIMAL(10,2)` |
+| Primary key / auto-increment ID | `INT` or `BIGINT` |
+| True/false flag | `TINYINT(1)` or `BOOLEAN` |
+| Money / currency | `INT` (cents) or `DECIMAL(10,2)` |
 | Short label (fixed length) | `CHAR` |
 | Name, email, URL | `VARCHAR` |
-| Blog post body | `TEXT` or `MEDIUMTEXT` |
-| Image or file | `BLOB` (or store path as `VARCHAR`) |
+| Blog post body | `TEXT` or `MEDIUMTEXT` |
+| Image or file | `BLOB` (or store path as `VARCHAR`) |
 | Status with fixed options | `ENUM` |
 | Date only | `DATE` |
 | Created/updated timestamps | `TIMESTAMP` |
