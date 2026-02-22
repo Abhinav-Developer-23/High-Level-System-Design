@@ -1,0 +1,546 @@
+---
+description: Complete Live Comments System Design - Architecture, APIs, and Implementation Guidelines
+globs:
+  - "**/*"
+---
+
+# Live Comments System Design
+
+## Overview
+
+Live comments are a feature used in streaming platforms, sports apps, and social media events where users can post and view comments in real-time as an event unfolds. This system handles millions of concurrent viewers and thousands of comments per second with sub-500ms latency.
+
+---
+
+## Core Principles
+
+### Architecture Philosophy
+- **Decouple write and read paths**: Write path optimized for ingestion, read path for fanout
+- **Favor horizontal scaling**: Every component must scale linearly
+- **Optimize for latency**: Sub-500ms is the golden target
+- **Accept eventual consistency**: Strict ordering is secondary to performance
+- **Regional deployment**: Minimize physical distance to users
+
+### Key Design Patterns
+1. **Pub/Sub Fanout**: Central message broker with topic-based subscriptions
+2. **Connection Pooling**: Dedicated SSE gateway fleet for persistent connections
+3. **Tiered Storage**: Hot path (Redis) + Cold path (NoSQL database)
+4. **Geo-Sharding**: Regional replicas to reduce cross-region latency
+5. **Message Batching**: Buffer small time windows to reduce overhead
+
+---
+
+## Scale Requirements
+
+### Traffic Patterns
+- 5 million concurrent viewers
+- 50,000 active commenters (1% participation rate)
+- 5,000 comments/sec ingestion
+- 25 billion message deliveries/sec (fanout)
+- 150 bytes average comment size
+
+### Storage Requirements
+- 0.75 MB/sec write rate
+- ~65 GB/day
+- ~2 TB/month retention for playback
+
+### Latency Targets
+- End-to-end: < 500ms (client to all viewers)
+- Write acknowledgment: < 50ms (202 response)
+- Database write: Async, non-blocking
+- Message fanout: < 200ms
+
+---
+
+## Technology Stack
+
+### Real-Time Communication
+- **Primary**: Server-Sent Events (SSE) for unidirectional server-to-client updates
+- **Rationale**: Simpler than WebSockets, auto-reconnect, HTTP-based, perfect for read-only streams
+- **Avoid**: HTTP long polling (high overhead), WebSockets (overkill for unidirectional use case)
+
+### Message Broker
+- **Primary**: Redis Pub/Sub for live fanout
+- **Rationale**: Ultra-low latency, in-memory, acceptable to lose ephemeral messages
+- **Avoid**: Kafka for hot path (too slow), though acceptable for cold path/replay
+
+### Database
+- **Primary**: Distributed NoSQL (Cassandra or DynamoDB)
+- **Rationale**: High write throughput, horizontal scaling, time-series query optimization
+- **Schema Pattern**: Composite key (stream_id as partition key, timestamp as clustering key)
+- **Avoid**: Traditional RDBMS (doesn't scale for 5K writes/sec without heavy sharding)
+
+---
+
+## API Design
+
+### 1. Write API - Posting Comments
+
+**Endpoint**: `POST /v1/streams/{stream_id}/comments`
+
+**Request**:
+```json
+{
+  "text": "GOAL!!! What a shot!",
+  "client_ts": "2025-10-17T15:00:01.012Z",
+  "meta": { "lang": "en", "device": "android" }
+}
+```
+
+**Headers**:
+- `Authorization: Bearer <JWT>`
+- `Content-Type: application/json`
+
+**Responses**:
+- `202 Accepted`: Comment received and will be processed
+- `400 Bad Request`: Malformed request
+- `401 Unauthorized`: Invalid JWT
+- `429 Too Many Requests`: Rate limit exceeded
+
+**Implementation Rules**:
+- Always return 202 Accepted immediately (don't wait for DB or fanout)
+- Validate input thoroughly (text length, auth, rate limits)
+- Assign server-side timestamps (don't trust client timestamps for ordering)
+- Publish to Redis and write to DB in parallel (non-blocking)
+- Include error handling for broker publish failures
+- Add structured logging (comment_id, stream_id, latency metrics)
+
+### 2. Read API - Live Comments Stream
+
+**Endpoint**: `GET /v1/streams/{stream_id}/comments/subscribe`
+
+**Protocol**: Server-Sent Events (SSE)
+
+**Response Headers**:
+- `Content-Type: text/event-stream`
+
+**SSE Stream Format**:
+```
+event: new_comment
+data: {"comment_id":"c1","user_id":"u1","username":"Alice","comment_text":"First!"}
+
+event: new_comment
+data: {"comment_id":"c2","user_id":"u2","username":"Bob","comment_text":"Hello!"}
+```
+
+**Why SSE over WebSockets?**
+- Unidirectional (server → client) - perfect for our use case
+- Standard HTTP - works through proxies, CDNs, load balancers
+- Automatic reconnection built-in
+- Native cursor resume with `Last-Event-ID` header
+
+### 3. Playback API - Historical Comments
+
+**Endpoint**: `GET /v1/streams/{stream_id}/comments`
+
+**Query Parameters**:
+- `start_time`: Beginning of time window (seconds)
+- `duration`: Size of time window (seconds)
+- `limit`: Maximum comments per response
+- `pagination_token`: For stateless pagination
+
+**Response**:
+```json
+{
+  "comments": [
+    {
+      "comment_id": "c123",
+      "timestamp": "2025-10-18T12:15:32.112Z",
+      "username": "Ravi",
+      "comment_text": "That was incredible!"
+    }
+  ],
+  "next_start_time": 1080
+}
+```
+
+---
+
+## System Components
+
+### Comment Service
+- **Responsibility**: Validate, timestamp, persist, publish
+- **Pattern**: Stateless, horizontally scalable
+- **Parallelism**: Publish to Redis + async DB write
+- **Response**: Immediate 202 Accepted (don't wait for fanout)
+
+### Connection Gateway (SSE Servers)
+- **Responsibility**: Maintain long-lived client connections
+- **Pattern**: Stateful, regionally deployed
+- **Subscription**: Dynamic topic subscription based on active viewers
+- **Optimization**: Message batching (100-200ms window)
+- **Scaling**: Each server handles ~10K-50K concurrent connections
+
+### Message Broker (Redis)
+- **Topic Format**: `comments:<stream_id>`
+- **Pattern**: Topic-per-stream for isolation
+- **Deployment**: Regional replicas for geo-distribution
+- **Tiered Fanout**: Central Kafka → Regional Aggregators → Regional Redis for mega-events
+
+### Database (Cassandra/DynamoDB)
+- **Table**: comments
+- **Partition Key**: stream_id (groups stream data together)
+- **Clustering Key**: timestamp (sorts chronologically)
+- **Columns**: comment_id, user_id, username (denormalized), comment_text
+- **Query Pattern**: Fetch comments for stream_id within time range
+
+---
+
+## Database Schema
+
+### Comments Table
+
+| Column | Data Type | Description | Key Type |
+|--------|-----------|-------------|----------|
+| stream_id | UUID | Unique stream identifier | Partition Key |
+| timestamp | TimeUUID/Timestamp | Server-side creation time | Clustering Key |
+| comment_id | UUID | Unique comment identifier | - |
+| user_id | UUID | User who posted | - |
+| username | TEXT | Display name (denormalized) | - |
+| comment_text | TEXT | Comment content | - |
+
+**Design Rationale**:
+- **Partition Key** (`stream_id`): Groups all comments for same stream together
+- **Clustering Key** (`timestamp`): Physically sorts comments chronologically on disk
+- **Query Pattern**: `SELECT * FROM comments WHERE stream_id = ? AND timestamp >= ? AND timestamp <= ?`
+
+---
+
+## Architecture Flows
+
+### Write Path (Posting Comment)
+
+```
+Client → API Gateway → Comment Service → [Redis Pub/Sub + Database (async)]
+```
+
+1. Client sends POST request to API Gateway
+2. API Gateway authenticates, rate limits, forwards to Comment Service
+3. Comment Service validates, assigns timestamp
+4. Parallel operations:
+   - Publish to Message Broker topic
+   - Async write to Database
+5. Return `202 Accepted` immediately
+
+### Read Path (Receiving Comments)
+
+```
+Redis Pub/Sub → Connection Gateways → SSE → Clients
+```
+
+1. New comment arrives on Message Broker topic
+2. Broker fans out to subscribed Connection Gateways
+3. Gateway pushes to connected clients via SSE
+4. Client's EventSource API receives and renders comment
+
+### Playback Path
+
+```
+Client → API Gateway → Playback Service → Database → Client (chunked)
+```
+
+1. Client requests time window (e.g., 15-18 minutes)
+2. Service queries Database using partition key + time range
+3. Returns paginated chunk
+4. Client synchronizes with video player timeline
+
+---
+
+## Optimization Strategies
+
+### Fanout Optimization
+
+#### 1. Topic-Based Subscription
+- Each gateway subscribes only to streams with active viewers
+- Dynamic subscription management
+- Dramatically reduces unnecessary traffic
+
+#### 2. Geo-Distribution
+- Deploy gateways in multiple regions (Mumbai, Singapore, Frankfurt, São Paulo)
+- Geo-DNS routes users to nearest gateway
+- Regional Redis replicas for local fanout
+- Keeps high-frequency traffic within region
+
+#### 3. Tiered Fanout (Mega-Events)
+```
+Comment Service → Kafka (Central)
+    ↓
+Regional Aggregators
+    ↓
+Regional Redis Pub/Sub
+    ↓
+Connection Gateways → Clients
+```
+
+#### 4. Message Batching
+- Buffer comments for 100-200ms
+- Bundle into single JSON array
+- Reduce network overhead and render thrashing
+- Imperceptible latency trade-off for massive efficiency gain
+
+### Playback Optimization
+
+1. **Chunked Loading**: Fetch 3-minute windows, not entire event
+2. **Proactive Buffering**: Load next chunk before current ends
+3. **Synchronization**: Use `player.currentTime` to render comments at correct moment
+4. **Seek Handling**: Discard buffer and fetch new chunk on timeline jump
+
+---
+
+## Code Implementation Guidelines
+
+### When Writing Comment Service Code
+
+```typescript
+// ✅ CORRECT: Non-blocking, immediate response
+async function postComment(streamId, userId, text) {
+  // 1. Validate
+  validateComment(text, userId);
+  
+  // 2. Create comment object
+  const comment = {
+    comment_id: generateUUID(),
+    stream_id: streamId,
+    user_id: userId,
+    timestamp: Date.now(), // Server-side timestamp!
+    text: text
+  };
+  
+  // 3. Parallel operations (don't await both!)
+  Promise.all([
+    redis.publish(`comments:${streamId}`, comment),
+    db.insert('comments', comment) // async, fire-and-forget
+  ]).catch(err => logger.error('Comment processing failed', err));
+  
+  // 4. Return immediately
+  return { status: 202, body: { comment_id: comment.comment_id } };
+}
+
+// ❌ WRONG: Blocking on database
+async function postComment(streamId, userId, text) {
+  const comment = createComment(streamId, userId, text);
+  await db.insert('comments', comment); // Don't wait!
+  await redis.publish(`comments:${streamId}`, comment);
+  return { status: 200, body: comment };
+}
+```
+
+### When Writing Connection Gateway Code
+
+```typescript
+// ✅ CORRECT: Dynamic subscription with batching
+class SSEGateway {
+  private connections = new Map<string, Set<SSEConnection>>();
+  private subscriptions = new Map<string, RedisSubscription>();
+  private batchBuffer = new Map<string, Comment[]>();
+  
+  async subscribe(streamId: string, connection: SSEConnection) {
+    // Add connection to stream
+    if (!this.connections.has(streamId)) {
+      this.connections.set(streamId, new Set());
+      // First viewer - subscribe to Redis topic
+      await this.subscribeToStream(streamId);
+    }
+    this.connections.get(streamId).add(connection);
+    
+    // Handle disconnect
+    connection.on('close', () => this.unsubscribe(streamId, connection));
+  }
+  
+  private async subscribeToStream(streamId: string) {
+    const sub = await redis.subscribe(`comments:${streamId}`);
+    sub.on('message', (comment) => this.bufferComment(streamId, comment));
+    this.subscriptions.set(streamId, sub);
+  }
+  
+  private bufferComment(streamId: string, comment: Comment) {
+    if (!this.batchBuffer.has(streamId)) {
+      this.batchBuffer.set(streamId, []);
+      // Schedule flush after 100ms
+      setTimeout(() => this.flushBatch(streamId), 100);
+    }
+    this.batchBuffer.get(streamId).push(comment);
+  }
+  
+  private flushBatch(streamId: string) {
+    const batch = this.batchBuffer.get(streamId);
+    if (!batch || batch.length === 0) return;
+    
+    const connections = this.connections.get(streamId);
+    const payload = `data: ${JSON.stringify(batch)}\n\n`;
+    
+    connections.forEach(conn => conn.write(payload));
+    this.batchBuffer.delete(streamId);
+  }
+}
+```
+
+### When Writing Playback Client Code
+
+```javascript
+// ✅ CORRECT: Chunked loading with synchronization
+class CommentPlayback {
+  constructor(streamId, videoPlayer) {
+    this.streamId = streamId;
+    this.player = videoPlayer;
+    this.buffer = [];
+    this.currentChunkEnd = 0;
+  }
+  
+  async start() {
+    // Load initial chunk (0-3 minutes)
+    await this.loadChunk(0, 180);
+    
+    // Sync with video player
+    this.player.on('timeupdate', () => this.renderComments());
+    this.player.on('seek', (time) => this.handleSeek(time));
+  }
+  
+  async loadChunk(startTime, duration) {
+    const response = await fetch(
+      `/v1/streams/${this.streamId}/comments?start_time=${startTime}&duration=${duration}`
+    );
+    const data = await response.json();
+    this.buffer.push(...data.comments);
+    this.currentChunkEnd = data.next_start_time;
+  }
+  
+  renderComments() {
+    const currentTime = this.player.currentTime;
+    
+    // Render comments that should appear now
+    while (this.buffer.length > 0 && this.buffer[0].timestamp <= currentTime) {
+      const comment = this.buffer.shift();
+      this.displayComment(comment);
+    }
+    
+    // Proactive buffering (at 80% of current chunk)
+    if (currentTime >= this.currentChunkEnd * 0.8) {
+      this.loadChunk(this.currentChunkEnd, 180);
+    }
+  }
+  
+  async handleSeek(targetTime) {
+    // Discard current buffer
+    this.buffer = [];
+    
+    // Load chunk for new timestamp
+    const chunkStart = Math.floor(targetTime / 180) * 180;
+    await this.loadChunk(chunkStart, 180);
+  }
+}
+```
+
+### When Designing Database Queries
+
+```sql
+-- ✅ CORRECT: Uses partition key and clustering key
+SELECT * FROM comments 
+WHERE stream_id = 'abc-123' 
+  AND timestamp >= '2025-10-18T12:00:00'
+  AND timestamp <= '2025-10-18T12:03:00'
+LIMIT 100;
+
+-- ❌ WRONG: Missing partition key (full table scan!)
+SELECT * FROM comments 
+WHERE user_id = 'user-456'
+LIMIT 100;
+
+-- ✅ CORRECT: Denormalized data (no joins needed)
+-- Store username with comment to avoid lookup
+INSERT INTO comments (stream_id, timestamp, comment_id, user_id, username, comment_text)
+VALUES (?, ?, ?, ?, ?, ?);
+
+-- ❌ WRONG: Normalized design requiring joins
+-- Don't do this in NoSQL:
+-- SELECT c.*, u.username FROM comments c JOIN users u ON c.user_id = u.id
+```
+
+---
+
+## Testing Guidelines
+
+### Load Testing Scenarios
+1. **Sustained Load**: 5,000 comments/sec for 2 hours
+2. **Spike Load**: 20,000 comments/sec for 5 minutes
+3. **Fanout Test**: 1 comment to 5 million subscribers
+4. **Regional Failover**: Simulate regional Redis failure
+5. **Database Lag**: Simulate slow DB writes (should not block writes)
+
+### Latency Monitoring
+- Track end-to-end latency (client publish → all subscribers receive)
+- Monitor p50, p95, p99 latencies
+- Alert on p95 > 500ms
+- Track regional latency differences
+
+### Observability
+- Instrument every component with metrics
+- Track: comments/sec, fanout rate, connection count, subscription count
+- Add distributed tracing for write and read paths
+- Monitor Redis pub/sub lag and queue depth
+
+---
+
+## Common Pitfalls to Avoid
+
+1. **Blocking on Database Writes**: Never wait for DB confirmation before returning to client
+2. **Single Point of Failure**: Don't use single Redis instance; use regional replicas
+3. **Over-Engineering Ordering**: Don't try to achieve strict global ordering across regions
+4. **Fetch-All Antipattern**: Never load entire comment history; always paginate
+5. **Synchronous Fanout**: Don't fan out from Comment Service; use message broker
+6. **WebSocket Overhead**: Don't use WebSockets when SSE suffices
+7. **Denying Trade-offs**: Accept that some comments may be lost (Redis) or slightly out of order
+
+---
+
+## Code Review Checklist
+
+### Architecture
+- [ ] Write path is non-blocking and returns immediately
+- [ ] Read path uses SSE, not HTTP polling
+- [ ] Message broker is used for fanout, not direct connections
+- [ ] Database schema uses composite key (stream_id + timestamp)
+- [ ] Regional deployment is considered
+
+### Performance
+- [ ] No blocking I/O on critical path
+- [ ] Message batching is implemented
+- [ ] Connection limits per gateway are defined
+- [ ] Database queries use partition key
+- [ ] Caching strategy is defined (if applicable)
+
+### Reliability
+- [ ] Graceful degradation on Redis failure
+- [ ] SSE auto-reconnect is handled
+- [ ] Rate limiting is implemented
+- [ ] Circuit breakers are in place
+- [ ] Dead letter queue for failed messages
+
+### Observability
+- [ ] Metrics are emitted (latency, throughput, errors)
+- [ ] Distributed tracing is added
+- [ ] Structured logging is used
+- [ ] Health check endpoints exist
+- [ ] Alerting thresholds are defined
+
+---
+
+## Terminology
+
+- **Fanout**: Broadcasting a single message to multiple recipients
+- **SSE**: Server-Sent Events, HTTP-based unidirectional protocol
+- **Partition Key**: NoSQL key that determines data distribution
+- **Clustering Key**: NoSQL key that determines sort order within partition
+- **Connection Gateway**: Stateful server maintaining persistent client connections
+- **Tiered Fanout**: Multi-layer message distribution for extreme scale
+- **Message Batching**: Buffering messages to send in groups
+- **Geo-Sharding**: Distributing data/services by geographic region
+- **Eventual Consistency**: System converges to consistent state over time
+- **Hot Path**: Real-time, low-latency data flow
+- **Cold Path**: Historical, high-latency data retrieval
+
+---
+
+**Last Updated**: 2025-02-22  
+**Design Version**: 1.0  
+**Status**: Active Reference
