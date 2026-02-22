@@ -265,3 +265,35 @@ GET /v1/streams/{stream_id}/comments?start_time=900&duration=180&limit=100
 This combination is common and follows REST best practices:
 - Path = "What resource am I accessing?"
 - Query = "How do I want to filter/sort/paginate it?"
+
+---
+
+## Question 4: Why is HTTP Polling Bad for Live Comments?
+
+### Question
+
+If we need to deliver comments in real-time to **millions of concurrent viewers**, why is a simple HTTP polling approach (e.g., `GET /comments` every N seconds) considered a poor design choice?
+
+### Key Reasons
+
+- **Per-viewer overhead**: Polling traffic scales with **number of viewers**, not just the number of comments. Example: 5M viewers polling every 2 seconds means ~2.5M requests/sec.
+- **High fixed cost per request**: Even when the response is empty or small, each poll still pays HTTP/TLS, load balancer, header parsing, and application overhead.
+- **Latency vs cost trade-off**: To achieve a “live feel” (< 500ms), the polling interval must be small, which explodes request volume.
+- **Thundering herd**: Polling on a fixed cadence can synchronize clients and create periodic request spikes.
+- **Often empty across the platform**: Even if one stream is extremely active, many streams and time windows are not, so a large fraction of polls return no new data.
+
+---
+
+## Question 5: Why Prefer SSE Over WebSockets for the Read Path?
+
+### Question
+
+WebSockets provide a persistent, bi-directional connection. If WebSockets are more powerful, why do we still prefer **Server-Sent Events (SSE)** for the live comments **read path**?
+
+### Key Reasons
+
+- **Better fit for one-way delivery**: The read path is server → client only (broadcast). SSE is purpose-built for this; WebSockets are more general than we need.
+- **Simpler operational model**: SSE is just a long-lived HTTP response, so connection management is simpler compared to a full WebSocket stack (custom heartbeats, reconnect logic, state management).
+- **Proxy/CDN/load balancer friendly**: SSE runs over standard HTTP and tends to work better through corporate proxies and typical HTTP infrastructure.
+- **Automatic reconnection**: Browsers automatically reconnect with `EventSource` without requiring heavy custom client logic.
+- **Resume support with `Last-Event-ID`**: SSE has a native mechanism to resume from the last seen event (requires the server to emit an `id:` field per event).

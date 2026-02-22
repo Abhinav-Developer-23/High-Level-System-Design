@@ -723,3 +723,724 @@ Messages **always appear in the correct order** on screen, regardless of network
 </details>
 
 ---
+
+## Section 5: Architecture Design Decisions
+
+**Q6.** If Redis already tracks which server each user is connected to (via `session:user_id`), why do we still need sticky sessions at the load balancer level? Couldn't we just query Redis on every request?
+
+<details>
+<summary>Answer</summary>
+
+This is an excellent question that gets to the heart of the trade-off between **client-to-server routing** (sticky sessions) and **server-to-server routing** (Redis session store).
+
+The short answer: **Redis tracks sessions for server-to-server communication, but sticky sessions optimize client-to-server routing.** They solve different problems and work together.
+
+---
+
+### The Problem: What If We Only Used Redis (No Sticky Sessions)?
+
+Let's imagine we removed sticky sessions and relied purely on Redis for routing:
+
+#### Scenario: User A Sends a Message
+
+```
+1. User A's device sends HTTP request → Load Balancer
+2. Load Balancer (round-robin) routes to Chat Server 2
+3. Chat Server 2 checks: "Is User A connected to me?"
+   → NO
+4. Chat Server 2 queries Redis: GET session:user_a
+   → Returns: "chat_server_1"
+5. Chat Server 2 forwards request to Chat Server 1 via internal network
+6. Chat Server 1 processes message and sends over WebSocket to User A ✓
+```
+
+**This works!** But notice the extra hop: `Client → Server 2 → Server 1 → Client`. Every request from User A goes through this double-hop.
+
+---
+
+### The Hidden Cost: Latency and Load
+
+#### Without Sticky Sessions (Redis-Only Routing)
+
+Every request from the client has a **50% chance** (assuming 2 servers, worse with more) of landing on the **wrong server**, causing:
+
+1. **Extra network hop:** Load Balancer → Wrong Server → Redis query → Correct Server → Response
+2. **Extra Redis query:** Every wrongly-routed request hits Redis
+3. **Increased latency:** +5-15ms per hop (internal network + Redis lookup)
+4. **CPU overhead:** The "wrong" server does work just to forward the request
+
+**At scale:**
+```
+10 chat servers, 1 million requests/sec:
+  - 900,000 requests land on "wrong" server (90%)
+  - 900,000 Redis queries/sec
+  - 900,000 internal HTTP forwards/sec
+  - Average latency increases by 10-20ms
+```
+
+#### With Sticky Sessions
+
+Every request from a client goes **directly to the correct server** where the WebSocket connection lives:
+
+```
+1. User A's device sends HTTP request → Load Balancer
+2. Load Balancer (sticky) routes directly to Chat Server 1
+3. Chat Server 1 already has User A's WebSocket connection
+4. Chat Server 1 processes and responds immediately ✓
+
+No Redis query. No forwarding. No extra hops.
+```
+
+---
+
+### The Two Routing Layers
+
+The system uses **two routing mechanisms** for different purposes:
+
+#### Layer 1: Client → Server (Sticky Sessions)
+
+**Purpose:** Route client requests to the server where their WebSocket connection lives
+
+**How it works:**
+- Load balancer tracks: "This client → this server"
+- Cookie-based or IP-based affinity
+- **No Redis involved** — purely load balancer logic
+
+**Benefits:**
+- **Lowest latency** — direct routing, no lookups
+- **No Redis overhead** — no query on every request
+- **Stateless application servers** — don't need to query Redis to find their own connections
+
+**When it's used:**
+- User A sends message from their device
+- User A uploads media
+- User A requests conversation history
+- Any client-initiated HTTP/WebSocket traffic
+
+---
+
+#### Layer 2: Server → Server (Redis Session Store)
+
+**Purpose:** Let servers discover where *other users* are connected
+
+**How it works:**
+```
+SET session:user_b "chat_server_3"
+```
+
+**When it's used:**
+- User A (on Server 1) sends message to User B
+- Server 1 queries Redis: "Where is User B?"
+- Redis returns: "Server 3"
+- Server 1 makes internal call to Server 3
+- Server 3 delivers message to User B over WebSocket
+
+**Benefits:**
+- **Decouples servers** — they don't need to know about each other
+- **Enables fanout** — one server can reach users on any other server
+- **Supports server failures** — if a server crashes, Redis entry is deleted and clients reconnect elsewhere
+
+---
+
+### Side-by-Side Comparison
+
+| Aspect | Sticky Sessions (Client → Server) | Redis Session Store (Server → Server) |
+|---|---|---|
+| **What it routes** | Client's own requests to their connected server | Other users' messages to the recipient's server |
+| **Who uses it** | Load balancer | Application servers (Chat Servers) |
+| **Latency impact** | Near-zero (load balancer lookup) | ~1-3ms (Redis query over internal network) |
+| **Frequency** | Every client request (high volume) | Only when routing to a different user |
+| **Failure mode** | Client reconnects if server crashes | Redis entry deleted, sending server treats user as offline |
+
+---
+
+### Why We Need Both
+
+#### Example: Group Chat with 5 Users
+
+```
+User A (on Server 1) sends message to group chat with Users B, C, D, E
+
+Server 1 needs to deliver message to 4 other users:
+```
+
+**Without sticky sessions (Redis-only):**
+```
+Client request flow (User A sends message):
+  Client A → Load Balancer → [50% chance] Server 2
+    → Server 2 queries Redis for User A's session
+    → Redis returns "Server 1"
+    → Server 2 forwards request to Server 1
+    → Server 1 processes message
+  Total: 2 server hops + 1 Redis query
+
+Fanout to other users (Server 1 delivers to B, C, D, E):
+  Server 1 queries Redis 4 times:
+    → GET session:user_b → "Server 2"
+    → GET session:user_c → "Server 2"
+    → GET session:user_d → "Server 3"
+    → GET session:user_e → "Server 1" (local)
+  Server 1 calls Server 2 (for B and C), Server 3 (for D)
+  Server 1 delivers to E directly (same server)
+  Total: 4 Redis queries + 2 server-to-server calls
+
+Overall cost: 2 server hops + 5 Redis queries + 2 server calls
+```
+
+**With sticky sessions:**
+```
+Client request flow (User A sends message):
+  Client A → Load Balancer → Server 1 (sticky)
+    → Server 1 already has User A's connection
+    → Server 1 processes message immediately
+  Total: 0 extra hops, 0 Redis queries
+
+Fanout to other users (same as above):
+  Server 1 queries Redis 4 times for B, C, D, E
+  Server 1 calls Server 2 and Server 3
+  Total: 4 Redis queries + 2 server calls
+
+Overall cost: 4 Redis queries + 2 server calls ✓ (much better!)
+```
+
+**Sticky sessions saved:** 2 server hops + 1 Redis query **per client request**.
+
+---
+
+### What If We Put Redis in Front of Everything?
+
+You might think: "What if the load balancer itself queried Redis to route requests?"
+
+```
+Client A → Load Balancer
+  → Load Balancer queries Redis: GET session:user_a
+  → Redis returns: "chat_server_1"
+  → Load Balancer routes to Chat Server 1
+```
+
+**Why we don't do this:**
+
+1. **Load balancer would become a bottleneck:**
+   - 1 million requests/sec × 1 Redis query each = **1 million Redis queries/sec**
+   - Load balancer now needs Redis client, connection pooling, error handling
+   - Added complexity and latency (2-5ms per query)
+
+2. **Single point of failure:**
+   - If Redis goes down, **all routing breaks** — no requests get through
+   - With sticky sessions, only server-to-server routing breaks; clients can still talk to their connected server
+
+3. **Load balancer should be dumb and fast:**
+   - Load balancers (e.g., HAProxy, AWS ALB, Nginx) are optimized for **stateless Layer 4/7 routing**
+   - Cookie/IP-based sticky sessions are built-in, hardware-accelerated features
+   - Adding Redis queries turns the load balancer into a **stateful, database-dependent service**
+
+---
+
+### What Happens When Sticky Sessions Break?
+
+Sticky sessions can fail (server crash, load balancer restart, client IP change). The system handles it gracefully:
+
+```
+1. Client detects WebSocket connection lost
+2. Client reconnects → Load Balancer routes to Server 2 (new sticky mapping)
+3. Server 2 enters sync mode → fetches pending messages from Cassandra
+4. Server 2 updates Redis: SET session:user_a "chat_server_2"
+5. User A is now fully online on Server 2
+```
+
+**Sticky sessions are an optimization, not a single point of failure.** If they break, the system recovers automatically.
+
+---
+
+### Performance Numbers (Hypothetical)
+
+| Metric | With Sticky Sessions | Without Sticky Sessions (Redis-only) |
+|---|---|---|
+| **Client request latency** | 5-10ms | 15-30ms (+10-20ms for Redis + forwarding) |
+| **Redis queries/sec** | ~50K (only for fanout) | ~1M (every client request + fanout) |
+| **Internal server hops** | 0 (for own clients) | ~900K/sec (90% of requests misrouted) |
+| **Load balancer complexity** | Low (built-in sticky logic) | High (Redis client, connection pools) |
+
+---
+
+### Key Takeaway
+
+**Sticky sessions** and **Redis session store** are **complementary**, not redundant:
+
+| Routing Layer | Purpose | Mechanism | Latency | Failure Impact |
+|---|---|---|---|---|
+| **Sticky Sessions** | Route client to their own server | Load balancer (cookie/IP affinity) | ~0ms (built-in) | Client reconnects to new server |
+| **Redis Session Store** | Route messages between users | Application layer (Redis query) | ~1-3ms | Treat recipient as offline until Redis recovers |
+
+You could theoretically build a system with only Redis routing, but it would be **slower, more complex, and more fragile**. Sticky sessions are a **lightweight, proven optimization** that keeps the fast path fast.
+
+</details>
+
+---
+
+**Q7.** Now tell me — why would I want sticky sessions here in the first place?
+
+<details>
+<summary>Answer</summary>
+
+Great question. This is one of the most important scaling decisions in real-time systems.
+
+Let's break it down properly.
+
+---
+
+### 🧠 First: What Makes Chat Different?
+
+**Normal REST APIs are stateless:**
+```
+Request → Any server → Response → Done
+```
+
+**But in messaging:**
+```
+Client ⇄ Persistent WebSocket ⇄ Specific Chat Server
+```
+
+That connection:
+- Stays open for hours
+- Holds user state
+- Buffers outbound messages
+- Tracks heartbeats
+- Maintains presence
+
+**That makes chat servers stateful.**
+
+---
+
+### 🚨 The Core Problem Without Sticky Sessions
+
+Imagine this:
+
+**User A connects.**
+Load balancer sends them to: **Chat Server 1**
+
+Now their WebSocket connection lives inside Server 1's memory.
+
+**Now a message arrives for User A.**
+How do we deliver it?
+
+We must send it to the server where their connection lives.
+
+If routing is random, the message might go to: **Chat Server 3**
+
+But Server 3 does **NOT** have User A's connection.
+
+**So now what?**
+
+You either:
+- ❌ Broadcast to all servers (very expensive)
+- ❌ Maintain global routing (extra hop)
+- ✅ Use sticky sessions
+
+---
+
+### ✅ Why Sticky Sessions Solve This
+
+Sticky sessions ensure:
+
+> Once a user connects to a chat server, all traffic for that user goes to the same server.
+
+So:
+```
+user_id → hash → Chat Server 17
+```
+
+Now:
+- All WebSocket frames
+- All heartbeats
+- All messages
+- All presence updates
+
+**Go to the same machine.**
+
+That machine **owns** the connection.
+
+---
+
+### 🎯 What Sticky Sessions Actually Give You
+
+#### 1️⃣ Connection Ownership
+
+Only one server manages:
+- TCP socket
+- WebSocket state
+- Send buffers
+- Retry logic
+- Heartbeat tracking
+
+Without stickiness, this becomes **distributed chaos**.
+
+#### 2️⃣ No Extra Network Hop for Outgoing Messages
+
+**Without sticky sessions:**
+```
+Message → API server → Routing service → Correct chat server → User
+```
+
+**With sticky sessions:**
+```
+Message → Chat server → Direct push
+```
+
+Less latency. Less complexity.
+
+#### 3️⃣ Simpler Session Service
+
+If you use consistent hashing by `user_id`, you often don't even need heavy routing.
+
+You already know:
+```
+hash(user_id) % N = server_id
+```
+
+That reduces:
+- Redis lookups
+- Cross-server chatter
+- Failure scenarios
+
+#### 4️⃣ Memory Efficiency
+
+Each chat server keeps:
+- 50K open sockets
+- User metadata
+- Device info
+- Rate limiting state
+- In-flight ACK tracking
+
+You do **NOT** want this distributed across servers for a single user.
+
+Sticky sessions keep everything **local**.
+
+---
+
+### 🏗 How It's Implemented
+
+There are 3 common approaches:
+
+#### 1️⃣ Load Balancer Sticky Cookie (L4/L7)
+
+LB remembers which backend handled connection.
+Works well for HTTP.
+
+#### 2️⃣ Consistent Hashing by `user_id` (Better)
+
+```
+hash(user_id) → specific chat server
+```
+
+**Advantages:**
+- Deterministic
+- No centralized tracking
+- Scales cleanly
+- Minimal remapping when scaling
+
+This is common in high-scale messaging systems.
+
+#### 3️⃣ Client-Side Server Assignment
+
+Server tells client:
+```
+"Reconnect to chat-server-42.example.com"
+```
+
+Used by very large systems.
+
+---
+
+### ❓ Why Not Just Use Stateless Servers?
+
+**Because WebSockets are inherently stateful.**
+
+To make it stateless, you'd need:
+- Distributed connection registry
+- Distributed socket abstraction
+- Message bus between servers
+- Always 2 network hops minimum
+
+That adds:
+- Latency
+- Failure modes
+- Infra cost
+
+**Sticky sessions reduce complexity.**
+
+---
+
+### 🚨 What Happens When Server Dies?
+
+Good question.
+
+**Sticky sessions don't mean permanent binding.**
+
+If Chat Server 17 crashes:
+1. Client detects disconnect
+2. Reconnects to load balancer
+3. Gets routed to a new healthy server
+4. Session service updates mapping
+5. Pending messages fetched from queue
+
+So stickiness is **per-connection, not permanent**.
+
+---
+
+### 🧩 The Big Insight
+
+Sticky sessions are not about convenience.
+
+They are about:
+- **Minimizing routing complexity**
+- **Reducing cross-server chatter**
+- **Lowering latency**
+- **Simplifying state management**
+- **Making WebSockets scalable**
+
+In a system with **50 million concurrent connections**, even one extra hop per message is extremely expensive.
+
+---
+
+### 🔥 Interview-Ready One-Liner
+
+If asked in an interview:
+
+> "We use sticky sessions because WebSocket connections are stateful. Once a user is connected to a chat server, that server owns the TCP connection and must receive all traffic for that user. Sticky sessions eliminate unnecessary routing hops and simplify connection state management."
+
+That's a strong answer.
+
+</details>
+
+---
+
+**Q8.** But we already maintain in Redis which server a user is connected to. Then do we still need sticky sessions?
+
+<details>
+<summary>Answer</summary>
+
+Excellent. Now you're thinking like a distributed systems engineer.
+
+**Short answer:**
+
+Sticky sessions are not strictly required if you already maintain a Redis-based session mapping. But they **significantly reduce complexity, latency, and cross-server traffic**.
+
+Let's break this down properly.
+
+---
+
+### 🧠 Two Possible Designs
+
+You basically have two architectures:
+
+#### ✅ Option 1: Sticky Sessions + Redis (Common in practice)
+
+**Flow:**
+```
+Client → Load Balancer (sticky) → Chat Server 17
+```
+
+**Redis stores:**
+```
+user_123 → server_17
+```
+
+Redis is used mainly for:
+- Inter-server routing
+- Presence
+- Multi-device lookup
+
+But normal client traffic always lands on the **same server** because of stickiness.
+
+---
+
+#### ❌ Option 2: No Sticky Sessions, Pure Redis Routing
+
+**Flow:**
+```
+Client → Load Balancer (random) → Any Chat Server
+```
+
+Then **every request:**
+
+Server checks Redis:
+- "Where is user_123 connected?"
+- If not on this server → forward to correct server
+
+Now every message may require:
+```
+Server A → Redis → Server B → Client
+```
+
+That's an **extra hop every time**.
+
+---
+
+### 🚨 Why Sticky Sessions Still Help Even With Redis
+
+Let's analyze the differences.
+
+#### 1️⃣ Reduces Cross-Server Hops
+
+**Without stickiness:**
+
+Every message may require:
+- Redis lookup
+- Inter-server RPC
+- Serialization/deserialization
+
+**With stickiness:**
+- If sender and recipient are on same server → **zero cross-server traffic**
+- Even if not, routing is simpler
+
+At **700K messages/sec peak**, even 1 extra hop is huge.
+
+---
+
+#### 2️⃣ Lower Latency
+
+Redis lookup ≠ free.
+
+Even **0.5ms extra** at scale becomes:
+```
+700K msg/sec × 0.5 ms = massive CPU/network overhead
+```
+
+Sticky sessions avoid unnecessary Redis lookups for the connected client's own traffic.
+
+---
+
+#### 3️⃣ Cleaner Mental Model
+
+**With stickiness:**
+
+Each chat server **"owns"** its users.
+
+That server is the source of truth for:
+- WebSocket state
+- Heartbeats
+- Send buffers
+- Rate limiting
+- In-flight ACK tracking
+
+**Without stickiness:**
+- Any server can receive traffic
+- Every server must potentially forward traffic
+- Every server becomes partially responsible for every user
+
+That increases **complexity**.
+
+---
+
+#### 4️⃣ Failure Isolation
+
+**Without stickiness:**
+
+If Redis has latency spike:
+- Message routing slows **everywhere**
+- Every message depends on Redis lookup
+
+**With stickiness:**
+- Only cross-server deliveries use Redis
+- Local deliveries **unaffected**
+
+---
+
+#### 5️⃣ Network Cost at Scale
+
+Remember:
+- 50M concurrent connections
+- ~700K messages/sec peak
+
+If each message requires:
+- 1 Redis call
+- 1 inter-server RPC
+
+You are adding **enormous east-west traffic** inside your cluster.
+
+Sticky sessions reduce this dramatically.
+
+---
+
+### 🎯 So Is Sticky Mandatory?
+
+**No.**
+
+Large-scale systems can run without sticky sessions if:
+- They use a distributed messaging bus internally
+- They route everything through Kafka
+- They treat chat servers as stateless message brokers
+
+But that architecture:
+- Has more hops
+- More latency
+- More moving parts
+- Higher infra cost
+
+---
+
+### 💡 The Real Answer
+
+Sticky sessions are an **optimization, not a correctness requirement**.
+
+- **Redis gives you correctness.**
+- **Sticky sessions give you performance + simplicity.**
+
+---
+
+### 🔥 When You Might Skip Sticky Sessions
+
+You may avoid sticky sessions if:
+- You're using a fully event-driven internal bus (like Kafka for everything)
+- You want completely stateless edge servers
+- You prioritize auto-scaling simplicity over latency
+- You're building smaller scale (<1M concurrent)
+
+But at WhatsApp scale?
+
+**Sticky sessions are almost always worth it.**
+
+---
+
+### 🧠 Interview-Grade Answer
+
+If asked:
+
+> "If we already store user→server mapping in Redis, why do we need sticky sessions?"
+
+**Strong answer:**
+
+> "We don't strictly need them for correctness since Redis allows routing. However, sticky sessions reduce cross-server traffic, avoid unnecessary Redis lookups, lower latency, and simplify connection ownership. At hundreds of thousands of messages per second, even one extra hop per message is very expensive."
+
+That's a senior-level response.
+
+---
+
+### Comparison Table
+
+| Aspect | With Sticky Sessions | Without Sticky Sessions (Redis-only) |
+|---|---|---|
+| **Client request routing** | Direct to correct server (0 hops) | Random server → Redis lookup → forward (2 hops) |
+| **Redis queries for client traffic** | 0 (sticky routing) | 1 per request |
+| **Latency per message** | ~5-10ms | ~15-25ms (+Redis + forward) |
+| **Cross-server traffic** | Minimal (only inter-user messages) | High (every client request may forward) |
+| **Failure impact** | Redis down = only inter-server routing breaks | Redis down = all routing breaks |
+| **Complexity** | Low (built-in LB feature) | High (every server does Redis lookup) |
+| **Network overhead at 700K msg/sec** | Low | 700K Redis calls + forwards |
+
+---
+
+### Key Takeaway
+
+**Both systems work.** But sticky sessions + Redis is the optimal combination:
+
+- **Sticky sessions** = Fast path for client's own traffic
+- **Redis** = Routing for messages between users
+
+This combination gives you **correctness AND performance**.
+
+</details>
+
+---
+
