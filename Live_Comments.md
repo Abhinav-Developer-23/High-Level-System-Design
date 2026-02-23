@@ -358,3 +358,360 @@ If you think of the whole database as a massive filing cabinet, a partition is a
 If we didn't use partitions, the comments for the World Cup stream would be scattered randomly across all 100 servers in our cluster. To get the chat history, the system would have to query all 100 servers, merge the results over the network, sort them, and return them. That is incredibly slow. 
 
 By grouping them into a **Partition**, we guarantee that all the data we need for one specific query is sitting right next to each other on exactly one server.
+
+---
+
+## Question 7: What are the API Endpoint Names and Request/Response Formats?
+
+### Overview
+
+Our Live Comments system exposes three core API endpoints covering the write path, the real-time read path, and the playback read path.
+
+---
+
+### 1. Post a Comment (Write Path)
+
+**Endpoint:**
+```
+POST /v1/streams/{stream_id}/comments
+```
+
+**Headers:**
+```
+Content-Type: application/json
+Authorization: Bearer <access_token>
+```
+
+**Request Body:**
+```json
+{
+  "user_id": "user-7829",
+  "text": "What an incredible goal! ⚽🎉",
+  "client_timestamp": "2026-02-23T18:30:45.123Z"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `user_id` | string | Yes | Unique identifier of the user posting the comment |
+| `text` | string | Yes | Comment text (max 500 characters) |
+| `client_timestamp` | string (ISO 8601) | No | Client-side timestamp for ordering hints; server generates the authoritative timestamp |
+
+**Response — 201 Created:**
+```json
+{
+  "comment_id": "cmt-a1b2c3d4",
+  "stream_id": "stream-wc-final",
+  "user_id": "user-7829",
+  "text": "What an incredible goal! ⚽🎉",
+  "timestamp": "2026-02-23T18:30:45.200Z",
+  "status": "accepted"
+}
+```
+
+**Error Responses:**
+
+| Status Code | Reason |
+|-------------|--------|
+| `400 Bad Request` | Missing or invalid fields (e.g., empty text, text exceeds 500 chars) |
+| `401 Unauthorized` | Missing or invalid auth token |
+| `404 Not Found` | `stream_id` does not exist or stream is not active |
+| `429 Too Many Requests` | User is rate-limited (e.g., more than 5 comments per second) |
+
+---
+
+### 2. Subscribe to Live Comments (Real-Time Read Path — SSE)
+
+**Endpoint:**
+```
+GET /v1/streams/{stream_id}/comments/live
+```
+
+**Headers:**
+```
+Accept: text/event-stream
+Authorization: Bearer <access_token>
+Last-Event-ID: cmt-a1b2c3d4    (optional, for reconnection/resume)
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| None | — | — | The stream is identified by the path variable |
+
+**Response — 200 OK (SSE Stream):**
+
+```
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+```
+
+**SSE Event Format:**
+```
+id: cmt-a1b2c3d4
+event: comment
+data: {"comment_id":"cmt-a1b2c3d4","user_id":"user-7829","text":"What an incredible goal! ⚽🎉","timestamp":"2026-02-23T18:30:45.200Z"}
+
+id: cmt-e5f6g7h8
+event: comment
+data: {"comment_id":"cmt-e5f6g7h8","user_id":"user-1234","text":"GOAAAL!!!","timestamp":"2026-02-23T18:30:46.050Z"}
+```
+
+**Special Events:**
+```
+event: heartbeat
+data: {"timestamp":"2026-02-23T18:31:00.000Z"}
+
+event: stream_ended
+data: {"stream_id":"stream-wc-final","ended_at":"2026-02-23T20:00:00.000Z"}
+```
+
+| Event Type | Description |
+|------------|-------------|
+| `comment` | A new comment posted by a user |
+| `heartbeat` | Periodic keep-alive signal (~every 15 seconds) to prevent connection timeout |
+| `stream_ended` | The live stream has ended; client can close the connection |
+
+**Error Responses:**
+
+| Status Code | Reason |
+|-------------|--------|
+| `401 Unauthorized` | Missing or invalid auth token |
+| `404 Not Found` | `stream_id` does not exist |
+
+---
+
+### 3. Fetch Comments for Playback (Playback Read Path)
+
+**Endpoint:**
+```
+GET /v1/streams/{stream_id}/comments
+```
+
+**Headers:**
+```
+Authorization: Bearer <access_token>
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `start_time` | integer | Yes | Offset in seconds from the start of the stream (e.g., `900` = 15 minutes in) |
+| `duration` | integer | Yes | Window size in seconds to fetch comments for (e.g., `180` = 3-minute window) |
+| `limit` | integer | No | Maximum number of comments to return (default: `100`, max: `500`) |
+| `cursor` | string | No | Pagination cursor from a previous response for fetching the next page |
+
+**Example Request:**
+```
+GET /v1/streams/stream-wc-final/comments?start_time=900&duration=180&limit=100
+```
+
+**Response — 200 OK:**
+```json
+{
+  "stream_id": "stream-wc-final",
+  "comments": [
+    {
+      "comment_id": "cmt-a1b2c3d4",
+      "user_id": "user-7829",
+      "text": "What an incredible goal! ⚽🎉",
+      "timestamp": "2026-02-23T18:30:45.200Z",
+      "offset_seconds": 915
+    },
+    {
+      "comment_id": "cmt-e5f6g7h8",
+      "user_id": "user-1234",
+      "text": "GOAAAL!!!",
+      "timestamp": "2026-02-23T18:30:46.050Z",
+      "offset_seconds": 916
+    }
+  ],
+  "next_cursor": "eyJsYXN0X3RzIjoiMjAyNi0wMi0yM1QxODozMTo0NS4wMDBaIn0=",
+  "has_more": true
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `comments` | array | List of comment objects within the requested time window |
+| `offset_seconds` | integer | Seconds from stream start — used by the video player to sync comments |
+| `next_cursor` | string | Opaque cursor for pagination; pass as `cursor` query param to get next page |
+| `has_more` | boolean | Whether more comments exist beyond this page |
+
+**Error Responses:**
+
+| Status Code | Reason |
+|-------------|--------|
+| `400 Bad Request` | Missing `start_time` or `duration`, or invalid values |
+| `401 Unauthorized` | Missing or invalid auth token |
+| `404 Not Found` | `stream_id` does not exist |
+
+---
+
+### API Summary Table
+
+| Operation | Method | Endpoint | Protocol |
+|-----------|--------|----------|----------|
+| Post a comment | `POST` | `/v1/streams/{stream_id}/comments` | HTTP |
+| Subscribe to live comments | `GET` | `/v1/streams/{stream_id}/comments/live` | SSE (over HTTP) |
+| Fetch playback comments | `GET` | `/v1/streams/{stream_id}/comments` | HTTP |
+
+---
+
+## Question 8: What are the Database and Table Schema Entities?
+
+### Overview
+
+The Live Comments system uses two types of databases:
+1. **Apache Cassandra** — for storing comments (optimized for high-throughput writes and time-range reads)
+2. **Relational Database (e.g., MySQL/PostgreSQL)** — for storing streams and users metadata (lower volume, stronger consistency)
+
+---
+
+### 1. Comments Table (Cassandra)
+
+This is the primary table optimized for our two main access patterns:
+- **Live path**: Fetch the latest comments for a stream
+- **Playback path**: Fetch comments within a specific time window for a stream
+
+```sql
+CREATE TABLE comments (
+    stream_id       TEXT,
+    timestamp       TIMESTAMP,
+    comment_id      TEXT,
+    user_id         TEXT,
+    text            TEXT,
+    offset_seconds  INT,
+    PRIMARY KEY ((stream_id), timestamp, comment_id)
+) WITH CLUSTERING ORDER BY (timestamp ASC);
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `stream_id` | TEXT | **Partition Key** — Groups all comments for one stream on the same node |
+| `timestamp` | TIMESTAMP | **Clustering Key** — Sorts comments chronologically on disk |
+| `comment_id` | TEXT | **Clustering Key** — Breaks ties when two comments have the same timestamp (ensures uniqueness) |
+| `user_id` | TEXT | The user who posted the comment |
+| `text` | TEXT | The comment body (max ~500 characters) |
+| `offset_seconds` | INT | Seconds from stream start; used for playback sync |
+
+**Why this schema works:**
+
+- **Partition Key (`stream_id`)**: All comments for one stream live on the same Cassandra node. A query like `WHERE stream_id = 'stream-wc-final'` goes directly to that node — no scatter-gather.
+- **Clustering Key (`timestamp ASC`)**: Comments are stored sorted by time on disk. Fetching the latest N comments or a time range is a simple sequential disk read.
+- **Clustering Key (`comment_id`)**: Needed as a tiebreaker. If two comments arrive at the exact same millisecond, `comment_id` ensures each row is unique.
+
+**Example Queries:**
+
+```sql
+-- Live path: Get latest 50 comments for a stream
+SELECT * FROM comments
+WHERE stream_id = 'stream-wc-final'
+ORDER BY timestamp DESC
+LIMIT 50;
+
+-- Playback path: Get comments between two timestamps
+SELECT * FROM comments
+WHERE stream_id = 'stream-wc-final'
+  AND timestamp >= '2026-02-23T18:15:00.000Z'
+  AND timestamp <  '2026-02-23T18:18:00.000Z'
+LIMIT 100;
+```
+
+---
+
+### 2. Streams Table (Relational DB — MySQL/PostgreSQL)
+
+Stores metadata about each live stream. This is a lower-volume, strongly consistent table.
+
+```sql
+CREATE TABLE streams (
+    stream_id       VARCHAR(64)     PRIMARY KEY,
+    title           VARCHAR(255)    NOT NULL,
+    creator_id      VARCHAR(64)     NOT NULL,
+    status          ENUM('scheduled', 'live', 'ended')  DEFAULT 'scheduled',
+    started_at      TIMESTAMP       NULL,
+    ended_at        TIMESTAMP       NULL,
+    created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_status (status),
+    INDEX idx_creator (creator_id),
+    FOREIGN KEY (creator_id) REFERENCES users(user_id)
+);
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `stream_id` | VARCHAR(64) | Unique identifier for the stream (e.g., UUID) |
+| `title` | VARCHAR(255) | Display title of the stream |
+| `creator_id` | VARCHAR(64) | The user who created/hosts the stream |
+| `status` | ENUM | Current state: `scheduled`, `live`, or `ended` |
+| `started_at` | TIMESTAMP | When the stream went live |
+| `ended_at` | TIMESTAMP | When the stream ended (null if still live) |
+| `created_at` | TIMESTAMP | Row creation time |
+| `updated_at` | TIMESTAMP | Last modification time |
+
+---
+
+### 3. Users Table (Relational DB — MySQL/PostgreSQL)
+
+Stores user profile information. Referenced by both comments and streams.
+
+```sql
+CREATE TABLE users (
+    user_id         VARCHAR(64)     PRIMARY KEY,
+    username        VARCHAR(100)    NOT NULL UNIQUE,
+    display_name    VARCHAR(150)    NOT NULL,
+    avatar_url      VARCHAR(500)    NULL,
+    created_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP,
+    updated_at      TIMESTAMP       DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_username (username)
+);
+```
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `user_id` | VARCHAR(64) | Unique identifier for the user (e.g., UUID) |
+| `username` | VARCHAR(100) | Unique login handle |
+| `display_name` | VARCHAR(150) | Name shown in the comment UI |
+| `avatar_url` | VARCHAR(500) | URL to the user's profile picture |
+| `created_at` | TIMESTAMP | Account creation time |
+| `updated_at` | TIMESTAMP | Last profile update time |
+
+---
+
+### Entity Relationship Overview
+
+```
+┌──────────────┐        ┌──────────────────┐        ┌──────────────────────┐
+│    users     │        │     streams      │        │   comments           │
+│──────────────│        │──────────────────│        │   (Cassandra)        │
+│ user_id (PK) │───┐    │ stream_id (PK)   │───┐    │──────────────────────│
+│ username     │   │    │ title            │   │    │ stream_id (PK)       │
+│ display_name │   │    │ creator_id (FK)──│───┘    │ timestamp (CK)       │
+│ avatar_url   │   │    │ status           │   │    │ comment_id (CK)      │
+│ created_at   │   │    │ started_at       │   │    │ user_id              │
+│ updated_at   │   │    │ ended_at         │   │    │ text                 │
+└──────────────┘   │    │ created_at       │   │    │ offset_seconds       │
+                   │    │ updated_at       │   │    └──────────────────────┘
+                   │    └──────────────────┘   │
+                   │                           │
+                   └───── user posts ──────────┘
+                          comments to
+                          a stream
+```
+
+### Why Two Different Databases?
+
+| Aspect | Cassandra (Comments) | Relational DB (Streams, Users) |
+|--------|---------------------|-------------------------------|
+| **Write volume** | Thousands of writes/sec per stream | Low (streams created rarely) |
+| **Read pattern** | Sequential time-range scans | Key-value lookups by ID |
+| **Consistency** | Eventual consistency is acceptable | Strong consistency needed (e.g., stream status) |
+| **Scalability** | Horizontal scaling across nodes | Vertical scaling is sufficient |
+| **Data model** | Denormalized, query-driven | Normalized, relationship-driven |
