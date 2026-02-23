@@ -297,3 +297,64 @@ WebSockets provide a persistent, bi-directional connection. If WebSockets are mo
 - **Proxy/CDN/load balancer friendly**: SSE runs over standard HTTP and tends to work better through corporate proxies and typical HTTP infrastructure.
 - **Automatic reconnection**: Browsers automatically reconnect with `EventSource` without requiring heavy custom client logic.
 - **Resume support with `Last-Event-ID`**: SSE has a native mechanism to resume from the last seen event (requires the server to emit an `id:` field per event).
+
+---
+
+## Question 6: How Does Cassandra Use Partition and Clustering Keys for Live Comments?
+
+### The Question
+
+To make this query incredibly fast, we will design our comments table with a composite primary key that aligns perfectly with this access pattern.
+
+- **Partition Key:** `stream_id`. The partition key tells the database how to group and distribute data across the cluster. By using `stream_id`, we ensure that all comments for the same live stream are physically stored together. When we query for a stream, the database knows exactly which nodes to go to, avoiding a slow, full-database scan.
+- **Clustering Key:** `timestamp`. Within each partition (for a given `stream_id`), the data will be physically sorted on disk by timestamp. This is a massive performance optimization. It means that when we fetch the comments, they are already in chronological order. The database doesn't need to perform an expensive sorting operation on the fly.
+
+How does this exactly work under the hood in a database like Apache Cassandra or Amazon DynamoDB?
+
+### How it Works
+
+#### 1. The Partition Key (`stream_id`): "The Where"
+Cassandra is a distributed database, meaning your data isn't sitting on one server; it's spread across dozens or hundreds of servers (called **nodes**) arranged in a ring.
+
+When a user posts a comment, Cassandra takes the **Partition Key** (`stream_id`) and puts it through a mathematical function called a **hash function**. 
+- Let's say the `stream_id` is `"world-cup-final"`. 
+- Cassandra hashes `"world-cup-final"` and gets a number, say `42`.
+- It knows that node #3 is responsible for number `42`.
+- Therefore, the comment goes strictly to node #3.
+
+**Why this is fast for reading:** 
+When someone opens the stream and requests the chat history, Cassandra doesn't have to go ask all 100 servers, "Hey, do any of you have comments for the world cup?" It hashes the ID, immediately knows node #3 has *all* of them, and goes straight there. This prevents a massive performance bottleneck known as a "full-database scan."
+
+#### 2. The Clustering Key (`timestamp`): "The Order"
+So now we are at node #3, looking at all the comments for `"world-cup-final"`. But a high-traffic stream might have 500,000 comments. 
+
+In a traditional SQL database, if you ran `SELECT * WHERE stream_id = 'world-cup-final' ORDER BY timestamp DESC`, the database might have to grab those 500,000 comments, load them into memory, and sort them on the fly before giving you the latest 50. That is slow and expensive.
+
+This is where the **Clustering Key** comes in. Cassandra physically writes the data to the hard drive **already sorted** by the clustering key. 
+- As comments arrive, Cassandra puts them on disk sequentially, perfectly ordered by their `timestamp`.
+- When you request the "latest 50 comments," Cassandra literally just goes to the end of the `world-cup-final` block on the disk and reads the last 50 lines sequentially. The machine doesn't sort anything; it just reads.
+
+### The Real-World Analogy
+Imagine a massive library with hundreds of filing cabinets (the **Nodes**).
+
+1. **Partition Key (`stream_id`)**: The label on the outside of a specific drawer. You walk directly to the drawer labeled `"world-cup-final"` instead of opening every cabinet in the library.
+2. **Clustering Key (`timestamp`)**: Inside that drawer, the papers aren't just thrown in a messy pile. The librarian insists they are perfectly filed in chronological order as soon as they are handed in. 
+
+Because of this rigid rule, when you walk up to the drawer and say, "Give me the 10 most recent comments," the librarian doesn't have to organize anything. They just pull the 10 papers from the very front.
+
+### Summary
+By combining these two keys into a **Composite Primary Key**, Cassandra gives you `O(1)` routing (knowing exactly which server to talk to) and `O(1)` sorting (the data on the hard drive is already sorted for you). This is what enables companies like Twitch or Discord to serve millions of chat messages seamlessly!
+
+### What exactly is a "Partition"?
+In a distributed database like Cassandra, a **Partition** is a fundamental unit of data storage. 
+
+If you think of the whole database as a massive filing cabinet, a partition is a single *folder* within that cabinet. 
+
+1. **A partition is a group of rows that share the exact same Partition Key.** In our case, every comment for `stream_id = 'world-cup-final'` lives inside the "world-cup-final" partition folder.
+2. **A partition always lives on ONE physical node (server).** Cassandra never splits a single partition across multiple servers. If the 'world-cup-final' partition is assigned to Node #3, *all* comments for the World Cup will be physically written to the hard drive of Node #3. (It will also be copied to backup nodes for redundancy, but the primary copy is strictly on one machine).
+3. **Data inside a partition is read together.** Because all rows in a single partition are sitting right next to each other on the physical hard drive, the database can scoop them all up in one quick motion. This is called "data locality."
+
+**Why this matters:**
+If we didn't use partitions, the comments for the World Cup stream would be scattered randomly across all 100 servers in our cluster. To get the chat history, the system would have to query all 100 servers, merge the results over the network, sort them, and return them. That is incredibly slow. 
+
+By grouping them into a **Partition**, we guarantee that all the data we need for one specific query is sitting right next to each other on exactly one server.
