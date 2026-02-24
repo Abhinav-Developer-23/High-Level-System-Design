@@ -1985,3 +1985,676 @@ This tells you the **actual** number of rows and execution time, not just estima
 | High-write, low-read table (logs) | Minimal indexes — primary key only if possible |
 
 > **The golden rule:** Indexes exist to help **reads**. Every index you add is a **tax on writes**. Design your indexes based on your **actual query patterns**, not theoretical ones. Use `EXPLAIN` to verify that MySQL is actually using the index, and monitor for unused indexes that are just wasting resources.
+
+---
+
+# **Database Partitioning**
+
+When a single table grows to hundreds of millions (or billions) of rows, or has dozens of columns with different access patterns, even well-indexed queries start to slow down — because the table simply doesn't fit efficiently into memory or disk I/O anymore. **Partitioning** is the strategy of splitting a large table into smaller, more manageable pieces.
+
+There are two fundamentally different ways to partition a table:
+
+| Strategy | What It Splits | Analogy |
+|---|---|---|
+| **Vertical Partitioning** | **Columns** — divides the table into narrower tables | Tearing a wide spreadsheet into separate sheets by column groups |
+| **Horizontal Partitioning** | **Rows** — divides the table into smaller tables with the same columns | Splitting a phone book into volumes A–M and N–Z |
+
+---
+
+## Vertical Partitioning
+
+Vertical partitioning means **splitting a table's columns** into two or more separate tables. Each resulting table has the **same number of rows** but **fewer columns**. The tables are linked by the same primary key so you can `JOIN` them back when needed.
+
+### Why Do It?
+
+Not all columns are accessed equally. In a typical `users` table, you might read `name` and `email` on every page load, but `bio` (a large `TEXT` column) and `profile_picture_url` only when someone visits a profile page. Keeping everything in one table means:
+
+- **Row size is large** → fewer rows fit per InnoDB page (16 KB) → more disk reads for common queries
+- **Buffer pool is wasted** — hot, small columns share pages with cold, large columns
+- **Full scans are slower** — even reading just `name` and `email` has to skip over the bulky `bio` column in every row
+
+### Example — E-Commerce Product Table
+
+Suppose you have a single `products` table:
+
+```sql
+CREATE TABLE products (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    name         VARCHAR(200),
+    price        DECIMAL(10,2),
+    category_id  INT,
+    stock        INT,
+    -- These columns are accessed rarely (only on the product detail page)
+    description  TEXT,             -- ~2 KB average
+    specs_json   JSON,             -- ~1 KB average
+    warranty     TEXT,             -- ~500 bytes average
+    reviews_avg  DECIMAL(3,2),
+    created_at   DATETIME
+);
+```
+
+**Problem:** Every query that lists products (homepage, search results, category pages) reads just `name`, `price`, `category_id`, and `stock` — but InnoDB loads the **full row** including the heavy `description`, `specs_json`, and `warranty` columns. For 10 million products, this wastes enormous amounts of buffer pool memory.
+
+### After Vertical Partitioning
+
+Split into two tables — **frequently accessed columns** and **rarely accessed columns**:
+
+```sql
+-- Table 1: Hot data (accessed on every page — listing, search, cart)
+CREATE TABLE products_core (
+    id           INT PRIMARY KEY AUTO_INCREMENT,
+    name         VARCHAR(200),
+    price        DECIMAL(10,2),
+    category_id  INT,
+    stock        INT,
+    reviews_avg  DECIMAL(3,2),
+    created_at   DATETIME
+);
+
+-- Table 2: Cold data (accessed only on the product detail page)
+CREATE TABLE products_detail (
+    product_id   INT PRIMARY KEY,    -- Same PK as products_core
+    description  TEXT,
+    specs_json   JSON,
+    warranty     TEXT,
+    FOREIGN KEY (product_id) REFERENCES products_core(id)
+);
+```
+
+**How it looks visually:**
+
+```
+BEFORE (one wide table):
+┌────┬──────────┬───────┬─────┬───────────────────────────┬──────────┬──────────┐
+│ id │   name   │ price │stock│       description          │specs_json│ warranty │
+├────┼──────────┼───────┼─────┼───────────────────────────┼──────────┼──────────┤
+│  1 │ iPhone   │ 999   │  50 │ The latest iPhone with... │ {...}    │ 1 year.. │
+│  2 │ MacBook  │ 1999  │  30 │ Powerful laptop for...    │ {...}    │ 2 year.. │
+│  3 │ AirPods  │ 249   │ 200 │ Wireless earbuds with...  │ {...}    │ 1 year.. │
+└────┴──────────┴───────┴─────┴───────────────────────────┴──────────┴──────────┘
+
+AFTER (two narrower tables):
+
+products_core (HOT — fits in buffer pool)     products_detail (COLD — loaded on demand)
+┌────┬──────────┬───────┬─────┐               ┌────────────┬───────────────────┬──────────┬──────────┐
+│ id │   name   │ price │stock│               │ product_id │    description    │specs_json│ warranty │
+├────┼──────────┼───────┼─────┤               ├────────────┼───────────────────┼──────────┼──────────┤
+│  1 │ iPhone   │ 999   │  50 │               │     1      │ The latest iPh... │ {...}    │ 1 year.. │
+│  2 │ MacBook  │ 1999  │  30 │               │     2      │ Powerful laptop.. │ {...}    │ 2 year.. │
+│  3 │ AirPods  │ 249   │ 200 │               │     3      │ Wireless earbu.. │ {...}    │ 1 year.. │
+└────┴──────────┴───────┴─────┘               └────────────┴───────────────────┴──────────┴──────────┘
+```
+
+### Query Patterns After Vertical Partitioning
+
+```sql
+-- Homepage / Search / Category listing — FAST (reads only the narrow core table)
+SELECT id, name, price, stock
+FROM products_core
+WHERE category_id = 5 AND stock > 0
+ORDER BY created_at DESC
+LIMIT 20;
+
+-- Product detail page — joins the two tables (only when user clicks a specific product)
+SELECT c.id, c.name, c.price, c.stock,
+       d.description, d.specs_json, d.warranty
+FROM products_core c
+JOIN products_detail d ON c.id = d.product_id
+WHERE c.id = 42;
+```
+
+### When to Use Vertical Partitioning
+
+| ✅ Use When | ❌ Avoid When |
+|---|---|
+| Some columns are read much more frequently than others | All columns are always accessed together |
+| Table has large `TEXT`, `BLOB`, or `JSON` columns mixed with small columns | Table is already narrow (few, small columns) |
+| You want to fit hot data entirely in the buffer pool | The overhead of `JOIN`ing tables back is unacceptable (ultra-low-latency systems) |
+| Different columns have different security/access requirements | Table is small enough that row size doesn't matter |
+
+---
+
+## Horizontal Partitioning
+
+Horizontal partitioning means **splitting a table's rows** into multiple smaller tables (or partitions). Each partition has the **same columns** but holds only a **subset of the rows**. The split is done based on a **partition key** — a column (or expression) whose value determines which partition a row goes into.
+
+### Why Do It?
+
+When a table grows to hundreds of millions of rows:
+
+- **Index size exceeds memory** — the B+ Tree doesn't fit in the buffer pool, causing frequent disk reads even for indexed queries
+- **Range scans read too many pages** — scanning a month of orders out of 5 years touches only 1.6% of the data, but without partitioning the index covers all 5 years
+- **Maintenance operations are slow** — `ALTER TABLE`, `OPTIMIZE TABLE`, archiving old data take forever on a massive table
+- **Deleting old data is expensive** — `DELETE FROM orders WHERE order_date < '2020-01-01'` generates billions of undo log entries; dropping a partition is instant
+
+### Types of Horizontal Partitioning
+
+| Type | How Rows Are Split | Best For |
+|---|---|---|
+| **Range** | By a continuous range of values (`date`, `id`) | Time-series data, logs, orders |
+| **List** | By exact values from a defined list (`country`, `status`) | Region-based or category-based splits |
+| **Hash** | By hash of a column value (evenly distributes rows) | Uniform distribution when there's no natural range |
+| **Key** | Like hash but uses MySQL's internal hashing function | Simple even distribution |
+
+### Example — E-Commerce Orders Table (Range Partitioning by Date)
+
+Suppose you have an `orders` table with 500 million rows spanning 5 years:
+
+```sql
+-- BEFORE: One massive table
+CREATE TABLE orders (
+    id           BIGINT PRIMARY KEY AUTO_INCREMENT,
+    customer_id  INT,
+    order_date   DATE,
+    total        DECIMAL(10,2),
+    status       ENUM('pending', 'shipped', 'delivered', 'cancelled')
+);
+-- 500 million rows, indexes are 40+ GB, queries are getting slow
+```
+
+### After Horizontal Partitioning (Range by Year)
+
+```sql
+CREATE TABLE orders (
+    id           BIGINT AUTO_INCREMENT,
+    customer_id  INT,
+    order_date   DATE,
+    total        DECIMAL(10,2),
+    status       ENUM('pending', 'shipped', 'delivered', 'cancelled'),
+    PRIMARY KEY (id, order_date)    -- Partition key MUST be part of the primary key
+) PARTITION BY RANGE (YEAR(order_date)) (
+    PARTITION p2021 VALUES LESS THAN (2022),
+    PARTITION p2022 VALUES LESS THAN (2023),
+    PARTITION p2023 VALUES LESS THAN (2024),
+    PARTITION p2024 VALUES LESS THAN (2025),
+    PARTITION p2025 VALUES LESS THAN (2026),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+);
+```
+
+**How it looks visually:**
+
+```
+BEFORE (one huge table — 500M rows):
+┌───────────────────────────────────────────────────────────────────────┐
+│                          orders (500M rows)                          │
+│  id=1,  date=2021-01-15, ...                                        │
+│  id=2,  date=2023-07-22, ...                                        │
+│  id=3,  date=2021-11-03, ...                                        │
+│  ...                                (all 500 million rows together)  │
+└───────────────────────────────────────────────────────────────────────┘
+
+AFTER (same table, partitioned by year — MySQL manages the split internally):
+
+┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
+│   p2021 (~80M)  │ │   p2022 (~90M)  │ │   p2023 (~100M) │ │   p2024 (~110M) │ │   p2025 (~120M) │
+│ date < 2022     │ │ date < 2023     │ │ date < 2024     │ │ date < 2025     │ │ date < 2026     │
+│                 │ │                 │ │                 │ │                 │ │                 │
+│ id=1, 2021-01-15│ │ id=5, 2022-03-10│ │ id=2, 2023-07-22│ │ id=8, 2024-01-05│ │ id=9, 2025-02-14│
+│ id=3, 2021-11-03│ │ id=6, 2022-08-20│ │ id=7, 2023-12-01│ │ ...             │ │ ...             │
+│ ...             │ │ ...             │ │ ...             │ │                 │ │                 │
+└─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
+```
+
+### Partition Pruning — The Magic That Makes It Fast
+
+When your query's `WHERE` clause includes the partition key, MySQL's optimizer automatically skips partitions that can't contain matching rows. This is called **partition pruning**.
+
+```sql
+-- Find all orders in January 2025
+SELECT * FROM orders
+WHERE order_date BETWEEN '2025-01-01' AND '2025-01-31';
+
+-- MySQL ONLY scans partition p2025 (~120M rows)
+-- It completely SKIPS p2021, p2022, p2023, p2024 (380M rows ignored!)
+
+-- You can verify with EXPLAIN:
+EXPLAIN SELECT * FROM orders WHERE order_date BETWEEN '2025-01-01' AND '2025-01-31';
+-- Shows: partitions = p2025   ← only one partition scanned
+```
+
+**Without partitioning:** MySQL scans the index across all 500M rows.
+**With partitioning:** MySQL scans only the ~120M rows in the relevant partition — **4× less data**.
+
+### Other Partitioning Types — Examples
+
+**List Partitioning (by country/region):**
+
+```sql
+CREATE TABLE customers (
+    id         INT AUTO_INCREMENT,
+    name       VARCHAR(100),
+    country    VARCHAR(2),
+    email      VARCHAR(255),
+    PRIMARY KEY (id, country)
+) PARTITION BY LIST COLUMNS (country) (
+    PARTITION p_india   VALUES IN ('IN'),
+    PARTITION p_usa     VALUES IN ('US'),
+    PARTITION p_europe  VALUES IN ('GB', 'DE', 'FR', 'IT', 'ES'),
+    PARTITION p_others  VALUES IN ('JP', 'BR', 'AU', 'CA')
+);
+
+-- Query: all Indian customers — scans ONLY p_india
+SELECT * FROM customers WHERE country = 'IN';
+```
+
+**Hash Partitioning (even distribution):**
+
+```sql
+CREATE TABLE sessions (
+    id         BIGINT AUTO_INCREMENT,
+    user_id    INT,
+    data       JSON,
+    created_at DATETIME,
+    PRIMARY KEY (id, user_id)
+) PARTITION BY HASH(user_id)
+  PARTITIONS 8;
+
+-- MySQL distributes rows across 8 partitions using: user_id MOD 8
+-- Each partition holds ~12.5% of the data
+-- Queries with WHERE user_id = ? only scan 1 of 8 partitions
+```
+
+### Dropping Old Data — The Killer Feature
+
+Without partitioning, deleting old data is brutal:
+
+```sql
+-- WITHOUT partitioning: generates massive undo logs, locks rows, takes hours
+DELETE FROM orders WHERE order_date < '2022-01-01';
+-- Deletes 80 million rows one by one 🔥
+
+-- WITH partitioning: instant, zero overhead
+ALTER TABLE orders DROP PARTITION p2021;
+-- 80 million rows gone in milliseconds — it just deletes the partition's data file
+```
+
+### When to Use Horizontal Partitioning
+
+| ✅ Use When | ❌ Avoid When |
+|---|---|
+| Table has hundreds of millions or billions of rows | Table has < 10 million rows (indexes handle it fine) |
+| Queries almost always filter on the partition key (e.g., date range) | Queries rarely include the partition key in `WHERE` (no pruning = no benefit) |
+| You need to efficiently archive/delete old data | You need strong foreign key constraints (partitioned tables don't support FK in MySQL) |
+| Time-series data: logs, events, orders, transactions | You need many unique indexes across all rows (unique constraints must include the partition key) |
+| Each partition can be maintained independently | The table is already fast enough with proper indexing |
+
+---
+
+## Vertical vs Horizontal Partitioning — Comparison
+
+| Aspect | Vertical Partitioning | Horizontal Partitioning |
+|---|---|---|
+| **What is split** | Columns | Rows |
+| **Number of rows per partition** | Same (all rows exist in each sub-table) | Different (rows are distributed) |
+| **Number of columns per partition** | Fewer (each sub-table has a subset of columns) | Same (every partition has all columns) |
+| **Primary use case** | Separate hot (frequently accessed) columns from cold (rarely accessed) columns | Split a massive table into smaller chunks by a key |
+| **How to recombine** | `JOIN` the sub-tables on the shared primary key | `UNION ALL` across partitions (MySQL does this automatically) |
+| **Implementation** | Manual — create separate tables and manage the split in your application/queries | Built-in — `CREATE TABLE ... PARTITION BY` (MySQL handles it transparently) |
+| **When it shines** | Wide tables with mixed access patterns (hot + cold columns) | Very large tables where queries always filter on the partition key |
+| **Real-world example** | Splitting a `users` table into `users_core` (name, email) + `users_profile` (bio, avatar) | Splitting an `orders` table by year so each year is a separate partition |
+
+### Can You Use Both Together?
+
+**Yes.** In large-scale systems, it's common to combine both strategies:
+
+```
+Original: one massive "orders" table (50 columns, 1 billion rows)
+
+Step 1 — Vertical Partition:
+  → orders_core    (id, customer_id, order_date, total, status)     — queried on every listing
+  → orders_detail  (order_id, shipping_address, notes, gift_msg)    — queried on detail page only
+
+Step 2 — Horizontal Partition (on orders_core):
+  → orders_core PARTITION BY RANGE (YEAR(order_date))
+  → p2023, p2024, p2025...
+
+Result: Fast listing queries hit only the narrow, pruned partition of orders_core.
+        Detail queries JOIN orders_detail only for a single order.
+```
+
+> **Key takeaway:** Vertical partitioning solves the **"too many columns"** problem (wide rows waste memory). Horizontal partitioning solves the **"too many rows"** problem (massive tables overwhelm indexes and I/O). Use them based on your bottleneck — or combine both when the table is both wide and tall.
+
+---
+
+## Partition-Based Data Retention (TTL Rotation)
+
+When your team drops partitions older than 7 days to delete old data, this process is called **Partition-Based Data Retention** or **TTL (Time-To-Live) Rotation**. It's a widely used pattern in production systems for managing time-series data like logs, events, metrics, sessions, and transactional records that don't need to be kept forever.
+
+### What Is It?
+
+Instead of running expensive `DELETE` queries to remove old rows, you:
+
+1. **Partition the table by date** (one partition per day, week, or month)
+2. **Drop entire partitions** when they exceed the retention period (e.g., 7 days)
+3. **Add new partitions** ahead of time so incoming data always has a place to land
+
+The lifecycle looks like this:
+
+```
+Day 1: Create partitions for Day 1 through Day 8 (7-day window + 1 future)
+
+Day 1   Day 2   Day 3   Day 4   Day 5   Day 6   Day 7   Day 8 (future)
+ [p1]    [p2]    [p3]    [p4]    [p5]    [p6]    [p7]    [p8]
+  ↑ oldest                                        ↑ today   ↑ pre-created
+
+Day 8: Drop p1 (it's now 7 days old), add p9 for tomorrow
+
+         Day 2   Day 3   Day 4   Day 5   Day 6   Day 7   Day 8   Day 9
+          [p2]    [p3]    [p4]    [p5]    [p6]    [p7]    [p8]    [p9]
+           ↑ oldest                                        ↑ today  ↑ new
+
+Day 9: Drop p2, add p10 ...and so on forever
+```
+
+This forms a **sliding window** — at any given time, the table holds exactly 7 days of data.
+
+### Complete Working Example — 7-Day Retention
+
+**Step 1: Create the table with daily partitions**
+
+```sql
+CREATE TABLE events (
+    id          BIGINT AUTO_INCREMENT,
+    event_type  VARCHAR(50),
+    payload     JSON,
+    created_at  DATE NOT NULL,
+    PRIMARY KEY (id, created_at)       -- Partition key must be in the PK
+) PARTITION BY RANGE (TO_DAYS(created_at)) (
+    PARTITION p20250218 VALUES LESS THAN (TO_DAYS('2025-02-19')),
+    PARTITION p20250219 VALUES LESS THAN (TO_DAYS('2025-02-20')),
+    PARTITION p20250220 VALUES LESS THAN (TO_DAYS('2025-02-21')),
+    PARTITION p20250221 VALUES LESS THAN (TO_DAYS('2025-02-22')),
+    PARTITION p20250222 VALUES LESS THAN (TO_DAYS('2025-02-23')),
+    PARTITION p20250223 VALUES LESS THAN (TO_DAYS('2025-02-24')),
+    PARTITION p20250224 VALUES LESS THAN (TO_DAYS('2025-02-25')),  -- today
+    PARTITION p20250225 VALUES LESS THAN (TO_DAYS('2025-02-26')),  -- tomorrow (pre-created)
+    PARTITION p_future  VALUES LESS THAN MAXVALUE                  -- safety net
+);
+```
+
+> `TO_DAYS()` converts a date to an integer (number of days since year 0). MySQL requires integer expressions for `RANGE` partitioning, so we can't use a `DATE` value directly — `TO_DAYS()` bridges that gap.
+
+**Step 2: Daily rotation — drop the oldest, add a new future partition**
+
+```sql
+-- Run this every day at midnight (via a cron job or scheduled event)
+
+-- 1. Drop the partition that is now 7+ days old
+ALTER TABLE events DROP PARTITION p20250218;
+-- 💥 Millions of rows deleted INSTANTLY — no row-by-row scanning
+
+-- 2. Reorganize the future partition to add tomorrow's dedicated partition
+ALTER TABLE events REORGANIZE PARTITION p_future INTO (
+    PARTITION p20250226 VALUES LESS THAN (TO_DAYS('2025-02-27')),
+    PARTITION p_future  VALUES LESS THAN MAXVALUE
+);
+```
+
+> **Why `REORGANIZE` instead of `ADD`?** Since `p_future` already catches everything beyond the last named partition, you can't just `ADD PARTITION` (MySQL would complain about overlapping ranges). `REORGANIZE PARTITION` splits `p_future` into the new day's partition plus a new `p_future`.
+
+**Step 3: Automate with a MySQL Event (built-in cron)**
+
+```sql
+DELIMITER //
+
+CREATE EVENT rotate_events_daily
+ON SCHEDULE EVERY 1 DAY
+STARTS '2025-02-25 00:05:00'    -- runs at 12:05 AM daily
+DO
+BEGIN
+    -- Calculate partition names
+    SET @old_date = DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 7 DAY), '%Y%m%d');
+    SET @new_date = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 1 DAY), '%Y%m%d');
+    SET @new_boundary = DATE_FORMAT(DATE_ADD(CURDATE(), INTERVAL 2 DAY), '%Y-%m-%d');
+
+    -- Drop old partition
+    SET @drop_sql = CONCAT('ALTER TABLE events DROP PARTITION p', @old_date);
+    PREPARE stmt FROM @drop_sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+
+    -- Add new partition
+    SET @add_sql = CONCAT(
+        'ALTER TABLE events REORGANIZE PARTITION p_future INTO (',
+        'PARTITION p', @new_date, ' VALUES LESS THAN (TO_DAYS(''', @new_boundary, ''')), ',
+        'PARTITION p_future VALUES LESS THAN MAXVALUE)'
+    );
+    PREPARE stmt FROM @add_sql;
+    EXECUTE stmt;
+    DEALLOCATE PREPARE stmt;
+END //
+
+DELIMITER ;
+
+-- Don't forget to enable the event scheduler
+SET GLOBAL event_scheduler = ON;
+```
+
+### What Happens Under the Hood
+
+When you run `ALTER TABLE events DROP PARTITION p20250218`:
+
+```
+Step 1: MySQL identifies the data file for partition p20250218
+        → e.g., events#P#p20250218.ibd  (InnoDB tablespace file)
+
+Step 2: MySQL removes the partition metadata from the table definition
+        → The partition no longer exists in INFORMATION_SCHEMA.PARTITIONS
+
+Step 3: MySQL DELETES the .ibd file from disk
+        → This is a simple file system operation — instant regardless of row count
+
+Step 4: Done. No undo logs, no row locks, no cleanup needed.
+```
+
+Compare this with a regular `DELETE`:
+
+```
+DELETE FROM events WHERE created_at < '2025-02-18';
+
+Step 1: MySQL scans the index to find ALL matching rows (millions)
+Step 2: For EACH row:
+        → Write the old row to the UNDO LOG (for rollback safety)
+        → Mark the row as deleted in the clustered index
+        → Mark the row as deleted in EVERY secondary index
+        → Write all changes to the REDO LOG (for crash recovery)
+Step 3: After commit, a background PURGE thread eventually removes the dead rows
+Step 4: The freed space is NOT returned to the OS — it becomes "free space within the tablespace"
+        → You need OPTIMIZE TABLE to reclaim it (which rebuilds the entire table)
+```
+
+### DELETE vs DROP PARTITION — Side by Side
+
+| Aspect | `DELETE WHERE date < X` | `DROP PARTITION` |
+|---|---|---|
+| **Speed for 10M rows** | Minutes to hours | Milliseconds |
+| **Lock behavior** | Row-level locks — blocks other writes to those rows | Metadata lock only — near-instant, minimal blocking |
+| **Undo log usage** | Generates undo entries for every deleted row (massive) | Zero undo log entries |
+| **Redo log usage** | Writes every change to redo log | Only metadata change logged |
+| **Disk space reclaimed?** | ❌ No — space stays allocated in tablespace until `OPTIMIZE TABLE` | ✅ Yes — the `.ibd` file is deleted, OS reclaims the space immediately |
+| **Replication impact** | Every deleted row is replicated to replicas (slow) | Only the `ALTER TABLE` statement is replicated (instant) |
+| **Impact on running queries** | Holds locks, can cause timeouts for concurrent operations | Brief metadata lock, negligible impact |
+| **Rollback possible?** | ✅ Yes — can `ROLLBACK` before `COMMIT` | ❌ No — DDL is auto-committed and irreversible |
+
+### Benefits of Partition-Based TTL Rotation
+
+| Benefit | Explanation |
+|---|---|
+| **Instant deletion** | Dropping a partition removes millions/billions of rows in milliseconds — it's a file delete, not a row-by-row operation |
+| **Zero lock contention** | Unlike `DELETE`, it doesn't hold row locks — your application keeps reading and writing normally during the drop |
+| **No undo/redo log bloat** | A `DELETE` of 100M rows generates gigabytes of undo logs; `DROP PARTITION` generates almost none |
+| **Disk space actually freed** | `DELETE` leaves "holes" in the tablespace that require `OPTIMIZE TABLE` to reclaim; `DROP PARTITION` deletes the physical file |
+| **Replication-friendly** | Only the DDL statement travels to replicas, not millions of row-level delete events |
+| **Predictable performance** | The time to drop a partition is constant regardless of how many rows it contains — 1 row or 100 million rows, it's the same speed |
+| **Natural data organization** | Queries filtering by date automatically benefit from partition pruning — even your regular `SELECT` queries get faster |
+| **Simple archival** | Before dropping, you can `SELECT INTO OUTFILE` from the partition to archive to cold storage (S3, HDFS, etc.) |
+
+### Demerits and Gotchas
+
+| Demerit | Explanation |
+|---|---|
+| **Partition key must be in every unique index** | MySQL enforces that the partition key column must be part of the primary key and every unique index — this can force you to change your schema. For example, you can't have `PRIMARY KEY (id)` alone; you need `PRIMARY KEY (id, created_at)` |
+| **Foreign keys not supported** | MySQL does **not** support foreign key constraints on partitioned tables. If your table has FK relationships, you'll need to enforce referential integrity in your application code |
+| **No rollback** | `DROP PARTITION` is a DDL operation — it's auto-committed and **irreversible**. If you accidentally drop the wrong partition, the data is gone (unless you have a backup or replica) |
+| **Partition management overhead** | Someone (or something) must create future partitions and drop old ones on schedule. If the cron job fails and no new partition is created, inserts into `p_future` will work but partition pruning degrades. If `p_future` doesn't exist and no partition covers the date, inserts **fail** |
+| **Cross-partition queries are slower** | Queries that don't include the partition key in `WHERE` must scan **all** partitions — potentially slower than a single well-indexed table |
+| **Limited number of partitions** | MySQL supports up to ~8,192 partitions per table. For daily partitions with 7-day retention, this is never an issue (only 8-9 partitions). But for fine-grained partitions (hourly) over long retention periods, you could hit the limit |
+| **ALTER TABLE is heavier** | Adding/modifying columns on a partitioned table is slower because MySQL must modify every partition's data file. Tools like `pt-online-schema-change` have partition-specific limitations |
+| **Query planner limitations** | Partition pruning only works when the `WHERE` clause directly references the partition key with constants or simple expressions. Complex expressions like `WHERE DATEDIFF(CURDATE(), created_at) > 7` may not trigger pruning — you should use `WHERE created_at < DATE_SUB(CURDATE(), INTERVAL 7 DAY)` instead |
+
+### Best Practices for Production TTL Rotation
+
+1. **Always keep a `p_future` (or `MAXVALUE`) partition** — this is your safety net. If the cron job that creates new partitions fails, inserts still succeed (they land in `p_future`) instead of throwing errors
+
+2. **Create partitions 2-3 days ahead** — don't wait until midnight to create tomorrow's partition. Pre-create a few days in advance so clock skew, timezone differences, or missed cron runs don't cause failures
+
+3. **Monitor the rotation job** — set up alerts if the partition rotation doesn't run. A common failure mode: partitions stop being created, all new data goes into `p_future`, and partition pruning stops working (silently degraded performance)
+
+4. **Test the partition drop with `EXPLAIN` first** — before automating, verify that your queries actually benefit from pruning:
+   ```sql
+   EXPLAIN SELECT * FROM events WHERE created_at = '2025-02-24';
+   -- Check the "partitions" column — it should show only ONE partition, not all of them
+   ```
+
+5. **Archive before dropping** — if there's any chance you'll need the old data later, export it before dropping:
+   ```sql
+   -- Export the partition's data to a file before dropping
+   SELECT * FROM events PARTITION (p20250218)
+   INTO OUTFILE '/tmp/events_20250218.csv'
+   FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n';
+
+   -- Now safe to drop
+   ALTER TABLE events DROP PARTITION p20250218;
+   ```
+
+6. **Use `RANGE` partitioning (not `HASH`)** — hash partitions can't be dropped selectively by date because rows are distributed by hash value, not by time. Only range (or list) partitioning allows you to drop a specific time window
+
+---
+
+## Partitioning vs Multiple Tables — Are They the Same?
+
+At first glance, partitioning looks identical to just creating separate tables (`events_day1`, `events_day2`, etc.). Both split data into smaller chunks. But they are **fundamentally different** — partitioning is managed **by MySQL internally**, while multiple tables are managed **by you** in your application code. This difference matters enormously.
+
+### The Manual Approach (Multiple Tables)
+
+Without partitioning, you'd create a new table for each day and route queries yourself:
+
+```sql
+-- You manually create one table per day
+CREATE TABLE events_20250218 (...);
+CREATE TABLE events_20250219 (...);
+CREATE TABLE events_20250220 (...);
+-- ...and so on
+
+-- Your APPLICATION must decide which table to query
+-- To find events from Feb 19:
+SELECT * FROM events_20250219 WHERE event_type = 'click';
+
+-- To find events across multiple days, YOU must UNION them manually:
+SELECT * FROM events_20250218 WHERE event_type = 'click'
+UNION ALL
+SELECT * FROM events_20250219 WHERE event_type = 'click'
+UNION ALL
+SELECT * FROM events_20250220 WHERE event_type = 'click';
+
+-- To delete old data:
+DROP TABLE events_20250218;
+```
+
+### The Partitioning Approach (MySQL Managed)
+
+With partitioning, there's **one logical table** and MySQL handles everything behind the scenes:
+
+```sql
+-- One table, MySQL manages the internal split
+CREATE TABLE events (...) PARTITION BY RANGE (TO_DAYS(created_at)) (...);
+
+-- Your application queries ONE table — same as any normal table
+SELECT * FROM events WHERE event_type = 'click' AND created_at = '2025-02-19';
+-- MySQL automatically routes this to the correct partition (partition pruning)
+
+-- Multi-day query — SAME simple query, no UNION needed
+SELECT * FROM events
+WHERE event_type = 'click'
+AND created_at BETWEEN '2025-02-18' AND '2025-02-20';
+-- MySQL scans only the relevant partitions automatically
+
+-- Delete old data:
+ALTER TABLE events DROP PARTITION p20250218;
+```
+
+### Why Partitioning Is Better Than Multiple Tables
+
+| Aspect | Multiple Tables (Manual) | Partitioning (MySQL Managed) |
+|---|---|---|
+| **Query transparency** | ❌ Application must know which table to query. Every query needs table-routing logic. | ✅ Application queries **one table name** — MySQL routes internally. Zero application code changes. |
+| **Cross-partition queries** | ❌ You must write `UNION ALL` across all tables manually. Adding a new day means changing the query. | ✅ Just `SELECT * FROM events WHERE date BETWEEN x AND y` — MySQL unions internally and prunes automatically. |
+| **Schema changes** | ❌ `ALTER TABLE` must run on **every** table separately. Add a column? Run it N times. | ✅ One `ALTER TABLE events ADD COLUMN ...` — MySQL applies it to all partitions. |
+| **Indexes** | ❌ Must create and maintain indexes on **each** table individually. | ✅ One `CREATE INDEX` — applies to all partitions. |
+| **Application complexity** | ❌ Huge — your app needs logic to: pick the right table, build UNIONs, create new tables on schedule, handle edge cases around midnight. | ✅ Minimal — your app doesn't even know partitions exist. It's completely transparent. |
+| **Aggregations** | ❌ `COUNT(*)` across all days requires UNION of all tables. | ✅ `SELECT COUNT(*) FROM events` — MySQL aggregates across all partitions automatically. |
+| **Foreign keys from other tables** | ❌ Impossible — other tables can't FK to a table that changes name every day. | ⚠️ MySQL doesn't support FK on partitioned tables either, but at least the table name is stable for references in application code. |
+| **ORM / Framework support** | ❌ ORMs (JPA, Hibernate, Django ORM) don't know how to route to dynamic table names. You'd need raw SQL everywhere. | ✅ ORMs work normally — they just see one table `events`. |
+| **Tooling compatibility** | ❌ Monitoring, backup tools, migration tools all need to handle N tables. | ✅ All tools see one table — `mysqldump events`, `EXPLAIN SELECT`, etc. work as expected. |
+| **Dropping old data** | ✅ `DROP TABLE events_20250218` — equally fast. | ✅ `ALTER TABLE events DROP PARTITION p20250218` — equally fast. |
+
+### Example: The Pain of Multiple Tables in Real Code
+
+Imagine you manually manage separate tables in a Spring Boot application:
+
+```java
+// ❌ MANUAL TABLE ROUTING — your code becomes a mess
+
+@Service
+public class EventService {
+
+    @Autowired
+    private JdbcTemplate jdbc;
+
+    public List<Event> getEvents(LocalDate from, LocalDate to) {
+        // YOU must figure out which tables to query
+        List<String> tableNames = new ArrayList<>();
+        for (LocalDate d = from; !d.isAfter(to); d = d.plusDays(1)) {
+            tableNames.add("events_" + d.format(DateTimeFormatter.BASIC_ISO_DATE));
+        }
+
+        // YOU must build a UNION ALL query dynamically
+        String sql = tableNames.stream()
+            .map(t -> "SELECT * FROM " + t + " WHERE event_type = ?")
+            .collect(Collectors.joining(" UNION ALL "));
+
+        // What if a table doesn't exist yet? You need error handling.
+        // What if the date range spans 30 days? That's 30 UNIONs.
+        return jdbc.query(sql, mapper, "click");
+    }
+}
+```
+
+With partitioning, the same code is trivial:
+
+```java
+// ✅ WITH PARTITIONING — normal JPA, zero routing logic
+
+@Repository
+public interface EventRepository extends JpaRepository<Event, Long> {
+
+    // Just a regular query — MySQL handles partition routing
+    List<Event> findByEventTypeAndCreatedAtBetween(
+        String eventType, LocalDate from, LocalDate to
+    );
+}
+```
+
+### When Multiple Tables Actually Make Sense
+
+There are rare cases where separate tables are preferred over partitioning:
+
+| Scenario | Why Separate Tables Work Better |
+|---|---|
+| **Each table has a different schema** | Partitions must all share the same columns. If each "slice" has different columns, you need separate tables. |
+| **Tables belong to different databases/servers** | Partitioning is within a single MySQL instance. If you're sharding across servers, you need separate tables (or databases). |
+| **Per-tenant isolation** | In multi-tenant systems, giving each tenant their own table (or database) provides stronger isolation than partitions. |
+| **You need foreign keys** | Partitioned tables don't support FK. If FK constraints are critical, separate tables with FK may be better. |
+
+> **Bottom line:** Partitioning gives you the performance benefits of splitting data across smaller chunks **without** the application complexity of managing multiple tables. Your app queries one table, MySQL does the routing. Always prefer partitioning over manual table splitting unless you have a specific reason not to.
