@@ -1025,3 +1025,963 @@ public class MessageService {
 | **Scope** | Server-side only — never exposed to clients | Client-facing — cursor token travels in API responses |
 | **Performance** | Fine for batch jobs; not for real-time APIs | Designed for low-latency, high-scale APIs |
 | **Use case** | Data migration, batch processing | Chat history, feeds, search results, logs |
+
+---
+
+# Indexes in MySQL (InnoDB)
+
+An index is a **separate data structure** that MySQL maintains alongside your table data. Its sole purpose is to make finding rows **fast** — without an index, MySQL has no choice but to scan every single row in the table (a "full table scan") to answer your query. With the right index, MySQL can jump directly to the matching rows, the same way a book's index lets you jump to the exact page instead of reading the whole book.
+
+Indexes are not free. They speed up reads but slow down writes, and they consume storage. Understanding **how** they work internally is the key to using them well.
+
+---
+
+## How a B+ Tree Works — The Engine Behind MySQL Indexes
+
+Almost every index in InnoDB is a **B+ Tree** (a balanced, sorted tree optimized for disk-based storage). Understanding this structure is essential because it explains *why* indexes are fast for some queries and useless for others.
+
+### Why Not a Simple Binary Search Tree?
+
+A binary search tree (BST) stores one key per node and has two children. For a table with 1 million rows, a balanced BST would be ~20 levels deep (`log₂(1,000,000) ≈ 20`). Each level means a separate **disk read** (since nodes are scattered across disk), so finding one row = 20 disk I/Os. Disk seeks take ~5-10ms each, so a single lookup could take 100-200ms — unacceptable.
+
+A B+ Tree solves this by being **wide and short**:
+
+| Property | Binary Search Tree | B+ Tree (InnoDB) |
+|---|---|---|
+| Keys per node | 1 | Hundreds (fills a 16 KB page) |
+| Children per node | 2 | Hundreds |
+| Height for 1M rows | ~20 | **3-4** |
+| Disk reads per lookup | ~20 | **3-4** |
+| Data stored in | Every node | **Leaf nodes only** |
+
+### The Structure: Internal Nodes vs Leaf Nodes
+
+A B+ Tree has two types of nodes:
+
+**1. Internal (non-leaf) nodes** — Act as signposts. They contain **keys** and **pointers to child nodes**, but no actual row data. Their only job is to route you to the correct leaf.
+
+**2. Leaf nodes** — Contain the actual **indexed key values** plus either:
+- The **full row data** (if this is the clustered/primary key index), or
+- A **pointer to the row** (if this is a secondary index — the pointer is the primary key value)
+
+All leaf nodes are connected in a **doubly linked list** — this is what makes range scans fast. Once you find the first matching leaf, you just walk sideways through the chain without going back up the tree.
+
+### Visual Example: B+ Tree with Order 4
+
+"Order 4" means each node can hold at most 3 keys and 4 child pointers. (InnoDB nodes are 16 KB pages that can hold hundreds of keys; we use small numbers here for clarity.)
+
+Suppose we insert these employee IDs in order: `10, 20, 30, 40, 50, 60, 70, 80, 90`
+
+The resulting B+ Tree looks like this:
+
+```
+                         [40, 70]                          ← Root (internal node)
+                        /    |    \
+                       /     |     \
+              [10, 20, 30] [40, 50, 60] [70, 80, 90]       ← Leaf nodes (hold data)
+                   ↔            ↔            ↔              ← Linked list connections
+```
+
+**How a lookup works — Find employee_id = 50:**
+
+```
+Step 1: Start at root [40, 70]
+        → 50 >= 40 and 50 < 70
+        → Follow the MIDDLE pointer
+
+Step 2: Arrive at leaf [40, 50, 60]
+        → Scan within this small node → Found 50!
+
+Total: 2 disk reads (1 root page + 1 leaf page)
+```
+
+**How a range scan works — Find all employees WHERE id BETWEEN 30 AND 60:**
+
+```
+Step 1: Start at root [40, 70]
+        → 30 < 40 → Follow LEFT pointer
+
+Step 2: Arrive at leaf [10, 20, 30]
+        → Start from 30
+        → Follow linked list pointer →
+
+Step 3: Arrive at leaf [40, 50, 60]
+        → Read 40, 50, 60 → 60 is the upper bound, stop
+
+Result: [30, 40, 50, 60] — found by reading only 3 pages
+(No need to go back to the root for each value!)
+```
+
+### How Inserts and Splits Work — Step by Step
+
+Understanding splits is crucial because they explain why B+ Trees stay balanced and why write performance has overhead.
+
+**Starting with an empty tree (order 4, max 3 keys per node):**
+
+**Insert 10, 20, 30** — they fit in a single leaf:
+
+```
+[10, 20, 30]    ← Root is also a leaf at this point
+```
+
+**Insert 40** — the leaf is full (has 3 keys), so it **splits**:
+
+```
+Split [10, 20, 30, 40] into two halves:
+  Left leaf:  [10, 20]
+  Right leaf: [30, 40]
+  Promote middle key (30) up to a new root
+
+Result:
+           [30]               ← New root (internal node)
+          /    \
+   [10, 20]  [30, 40]         ← Leaf nodes
+       ↔           
+```
+
+**Insert 50, 60** — 50 and 60 go into the right leaf (since > 30):
+
+```
+           [30]
+          /    \
+   [10, 20]  [30, 40, 50, 60]   ← This leaf now has 4 keys — OVERFLOW!
+```
+
+**Split the right leaf:**
+
+```
+Split [30, 40, 50, 60]:
+  Left:  [30, 40]
+  Right: [50, 60]
+  Promote 50 up to the root
+
+Result:
+           [30, 50]
+          /    |    \
+   [10, 20] [30, 40] [50, 60]
+       ↔        ↔         
+```
+
+**Insert 70, 80, 90** — following the same pattern, the tree keeps growing and splitting:
+
+```
+Final tree:
+                         [40, 70]
+                        /    |    \
+              [10, 20, 30] [40, 50, 60] [70, 80, 90]
+                   ↔            ↔            ↔
+```
+
+**Key observations about splits:**
+
+| Aspect | What happens |
+|---|---|
+| **When** | A node overflows (exceeds max keys) |
+| **What** | Node splits into two halves; middle key is promoted to parent |
+| **Cost** | 3 page writes (left child, right child, parent) — this is the write overhead of B+ Trees |
+| **Cascading** | If the parent also overflows, it splits too — can cascade up to the root |
+| **Tree height increase** | Only increases when the **root** splits — always stays balanced |
+| **Deletions** | Reverse of splits — nodes merge when they become less than half full |
+
+### Real InnoDB Numbers
+
+In production (with 16 KB pages and typical `BIGINT` keys):
+
+| Metric | Approximate Value |
+|---|---|
+| Keys per internal page | ~1,200 |
+| Rows per leaf page | ~500 (depends on row size) |
+| Height for 1 million rows | **3** |
+| Height for 1 billion rows | **4** |
+| Disk reads for a point lookup | 2-4 (root is usually cached in memory) |
+
+Because the root and first-level internal pages are almost always in the **buffer pool** (InnoDB's memory cache), a typical lookup in a well-configured database needs only **1 disk read** (the leaf page).
+
+---
+
+## Types of Indexes
+
+### 1. Primary Key Index (Clustered Index)
+
+In InnoDB, the **primary key IS the table**. The actual row data is stored in the leaf nodes of the primary key's B+ Tree. This is called a **clustered index** — the table data is physically ordered (clustered) by the primary key.
+
+```sql
+CREATE TABLE employees (
+    id INT PRIMARY KEY,      -- ← This IS the clustered index
+    name VARCHAR(100),
+    department VARCHAR(50),
+    salary DECIMAL(10,2)
+);
+```
+
+**What the B+ Tree looks like internally:**
+
+```
+Internal nodes: [50, 100]  — contain only IDs and page pointers
+
+Leaf nodes (contain the FULL ROW):
+  Page 1: [id=1, name='Alice', dept='Eng', salary=90000]
+           [id=2, name='Bob',   dept='Sales', salary=75000]
+           ...
+  Page 2: [id=51, name='Carol', dept='Eng', salary=95000]
+           ...
+```
+
+**Key facts:**
+- Every InnoDB table has **exactly one** clustered index
+- If you don't define a `PRIMARY KEY`, InnoDB uses the first `UNIQUE NOT NULL` index; if none exists, it creates a hidden 6-byte row ID as the clustered key
+- Because data is physically sorted by primary key, **sequential primary key access is very fast** (data is in adjacent pages)
+- Auto-increment IDs are ideal because new rows always append to the **end** of the tree — no splits in the middle, minimal page fragmentation
+
+### 2. Unique Index
+
+Enforces that no two rows can have the same value in the indexed column(s). Internally, it's the same B+ Tree structure as any other index, but MySQL checks for duplicates on every insert/update.
+
+```sql
+CREATE UNIQUE INDEX idx_email ON users (email);
+
+-- Or inline:
+CREATE TABLE users (
+    id INT PRIMARY KEY,
+    email VARCHAR(255) UNIQUE,         -- ← creates a unique index automatically
+    username VARCHAR(50) UNIQUE
+);
+```
+
+**When to use:** When you have a business rule that a column must contain distinct values — email, username, phone number, SSN. Beyond data integrity, unique indexes also help the optimizer: when MySQL knows a column is unique, it can stop searching after finding one match (`const` or `eq_ref` access type in `EXPLAIN`).
+
+### 3. Composite (Multi-Column) Index
+
+An index on **two or more columns**. The B+ Tree is sorted by the first column, then by the second column within rows that share the same first column, and so on — like a phone book sorted by last name, then first name.
+
+```sql
+CREATE INDEX idx_dept_salary ON employees (department, salary);
+```
+
+**How the B+ Tree is sorted:**
+
+```
+('Engineering', 70000)
+('Engineering', 85000)
+('Engineering', 95000)
+('Marketing',   60000)
+('Marketing',   72000)
+('Sales',       55000)
+('Sales',       68000)
+('Sales',       90000)
+```
+
+**The Leftmost Prefix Rule** — this is the most important rule for composite indexes:
+
+A composite index on `(A, B, C)` can be used for queries that filter on:
+- `A` alone ✅
+- `A` and `B` ✅
+- `A` and `B` and `C` ✅
+- `A` and `C` — partially ✅ (uses A, skips to data for C with less efficiency)
+
+But it **cannot** be used for:
+- `B` alone ❌
+- `C` alone ❌
+- `B` and `C` ❌
+
+**Why?** Think of the phone book analogy. A phone book sorted by `(last_name, first_name)` can answer "find all Smiths" and "find Alice Smith", but it **cannot** answer "find all Alices" without scanning the entire book — because Alices are scattered across different last names.
+
+```sql
+-- ✅ Uses the index (leftmost prefix)
+SELECT * FROM employees WHERE department = 'Engineering';
+SELECT * FROM employees WHERE department = 'Engineering' AND salary > 80000;
+
+-- ❌ Cannot use the index (skips the leftmost column)
+SELECT * FROM employees WHERE salary > 80000;
+```
+
+**Practical rule:** Put the most frequently filtered column **first** in a composite index, and the column used for range/sorting **last**.
+
+### 4. Full-Text Index
+
+Designed for **natural language text search** — finding words or phrases inside `TEXT` or `VARCHAR` columns. Regular B+ Tree indexes are useless for `LIKE '%keyword%'` (leading wildcard prevents index usage). Full-text indexes use an **inverted index** internally: a mapping from each word to the list of rows that contain it.
+
+```sql
+CREATE FULLTEXT INDEX idx_ft_content ON articles (title, body);
+
+-- Search for articles mentioning "database indexing"
+SELECT * FROM articles
+WHERE MATCH(title, body) AGAINST('database indexing');
+
+-- Boolean mode — more control (+ means must include, - means must exclude)
+SELECT * FROM articles
+WHERE MATCH(title, body) AGAINST('+database +indexing -NoSQL' IN BOOLEAN MODE);
+```
+
+**When to use:** Blog search, product search, documentation search — anywhere you need to find rows containing specific words inside large text blocks. For more advanced search (fuzzy matching, synonyms, stemming, ranking), consider **Elasticsearch** or **Solr** instead of MySQL full-text.
+
+### 5. Spatial Index (R-Tree)
+
+Used for **geometry** and **geographic** data types (`POINT`, `POLYGON`, etc.). Spatial indexes use **R-Trees** (not B+ Trees) which partition multi-dimensional space into nested bounding rectangles.
+
+```sql
+CREATE SPATIAL INDEX idx_location ON stores (coordinates);
+
+-- Find all stores within 5 km of a point
+SELECT name FROM stores
+WHERE ST_Distance_Sphere(coordinates, ST_GeomFromText('POINT(77.5946 12.9716)')) < 5000;
+```
+
+**When to use:** "Find nearest" queries, geofencing, delivery zone checks, map-based applications.
+
+### 6. Hash Index (MEMORY Engine Only)
+
+A hash index stores a **hash of the key** → row pointer mapping. Lookups are O(1) — instant for exact-match queries. But it **cannot** do range scans, sorting, or partial matches because hashing destroys order.
+
+```sql
+-- Only available with the MEMORY storage engine
+CREATE TABLE sessions (
+    session_id VARCHAR(64),
+    user_id INT,
+    data TEXT,
+    INDEX USING HASH (session_id)
+) ENGINE = MEMORY;
+```
+
+**InnoDB does NOT support explicit hash indexes**, but it has an **Adaptive Hash Index (AHI)** — InnoDB automatically detects "hot" B+ Tree pages that are accessed very frequently and builds an in-memory hash index on top of them. You don't create this manually; InnoDB manages it transparently.
+
+| Index Type | Structure | Equality | Range | Sorting | Partial Match |
+|---|---|---|---|---|---|
+| B+ Tree (default) | Sorted tree | ✅ | ✅ | ✅ | ✅ (prefix only) |
+| Hash | Hash table | ✅ (O(1)) | ❌ | ❌ | ❌ |
+| Full-Text | Inverted index | Words only | ❌ | By relevance | ✅ (words) |
+| Spatial (R-Tree) | Bounding rectangles | ❌ | Spatial only | ❌ | ❌ |
+
+---
+
+## When to Use an Index
+
+### ✅ Index These Columns
+
+| Column Type | Why |
+|---|---|
+| **Primary key** | Automatically indexed; defines the clustered index |
+| **Foreign keys** | MySQL needs them for `JOIN` performance and `ON DELETE CASCADE` checks — without an index, every FK check triggers a full table scan on the child table |
+| **Columns in `WHERE` clauses** | Equality (`=`), range (`>`, `<`, `BETWEEN`), and `IN` filters all benefit |
+| **Columns in `JOIN ON` conditions** | Indexes on both sides of a join condition dramatically reduce lookup time |
+| **Columns in `ORDER BY`** | Avoids an expensive filesort — data is already sorted in the index |
+| **Columns in `GROUP BY`** | Allows MySQL to group rows by reading the index in order |
+| **High-cardinality columns** | Columns with many distinct values (e.g., `email`, `order_id`) are ideal for indexes |
+| **Columns used in `UNIQUE` constraints** | Automatically indexed; also enables the optimizer to stop after one match |
+
+### ❌ Do NOT Index These
+
+| Column Type | Why |
+|---|---|
+| **Low-cardinality columns** | A `gender` column with only `M` and `F` has terrible selectivity — an index on it would still match ~50% of rows, making a full scan cheaper |
+| **Columns you rarely query on** | An index no one uses just wastes storage and slows down writes |
+| **Very wide columns** | A `VARCHAR(5000)` index entry is huge — use a prefix index or reconsider |
+| **Frequently updated columns** | Every `UPDATE` to an indexed column means updating the index B+ Tree too |
+| **Small tables** | A table with 100 rows is faster to full-scan than to use an index (disk seek for the index + disk seek for the row > sequential scan of 100 rows) |
+| **Columns with lots of NULLs** (usually) | Depends on the use case, but indexes on mostly-NULL columns are often wasteful |
+
+---
+
+## How Indexes Are Used in Common Operations
+
+### 1. Point Lookups (Equality Queries)
+
+The most basic use case. MySQL walks down the B+ Tree to find the exact matching leaf node.
+
+```sql
+-- Uses PRIMARY KEY index (1-2 page reads)
+SELECT * FROM employees WHERE id = 42;
+
+-- Uses index on email (2-3 page reads for index + 1 for row data)
+SELECT * FROM users WHERE email = 'alice@example.com';
+```
+
+**Without index:** Full table scan — reads every single row. O(N).
+**With index:** B+ Tree seek. O(log N) — in practice, 2-4 disk reads.
+
+### 2. Range Queries
+
+This is where the B+ Tree's **linked list at the leaf level** shines. MySQL seeks to the starting point, then walks the linked list forward (or backward) until the range boundary.
+
+```sql
+-- Find all orders placed in January 2025
+SELECT * FROM orders
+WHERE order_date BETWEEN '2025-01-01' AND '2025-01-31';
+
+-- Find all products priced between $50 and $100
+SELECT * FROM products WHERE price >= 50 AND price <= 100;
+
+-- Find all employees with salary > 100000
+SELECT * FROM employees WHERE salary > 100000;
+```
+
+**How it works with an index on `order_date`:**
+
+```
+Step 1: B+ Tree seek to '2025-01-01'         → Find its leaf page
+Step 2: Walk the linked list forward          → Read all entries sequentially
+Step 3: Stop when you hit '2025-02-01'        → Done
+
+Only reads the pages containing matching rows — skips everything else.
+```
+
+**Without index:** MySQL reads the **entire table** and checks every row's `order_date`. If the table has 10 million rows and only 50,000 match, it still reads all 10 million.
+
+### 3. Sorting (`ORDER BY`)
+
+If the `ORDER BY` column matches an index, MySQL reads the data **in index order** — it's already sorted, so no additional sort step is needed. Without an index, MySQL must load all matching rows into memory (or a temp file) and perform a **filesort**, which is slow for large result sets.
+
+```sql
+-- With index on (created_at):
+SELECT * FROM posts ORDER BY created_at DESC LIMIT 20;
+-- MySQL reads the LAST 20 entries from the B+ Tree's leaf linked list
+-- No sorting needed — data comes out pre-sorted
+
+-- Without index:
+-- MySQL reads ALL posts, sorts them by created_at in memory, returns top 20
+-- If there are millions of posts, this is extremely expensive
+```
+
+**EXPLAIN tells you:** If you see `Using filesort` in the Extra column, MySQL is sorting in memory/disk instead of using an index. This is a red flag for large tables.
+
+```sql
+-- Composite indexes can satisfy ORDER BY too:
+CREATE INDEX idx_user_date ON posts (user_id, created_at);
+
+-- ✅ Index used for both WHERE and ORDER BY
+SELECT * FROM posts WHERE user_id = 5 ORDER BY created_at DESC;
+
+-- ❌ Index CANNOT help here — different column order than index
+SELECT * FROM posts WHERE user_id = 5 ORDER BY title;
+```
+
+### 4. JOINs
+
+Joins are where indexes provide the most dramatic performance improvement. Without indexes, MySQL must use a **Nested Loop Join** with full table scans — for every row in table A, it scans every row in table B. That's O(N × M).
+
+```sql
+-- Without indexes on the join columns:
+SELECT o.order_id, c.name, o.total
+FROM orders o
+JOIN customers c ON o.customer_id = c.id;
+
+-- For 100,000 orders × 50,000 customers = 5 BILLION comparisons 🔥
+```
+
+**With an index on `customers.id` (the primary key) and an index on `orders.customer_id`:**
+
+```sql
+-- MySQL can use Nested Loop Join efficiently:
+-- For each order, do a B+ Tree lookup on customers.id → 3-4 page reads
+-- 100,000 orders × 4 page reads = 400,000 page reads (vs 5 billion comparisons)
+```
+
+**Different join types and how indexes help:**
+
+| Join Scenario | Without Index | With Index |
+|---|---|---|
+| `JOIN ON a.id = b.foreign_id` | Full scan of `b` for every row in `a` | B+ Tree seek on `b.foreign_id` per row |
+| `JOIN ... WHERE a.col > 100` | Full scan + filter | Index range scan, then join |
+| Multi-table `JOIN` (3+ tables) | Exponentially worse | Indexes on all join columns keep it manageable |
+
+**Always index both sides of a join:**
+
+```sql
+-- Make sure BOTH columns involved in the join have indexes:
+CREATE INDEX idx_customer_id ON orders (customer_id);
+-- customers.id is already indexed (it's the primary key)
+```
+
+### 5. GROUP BY
+
+If the `GROUP BY` column has an index, MySQL can group rows by reading the index in order — no need to hash or sort. This is called a **"loose index scan"** or **"tight index scan"** depending on the query.
+
+```sql
+-- With index on (department):
+SELECT department, COUNT(*), AVG(salary)
+FROM employees
+GROUP BY department;
+-- MySQL reads the index in order: all 'Engineering' rows together, then all 'Marketing', etc.
+-- No temporary table or filesort needed
+
+-- With composite index on (department, salary):
+SELECT department, MAX(salary)
+FROM employees
+GROUP BY department;
+-- "Loose index scan" — MySQL reads only the LAST entry in each department group
+-- (because the index is sorted by department, then salary within each department)
+-- Incredibly fast — barely reads any data
+```
+
+**EXPLAIN tells you:** Look for `Using index for group-by` (loose index scan) — this is the best case. If you see `Using temporary; Using filesort`, the GROUP BY is not using an index.
+
+### 6. DISTINCT
+
+`DISTINCT` is essentially the same operation as `GROUP BY` from MySQL's perspective. If the column has an index, MySQL reads sorted values and skips duplicates naturally.
+
+```sql
+-- With index on (department):
+SELECT DISTINCT department FROM employees;
+-- MySQL walks the index, reading only the first entry of each group
+-- Equivalent to a loose index scan
+```
+
+### 7. Aggregate Functions (MIN, MAX)
+
+`MIN()` and `MAX()` on an indexed column are **O(1)** — MySQL just reads the first or last entry in the B+ Tree.
+
+```sql
+-- With index on (salary):
+SELECT MIN(salary) FROM employees;   -- Read the leftmost leaf → instant
+SELECT MAX(salary) FROM employees;   -- Read the rightmost leaf → instant
+
+-- Without index: full table scan to find min/max → O(N)
+```
+
+**EXPLAIN shows** `Select tables optimized away` — meaning MySQL answered the query from the index metadata without reading any table rows at all.
+
+### 8. LIKE Queries (Prefix Only)
+
+B+ Tree indexes can help with `LIKE` queries **only when the wildcard is at the end** (prefix search). A leading wildcard destroys the ability to use the index because the B+ Tree is sorted from the left.
+
+```sql
+-- ✅ Uses index (prefix search — B+ Tree can seek to 'Joh' and walk forward)
+SELECT * FROM users WHERE name LIKE 'Joh%';
+
+-- ❌ Cannot use B+ Tree index (leading wildcard — must scan everything)
+SELECT * FROM users WHERE name LIKE '%son';
+
+-- ❌ Cannot use B+ Tree index (wildcard on both sides)
+SELECT * FROM users WHERE name LIKE '%ohn%';
+
+-- For the ❌ cases above, use a FULLTEXT index instead:
+CREATE FULLTEXT INDEX idx_ft_name ON users (name);
+SELECT * FROM users WHERE MATCH(name) AGAINST('son');
+```
+
+### 9. Subqueries and EXISTS
+
+Indexes on the correlated column make `EXISTS` and `IN` subqueries efficient.
+
+```sql
+-- With index on orders.customer_id:
+SELECT * FROM customers c
+WHERE EXISTS (
+    SELECT 1 FROM orders o WHERE o.customer_id = c.id
+);
+-- For each customer, MySQL does a quick B+ Tree lookup on orders.customer_id
+-- instead of scanning the entire orders table
+
+-- IN with subquery:
+SELECT * FROM products
+WHERE category_id IN (SELECT id FROM categories WHERE active = 1);
+-- Index on categories.id (primary key) and products.category_id
+```
+
+### 10. UNION and Deduplication
+
+When using `UNION` (which removes duplicates) vs `UNION ALL` (which doesn't), MySQL needs to sort and deduplicate the combined result. Indexes on the selected columns can speed up this deduplication.
+
+---
+
+## Covering Indexes and Index-Only Scans
+
+A **covering index** is an index that contains **all the columns** a query needs — so MySQL can answer the query entirely from the index, without ever reading the actual table row. This is called an **index-only scan** and it's the fastest possible read path.
+
+### Why It's Fast
+
+Normally, a secondary index lookup has **two steps**:
+1. Walk the secondary index B+ Tree to find the matching primary key
+2. Use that primary key to walk the **primary key B+ Tree** (clustered index) to fetch the full row
+
+This second step is called a **"bookmark lookup"** or **"clustered index lookup"** — it's an extra disk read per row.
+
+A covering index eliminates step 2 entirely. All the data the query needs is right there in the index's leaf nodes.
+
+```sql
+-- Index on (department, salary)
+CREATE INDEX idx_dept_salary ON employees (department, salary);
+
+-- ✅ Covering index — all requested columns (department, salary) are IN the index
+SELECT department, salary FROM employees WHERE department = 'Engineering';
+-- MySQL reads ONLY the index, never touches the table data pages
+-- EXPLAIN shows: "Using index" in Extra column
+
+-- ❌ NOT a covering index — 'name' is NOT in the index
+SELECT department, salary, name FROM employees WHERE department = 'Engineering';
+-- MySQL must look up each matching row in the clustered index to get 'name'
+```
+
+### INCLUDE Columns (MySQL 8.0+ Functional Equivalent)
+
+MySQL doesn't have a formal `INCLUDE` keyword (SQL Server/PostgreSQL do), but you can simulate it by adding columns to the end of a composite index. The extra columns are stored in the index but not used for sorting — they just "come along for the ride" to make the index covering.
+
+```sql
+-- Make the index covering for queries that also need 'name'
+CREATE INDEX idx_dept_salary_name ON employees (department, salary, name);
+
+-- Now this is a covering index:
+SELECT department, salary, name FROM employees WHERE department = 'Engineering';
+```
+
+**Trade-off:** Wider indexes use more storage and are slower to maintain on writes. Only add columns to make an index covering if the query is critical and frequent.
+
+### How to Know if Your Query Uses a Covering Index
+
+Run `EXPLAIN` and look at the `Extra` column:
+
+| Extra Value | Meaning |
+|---|---|
+| `Using index` | ✅ Covering index — data read from index only |
+| `Using index condition` | Index used for filtering, but table data still accessed |
+| (nothing about index) | Index may or may not be used; table rows are being read |
+
+---
+
+## Index Selectivity and Cardinality
+
+**Cardinality** = the number of **distinct values** in a column.
+**Selectivity** = cardinality / total rows — the percentage of distinct values.
+
+| Column | Cardinality | Selectivity | Good for Indexing? |
+|---|---|---|---|
+| `id` (primary key) | 1,000,000 | 1.0 (100%) | ✅ Perfect |
+| `email` | 999,950 | 0.999 (~100%) | ✅ Excellent |
+| `created_at` (timestamp) | 800,000 | 0.8 (80%) | ✅ Very good |
+| `country` | 195 | 0.000195 (0.02%) | ⚠️ Mediocre alone, fine in composite |
+| `status` ('active'/'inactive') | 2 | 0.000002 (0.0002%) | ❌ Terrible — match 50% of rows |
+| `is_deleted` (0/1) | 2 | 0.000002 | ❌ Terrible |
+| `gender` ('M'/'F'/'O') | 3 | 0.000003 | ❌ Bad |
+
+**Rule of thumb:** An index is useful when it can eliminate the vast majority of rows. If a query using an index still matches >20-30% of the table, MySQL's optimizer may choose a full table scan instead — because the random I/O of index lookups is more expensive than a sequential scan at that point.
+
+**How to check cardinality:**
+
+```sql
+-- Shows cardinality for all indexes on a table
+SHOW INDEX FROM employees;
+
+-- More detailed statistics
+SELECT
+    INDEX_NAME,
+    COLUMN_NAME,
+    CARDINALITY,
+    ROUND(CARDINALITY / (SELECT COUNT(*) FROM employees) * 100, 2) AS selectivity_pct
+FROM information_schema.STATISTICS
+WHERE TABLE_NAME = 'employees';
+```
+
+**Composite index selectivity:** In a composite index, put the **most selective column first** (the one that eliminates the most rows). However, if the less selective column is used in equality and the more selective one is used in a range, MySQL can still benefit from the less selective column being first.
+
+```sql
+-- If 'department' selects 5% and 'created_at' range selects 10%:
+-- Better: (department, created_at) — equality first, range second
+SELECT * FROM employees WHERE department = 'Eng' AND created_at > '2025-01-01';
+```
+
+---
+
+## Impact on Write Performance
+
+Every index is a separate B+ Tree that must be updated on every `INSERT`, `UPDATE` (of indexed columns), or `DELETE`. The cost is real and measurable.
+
+### What Happens on Each Operation
+
+| Operation | Impact on Indexes |
+|---|---|
+| **INSERT** | New entry must be added to **every** index's B+ Tree. For each index: find the correct leaf page, insert the key, potentially split the leaf if full. |
+| **UPDATE** (indexed column) | Old key is deleted from the index, new key is inserted — effectively a **delete + insert** on each affected index. |
+| **UPDATE** (non-indexed column) | **No index impact** — only the clustered index (table data) is updated. |
+| **DELETE** | Entry is removed from **every** index's B+ Tree. Leaf pages may merge if they become too empty. |
+
+### Real-World Write Overhead
+
+| Indexes on Table | INSERT Relative Speed | Notes |
+|---|---|---|
+| 0 indexes (heap) | 1× (baseline) | Not possible in InnoDB (always has PK) |
+| 1 (primary key only) | ~1× | Just the clustered index |
+| 3 indexes | ~1.5-2× slower | Each index adds ~15-30% overhead |
+| 5 indexes | ~2-3× slower | Noticeable on high-throughput writes |
+| 10+ indexes | ~3-5× slower | Seriously impacts write performance |
+
+**Buffer pool helps:** InnoDB uses the **change buffer** (part of the buffer pool) to defer updates to secondary indexes. Instead of writing to the B+ Tree immediately, it records the change in a buffer and merges it later. This significantly reduces random I/O for write-heavy workloads. However, the change buffer only works for secondary indexes, not the clustered index.
+
+### Best Practices for Write-Heavy Tables
+
+1. **Only create indexes you actually use** — run `SHOW INDEX FROM table` and check if any index is never hit
+2. **Monitor unused indexes:**
+   ```sql
+   -- MySQL 8.0+ performance_schema
+   SELECT OBJECT_SCHEMA, OBJECT_NAME, INDEX_NAME
+   FROM performance_schema.table_io_waits_summary_by_index_usage
+   WHERE INDEX_NAME IS NOT NULL
+     AND COUNT_STAR = 0
+     AND OBJECT_SCHEMA = 'your_database';
+   ```
+3. **Bulk insert tip:** Drop indexes before bulk loading, then recreate them — building an index once from sorted data is much faster than inserting into an existing index row by row
+4. **Prefer composite indexes over multiple single-column indexes** — one composite index replaces two or three single-column indexes, reducing write overhead
+
+---
+
+## Clustered vs Secondary Indexes (InnoDB Specifics)
+
+This distinction is unique to InnoDB and is **critical** for understanding query performance.
+
+### Clustered Index (Primary Key)
+
+- There is **exactly one** per table — the primary key index
+- The leaf nodes store the **complete row data** (all columns)
+- Data is **physically sorted** by the primary key on disk
+- Lookups by primary key reach the data directly — **one B+ Tree traversal**
+
+```
+Clustered Index B+ Tree (PRIMARY KEY = id):
+
+       Internal: [50, 100]
+                /    |    \
+Leaf pages:  [id=1, ALL_COLUMNS]  [id=51, ALL_COLUMNS]  [id=101, ALL_COLUMNS]
+             [id=2, ALL_COLUMNS]  [id=52, ALL_COLUMNS]  [id=102, ALL_COLUMNS]
+             ...                   ...                    ...
+```
+
+### Secondary Index (Any Non-Primary Index)
+
+- There can be **many** per table
+- The leaf nodes store the **indexed columns + the primary key value** (NOT the full row)
+- To get columns not in the secondary index, InnoDB must do a **second lookup** on the clustered index using the primary key — this is called a **bookmark lookup** (or **"back to table"**, sometimes called **"double lookup"**)
+
+```
+Secondary Index B+ Tree (INDEX on email):
+
+       Internal: ['john@...', 'mary@...']
+                /         |          \
+Leaf pages:  [email='alice@...', PK=42]   [email='john@...', PK=7]
+             [email='bob@...',   PK=15]   [email='mary@...', PK=91]
+```
+
+**What happens when you query by email:**
+
+```sql
+SELECT * FROM users WHERE email = 'alice@example.com';
+
+-- Step 1: Walk the SECONDARY index (email) → find PK = 42
+-- Step 2: Walk the CLUSTERED index (id) → find id = 42 → read full row
+-- Total: 2 B+ Tree traversals
+```
+
+**What happens when the secondary index is a covering index:**
+
+```sql
+SELECT email FROM users WHERE email = 'alice@example.com';
+
+-- Step 1: Walk the SECONDARY index (email) → found the email
+-- Step 2: SKIP — 'email' is already in the index, no need to go to clustered index
+-- Total: 1 B+ Tree traversal — "Using index"
+```
+
+### Why Primary Key Size Matters
+
+Since **every secondary index stores a copy of the primary key** in its leaf nodes, a large primary key bloats all secondary indexes.
+
+| Primary Key Type | PK Size | Impact on Each Secondary Index Entry |
+|---|---|---|
+| `INT` | 4 bytes | Small — minimal overhead |
+| `BIGINT` | 8 bytes | Fine for most use cases |
+| `UUID` (`CHAR(36)`) | 36 bytes | ⚠️ 4.5x larger than `BIGINT` — every secondary index wastes space |
+| `VARCHAR(255)` | Up to 255 bytes | ❌ Terrible — massively bloats all secondary indexes |
+
+**Recommendation:** Keep primary keys **short** (prefer `INT` or `BIGINT` with auto-increment). If you must use UUIDs, store them as `BINARY(16)` (16 bytes) instead of `CHAR(36)` (36 bytes).
+
+### Clustered vs Secondary — Quick Reference
+
+| Aspect | Clustered Index | Secondary Index |
+|---|---|---|
+| **Number per table** | Exactly 1 | Unlimited |
+| **What leaf nodes store** | Full row data | Indexed columns + primary key |
+| **Columns returned directly** | All (it IS the row) | Only indexed columns (otherwise needs bookmark lookup) |
+| **Lookup cost** | 1 B+ Tree traversal | 1 (index) + 1 (clustered lookup) = 2 traversals |
+| **Range scan** | Very fast (data is physically contiguous) | Slower (each row may need a random clustered lookup) |
+| **Insert behavior** | Appends to end if auto-increment PK; random inserts cause page splits | Always positions by indexed value; random by nature |
+
+---
+
+## EXPLAIN — Reading Query Execution Plans
+
+`EXPLAIN` is the single most important tool for understanding how MySQL executes your queries and whether your indexes are being used. Always use `EXPLAIN` before and after adding indexes.
+
+### Basic Usage
+
+```sql
+EXPLAIN SELECT * FROM employees WHERE department = 'Engineering';
+```
+
+### Key Columns in EXPLAIN Output
+
+| Column | What It Tells You | What to Look For |
+|---|---|---|
+| **id** | Query step number (subqueries get separate IDs) | Higher IDs execute first |
+| **select_type** | Type of SELECT (`SIMPLE`, `PRIMARY`, `SUBQUERY`, `DERIVED`) | `SIMPLE` = no subqueries |
+| **table** | Which table this row is about | Self-explanatory |
+| **type** | **How MySQL accesses the table** — this is the most important column | See access types below |
+| **possible_keys** | Which indexes MySQL *could* use | If NULL, no relevant indexes exist |
+| **key** | Which index MySQL *actually chose* | If NULL, no index was used |
+| **key_len** | How many bytes of the index are used | For composite indexes, tells you how many columns are being used |
+| **ref** | What value is compared against the index | `const` (literal value), column name, or `func` |
+| **rows** | **Estimated** number of rows MySQL will examine | Lower is better |
+| **filtered** | Percentage of rows that pass the `WHERE` condition | 100% = all examined rows match |
+| **Extra** | Additional information | Critical details — see below |
+
+### Access Types (the `type` column) — Best to Worst
+
+| Type | Meaning | Performance | Example |
+|---|---|---|---|
+| `system` | Table has exactly 1 row | ⚡ Best | System tables |
+| `const` | At most 1 matching row (unique index + constant) | ⚡ Excellent | `WHERE id = 42` |
+| `eq_ref` | 1 matching row per join iteration (unique index) | ⚡ Excellent | `JOIN ON pk = fk` |
+| `ref` | Multiple matching rows via non-unique index | ✅ Good | `WHERE department = 'Eng'` |
+| `range` | Index range scan | ✅ Good | `WHERE salary > 80000` |
+| `index` | Full index scan (reads entire index, not table) | ⚠️ Okay | Covering index on `SELECT col` |
+| `ALL` | **Full table scan** — no index used | 🔴 Bad | `WHERE func(col) = val` |
+
+**Goal:** Get your important queries to `const`, `eq_ref`, `ref`, or `range`. If `EXPLAIN` shows `ALL` for a large table, that query needs an index.
+
+### Important `Extra` Values
+
+| Extra Value | Meaning | Action |
+|---|---|---|
+| `Using index` | ✅ Covering index — data read from index only | Great — no table access needed |
+| `Using where` | Filtering happens after reading (normal) | Fine — check if an index could push filtering earlier |
+| `Using index condition` | Index Condition Pushdown (ICP) — filtering pushed to storage engine level | Good optimization |
+| `Using temporary` | ⚠️ MySQL created a temporary table (for GROUP BY, DISTINCT, ORDER BY) | Consider adding an index to avoid this |
+| `Using filesort` | ⚠️ MySQL sorted results in memory/on disk instead of using an index | Add an index matching the ORDER BY |
+| `Using join buffer` | ⚠️ No index for the join — MySQL buffers rows | Add an index on the join column |
+| `Select tables optimized away` | ✅ Query answered from index metadata alone (e.g., `MIN`/`MAX`) | Best possible case |
+
+### Practical EXPLAIN Examples
+
+**Example 1: No index — full table scan**
+
+```sql
+EXPLAIN SELECT * FROM orders WHERE customer_email = 'alice@example.com';
+```
+
+```
++----+------+------+------+------+------+---------+------+--------+-------------+
+| id | type | table  | possible_keys | key  | rows   | Extra       |
++----+------+------+------+------+------+---------+------+--------+-------------+
+|  1 | ALL  | orders | NULL          | NULL | 500000 | Using where |
++----+------+------+------+------+------+---------+------+--------+-------------+
+```
+
+🔴 `type = ALL`, `key = NULL`, `rows = 500000` — scanning the entire table!
+
+**Fix:** `CREATE INDEX idx_email ON orders (customer_email);`
+
+**Example 2: After adding the index**
+
+```sql
+EXPLAIN SELECT * FROM orders WHERE customer_email = 'alice@example.com';
+```
+
+```
++----+------+--------+---------------+-----------+------+-------+
+| id | type | table  | possible_keys | key       | rows | Extra |
++----+------+--------+---------------+-----------+------+-------+
+|  1 | ref  | orders | idx_email     | idx_email |    3 |       |
++----+------+--------+---------------+-----------+------+-------+
+```
+
+✅ `type = ref`, `key = idx_email`, `rows = 3` — only examines 3 rows!
+
+**Example 3: Covering index**
+
+```sql
+CREATE INDEX idx_dept_salary ON employees (department, salary);
+
+EXPLAIN SELECT department, salary FROM employees WHERE department = 'Eng';
+```
+
+```
++----+------+-----------+----------------+----------------+------+-------------+
+| id | type | table     | possible_keys  | key            | rows | Extra       |
++----+------+-----------+----------------+----------------+------+-------------+
+|  1 | ref  | employees | idx_dept_salary| idx_dept_salary|  150 | Using index |
++----+------+-----------+----------------+----------------+------+-------------+
+```
+
+✅ `Using index` = covering index, no table data access.
+
+**Example 4: Filesort detected**
+
+```sql
+EXPLAIN SELECT * FROM posts WHERE user_id = 5 ORDER BY created_at DESC LIMIT 20;
+```
+
+Without `INDEX(user_id, created_at)`:
+
+```
+| type | key        | Extra                       |
+| ref  | idx_userid | Using where; Using filesort  |
+```
+
+⚠️ `Using filesort` — MySQL found the rows via the index but had to sort them in memory.
+
+**Fix:** `CREATE INDEX idx_user_date ON posts (user_id, created_at);`
+
+After the fix:
+
+```
+| type | key           | Extra                |
+| ref  | idx_user_date | Using index condition |
+```
+
+✅ No more filesort — the index provides data already sorted by `created_at` within each `user_id`.
+
+### EXPLAIN ANALYZE (MySQL 8.0.18+)
+
+`EXPLAIN ANALYZE` actually **runs** the query and shows real execution times:
+
+```sql
+EXPLAIN ANALYZE SELECT * FROM orders WHERE customer_id = 42;
+```
+
+```
+-> Index lookup on orders using idx_customer_id (customer_id=42)
+   (cost=3.55 rows=8) (actual time=0.045..0.062 rows=8 loops=1)
+```
+
+This tells you the **actual** number of rows and execution time, not just estimates. Use it to validate that your index changes actually improve performance.
+
+---
+
+## Common Index Mistakes
+
+| Mistake | Why It's Bad | Fix |
+|---|---|---|
+| Indexing every column | Wastes storage, kills write performance | Index only queried columns |
+| `WHERE YEAR(created_at) = 2025` | Function on column → index unusable | `WHERE created_at >= '2025-01-01' AND created_at < '2026-01-01'` |
+| `WHERE age + 10 > 30` | Arithmetic on column → index unusable | `WHERE age > 20` |
+| `WHERE LOWER(email) = 'alice@...'` | Function on column → index unusable | Use a generated column or collation: `WHERE email = 'alice@...'` (if collation is ci) |
+| `VARCHAR(255)` primary key | Bloats every secondary index by 255 bytes per entry | Use `INT` or `BIGINT` auto-increment |
+| **Too many single-column indexes** | MySQL uses at most 1 index per table per query (in most cases) | Use composite indexes that match your query patterns |
+| **Wrong column order in composite index** | `INDEX(salary, dept)` can't help `WHERE dept = 'Eng'` | Put equality columns first, range columns last |
+| **Not checking EXPLAIN** | You never know if your index is actually being used | Always `EXPLAIN` your important queries |
+| **Redundant indexes** | `INDEX(a)` is redundant if `INDEX(a, b)` already exists | Drop the single-column index |
+
+---
+
+## Quick Decision Guide for Indexes
+
+| Scenario | Recommended Index |
+|---|---|
+| Lookup by primary key | Already indexed (clustered index) |
+| Lookup by unique column (email, username) | `UNIQUE INDEX` on that column |
+| Filtering + sorting on same query | Composite index `(filter_col, sort_col)` |
+| JOIN between two tables | Index on the foreign key column |
+| Full-text search in articles | `FULLTEXT INDEX` on text columns |
+| "Find nearest" geo queries | `SPATIAL INDEX` on geometry column |
+| Frequent `GROUP BY department` | Index on `department` |
+| `COUNT(*)` / `SUM()` with filter | Covering index including filter + aggregated column |
+| High-write, low-read table (logs) | Minimal indexes — primary key only if possible |
+
+> **The golden rule:** Indexes exist to help **reads**. Every index you add is a **tax on writes**. Design your indexes based on your **actual query patterns**, not theoretical ones. Use `EXPLAIN` to verify that MySQL is actually using the index, and monitor for unused indexes that are just wasting resources.
