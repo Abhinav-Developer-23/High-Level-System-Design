@@ -8,14 +8,14 @@ MySQL provides a wide range of data types grouped into three main categories: **
 
 ### **Integer Types**
 
-| Type | Storage | Range (Signed) | Range (Unsigned) |
-| --- | --- | --- | --- |
-| `TINYINT` | 1 byte | -128 to 127 | 0 to 255 |
-| `SMALLINT` | 2 bytes | -32,768 to 32,767 | 0 to 65,535 |
-| `MEDIUMINT` | 3 bytes | -8,388,608 to 8,388,607 | 0 to 16,777,215 |
-| `INT` (or `INTEGER`) | 4 bytes | -2,147,483,648 to 2,147,483,647 | 0 to 4,294,967,295 |
-| `BIGINT` | 8 bytes | -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 | 0 to 18,446,744,073,709,551,615 |
-| `BOOL` / `BOOLEAN` | 1 byte | Synonym for `TINYINT(1)` | 0 = false, 1 = true |
+| Type                 | Storage | Range (Signed)                                          | Range (Unsigned)                |
+| -------------------- | ------- | ------------------------------------------------------- | ------------------------------- |
+| `TINYINT`            | 1 byte  | -128 to 127                                             | 0 to 255                        |
+| `SMALLINT`           | 2 bytes | -32,768 to 32,767                                       | 0 to 65,535                     |
+| `MEDIUMINT`          | 3 bytes | -8,388,608 to 8,388,607                                 | 0 to 16,777,215                 |
+| `INT` (or `INTEGER`) | 4 bytes | -2,147,483,648 to 2,147,483,647                         | 0 to 4,294,967,295              |
+| `BIGINT`             | 8 bytes | -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 | 0 to 18,446,744,073,709,551,615 |
+| `BOOL` / `BOOLEAN`   | 1 byte  | Synonym for `TINYINT(1)`                                | 0 = false, 1 = true             |
 
 **When to use:** Use `TINYINT` for small-range values like status flags, boolean-style columns, or age. Use `SMALLINT` for moderately small numbers like year or a limited counter. `INT` is the most commonly used integer type and works well for primary keys, counters, and general-purpose whole numbers. Reach for `BIGINT` only when you expect values to exceed the ~2 billion limit of `INT`, such as large-scale ID generators or financial transaction counts. Always pick the smallest type that safely fits your data to save storage.
 
