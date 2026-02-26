@@ -2658,3 +2658,158 @@ There are rare cases where separate tables are preferred over partitioning:
 | **You need foreign keys** | Partitioned tables don't support FK. If FK constraints are critical, separate tables with FK may be better. |
 
 > **Bottom line:** Partitioning gives you the performance benefits of splitting data across smaller chunks **without** the application complexity of managing multiple tables. Your app queries one table, MySQL does the routing. Always prefer partitioning over manual table splitting unless you have a specific reason not to.
+
+---
+
+# Durability in Databases
+
+Durability is the **D** in ACID. It guarantees that once a transaction is **committed**, its changes are **permanent** — they survive crashes, power failures, and restarts. The moment the database says "COMMIT successful", that data will still be there after a reboot, a crash, or a power cut.
+
+---
+
+## Why Durability Is Hard
+
+The problem is simple: the fastest storage is RAM, but RAM is **volatile** — pull the power and everything in it vanishes instantly. Disk is **persistent** but slow. A naive database that only wrote to RAM would lose all committed data on every crash. A naive database that wrote to disk on every single operation would be unacceptably slow.
+
+Durability is the engineering challenge of making committed data survive on disk **without** making the database unbearably slow.
+
+---
+
+## Mechanism 1: Write-Ahead Logging (WAL) — The Core
+
+The most important durability mechanism in every serious database (MySQL InnoDB, PostgreSQL, Oracle, SQL Server) is **Write-Ahead Logging (WAL)**.
+
+**The idea:** Before you modify the actual data page on disk, you first write a description of the change to a **sequential log file** (the redo log). Only after that log entry is safely on disk do you acknowledge the commit to the client.
+
+```
+Client → COMMIT
+            ↓
+  1. Append redo log entry (sequential write — fast)
+            ↓
+  2. fsync() the redo log (force to physical disk)
+            ↓
+  3. ✅ Return "COMMIT OK" to client
+            ↓
+  4. (Later, in background) Write actual data pages to disk
+```
+
+**Why this works for crash recovery:** If the server crashes after step 3 but before step 4, the redo log is already on disk. On restart, InnoDB replays the redo log entries and applies the committed changes to the data files. The client's data is never lost.
+
+**Why sequential writes matter:** The redo log is always *appended* to — sequential writes are dramatically faster than random writes on both HDDs and SSDs. This is why WAL doesn't destroy performance: instead of an expensive random write to a data page, you do a cheap sequential append to the log.
+
+In MySQL InnoDB, the redo log files are `ib_logfile0` and `ib_logfile1` (configurable via `innodb_log_file_size`).
+
+---
+
+## Mechanism 2: `fsync()` — Actually Getting to Disk
+
+When your code calls `write()`, the OS puts the data in an in-memory page cache. It may sit there for seconds before reaching physical disk. If the machine loses power during that window, the "written" data is gone.
+
+`fsync()` is the system call that says: **flush everything to the physical storage device right now**. InnoDB calls `fsync()` on the redo log at every commit.
+
+### The `innodb_flush_log_at_trx_commit` Setting
+
+This is the single most important durability knob in MySQL:
+
+| Value | Behavior | Max Data Loss | Use Case |
+|-------|----------|---------------|----------|
+| `1` (default) | `fsync()` on every commit | **Zero** | Production — full ACID |
+| `2` | Write to OS cache on commit, `fsync()` every second | ~1 second (OS crash only) | Acceptable if OS crash is rare |
+| `0` | Write + `fsync()` every second | ~1 second (even MySQL crash) | Dev/staging only |
+
+**Rule:** Always use `1` in production for any transactional or financial system.
+
+Similarly, `sync_binlog = 1` ensures the binary log (used for replication and point-in-time recovery) is also fsynced on every commit. The combination of `innodb_flush_log_at_trx_commit = 1` and `sync_binlog = 1` is called the **"double-1" configuration** — this is the gold standard for full MySQL durability.
+
+---
+
+## Mechanism 3: Checkpointing
+
+The redo log is a **circular buffer** — it has a fixed size. As changes accumulate, older entries must be freed up. But you can only delete a redo log entry once the corresponding data page has been flushed to the actual data file on disk. That flush is called a **checkpoint**.
+
+InnoDB continuously runs a **page cleaner thread** in the background that writes dirty (modified-but-not-yet-flushed) pages from the in-memory buffer pool to the data files. Once a page is written, its redo log entries can be freed.
+
+**What happens if checkpointing falls behind?** If the redo log fills up completely, InnoDB must stall all write operations until space is freed. This is called a "log-full stall" and causes severe latency spikes. To avoid it, `innodb_log_file_size` should be large enough to comfortably absorb your peak write rate.
+
+On crash recovery, InnoDB only needs to replay redo log entries *after* the last checkpoint — everything before is already in the data files.
+
+---
+
+## Mechanism 4: Double Write Buffer — No Torn Pages
+
+InnoDB writes data pages in **16 KB chunks**. But a crash could happen midway through writing a 16 KB page — leaving half the old data and half the new data on disk. This is called a **torn page** and it results in corruption that the redo log alone cannot fix (because the redo log assumes the original page is intact to apply changes on top of).
+
+InnoDB solves this with the **double write buffer**:
+
+```
+Step 1: Write dirty pages → doublewrite area (sequential, safe)
+Step 2: Confirm doublewrite area is on disk
+Step 3: Write dirty pages → actual data file locations
+```
+
+On crash recovery, if InnoDB finds a torn page in a data file, it copies the intact version from the doublewrite area and then applies the redo log on top of it. The page is repaired.
+
+---
+
+## Mechanism 5: Replication — Cross-Machine Durability
+
+All the above mechanisms protect a single machine. But what if the disk physically fails? Or the entire server rack burns?
+
+**Replication** solves this by keeping copies of the data on separate machines:
+
+| Type | How It Works | Durability |
+|------|-------------|------------|
+| **Asynchronous** | Primary commits, replica catches up later | Possible data loss if primary dies before replica syncs |
+| **Semi-synchronous** | Primary waits for at least one replica to *acknowledge receipt* | Very small window of data loss |
+| **Synchronous** | Commit is only acknowledged after replica has written to its own redo log | Zero data loss even on total primary hardware failure |
+
+MySQL Group Replication and Galera Cluster offer synchronous replication. The trade-off is slightly higher commit latency, since the primary must wait for a network round trip to the replica.
+
+---
+
+## How It All Fits Together
+
+```
+Client: COMMIT
+    │
+    ▼
+[1] Append to redo log (RAM buffer)
+    │
+    ▼
+[2] fsync() redo log → physical disk  ◄── Durability on single machine
+    │
+    ▼
+[3] (If sync replication) Wait for replica ACK  ◄── Durability across machines
+    │
+    ▼
+[4] Return "OK" to client  ←── This is the durability guarantee moment
+    │
+    ▼
+[5] Background: checkpoint dirty pages to .ibd data files
+    (Using double write buffer to prevent torn pages)
+```
+
+The moment the client receives `OK`, the transaction is durable at every configured level.
+
+---
+
+## Battery-Backed Write Cache (BBWC)
+
+There is one subtle trap: many disk controllers have an on-board write cache (RAM on the controller). A `fsync()` call may return "success" when the data is actually in the controller cache, not yet on the magnetic platter or NAND cells. A power failure at that moment still loses the data.
+
+A **battery-backed write cache (BBWC)** keeps this controller cache alive during power loss, flushing it when power returns. With BBWC, `fsync()` is both fast (hits controller RAM) and durable (battery guarantees it survives power loss). This is why enterprise servers have RAID controllers with battery units — it dramatically improves both durability and write throughput.
+
+---
+
+## Summary
+
+| Mechanism | Protects Against |
+|-----------|-----------------|
+| **Write-Ahead Logging (WAL / redo log)** | Crash before data pages are written to disk |
+| **`fsync()` on commit** | OS page cache buffering and power failure |
+| **Checkpointing** | Redo log filling up; speeds up crash recovery |
+| **Double Write Buffer** | Torn pages from mid-write crashes |
+| **Synchronous Replication** | Complete hardware failure on the primary |
+| **Battery-Backed Write Cache** | Controller cache loss on power failure |
+
+> **The guarantee:** Every `COMMIT` acknowledgment is a promise. The mechanisms above exist solely to ensure that promise is never broken.
