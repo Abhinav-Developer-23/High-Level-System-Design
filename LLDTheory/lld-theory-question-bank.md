@@ -885,3 +885,52 @@ This is one of the most powerful aspects of enums: **the compiler acts as a safe
 142. What are the practical benefits of using the Dependency relationship (passing objects as parameters) over storing them as fields?
 
 <details><summary>Answer</summary>(1) **Lower coupling** — the class has no structural dependency on the other; removing the method removes the relationship entirely. (2) **Testability** — every caller decides which implementation to pass; tests can inject mocks directly at the call site without any constructor wiring. (3) **Statelessness** — classes with no fields are inherently thread-safe; multiple threads can call the same method simultaneously without shared mutable state. (4) **Explicit dependencies** — method signatures document all required inputs; nothing is hidden in fields. (5) **Flexibility** — the same class can work with different implementations on different calls: `bookingService.bookTicket(..., new StripeProcessor(), ...)` or `bookingService.bookTicket(..., new PayPalProcessor(), ...)`. The trade-off: passing many parameters is unwieldy (see `TicketBookingService.bookTicket()` with 8 parameters) — this is a signal to consider constructor injection or a request object pattern.</details>
+
+143. Name all the core OOP concepts and give a one-line description of each.
+
+<details><summary>Answer</summary>
+
+**Four Pillars:**
+| Concept | One-line Description |
+|---|---|
+| **Encapsulation** | Bundle data + behavior in a class; hide internal state; expose only controlled public methods |
+| **Abstraction** | Hide implementation complexity; show only the essential high-level interface to the caller |
+| **Inheritance** | A subclass inherits fields and methods from a parent (IS-A), enabling hierarchy and code reuse |
+| **Polymorphism** | Same method name, different behavior — overloading at compile time, overriding at runtime |
+
+**Building Blocks:**
+| Concept | One-line Description |
+|---|---|
+| **Class** | Blueprint/template defining the structure and behavior of objects |
+| **Object** | A runtime instance of a class with its own state |
+| **Interface** | A contract declaring what methods must exist, with no implementation |
+| **Abstract Class** | Partial blueprint — can mix abstract (unimplemented) and concrete (shared) methods |
+| **Enum** | A type-safe named constant set; can carry fields and methods |
+
+**OOP Relationships:**
+| Concept | One-line Description |
+|---|---|
+| **Association** | A class holds a reference to another as a field; independent lifecycles |
+| **Aggregation** | Weak HAS-A: part is passed in from outside, can outlive the whole (◇) |
+| **Composition** | Strong HAS-A: part is created inside and dies with the whole (◆) |
+| **Dependency** | Temporary USES-A: one class uses another as a method parameter/local var — no field stored |
+| **Generalization** | IS-A: subclass `extends` parent, inheriting state and behavior |
+| **Realization** | CAN-DO: class `implements` an interface contract, providing its own implementation |
+
+**Design Principles (SOLID):**
+| Concept | One-line Description |
+|---|---|
+| **SRP** | One class, one reason to change |
+| **OCP** | Open for extension, closed for modification |
+| **LSP** | Subtypes must be fully substitutable for their base types |
+| **ISP** | Clients should not depend on methods they don't use — keep interfaces focused |
+| **DIP** | Both high-level and low-level modules should depend on abstractions, not each other |
+
+**Key Mechanisms:**
+| Concept | One-line Description |
+|---|---|
+| **Cohesion** | How closely related a class's responsibilities are (aim for high/functional cohesion) |
+| **Coupling** | How much classes depend on each other (aim for low/data coupling) |
+| **Dependency Injection** | Receive dependencies from outside rather than creating them internally |
+| **Method Overloading** | Same method name, different parameter lists — resolved at compile time |
+| **Method Overriding** | Subclass replaces a parent method with its own implementation — resolved at runtime |</details>
