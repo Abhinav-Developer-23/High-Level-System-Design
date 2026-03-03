@@ -4096,3 +4096,1580 @@ COMMIT;  -- make everything permanent
 ```
 
 > **Interview tip:** The most-asked transaction question is: "Explain ACID properties with an example." Use the bank transfer example — ₹500 from A to B. Show how each property prevents a specific problem: Atomicity prevents partial transfers, Consistency preserves total balance, Isolation prevents dirty reads, Durability preserves data after crashes.
+
+---
+---
+
+# COMMIT, ROLLBACK & SAVEPOINT — In Detail
+
+These three TCL (Transaction Control Language) commands control the lifecycle of a transaction.
+
+---
+
+## 1. COMMIT
+
+**Makes all changes permanent.** Once committed, the changes cannot be undone by `ROLLBACK`. The data is written to disk and survives crashes.
+
+```sql
+COMMIT;
+```
+
+### Example — Bank Transfer
+
+```sql
+BEGIN TRANSACTION;
+
+UPDATE accounts SET balance = balance - 500 WHERE name = 'Alice';  -- Debit
+UPDATE accounts SET balance = balance + 500 WHERE name = 'Bob';    -- Credit
+
+COMMIT;   -- Both changes are now PERMANENT
+```
+
+**Account balances at each step:**
+
+| Step | Operation | Alice | Bob | Status |
+|:---:|-----------|:---:|:---:|:---:|
+| 0 | Before transaction | 1000 | 2000 | Saved on disk |
+| 1 | Debit Alice | **500** | 2000 | In memory only |
+| 2 | Credit Bob | 500 | **2500** | In memory only |
+| 3 | **COMMIT** | 500 | 2500 | ✅ **Saved to disk permanently** |
+
+```
+  Before COMMIT:
+  ┌──────────────────┐     ┌──────────────────┐
+  │   Memory (RAM)   │     │   Disk           │
+  │ Alice = 500      │     │ Alice = 1000     │ ← still old values!
+  │ Bob = 2500       │     │ Bob = 2000       │
+  └──────────────────┘     └──────────────────┘
+
+  After COMMIT:
+  ┌──────────────────┐     ┌──────────────────┐
+  │   Memory (RAM)   │     │   Disk           │
+  │ Alice = 500      │ ──► │ Alice = 500      │ ← updated!
+  │ Bob = 2500       │     │ Bob = 2500       │ ← updated!
+  └──────────────────┘     └──────────────────┘
+```
+
+> **After COMMIT:** Changes are permanent. Even if the system crashes right after, the data is safe.
+
+---
+
+## 2. ROLLBACK
+
+**Undoes all changes** made since the `BEGIN TRANSACTION` (or since the last `COMMIT`). The database reverts to its previous consistent state.
+
+```sql
+ROLLBACK;
+```
+
+### Example — Failed Transfer
+
+```sql
+BEGIN TRANSACTION;
+
+UPDATE accounts SET balance = balance - 500 WHERE name = 'Alice';  -- Debit ✅
+-- Oops! Bob's account is frozen, credit fails
+UPDATE accounts SET balance = balance + 500 WHERE name = 'Bob';    -- ERROR! ❌
+
+ROLLBACK;   -- Undo EVERYTHING — Alice gets her ₹500 back
+```
+
+**Account balances at each step:**
+
+| Step | Operation | Alice | Bob | Status |
+|:---:|-----------|:---:|:---:|:---:|
+| 0 | Before transaction | 1000 | 2000 | Saved on disk |
+| 1 | Debit Alice | **500** | 2000 | In memory |
+| 2 | Credit Bob | 500 | ❌ ERROR | Bob's account frozen |
+| 3 | **ROLLBACK** | **1000** | **2000** | ✅ **Reverted to original** |
+
+```
+  After ERROR:                       After ROLLBACK:
+  ┌──────────────────┐              ┌──────────────────┐
+  │   Memory (RAM)   │              │   Memory (RAM)   │
+  │ Alice = 500  ⚠️  │    ──────►  │ Alice = 1000 ✅  │
+  │ Bob = ERROR      │   ROLLBACK  │ Bob = 2000   ✅  │
+  └──────────────────┘              └──────────────────┘
+  Money seems lost!                  Money restored!
+```
+
+> **Without ROLLBACK:** Alice loses ₹500 but Bob never receives it — money vanishes!
+> **With ROLLBACK:** Alice's debit is undone — everything goes back to the original state.
+
+---
+
+## 3. SAVEPOINT
+
+Creates a **checkpoint** within a transaction. You can `ROLLBACK TO` a savepoint to undo only the changes made **after** that savepoint, while keeping earlier changes intact.
+
+```sql
+SAVEPOINT savepoint_name;              -- Create checkpoint
+ROLLBACK TO savepoint_name;            -- Undo to checkpoint
+RELEASE SAVEPOINT savepoint_name;      -- Delete checkpoint (optional)
+```
+
+### Example — Partial Rollback
+
+```sql
+BEGIN TRANSACTION;
+
+-- Step 1: Transfer from Alice to Bob
+UPDATE accounts SET balance = balance - 500 WHERE name = 'Alice';
+UPDATE accounts SET balance = balance + 500 WHERE name = 'Bob';
+
+SAVEPOINT transfer_done;   -- ← Checkpoint: Alice→Bob is safe
+
+-- Step 2: Transfer from Bob to Carol (this fails)
+UPDATE accounts SET balance = balance - 200 WHERE name = 'Bob';
+UPDATE accounts SET balance = balance + 200 WHERE name = 'Carol';   -- ERROR!
+
+ROLLBACK TO transfer_done;  -- ← Undo only Step 2, keep Step 1
+
+COMMIT;   -- Alice→Bob transfer is committed
+```
+
+**Account balances at each step:**
+
+| Step | Operation | Alice | Bob | Carol | Savepoint? |
+|:---:|-----------|:---:|:---:|:---:|:---:|
+| 0 | Start | 1000 | 2000 | 500 | |
+| 1 | Alice → Bob (debit) | **500** | 2000 | 500 | |
+| 2 | Alice → Bob (credit) | 500 | **2500** | 500 | |
+| 3 | **SAVEPOINT** | 500 | 2500 | 500 | ✅ `transfer_done` |
+| 4 | Bob → Carol (debit) | 500 | **2300** | 500 | |
+| 5 | Bob → Carol (credit) | 500 | 2300 | ❌ ERROR | |
+| 6 | **ROLLBACK TO** | 500 | **2500** | **500** | Reverted to savepoint |
+| 7 | **COMMIT** | 500 | 2500 | 500 | ✅ Permanent |
+
+```
+  Timeline:
+  ─────────
+  BEGIN ──── Step 1 ──── Step 2 ──── SAVEPOINT ──── Step 4 ──── Step 5 (ERROR!)
+                                         │                         │
+                                         │     ROLLBACK TO ◄───────┘
+                                         │     (undo steps 4-5 only)
+                                         │
+                                      COMMIT ✅
+                                      (steps 1-2 are permanent)
+```
+
+### Multiple Savepoints
+
+You can create multiple savepoints within a single transaction:
+
+```sql
+BEGIN TRANSACTION;
+
+INSERT INTO orders VALUES (1, 'Laptop', 50000);
+SAVEPOINT sp1;
+
+INSERT INTO orders VALUES (2, 'Mouse', 500);
+SAVEPOINT sp2;
+
+INSERT INTO orders VALUES (3, 'Keyboard', 1500);
+SAVEPOINT sp3;
+
+-- Oops, keyboard order was wrong
+ROLLBACK TO sp2;   -- Undoes order #3 only
+
+-- Mouse order was also wrong
+ROLLBACK TO sp1;   -- Undoes order #2 as well
+
+COMMIT;   -- Only order #1 (Laptop) is saved!
+```
+
+```
+  sp1          sp2          sp3
+   │            │            │
+   ▼            ▼            ▼
+  Laptop ──── Mouse ──── Keyboard
+   ✅          ❌           ❌
+              ▲             ▲
+        ROLLBACK TO sp1  ROLLBACK TO sp2
+        (undoes #2 & #3) (undoes #3 only)
+```
+
+---
+
+## TCL Commands — Quick Reference
+
+| Command | What It Does | Can Undo? |
+|---------|-------------|:---:|
+| `COMMIT` | Make all changes permanent | ❌ Cannot undo after commit |
+| `ROLLBACK` | Undo ALL changes since BEGIN | ✅ Restores original state |
+| `SAVEPOINT name` | Create a checkpoint | — |
+| `ROLLBACK TO name` | Undo changes back to checkpoint | ✅ Partial undo |
+| `RELEASE SAVEPOINT name` | Delete a savepoint | — |
+
+---
+---
+
+# How Each ACID Property Is Achieved — Deep Dive
+
+Each ACID property requires specific **mechanisms** in the DBMS to enforce it. Here's exactly how each one is implemented.
+
+---
+
+## 1. Atomicity — How It's Achieved
+
+### Mechanism: **Transaction Manager + Undo Log (Rollback Log)**
+
+The DBMS maintains an **undo log** (also called rollback log) that records the **old values** of every data item before it's modified. If the transaction fails, the undo log is used to restore everything.
+
+```
+  Transaction T: Transfer ₹500 from A to B
+
+  Undo Log:                              Database:
+  ┌────────────────────────────┐        ┌──────────┐
+  │ (T, A, old_value = 1000)  │   ←──  │ A = 500  │  (modified)
+  │ (T, B, old_value = 2000)  │   ←──  │ B = 2500 │  (modified)
+  └────────────────────────────┘        └──────────┘
+
+  If T fails:
+  → Read undo log in REVERSE
+  → Restore A = 1000, B = 2000
+  → Transaction "never happened"
+```
+
+| Scenario | Action |
+|----------|--------|
+| Transaction succeeds | COMMIT → discard undo log entries |
+| Transaction fails | ROLLBACK → apply undo log in reverse order |
+| System crash during transaction | Recovery → apply undo log to undo partial changes |
+
+### Shadow Copy Scheme (Simple Implementation)
+
+For small databases, **shadow copy** provides atomicity + durability in one scheme:
+
+```
+  Before Transaction:
+  ┌────────────────┐
+  │  db-pointer    │────────────► Original DB (on disk)
+  └────────────────┘              (shadow copy)
+
+  During Transaction:
+  ┌────────────────┐
+  │  db-pointer    │────────────► Original DB (untouched)
+  └────────────────┘
+                                  New DB Copy (all updates go here)
+
+  After COMMIT:
+  ┌────────────────┐
+  │  db-pointer    │────────────► New DB Copy (now current)
+  └────────────────┘
+                                  Old DB (deleted)
+
+  After FAILURE:
+  ┌────────────────┐
+  │  db-pointer    │────────────► Original DB (still intact!)
+  └────────────────┘
+                                  New DB Copy (deleted)
+```
+
+**How it works:**
+
+1. Before modifying anything, create a **complete copy** of the database
+2. Apply all changes to the **new copy only** — original (shadow) is untouched
+3. **On COMMIT:** Update `db-pointer` to point to the new copy → atomic switch
+4. **On FAILURE:** Delete the new copy → original is still intact
+
+> ⚠️ **Limitation:** Extremely inefficient for large databases (copies entire DB). Real systems use **Write-Ahead Logging (WAL)** instead.
+
+---
+
+## 2. Consistency — How It's Achieved
+
+### Mechanism: **Application Logic + DBMS Constraints**
+
+Consistency is a **shared responsibility** — partly the developer's job, partly the DBMS's job.
+
+| Enforced By | How |
+|------------|-----|
+| **Application logic** | Developer writes correct transaction logic (e.g., debit + credit = 0) |
+| **Integrity constraints** | PK, FK, UNIQUE, NOT NULL, CHECK constraints |
+| **Triggers** | Auto-validate data on INSERT/UPDATE |
+| **Domain constraints** | Data type checks (INT, VARCHAR, etc.) |
+
+### Example
+
+```sql
+-- DBMS enforces these constraints automatically:
+CREATE TABLE accounts (
+    id      INT PRIMARY KEY,                          -- PK constraint
+    name    VARCHAR(50) NOT NULL,                     -- NOT NULL constraint
+    balance DECIMAL(10,2) CHECK (balance >= 0)        -- CHECK constraint
+);
+
+-- This transaction maintains consistency:
+BEGIN TRANSACTION;
+UPDATE accounts SET balance = balance - 500 WHERE id = 1;  -- ₹500 deducted
+UPDATE accounts SET balance = balance + 500 WHERE id = 2;  -- ₹500 added
+-- Total balance unchanged → CONSISTENT ✅
+COMMIT;
+
+-- This would FAIL consistency:
+UPDATE accounts SET balance = -100 WHERE id = 1;
+-- ERROR: CHECK constraint violated (balance >= 0) ❌
+```
+
+```
+  Consistency Check Flow:
+  ───────────────────────
+  Transaction starts
+       │
+  Execute operations
+       │
+  Check constraints ──── Violation? ──► ROLLBACK ❌
+       │
+  No violation
+       │
+  COMMIT ✅
+```
+
+---
+
+## 3. Isolation — How It's Achieved
+
+### Mechanism: **Concurrency Control (Locks, MVCC, Timestamps)**
+
+Isolation is the most complex ACID property. Multiple mechanisms exist:
+
+### Method 1: Locking (Lock-Based Protocols)
+
+Transactions acquire **locks** on data items before accessing them:
+
+| Lock Type | Allows | Blocks |
+|:---:|---------|--------|
+| **Shared Lock (S)** | Multiple readers | Writers |
+| **Exclusive Lock (X)** | One writer | Everyone else |
+
+```
+  T1 wants to READ A → Acquires Shared Lock(A)
+  T2 wants to READ A → Acquires Shared Lock(A) ✅ (multiple readers OK)
+  T3 wants to WRITE A → Blocked! ❌ (must wait for T1 & T2 to release)
+
+  T1 wants to WRITE A → Acquires Exclusive Lock(A)
+  T2 wants to READ A → Blocked! ❌ (must wait for T1)
+  T3 wants to WRITE A → Blocked! ❌ (must wait for T1)
+```
+
+**Lock Compatibility Matrix:**
+
+| | Shared (S) | Exclusive (X) |
+|--|:---:|:---:|
+| **Shared (S)** | ✅ Compatible | ❌ Conflict |
+| **Exclusive (X)** | ❌ Conflict | ❌ Conflict |
+
+### Method 2: MVCC (Multi-Version Concurrency Control)
+
+Instead of locking, the database keeps **multiple versions** of each row. Readers see a **snapshot** — they never block writers, and writers never block readers.
+
+```
+  MVCC Versions of Row A:
+  ┌──────────────────────────────────────────────┐
+  │ Version 1: A = 1000  (committed by T0)       │ ← T2 reads this
+  │ Version 2: A = 500   (being written by T1)   │ ← not yet committed
+  └──────────────────────────────────────────────┘
+
+  T1 is modifying A → creates Version 2
+  T2 wants to read A → reads Version 1 (last committed)
+  T2 is NOT blocked! Both run concurrently ✅
+```
+
+> Used by: PostgreSQL, MySQL (InnoDB), Oracle
+
+### Method 3: Timestamp Ordering
+
+Each transaction gets a **timestamp** when it starts. Operations are allowed/rejected based on timestamp order.
+
+---
+
+## 4. Durability — How It's Achieved
+
+### Mechanism: **Write-Ahead Logging (WAL) + Redo Log**
+
+Before any change is applied to the database, a **log entry** is first written to a durable **log file on disk**. This ensures that even if the system crashes, the changes can be **replayed** from the log.
+
+```
+  WAL Rule: "Write the LOG before writing the DATA"
+
+  Step 1: Write to LOG (on disk) ──── "T1: A changed from 1000 to 500"
+  Step 2: Write to DATABASE         ──── A = 500
+
+  If crash after Step 1 but before Step 2:
+  → On restart, READ the log → REDO the change → A = 500 ✅
+
+  If crash before Step 1:
+  → No log entry → change was never applied → A remains 1000 ✅
+```
+
+```
+  Normal Operation:
+  ┌──────┐    ┌──────────┐    ┌───────────┐
+  │ App  │───▶│ WAL Log  │───▶│ Database  │
+  │      │    │ (disk)   │    │ (disk)    │
+  └──────┘    └──────────┘    └───────────┘
+               Write FIRST     Write SECOND
+
+  After Crash + Recovery:
+  ┌──────────┐    ┌───────────┐
+  │ WAL Log  │───▶│ Database  │
+  │ (disk)   │    │ (disk)    │
+  └──────────┘    └───────────┘
+  Read log         Replay (redo) committed changes
+                   Undo uncommitted changes
+```
+
+### Redo vs Undo During Recovery
+
+| Log Entry | Transaction Status | Recovery Action |
+|-----------|:---:|:---:|
+| Change logged, T committed | ✅ Committed | **REDO** — replay the change |
+| Change logged, T not committed | ❌ Not committed | **UNDO** — reverse the change |
+| Change not logged | — | Nothing to do (change never happened) |
+
+---
+
+## ACID — Who Is Responsible?
+
+| Property | Responsibility | DBMS Component |
+|:---:|:---:|:---:|
+| **Atomicity** | DBMS | Transaction Manager + Undo Log |
+| **Consistency** | Developer + DBMS | Application logic + Constraints |
+| **Isolation** | DBMS | Concurrency Control Manager |
+| **Durability** | DBMS | Recovery Manager + WAL |
+
+---
+---
+
+# Concurrency Problems (Without Proper Isolation)
+
+When multiple transactions run concurrently WITHOUT proper isolation, these problems can occur:
+
+---
+
+## 1. Dirty Read (Reading Uncommitted Data)
+
+Transaction T2 reads a value that T1 has modified but **NOT YET COMMITTED**. If T1 later rolls back, T2 has read data that never existed.
+
+```
+  T1                              T2
+  ──                              ──
+  Read(A) = 1000
+  A = A - 500
+  Write(A) = 500
+                                  Read(A) = 500   ← DIRTY READ! (T1 not committed)
+  ROLLBACK ❌
+  (A goes back to 1000)
+                                  T2 uses A = 500  ← WRONG! A is actually 1000
+```
+
+| Time | T1 | T2 | A (actual) | Problem |
+|:---:|---|---|:---:|:---:|
+| 1 | Write(A) = 500 | | 500 (uncommitted) | |
+| 2 | | Read(A) = 500 | 500 | **Dirty Read!** |
+| 3 | ROLLBACK | | 1000 | T2 has stale data |
+
+---
+
+## 2. Lost Update
+
+Two transactions read the same value and update it independently. The **second write overwrites the first**, losing T1's update.
+
+```
+  T1                              T2
+  ──                              ──
+  Read(A) = 1000
+                                  Read(A) = 1000
+  A = A - 500
+  Write(A) = 500
+                                  A = A - 200
+                                  Write(A) = 800  ← Overwrites T1's change!
+```
+
+| Time | T1 | T2 | A | Problem |
+|:---:|---|---|:---:|:---:|
+| 1 | Read(A) = 1000 | | 1000 | |
+| 2 | | Read(A) = 1000 | 1000 | |
+| 3 | Write(A) = 500 | | 500 | |
+| 4 | | Write(A) = 800 | 800 | **Lost Update!** T1's ₹500 deduction is lost |
+
+> Expected: A = 1000 - 500 - 200 = **300**. Got: A = **800**. ₹500 lost!
+
+---
+
+## 3. Non-Repeatable Read
+
+T1 reads the same data item **twice**, but gets **different values** because T2 modified it in between.
+
+```
+  T1                              T2
+  ──                              ──
+  Read(A) = 1000   ← First read
+                                  Write(A) = 500
+                                  COMMIT
+  Read(A) = 500    ← Second read — different value!
+```
+
+---
+
+## 4. Phantom Read
+
+T1 reads a set of rows that satisfy a condition. T2 **inserts/deletes** rows. T1 re-reads and gets a **different number of rows**.
+
+```
+  T1                                    T2
+  ──                                    ──
+  SELECT COUNT(*) WHERE dept='CSE'
+  → Returns 3 students
+
+                                        INSERT ('Dave', 'CSE')
+                                        COMMIT
+
+  SELECT COUNT(*) WHERE dept='CSE'
+  → Returns 4 students   ← PHANTOM! A new row "appeared"
+```
+
+---
+
+## SQL Isolation Levels
+
+SQL defines **4 isolation levels** that control which concurrency problems are allowed:
+
+| Isolation Level | Dirty Read | Lost Update | Non-Repeatable Read | Phantom Read |
+|---|:---:|:---:|:---:|:---:|
+| **READ UNCOMMITTED** | ⚠️ Possible | ⚠️ Possible | ⚠️ Possible | ⚠️ Possible |
+| **READ COMMITTED** | ✅ Prevented | ⚠️ Possible | ⚠️ Possible | ⚠️ Possible |
+| **REPEATABLE READ** | ✅ Prevented | ✅ Prevented | ✅ Prevented | ⚠️ Possible |
+| **SERIALIZABLE** | ✅ Prevented | ✅ Prevented | ✅ Prevented | ✅ Prevented |
+
+```
+  Isolation Level Spectrum:
+  ──────────────────────────────────────────────────────────────►
+  READ UNCOMMITTED    READ COMMITTED    REPEATABLE READ    SERIALIZABLE
+  (fastest,           (default in       (default in        (slowest,
+   least safe)         Oracle/SQL Srvr)  MySQL/PostgreSQL)   safest)
+
+  ◄── More performance                           More safety ──►
+  ◄── Less isolation                        More isolation ──►
+```
+
+### Setting Isolation Level
+
+```sql
+-- Set for current session
+SET TRANSACTION ISOLATION LEVEL READ COMMITTED;
+
+-- Set for current transaction only
+SET TRANSACTION ISOLATION LEVEL SERIALIZABLE;
+BEGIN TRANSACTION;
+-- ... operations ...
+COMMIT;
+```
+
+### Which Level to Use?
+
+| Use Case | Recommended Level |
+|----------|:---:|
+| Analytics / reporting (read-only, stale data OK) | READ COMMITTED |
+| Most web applications | READ COMMITTED or REPEATABLE READ |
+| Banking / financial transactions | SERIALIZABLE |
+| High-traffic reads, eventual consistency OK | READ UNCOMMITTED (rarely) |
+
+> **Interview tip:** "What isolation level does your database use by default?" — MySQL (InnoDB) defaults to **REPEATABLE READ**. PostgreSQL defaults to **READ COMMITTED**. Oracle defaults to **READ COMMITTED**. SQL Server defaults to **READ COMMITTED**.
+
+---
+---
+
+# Concurrency Control in DBMS
+
+Concurrency control is the mechanism that allows **multiple transactions to execute simultaneously** while still maintaining the ACID properties. Without it, concurrent transactions can corrupt data, produce wrong results, and leave the database in an inconsistent state.
+
+> **Why not just run transactions one at a time?** Serial execution is correct but extremely slow. In a banking system handling thousands of transactions per second, serial execution would mean each user has to wait for ALL previous users to finish. Concurrency control lets us run transactions in parallel **safely**.
+
+---
+
+## All 5 Concurrency Problems
+
+We covered Dirty Read, Lost Update, Non-Repeatable Read, and Phantom Read in the previous section. Here's the complete list with the **Incorrect Summary Problem** added:
+
+### 1. Dirty Read (Temporary Update Problem)
+
+T2 reads a value that T1 modified but **hasn't committed yet**. If T1 rolls back, T2 has used a value that never actually existed.
+
+```
+  T1                              T2
+  ──                              ──
+  Read(X) = 100
+  X = X - 50
+  Write(X) = 50
+                                  Read(X) = 50  ← Dirty Read!
+  ROLLBACK ❌
+  X reverts to 100
+                                  Uses X = 50   ← WRONG! X is actually 100
+```
+
+### 2. Lost Update Problem
+
+Two transactions read the same value and update it. The **last write overwrites** the first, losing T1's change.
+
+```
+  T1                              T2
+  ──                              ──
+  Read(X) = 100
+                                  Read(X) = 100
+  X = X - 30
+  Write(X) = 70                   X = X + 50
+                                  Write(X) = 150  ← T1's deduction (70) is LOST!
+```
+
+> Expected final X = 100 - 30 + 50 = **120**. Got X = **150**. T1's -30 vanished!
+
+### 3. Incorrect Summary Problem (NEW)
+
+One transaction is computing an **aggregate** (SUM, COUNT, AVG) while another transaction is **modifying** the same records. The aggregate mixes old and new values.
+
+```
+  Accounts:  A = 100,  B = 200,  C = 300    (Total should be 600)
+
+  T1 (updating)                    T2 (summing)
+  ──                               ──
+                                   Sum = 0
+                                   Read(A) = 100    Sum = 100
+  Read(A) = 100
+  A = A - 50
+  Write(A) = 50
+  Read(B) = 200
+  B = B + 50
+  Write(B) = 250
+                                   Read(B) = 250    Sum = 350  ← new value!
+                                   Read(C) = 300    Sum = 650  ← WRONG!
+```
+
+| Account | Before T1 | After T1 | Read By T2 |
+|:---:|:---:|:---:|:---:|
+| A | 100 | 50 | 100 (old ✅) |
+| B | 200 | 250 | **250 (new ❌)** |
+| C | 300 | 300 | 300 |
+| **Sum** | **600** | **600** | **650 ❌** |
+
+> T2 read A's old value (100) but B's new value (250). The sum (650) is **wrong** — the correct total is 600.
+
+### 4. Non-Repeatable Read Problem
+
+T1 reads the same variable **twice** and gets **different values** because T2 modified it between the two reads.
+
+```
+  T1                              T2
+  ──                              ──
+  Read(X) = 100  ← First read
+                                  X = X + 50
+                                  Write(X) = 150
+                                  COMMIT
+  Read(X) = 150  ← Second read — different!
+```
+
+### 5. Phantom Read Problem
+
+T1 queries rows matching a condition. T2 **inserts or deletes** rows. T1 re-queries and gets a **different set of rows**.
+
+```
+  T1                                    T2
+  ──                                    ──
+  SELECT * WHERE salary > 50000
+  → Returns {Alice, Bob}
+                                        INSERT (Carol, 60000)
+                                        COMMIT
+  SELECT * WHERE salary > 50000
+  → Returns {Alice, Bob, Carol}  ← Phantom row appeared!
+```
+
+---
+
+## Concurrency Control Protocols
+
+```
+                  ┌──────────────────────────┐
+                  │ Concurrency Control      │
+                  │ Protocols                │
+                  └────────────┬─────────────┘
+            ┌──────────────────┼──────────────────┐
+            ▼                  ▼                  ▼
+     ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
+     │  Lock-Based  │  │  Timestamp-  │  │    Optimistic    │
+     │  Protocols   │  │  Based       │  │    Concurrency   │
+     └──────┬───────┘  └──────────────┘  │    Control       │
+            │                            └──────────────────┘
+     ┌──────┴──────┐
+     │ Two-Phase   │
+     │ Locking(2PL)│
+     └─────────────┘
+```
+
+---
+
+## 1. Lock-Based Concurrency Control
+
+Transactions must acquire a **lock** on a data item before accessing it. The lock prevents other transactions from interfering.
+
+### Lock Types
+
+| Lock | Symbol | Allows | Usage |
+|:---:|:---:|---------|-------|
+| **Shared Lock** | S | Multiple readers simultaneously | `SELECT` (read) |
+| **Exclusive Lock** | X | Only one writer, blocks everyone | `UPDATE`, `DELETE` (write) |
+
+### Lock Compatibility Matrix
+
+| Request ↓ / Held → | No Lock | Shared (S) | Exclusive (X) |
+|:---:|:---:|:---:|:---:|
+| **Shared (S)** | ✅ Grant | ✅ Grant | ❌ Wait |
+| **Exclusive (X)** | ✅ Grant | ❌ Wait | ❌ Wait |
+
+```
+  Scenario 1: Multiple Readers (OK)
+  T1: S-Lock(A) ✅
+  T2: S-Lock(A) ✅    Both can read simultaneously
+  T3: S-Lock(A) ✅
+
+  Scenario 2: Reader + Writer (BLOCKED)
+  T1: S-Lock(A) ✅
+  T2: X-Lock(A) ❌ WAIT   T2 must wait for T1 to release
+
+  Scenario 3: Writer + Writer (BLOCKED)
+  T1: X-Lock(A) ✅
+  T2: X-Lock(A) ❌ WAIT   Only one writer at a time
+```
+
+### Lock Upgrading & Downgrading
+
+```
+  Upgrade:   S-Lock → X-Lock   (reader wants to write)
+  Downgrade: X-Lock → S-Lock   (writer done, allows readers)
+```
+
+---
+
+## 2. Two-Phase Locking (2PL)
+
+The most widely used protocol. A transaction has **two phases**:
+
+1. **Growing Phase** — can acquire locks, **cannot release** any
+2. **Shrinking Phase** — can release locks, **cannot acquire** any
+
+```
+  Number of Locks
+       │
+       │        ┌──── Lock Point (maximum locks)
+       │       ╱│╲
+       │      ╱ │ ╲
+       │     ╱  │  ╲
+       │    ╱   │   ╲
+       │   ╱    │    ╲
+       │  ╱     │     ╲
+       │ ╱      │      ╲
+       │╱       │       ╲
+  ─────┼────────┼────────╲──────► Time
+       │ Growing│Shrinking
+       │  Phase │  Phase
+       │(acquire│(release
+       │ locks) │ locks)
+```
+
+### Example
+
+```
+  T1 (Two-Phase Locking):
+  ────────────────────────
+  Growing Phase:
+    S-Lock(A)        ✅ acquire
+    S-Lock(B)        ✅ acquire
+    Upgrade to X-Lock(A)  ✅ acquire
+    ──── Lock Point ────
+  Shrinking Phase:
+    Unlock(B)        ✅ release
+    Unlock(A)        ✅ release
+
+  INVALID (violates 2PL):
+    S-Lock(A)        ✅ acquire
+    Unlock(A)        ✅ release
+    S-Lock(B)        ❌ CANNOT acquire after releasing!
+```
+
+### Guarantees
+
+> **2PL guarantees conflict serializability** — if all transactions follow 2PL, the resulting schedule is always equivalent to some serial schedule.
+
+### Variants of 2PL
+
+| Variant | Rule | Prevents |
+|---------|------|----------|
+| **Basic 2PL** | Growing then shrinking | Conflict serializability |
+| **Strict 2PL** | Hold ALL exclusive (X) locks until COMMIT/ABORT | Cascading rollbacks + serializability |
+| **Rigorous 2PL** | Hold ALL locks (S and X) until COMMIT/ABORT | Cascading rollbacks + strictest serializability |
+
+```
+  Basic 2PL:
+  ──────────
+  Acquire → → → Lock Point → → → Release → → → COMMIT
+                                    ↑
+                            (can release before commit)
+
+  Strict 2PL:
+  ────────────
+  Acquire → → → Lock Point → → → → → → → COMMIT → Release X-Locks
+                                            ↑
+                              (X-locks held until commit)
+
+  Rigorous 2PL:
+  ──────────────
+  Acquire → → → Lock Point → → → → → → → COMMIT → Release ALL Locks
+                                            ↑
+                              (ALL locks held until commit)
+```
+
+---
+
+## 3. Timestamp-Based Concurrency Control
+
+Each transaction gets a **unique timestamp** when it starts. The DBMS ensures transactions execute in **timestamp order** — older transactions have priority.
+
+### Each data item X stores:
+
+| Timestamp | Meaning |
+|-----------|---------|
+| `W-TS(X)` | Timestamp of the **last transaction that wrote** X |
+| `R-TS(X)` | Timestamp of the **last transaction that read** X |
+
+### Rules
+
+**Read Operation by Ti:**
+```
+  If TS(Ti) < W-TS(X):
+    → Ti is trying to read a value written by a LATER transaction
+    → REJECT (rollback Ti and restart with new timestamp)
+
+  If TS(Ti) >= W-TS(X):
+    → ALLOW the read
+    → Update R-TS(X) = max(R-TS(X), TS(Ti))
+```
+
+**Write Operation by Ti:**
+```
+  If TS(Ti) < R-TS(X):
+    → A LATER transaction already read the old value of X
+    → Ti's write would invalidate that read
+    → REJECT (rollback Ti)
+
+  If TS(Ti) < W-TS(X):
+    → A LATER transaction already wrote X
+    → Ti's write is outdated
+    → REJECT (rollback Ti)
+
+  Otherwise:
+    → ALLOW the write
+    → Update W-TS(X) = TS(Ti)
+```
+
+### Example
+
+```
+  T1 (TS=1)    T2 (TS=2)         W-TS(X)   R-TS(X)
+  ──────────   ──────────         ───────   ───────
+                                    0         0
+  Read(X)                           0         1       ✅ (TS(T1)=1 >= W-TS=0)
+                Read(X)             0         2       ✅ (TS(T2)=2 >= W-TS=0)
+  Write(X)                          ?         ?       ❌ REJECT!
+                                                     (TS(T1)=1 < R-TS=2)
+                                                     T2 already read old X
+```
+
+> **Advantage:** No locks → no deadlocks. **Disadvantage:** More rollbacks if conflicts are frequent.
+
+---
+
+## 4. Optimistic Concurrency Control (Validation-Based)
+
+Assumes conflicts are **rare**. Transactions execute freely without any locks or checks. Only at the **end** (validation phase), the system checks if any conflict occurred.
+
+### Three Phases
+
+```
+  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
+  │   Read       │───▶│   Validate   │───▶│   Write      │
+  │   Phase      │    │   Phase      │    │   Phase      │
+  │              │    │              │    │              │
+  │ Execute all  │    │ Check for    │    │ Apply changes│
+  │ operations   │    │ conflicts    │    │ to database  │
+  │ on local     │    │              │    │              │
+  │ copies       │    │ Conflict? ──►│    │              │
+  └──────────────┘    │ YES: Abort   │    └──────────────┘
+                      │ NO: Proceed  │
+                      └──────────────┘
+```
+
+| Phase | What Happens |
+|:---:|-------------|
+| **Read Phase** | Reads from DB, all writes go to a **local buffer** (not the actual DB) |
+| **Validation Phase** | Check if any other transaction modified the same data → conflict? |
+| **Write Phase** | If validation passes, apply local changes to the database |
+
+> **Best for:** Systems where reads dominate and write conflicts are rare (e.g., read-heavy web apps).
+
+---
+
+## Deadlocks
+
+A **deadlock** occurs when two or more transactions are **waiting for each other** to release locks, creating a circular wait. None can proceed.
+
+```
+  T1: X-Lock(A) ✅
+  T2: X-Lock(B) ✅
+  T1: X-Lock(B) ❌ WAIT (T2 holds B)
+  T2: X-Lock(A) ❌ WAIT (T1 holds A)
+
+  T1 waits for T2 → T2 waits for T1 → DEADLOCK! 💀
+
+  ┌─────────────────────────────┐
+  │         DEADLOCK            │
+  │                             │
+  │   T1 ──(waiting for B)──►  │
+  │   ▲                     T2 │
+  │   └──(waiting for A)────┘  │
+  └─────────────────────────────┘
+```
+
+### Handling Deadlocks
+
+| Method | How It Works |
+|--------|-------------|
+| **Detection** | Build a wait-for graph. If cycle → deadlock. Kill one transaction (the "victim"). |
+| **Prevention** | Use rules to prevent circular waits before they happen |
+| **Timeout** | If a transaction waits too long, assume deadlock → rollback |
+
+### Prevention Schemes
+
+| Scheme | Rule | Action |
+|:---:|------|--------|
+| **Wait-Die** | Older waits, younger dies | If Ti is older than Tj → Ti waits. If Ti is younger → Ti is rolled back (dies). |
+| **Wound-Wait** | Older wounds, younger waits | If Ti is older than Tj → Tj is rolled back (wounded). If Ti is younger → Ti waits. |
+
+```
+  Wait-Die (older waits, younger dies):
+  ──────────────────────────────────────
+  T1 (old) requests lock held by T2 (young)  → T1 WAITS (old can wait)
+  T2 (young) requests lock held by T1 (old)  → T2 DIES (young must rollback)
+
+  Wound-Wait (older wounds, younger waits):
+  ──────────────────────────────────────────
+  T1 (old) requests lock held by T2 (young)  → T2 is WOUNDED (rolled back)
+  T2 (young) requests lock held by T1 (old)  → T2 WAITS (young can wait)
+```
+
+---
+
+## Recoverable & Cascadeless Schedules
+
+### Recoverable Schedule
+
+A schedule where a transaction commits **only after all transactions it has read from** have committed.
+
+```
+  ❌ Non-Recoverable (DANGEROUS):
+  T1: Write(X) = 50
+  T2: Read(X) = 50         ← T2 reads T1's uncommitted value
+  T2: COMMIT                ← T2 commits BEFORE T1!
+  T1: ROLLBACK              ← T1 rolls back... but T2 already committed with T1's value!
+                              Can't undo T2 → IRRECOVERABLE!
+
+  ✅ Recoverable:
+  T1: Write(X) = 50
+  T2: Read(X) = 50
+  T1: COMMIT ✅              ← T1 commits FIRST
+  T2: COMMIT ✅              ← T2 commits AFTER T1 → safe to depend on T1's value
+```
+
+### Cascading Rollback
+
+If T1 rolls back, and T2 read T1's data, then T2 must also rollback. If T3 read T2's data, T3 also rolls back → **cascade**.
+
+```
+  Cascading Rollback:
+  T1: Write(X) = 50
+  T2: Read(X) = 50          T2 depends on T1
+  T3: Read from T2           T3 depends on T2
+  T1: ROLLBACK ❌
+     → T2 must ROLLBACK ❌   (read T1's data)
+        → T3 must ROLLBACK ❌ (read T2's data)
+           → ... cascade continues!
+```
+
+### Cascadeless Schedule
+
+A schedule where transactions **only read committed values**. This prevents cascading rollbacks entirely.
+
+```
+  ✅ Cascadeless:
+  T1: Write(X) = 50
+  T1: COMMIT ✅
+  T2: Read(X) = 50           ← reads only COMMITTED value → no cascade risk
+```
+
+### Schedule Hierarchy
+
+```
+  ┌─────────────────────────────────────────────┐
+  │              All Schedules                  │
+  │  ┌───────────────────────────────────────┐  │
+  │  │          Recoverable                  │  │
+  │  │  ┌─────────────────────────────────┐  │  │
+  │  │  │        Cascadeless              │  │  │
+  │  │  │  ┌───────────────────────────┐  │  │  │
+  │  │  │  │        Strict             │  │  │  │
+  │  │  │  │  ┌─────────────────────┐  │  │  │  │
+  │  │  │  │  │      Serial         │  │  │  │  │
+  │  │  │  │  └─────────────────────┘  │  │  │  │
+  │  │  │  └───────────────────────────┘  │  │  │
+  │  │  └─────────────────────────────────┘  │  │
+  │  └───────────────────────────────────────┘  │
+  └─────────────────────────────────────────────┘
+  Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules
+```
+
+---
+
+## Advantages & Disadvantages of Concurrency Control
+
+| ✅ Advantages | ❌ Disadvantages |
+|---|---|
+| Reduced waiting time — transactions run in parallel | Overhead from managing locks/timestamps |
+| Higher throughput — more transactions per second | Deadlocks possible (lock-based) |
+| Better resource utilization — CPU/disk shared | More rollbacks (timestamp-based) |
+| Improved response time — users don't wait | Complexity in distributed systems |
+| Data consistency maintained | Locking reduces parallelism |
+
+---
+
+## Complete Comparison — All Protocols
+
+| Aspect | Lock-Based (2PL) | Timestamp-Based | Optimistic (Validation) |
+|--------|:---:|:---:|:---:|
+| **Mechanism** | Locks on data items | Timestamps on transactions | Validate at end |
+| **Blocking?** | ✅ Yes (waits for locks) | ❌ No (rollback instead) | ❌ No (rollback if conflict) |
+| **Deadlock?** | ⚠️ Possible | ✅ Impossible | ✅ Impossible |
+| **Rollbacks** | Few (only on deadlock) | Many (timestamp violations) | Few (only on validation fail) |
+| **Best for** | Write-heavy workloads | Mixed workloads | Read-heavy workloads |
+| **Used by** | SQL Server, MySQL (InnoDB) | Some research systems | PostgreSQL (SSI), Git |
+
+> **Interview tip:** "How does your database handle concurrency?" — MySQL InnoDB uses **MVCC + 2PL**. PostgreSQL uses **MVCC + Serializable Snapshot Isolation (SSI)**. Oracle uses **MVCC**. SQL Server uses **Lock-based (2PL) with optional MVCC** (snapshot isolation). Understanding that real databases combine multiple techniques is key.
+
+---
+---
+
+# Types of Schedules in DBMS
+
+A **schedule** is the chronological order in which operations (read/write) of multiple concurrent transactions are executed. Choosing the right schedule ensures correctness and consistency.
+
+---
+
+## Complete Schedule Taxonomy
+
+```
+                          ┌──────────────┐
+                          │   Schedule   │
+                          └──────┬───────┘
+                       ┌─────────┴─────────┐
+                       ▼                   ▼
+               ┌──────────────┐    ┌───────────────┐
+               │    Serial    │    │  Non-Serial   │
+               │ (no overlap) │    │ (interleaved) │
+               └──────────────┘    └───────┬───────┘
+                                    ┌──────┴──────┐
+                                    ▼             ▼
+                            ┌──────────────┐ ┌──────────────────┐
+                            │ Serializable │ │ Non-Serializable │
+                            └──────┬───────┘ └────────┬─────────┘
+                           ┌───────┴───────┐          │
+                           ▼               ▼          ▼
+                    ┌────────────┐  ┌────────────┐ ┌────────────────┐
+                    │  Conflict  │  │    View    │ │  Recoverable/  │
+                    │Serializable│  │Serializable│ │Non-Recoverable │
+                    └────────────┘  └────────────┘ └────────────────┘
+```
+
+---
+
+## 1. Serial Schedule
+
+Transactions execute **one after another** with NO interleaving. Transaction T2 starts only after T1 finishes completely.
+
+```
+  Serial Schedule: T1 → T2
+
+  Time    T1           T2
+  ────    ──           ──
+   1      R(A)
+   2      W(A)
+   3      R(B)
+   4      W(B)
+   5      COMMIT
+   6                   R(A)
+   7                   W(A)
+   8                   R(B)
+   9                   W(B)
+  10                   COMMIT
+```
+
+| ✅ Advantages | ❌ Disadvantages |
+|---|---|
+| Always correct and consistent | Very slow — no parallelism |
+| No concurrency problems | Poor resource utilization |
+| Simple to understand | Not practical for real systems |
+
+> For `n` transactions, there are `n!` possible serial schedules. For T1, T2, T3 → 3! = 6 possible serial orders.
+
+---
+
+## 2. Non-Serial Schedule
+
+Operations from different transactions are **interleaved**. Faster, but must be checked for correctness.
+
+```
+  Non-Serial Schedule: T1 and T2 interleaved
+
+  Time    T1           T2
+  ────    ──           ──
+   1      R(A)
+   2                   R(A)
+   3      W(A)
+   4                   W(A)
+   5      R(B)
+   6      W(B)
+   7      COMMIT
+   8                   R(B)
+   9                   W(B)
+  10                   COMMIT
+```
+
+Non-serial schedules are divided into **serializable** and **non-serializable**.
+
+---
+
+## 3. Serializable Schedule
+
+A non-serial schedule that produces the **same result** as some serial schedule. This is the **gold standard** — concurrent but correct.
+
+### 3a. Conflict Serializable
+
+A schedule is **conflict serializable** if it can be converted into a serial schedule by **swapping non-conflicting operations**.
+
+**Two operations conflict when:**
+1. They belong to **different** transactions
+2. They operate on the **same** data item
+3. At least one is a **write**
+
+```
+  Conflict pairs:       Non-conflict pairs:
+  R(A) and W(A)  ✅     R(A) and R(A)  ❌ (both reads)
+  W(A) and R(A)  ✅     R(A) and W(B)  ❌ (different items)
+  W(A) and W(A)  ✅     R(A) and R(B)  ❌ (both reads + diff items)
+```
+
+**How to test — Precedence Graph:**
+
+1. Create a node for each transaction
+2. Add edge Ti → Tj if Ti has a conflicting operation **before** Tj
+3. **No cycle** → Conflict Serializable ✅
+4. **Cycle** → NOT Conflict Serializable ❌
+
+```
+  Example Schedule S:
+  T1: R(A)  T2: R(A)  T1: W(A)  T2: W(A)  T1: R(B)  T2: R(B)  T1: W(B)  T2: W(B)
+
+  Conflicts:
+  T1:R(A) before T2:W(A) → T1 → T2
+  T1:W(A) before T2:R(A)? No, T2:R(A) is at time 2, T1:W(A) is at time 3 → T2 → T1
+  
+  Precedence Graph:
+  T1 ──→ T2
+  T2 ──→ T1   ← CYCLE! ❌
+
+  → NOT Conflict Serializable
+```
+
+### 3b. View Serializable
+
+A schedule S is **view equivalent** to a serial schedule S' if:
+
+| Condition | Rule |
+|-----------|------|
+| **Initial Read** | If Ti reads the initial value of X in S, Ti also reads the initial value of X in S' |
+| **Updated Read** | If Ti reads a value written by Tj in S, Ti also reads the value written by Tj in S' |
+| **Final Write** | If Ti performs the last write on X in S, Ti also performs the last write on X in S' |
+
+```
+  Relationship:
+  ┌────────────────────────────┐
+  │    View Serializable       │
+  │  ┌──────────────────────┐  │
+  │  │ Conflict Serializable │  │
+  │  └──────────────────────┘  │
+  └────────────────────────────┘
+
+  Every Conflict Serializable ⊂ View Serializable
+  (but NOT vice versa)
+```
+
+> **Key insight:** View serializability is harder to test (NP-complete) but allows more schedules than conflict serializability.
+
+---
+
+## 4. Non-Serializable Schedules
+
+Schedules that are NOT equivalent to any serial schedule. They may or may not be safe depending on their **recoverability**.
+
+### 4a. Non-Recoverable Schedule ❌ (Must AVOID)
+
+T2 reads T1's uncommitted data and **commits before T1**. If T1 later aborts, T2 has committed with invalid data — **cannot be undone**.
+
+```
+  Time    T1           T2
+  ────    ──           ──
+   1      R(A)
+   2      W(A)
+   3                   R(A)     ← reads T1's uncommitted value
+   4                   W(A)
+   5                   COMMIT   ← T2 commits BEFORE T1!
+   6      ABORT ❌               ← T1 rolls back...
+                                   but T2 already committed!
+                                   IRRECOVERABLE! 💀
+```
+
+> ⚠️ Non-recoverable schedules must ALWAYS be avoided. If T1 aborts, we can't undo T2's commit.
+
+### 4b. Recoverable Schedule ✅
+
+T2 commits **only after** T1 (the transaction it read from) has committed.
+
+```
+  Time    T1           T2
+  ────    ──           ──
+   1      R(A)
+   2      W(A)
+   3                   R(A)     ← reads T1's value
+   4      COMMIT ✅              ← T1 commits FIRST
+   5                   COMMIT ✅ ← T2 commits AFTER T1 → safe!
+```
+
+> **Rule:** If T2 reads data written by T1, then T1 must commit **before** T2.
+
+### 4c. Cascading Schedule (Recoverable but Risky)
+
+Recoverable, but failure of one transaction causes a **chain of rollbacks** (cascade abort).
+
+```
+  Time    T1           T2           T3
+  ────    ──           ──           ──
+   1      R(A)
+   2      W(A) = 50
+   3                   R(A) = 50    ← reads T1's uncommitted data
+   4                   W(A) = 70
+   5                                R(A) = 70  ← reads T2's uncommitted data
+   6      ABORT ❌
+   7                   ABORT ❌      ← must abort (read from T1)
+   8                                ABORT ❌   ← must abort (read from T2)
+
+  Cascade: T1 fails → T2 fails → T3 fails → ... 💥
+```
+
+> Cascading aborts are expensive — they waste all the work done by dependent transactions.
+
+### 4d. Cascadeless Schedule ✅ (No Cascading Aborts)
+
+Transactions **only read committed values**. If T1 writes X, T2 can read X only **after T1 commits**.
+
+```
+  Time    T1           T2
+  ────    ──           ──
+   1      R(A)
+   2      W(A)
+   3      COMMIT ✅
+   4                   R(A)     ← reads ONLY committed value → safe!
+   5                   W(A)
+   6                   COMMIT ✅
+```
+
+> **Rule:** Dirty reads are completely eliminated → no cascading abort possible.
+
+### 4e. Strict Schedule ✅ (Strongest)
+
+Neither **read NOR write** a data item until the transaction that last wrote it has committed or aborted.
+
+```
+  Time    T1           T2
+  ────    ──           ──
+   1      W(A)
+   2      COMMIT ✅
+   3                   R(A)     ← read after commit ✅
+   4                   W(A)     ← write after commit ✅
+   5                   COMMIT ✅
+```
+
+**Difference from Cascadeless:**
+
+| | Cascadeless | Strict |
+|--|:---:|:---:|
+| Dirty **reads** prevented | ✅ | ✅ |
+| Dirty **writes** prevented | ❌ | ✅ |
+
+```
+  Cascadeless but NOT Strict:
+  T1: W(A)
+  T2: W(A)         ← writes BEFORE T1 commits (dirty write!) ❌ for strict
+  T1: COMMIT
+  T2: COMMIT
+
+  Strict:
+  T1: W(A)
+  T1: COMMIT ✅
+  T2: W(A)         ← writes AFTER T1 commits ✅
+  T2: COMMIT ✅
+```
+
+---
+
+## Schedule Hierarchy (Venn Diagram)
+
+```
+  ┌─────────────────────────────────────────────────────────┐
+  │                    All Schedules                        │
+  │                                                         │
+  │   ┌───────────────────────────────────────────────┐     │
+  │   │              Recoverable                      │     │
+  │   │                                               │     │
+  │   │   ┌───────────────────────────────────────┐   │     │
+  │   │   │           Cascadeless                 │   │     │
+  │   │   │                                       │   │     │
+  │   │   │   ┌───────────────────────────────┐   │   │     │
+  │   │   │   │           Strict              │   │   │     │
+  │   │   │   │                               │   │   │     │
+  │   │   │   │   ┌───────────────────────┐   │   │   │     │
+  │   │   │   │   │       Serial          │   │   │   │     │
+  │   │   │   │   └───────────────────────┘   │   │   │     │
+  │   │   │   └───────────────────────────────┘   │   │     │
+  │   │   └───────────────────────────────────────┘   │     │
+  │   └───────────────────────────────────────────────┘     │
+  │                                                         │
+  │   Non-Recoverable (outside Recoverable) ← AVOID!       │
+  └─────────────────────────────────────────────────────────┘
+
+  Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules
+```
+
+---
+
+## All Schedule Types at a Glance
+
+| Schedule Type | Interleaved? | Correct? | Dirty Reads? | Dirty Writes? | Cascading Abort? |
+|:---:|:---:|:---:|:---:|:---:|:---:|
+| **Serial** | ❌ No | ✅ Always | ✅ No | ✅ No | ✅ No |
+| **Conflict Serializable** | ✅ Yes | ✅ Yes | Depends | Depends | Depends |
+| **View Serializable** | ✅ Yes | ✅ Yes | Depends | Depends | Depends |
+| **Strict** | ✅ Yes | ✅ If recoverable | ✅ No | ✅ No | ✅ No |
+| **Cascadeless** | ✅ Yes | ✅ If recoverable | ✅ No | ⚠️ Possible | ✅ No |
+| **Recoverable** | ✅ Yes | ✅ Recoverable | ⚠️ Possible | ⚠️ Possible | ⚠️ Possible |
+| **Non-Recoverable** | ✅ Yes | ❌ INVALID | ⚠️ Possible | ⚠️ Possible | N/A (broken) |
+
+---
+
+## Lock-Based Protocol Types
+
+```
+  ┌────────────────────────────────┐
+  │     Lock-Based Protocols       │
+  └───────────────┬────────────────┘
+    ┌─────────────┼─────────────┬──────────────┐
+    ▼             ▼             ▼              ▼
+  Simplistic   Pre-Claiming   2PL        Strict 2PL
+```
+
+### 1. Simplistic Lock Protocol
+
+Acquire lock on an item **before writing** it. Unlock **after** the write is done.
+
+```
+  T1: Lock(A) → Write(A) → Unlock(A)
+```
+
+> Very basic. Doesn't prevent all concurrency problems.
+
+### 2. Pre-Claiming Lock Protocol
+
+Before execution, the transaction requests **ALL locks it will need** at once.
+- If ALL locks are granted → execute the transaction → release all at end
+- If ANY lock is denied → **rollback** and wait → retry later
+
+```
+  T1 needs: Lock(A), Lock(B), Lock(C)
+
+  Request all three at once:
+    All granted? → Execute T1 → Release all locks ✅
+    Any denied?  → Rollback → Wait → Retry later ❌
+```
+
+> **Advantage:** No deadlocks (all-or-nothing). **Disadvantage:** Poor concurrency (holds locks for entire duration, even if some items are used only at the end).
+
+### 3. Two-Phase Locking (2PL) — Recap
+
+```
+  Growing Phase:                    Shrinking Phase:
+  ─────────────                     ────────────────
+  Acquire locks                     Release locks
+  Cannot release any                Cannot acquire any
+
+    Locks held
+       │     ╱╲
+       │    ╱  ╲
+       │   ╱    ╲
+       │  ╱      ╲
+       │ ╱  Lock  ╲
+       │╱   Point  ╲
+  ─────┼─────┬──────╲────────► Time
+       │ Growing  Shrinking
+```
+
+> ✅ Guarantees **conflict serializability**. ⚠️ Can have cascading aborts. ⚠️ Deadlocks possible.
+
+### 4. Strict Two-Phase Locking (Strict 2PL)
+
+Same as 2PL, but **holds ALL locks until COMMIT or ABORT**. No early release.
+
+```
+  Strict 2PL:
+       Locks held
+       │          ┌────────────────┐
+       │          │                │
+       │          │ All locks held │
+       │          │ until COMMIT   │
+       │          │                │
+  ─────┼──────────┼────────────────┼───► Time
+       │  Growing │                │
+       │  Phase   │   COMMIT ──► Release ALL
+```
+
+> ✅ Conflict serializable. ✅ **No cascading aborts.** ⚠️ Deadlocks still possible.
+
+---
+
+## Thomas' Write Rule
+
+An **optimization** for timestamp-based protocols that avoids unnecessary rollbacks.
+
+### Normal Timestamp Rule for Write:
+
+```
+  If TS(Ti) < W-TS(X):
+    → A later transaction already wrote X
+    → Ti's write is OUTDATED
+    → Normal rule: ROLLBACK Ti ❌
+```
+
+### Thomas' Write Rule:
+
+```
+  If TS(Ti) < W-TS(X):
+    → A later transaction already wrote X
+    → Ti's write is outdated
+    → Thomas' Rule: Just IGNORE Ti's write (skip it, don't rollback) ✅
+    → Ti continues executing
+```
+
+**Why it works:** Ti's write would be overwritten anyway by the later transaction, so there's no point in rolling back — just skip it.
+
+```
+  Example:
+  T1 (TS=1)     T2 (TS=2)        W-TS(X)
+  ──────────     ──────────       ───────
+                 Write(X)           2        T2 writes X
+  Write(X)                          ?
+
+  Normal rule:  TS(T1)=1 < W-TS(X)=2 → ROLLBACK T1 ❌
+  Thomas' rule: TS(T1)=1 < W-TS(X)=2 → IGNORE T1's write, continue ✅
+
+  Result: X keeps T2's value (which would have overwritten T1 anyway)
+```
+
+> **Key point:** Thomas' Write Rule produces **view serializable** schedules (not necessarily conflict serializable).
+
+---
+
+## Practice Question
+
+```
+  Schedule S: R1(A), W2(A), Commit2, W1(A), W3(A), Commit3, Commit1
+```
+
+**Step 1: Draw the timeline**
+
+| Time | T1 | T2 | T3 |
+|:---:|:---:|:---:|:---:|
+| 1 | R(A) | | |
+| 2 | | W(A) | |
+| 3 | | COMMIT | |
+| 4 | W(A) | | |
+| 5 | | | W(A) |
+| 6 | | | COMMIT |
+| 7 | COMMIT | | |
+
+**Step 2: Is it Serializable?**
+
+Check for **conflict serializability** (precedence graph):
+- T1:R(A) before T2:W(A) → `T1 → T2`
+- T2:W(A) before T1:W(A) → `T2 → T1`
+- Cycle! T1 → T2 → T1 → ❌ **NOT conflict serializable**
+
+Check for **view serializability**:
+- Initial read of A: T1 reads initial value ✅ (matches T1 → T2 → T3)
+- Final write of A: T3 does the last write ✅
+- View equivalent to serial order T1 → T2 → T3 ✅ → **View Serializable**
+
+**Step 3: Is it Strict?**
+
+- T1 writes A (time 4) and T3 writes A (time 5) before T1 commits (time 7)
+- ❌ **NOT strict** (T3 writes A before T1 commits)
+
+**Step 4: Is it Recoverable?**
+
+- T2 commits at time 3 — T2 wrote A but didn't read from anyone → OK
+- T3 commits at time 6 — T3 wrote A but didn't read from anyone → OK
+- T1 commits at time 7 → OK
+
+✅ **Recoverable** (no transaction committed with uncommitted dependent data)
+
+**Answer:** The schedule is **view serializable** and **recoverable but NOT strict**. ✅ Option (D)
+
+---
+
+## Quick Summary
+
+```
+  Schedule Hierarchy:
+    Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules
+
+  Serializability Check:
+    Conflict: Precedence Graph → no cycle = ✅
+    View:     Check 3 conditions (initial read, updated read, final write)
+    Conflict ⊂ View
+
+  Lock Protocols:
+    Simplistic → lock before write, unlock after
+    Pre-Claiming → all locks upfront (no deadlock, low concurrency)
+    2PL → growing + shrinking phases (serializable, cascading aborts)
+    Strict 2PL → hold all locks until commit (no cascading aborts)
+
+  Thomas' Write Rule:
+    If older write is outdated → IGNORE it instead of rolling back
+    Produces view-serializable schedules
+```
+
+> **Interview tip:** "What is the difference between Cascadeless and Strict schedules?" — Cascadeless prevents dirty reads (transactions read only committed data). Strict prevents both dirty reads AND dirty writes (no transaction reads OR writes data written by an uncommitted transaction). Strict ⊂ Cascadeless.
