@@ -3540,3 +3540,416 @@ The sparse index concept is most visible in:
 | **Best for** | Any column, random access, covering queries | Sorted/clustered data, range scans, write-heavy workloads |
 
 > **The key trade-off in one line:** Sparse index trades **lookup precision** (must scan within a block) for **smaller size** (fits in memory, cheaper writes). Dense index trades **size and write cost** for **exact, direct access** to every row.
+
+---
+
+# Database Anomalies
+
+Anomalies are **problems that arise when a database table is not properly normalized**. They occur because of **redundant data** — the same piece of information is stored in multiple rows. When you try to insert, delete, or update data in such a table, you run into inconsistencies.
+
+There are **three types** of anomalies: **Insertion**, **Deletion**, and **Update**.
+
+---
+
+## The Problematic Table (Unnormalized)
+
+Consider this single table that stores student course enrollments along with department info:
+
+| **StudentID** | **StudentName** | **CourseID** | **CourseName** | **Instructor** | **Department** | **DeptHead** |
+|---|---|---|---|---|---|---|
+| 101 | Alice | CS101 | Data Structures | Prof. Sharma | Computer Science | Dr. Gupta |
+| 101 | Alice | CS102 | Algorithms | Prof. Verma | Computer Science | Dr. Gupta |
+| 102 | Bob | CS101 | Data Structures | Prof. Sharma | Computer Science | Dr. Gupta |
+| 103 | Carol | EE201 | Circuit Theory | Prof. Iyer | Electrical Eng | Dr. Rao |
+| 103 | Carol | CS101 | Data Structures | Prof. Sharma | Computer Science | Dr. Gupta |
+
+Notice the **redundancy**:
+- `"Computer Science"` and `"Dr. Gupta"` appear in **4 rows**
+- `"Data Structures"` and `"Prof. Sharma"` appear in **3 rows**
+- Alice's name appears in **2 rows**
+
+This redundancy is the root cause of all three anomalies.
+
+---
+
+## 1. Insertion Anomaly
+
+> **Problem:** You **cannot insert** certain data without also inserting unrelated data that you don't have yet.
+
+### Example
+
+Suppose a **new department** is created: **"Mechanical Engineering"** with head **Dr. Joshi**. You want to record this in the database. But look at the table — every row requires a `StudentID`, `CourseID`, and `CourseName`.
+
+**You can't insert the department without a student enrolled in a course in that department.**
+
+| StudentID | StudentName | CourseID | CourseName | Instructor | Department | DeptHead |
+|---|---|---|---|---|---|---|
+| ??? | ??? | ??? | ??? | ??? | Mechanical Eng | Dr. Joshi |
+
+You'd have to either:
+- Insert `NULL` for `StudentID`, `CourseID`, etc. — violates the primary key constraint (if `StudentID + CourseID` is the composite PK)
+- Wait until a student actually enrolls — but the department **already exists** in the real world!
+
+**The anomaly:** A perfectly valid fact (a department exists) **cannot be represented** because it's forced to depend on unrelated data (student enrollment).
+
+---
+
+## 2. Deletion Anomaly
+
+> **Problem:** Deleting a row causes you to **unintentionally lose** other important data.
+
+### Example
+
+Look at **Carol (103)** — she's the **only student** in the Electrical Engineering department:
+
+| StudentID | StudentName | CourseID | CourseName | Instructor | Department | DeptHead |
+|---|---|---|---|---|---|---|
+| **103** | **Carol** | **EE201** | **Circuit Theory** | **Prof. Iyer** | **Electrical Eng** | **Dr. Rao** |
+
+Now, if Carol **drops the course** (EE201), we delete this row.
+
+**What we wanted to delete:** Carol's enrollment in Circuit Theory.
+
+**What we also lost:**
+- ❌ The fact that **"Circuit Theory"** is a course taught by **Prof. Iyer**
+- ❌ The fact that **"Electrical Engineering"** department exists
+- ❌ The fact that **Dr. Rao** is the head of Electrical Engineering
+
+**The anomaly:** Removing one fact (student enrollment) accidentally **destroys** completely unrelated facts (department info, course info).
+
+---
+
+## 3. Update Anomaly
+
+> **Problem:** Updating a piece of data requires changing it in **multiple rows**. If you miss even one row, the database becomes **inconsistent**.
+
+### Example
+
+Suppose **Dr. Gupta retires** and **Dr. Mehta** becomes the new head of Computer Science. You need to update every row where `Department = 'Computer Science'`:
+
+| StudentID | StudentName | CourseID | CourseName | Instructor | Department | DeptHead |
+|---|---|---|---|---|---|---|
+| 101 | Alice | CS101 | Data Structures | Prof. Sharma | Computer Science | ~~Dr. Gupta~~ → **Dr. Mehta** |
+| 101 | Alice | CS102 | Algorithms | Prof. Verma | Computer Science | ~~Dr. Gupta~~ → **Dr. Mehta** |
+| 102 | Bob | CS101 | Data Structures | Prof. Sharma | Computer Science | ~~Dr. Gupta~~ → **Dr. Mehta** |
+| 103 | Carol | CS101 | Data Structures | Prof. Sharma | Computer Science | ~~Dr. Gupta~~ → **Dr. Mehta** |
+
+That's **4 rows** to update for a **single real-world change**. If you update only 3 of them:
+
+| StudentID | StudentName | CourseID | CourseName | Instructor | Department | DeptHead |
+|---|---|---|---|---|---|---|
+| 101 | Alice | CS101 | Data Structures | Prof. Sharma | Computer Science | **Dr. Mehta** ✅ |
+| 101 | Alice | CS102 | Algorithms | Prof. Verma | Computer Science | **Dr. Mehta** ✅ |
+| 102 | Bob | CS101 | Data Structures | Prof. Sharma | Computer Science | **Dr. Gupta** ❌ |
+| 103 | Carol | CS101 | Data Structures | Prof. Sharma | Computer Science | **Dr. Mehta** ✅ |
+
+Now the database says **two different things** — Bob's row says Dr. Gupta is the head, while everyone else says Dr. Mehta. **Which is correct?** The database is now **inconsistent**.
+
+**The anomaly:** A single fact is stored in multiple places, so updating it requires touching every copy. Missing one creates contradictory data.
+
+---
+
+## The Fix: Normalization
+
+The solution is to **break the table into smaller, properly structured tables** where each fact is stored **exactly once**:
+
+```
+Students:        StudentID → StudentName
+Courses:         CourseID  → CourseName, Instructor, DepartmentID
+Departments:     DeptID    → Department, DeptHead
+Enrollments:     StudentID, CourseID  (junction/relationship table)
+```
+
+**Students:**
+
+| StudentID | StudentName |
+|---|---|
+| 101 | Alice |
+| 102 | Bob |
+| 103 | Carol |
+
+**Departments:**
+
+| DeptID | Department | DeptHead |
+|---|---|---|
+| 1 | Computer Science | Dr. Mehta |
+| 2 | Electrical Eng | Dr. Rao |
+| 3 | Mechanical Eng | Dr. Joshi ← no anomaly! |
+
+**Courses:**
+
+| CourseID | CourseName | Instructor | DeptID |
+|---|---|---|---|
+| CS101 | Data Structures | Prof. Sharma | 1 |
+| CS102 | Algorithms | Prof. Verma | 1 |
+| EE201 | Circuit Theory | Prof. Iyer | 2 |
+
+**Enrollments:**
+
+| StudentID | CourseID |
+|---|---|
+| 101 | CS101 |
+| 101 | CS102 |
+| 102 | CS101 |
+| 103 | EE201 |
+| 103 | CS101 |
+
+Now:
+- ✅ **Insertion:** Add Mechanical Eng without needing a student
+- ✅ **Deletion:** Carol drops EE201 → delete from `Enrollments` only; Electrical Eng and Circuit Theory still exist
+- ✅ **Update:** Change DeptHead → update **one row** in `Departments`, done
+
+---
+
+## Summary
+
+| Anomaly | Problem | Cause |
+|---|---|---|
+| **Insertion** | Can't add data without unrelated data | Facts are bundled together in one table |
+| **Deletion** | Removing a row destroys unrelated facts | Multiple independent facts share the same row |
+| **Update** | Must change multiple rows for one real-world change; risk of inconsistency | Same fact is duplicated across many rows |
+| **Fix** | **Normalize** — store each fact exactly once in its own table | |
+
+> **The key insight:** Anomalies are a symptom of **poor table design** (redundancy). Normalization eliminates redundancy by ensuring each independent fact lives in exactly one place. This is why normalization (1NF → 2NF → 3NF → BCNF) exists — it systematically removes the structural flaws that cause these anomalies.
+
+---
+
+# Foreign Key Referential Actions (`ON DELETE` / `ON UPDATE`)
+
+When you normalize a database, you split data into multiple related tables connected by **foreign keys**. A new question arises: *"What should happen to child rows when their referenced parent row is deleted or updated?"* Foreign key **referential actions** answer this question.
+
+---
+
+## Setup Example
+
+```sql
+CREATE TABLE departments (
+    id INT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    dept_id INT,
+    FOREIGN KEY (dept_id) REFERENCES departments(id)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+```
+
+Here, `employees.dept_id` → `departments.id`. Departments is the **parent**, employees is the **child**.
+
+---
+
+## All 5 Referential Actions
+
+### 1. `CASCADE` — Propagate the change to children
+
+**`ON DELETE CASCADE`** — When a parent row is deleted, **automatically delete all child rows** that reference it.
+
+```sql
+DELETE FROM departments WHERE id = 3;
+-- ✅ All employees with dept_id = 3 are automatically deleted too
+```
+
+**`ON UPDATE CASCADE`** — When the parent's primary key is updated, **automatically update the foreign key** in all child rows.
+
+```sql
+UPDATE departments SET id = 30 WHERE id = 3;
+-- ✅ All employees with dept_id = 3 are automatically changed to dept_id = 30
+```
+
+### 2. `SET NULL` — Set child FK to NULL
+
+**`ON DELETE SET NULL`** — When the parent is deleted, set the FK column in child rows to `NULL`.
+
+```sql
+FOREIGN KEY (dept_id) REFERENCES departments(id) ON DELETE SET NULL
+
+DELETE FROM departments WHERE id = 3;
+-- Employees with dept_id = 3 now have dept_id = NULL (unassigned)
+```
+
+> ⚠️ The FK column **must allow NULLs** (`NOT NULL` will cause this to fail).
+
+**Use case:** The employee still exists but is temporarily unassigned to a department.
+
+### 3. `RESTRICT` — Block the operation (default)
+
+**`ON DELETE RESTRICT`** — If any child rows reference the parent, **refuse to delete** the parent. Throws an error immediately.
+
+```sql
+FOREIGN KEY (dept_id) REFERENCES departments(id) ON DELETE RESTRICT
+
+DELETE FROM departments WHERE id = 3;
+-- ❌ ERROR 1451: Cannot delete or update a parent row:
+-- a foreign key constraint fails
+```
+
+You must manually delete or reassign all employees first, then delete the department. **This is the default behavior** if you don't specify any action.
+
+### 4. `NO ACTION` — Same as RESTRICT in MySQL
+
+In MySQL, `NO ACTION` behaves **identically** to `RESTRICT`. Both block the operation if child rows exist.
+
+> In some other databases (PostgreSQL), `NO ACTION` checks constraints at the **end of the transaction** (deferrable), while `RESTRICT` checks immediately. MySQL doesn't support deferred checks, so they're the same.
+
+### 5. `SET DEFAULT` — Set FK to its default value
+
+**`ON DELETE SET DEFAULT`** — Sets the FK to its column default value when parent is deleted.
+
+> ⚠️ **InnoDB does NOT support `SET DEFAULT`**. MySQL parses it but will throw an error if you try to use it with InnoDB. This exists mainly in the SQL standard and in other databases.
+
+---
+
+## Side-by-Side Comparison
+
+| Action | On Parent DELETE | On Parent UPDATE | When to Use |
+|---|---|---|---|
+| **`CASCADE`** | Delete all children | Update FK in all children | Child has no meaning without parent (order items → order) |
+| **`SET NULL`** | Set FK to `NULL` | Set FK to `NULL` | Child can exist independently (employee → department) |
+| **`RESTRICT`** (default) | ❌ Block the delete | ❌ Block the update | Must handle children explicitly before deleting parent |
+| **`NO ACTION`** | Same as RESTRICT in MySQL | Same as RESTRICT in MySQL | Same as above |
+| **`SET DEFAULT`** | Set FK to default | Set FK to default | ❌ Not supported in InnoDB |
+
+---
+
+## Real-World Examples
+
+### E-Commerce — `CASCADE` makes sense
+
+```sql
+CREATE TABLE orders (
+    id INT PRIMARY KEY,
+    customer_id INT,
+    total DECIMAL(10,2)
+);
+
+CREATE TABLE order_items (
+    id INT PRIMARY KEY,
+    order_id INT,
+    product_name VARCHAR(100),
+    quantity INT,
+    FOREIGN KEY (order_id) REFERENCES orders(id)
+        ON DELETE CASCADE    -- Delete order → delete all its items
+);
+```
+
+**Why CASCADE?** An order item has **no meaning** without its order. If the order is deleted, keeping orphaned items makes no sense.
+
+### HR System — `SET NULL` makes sense
+
+```sql
+CREATE TABLE managers (
+    id INT PRIMARY KEY,
+    name VARCHAR(100)
+);
+
+CREATE TABLE employees (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    manager_id INT NULL,
+    FOREIGN KEY (manager_id) REFERENCES managers(id)
+        ON DELETE SET NULL   -- Manager leaves → employees become unassigned
+);
+```
+
+**Why SET NULL?** Employees don't get fired when their manager leaves. They just temporarily have no manager.
+
+### Banking — `RESTRICT` makes sense
+
+```sql
+CREATE TABLE accounts (
+    id INT PRIMARY KEY,
+    balance DECIMAL(15,2)
+);
+
+CREATE TABLE transactions (
+    id INT PRIMARY KEY,
+    account_id INT,
+    amount DECIMAL(10,2),
+    FOREIGN KEY (account_id) REFERENCES accounts(id)
+        ON DELETE RESTRICT   -- Cannot delete account if it has transactions
+);
+```
+
+**Why RESTRICT?** Financial records must never be silently deleted. You must explicitly handle or archive transactions before closing an account.
+
+---
+
+## What Happens If You Don't Use FK Constraints?
+
+If you don't specify `ON DELETE` / `ON UPDATE`, MySQL defaults to **`RESTRICT`**. But if you skip defining foreign keys entirely, things get worse:
+
+### Problem 1: Orphaned rows (silent data corruption)
+
+```sql
+-- No FK defined — just a plain column
+CREATE TABLE order_items (
+    id INT PRIMARY KEY,
+    order_id INT,             -- no foreign key constraint!
+    product_name VARCHAR(100)
+);
+
+DELETE FROM orders WHERE id = 42;
+-- ✅ Succeeds... but order_items with order_id = 42 are now ORPHANS
+-- They reference a non-existent order
+-- JOINs return nothing, reports are wrong, data is silently broken
+```
+
+### Problem 2: Manual cleanup everywhere
+
+```sql
+-- Without CASCADE, deleting an order requires multiple steps:
+DELETE FROM order_items WHERE order_id = 42;    -- Step 1
+DELETE FROM order_shipping WHERE order_id = 42; -- Step 2
+DELETE FROM order_payments WHERE order_id = 42; -- Step 3
+DELETE FROM orders WHERE id = 42;               -- Step 4: FINALLY the parent
+
+-- With CASCADE, it's just:
+DELETE FROM orders WHERE id = 42;               -- Done. Everything cleaned up.
+```
+
+### Problem 3: Application-level enforcement is fragile
+
+```java
+// ❌ Fragile — what if someone runs raw SQL or a migration script?
+@Transactional
+public void deleteOrder(Long orderId) {
+    orderItemRepository.deleteByOrderId(orderId);     // hope you didn't forget
+    orderShippingRepository.deleteByOrderId(orderId);  // and this
+    orderRepository.deleteById(orderId);
+}
+```
+
+Anyone who bypasses your application (raw SQL, a DBA, another microservice) can break the data. **Database-level FK constraints are the last line of defense.**
+
+---
+
+## Do FK Actions Fix Anomalies?
+
+**No.** They solve a **different problem**:
+
+| Problem | Cause | Solution |
+|---|---|---|
+| **Anomalies** (insertion, deletion, update) | Everything crammed into one table with redundant data | **Normalization** — split into multiple tables |
+| **Orphaned/inconsistent references** | Multiple tables exist but relationships aren't enforced | **FK constraints** with `CASCADE` / `SET NULL` / `RESTRICT` |
+
+**Normalization** creates the proper multi-table structure (fixing anomalies). **FK actions** then protect that structure from breaking. They're **complementary** — normalization solves the design problem, FK constraints solve the integrity problem.
+
+---
+
+## Quick Decision Guide
+
+| Relationship | Recommended Action | Reason |
+|---|---|---|
+| Order → Order Items | `ON DELETE CASCADE` | Items are meaningless without the order |
+| User → Posts | `ON DELETE CASCADE` or `SET NULL` | CASCADE to remove; SET NULL to keep as "deleted user" |
+| Employee → Department | `ON DELETE SET NULL` | Employee survives without a department |
+| Account → Transactions | `ON DELETE RESTRICT` | Never silently delete financial records |
+| Category → Products | `ON DELETE RESTRICT` | Force admin to reassign products first |
+| Comment → Replies | `ON DELETE CASCADE` | Replies to a deleted comment should be removed |
+| Parent PK changes | `ON UPDATE CASCADE` | Rare — avoid changing PKs. Use surrogate keys (auto-increment) |
+
+> **Golden rule:** Use `CASCADE` when the child **cannot exist** without the parent. Use `SET NULL` when the child **can exist independently**. Use `RESTRICT` when you want to **force explicit handling** before deletion. And **always define foreign keys** — the alternative (no FK) leads to orphaned data and silent corruption.
