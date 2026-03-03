@@ -3389,3 +3389,154 @@ public OrderResponse getOrder(@PathVariable UUID publicId) {
 | Legacy system, can't change PK | Keep `BIGINT` PK, add a `UUID` column for new integrations |
 
 > **The golden rule:** Use `BIGINT AUTO_INCREMENT` as your primary key for maximum InnoDB performance. If you need non-enumerable external identifiers, add a separate `UUID` column (preferably v7, stored as `BINARY(16)`). If you're in a distributed system where centralized ID generation is impossible, use `UUID v7` as your primary key — it gives you global uniqueness with near-sequential insert performance.
+
+---
+
+# Dense Index vs Sparse Index
+
+Indexes can be classified by how many entries they maintain relative to the rows in the data file. A **dense index** has an entry for every row, while a **sparse index** has entries for only some rows (typically one per disk block/page). This distinction is fundamental to database internals and affects storage, lookup speed, and write overhead.
+
+---
+
+## What Is a Dense Index?
+
+A dense index has an entry for **every single row** (every search key value) in the data file. Think of it as a complete phone book where every person has a listing.
+
+```
+Index                          Data File (sorted by ID)
+┌────────┬─────────┐          ┌────────────────────────────┐
+│ ID=1   │ → ptr   │────────→ │ ID=1, Alice, Engineering   │
+│ ID=2   │ → ptr   │────────→ │ ID=2, Bob, Sales           │
+│ ID=3   │ → ptr   │────────→ │ ID=3, Carol, Marketing     │
+│ ID=4   │ → ptr   │────────→ │ ID=4, Dave, Engineering    │
+│ ID=5   │ → ptr   │────────→ │ ID=5, Eve, Sales           │
+│ ID=6   │ → ptr   │────────→ │ ID=6, Frank, Marketing     │
+└────────┴─────────┘          └────────────────────────────┘
+  6 index entries               6 data rows
+```
+
+---
+
+## What Is a Sparse Index?
+
+A sparse index has entries for only **some** rows — typically one entry per **disk block/page**. It points to the **first record in each block**. The data **must be sorted** on the search key for this to work.
+
+```
+Index                          Data File (sorted by ID, 3 rows per block)
+┌────────┬─────────┐          ┌────────────────────────────┐
+│ ID=1   │ → ptr   │────────→ │ Block 1:                   │
+│        │         │          │   ID=1, Alice, Engineering  │
+│        │         │          │   ID=2, Bob, Sales          │
+│        │         │          │   ID=3, Carol, Marketing    │
+├────────┼─────────┤          ├────────────────────────────┤
+│ ID=4   │ → ptr   │────────→ │ Block 2:                   │
+│        │         │          │   ID=4, Dave, Engineering   │
+│        │         │          │   ID=5, Eve, Sales          │
+│        │         │          │   ID=6, Frank, Marketing    │
+└────────┴─────────┘          └────────────────────────────┘
+  2 index entries               6 data rows (2 blocks)
+```
+
+To find **ID=5**: the index sees `ID=4 ≤ 5 < next entry`, so it jumps to Block 2 and does a **short linear scan** within that block.
+
+---
+
+## Advantages of Sparse Index Over Dense Index
+
+| Advantage | Explanation |
+|---|---|
+| **Much smaller index size** | Only one entry per block instead of one per row. If a block holds 500 rows, the sparse index is **~500× smaller** |
+| **Fits in memory** | Smaller index = more likely to fit entirely in RAM (buffer pool). A dense index on a billion-row table might be 20 GB; a sparse index might be 40 MB |
+| **Faster index maintenance on writes** | Inserting/deleting a row usually doesn't change the sparse index at all — only if the **first record of a block** changes. A dense index must be updated on every single insert/delete |
+| **Less disk I/O for the index itself** | Fewer index pages to read from disk during lookups. The index traversal is shorter |
+| **Lower storage cost** | Takes up less disk space overall, which matters at massive scale |
+
+---
+
+## Disadvantages of Sparse Index vs Dense Index
+
+| Disadvantage | Explanation |
+|---|---|
+| **Slower point lookups** | A dense index jumps **directly** to the exact row. A sparse index jumps to the block and then does a **linear scan** within it. For a single-row lookup, dense is faster (one pointer dereference vs. scan of up to N rows in a block) |
+| **Data MUST be sorted** | Sparse index only works if the data file is physically sorted on the indexed column. If the data isn't sorted, a sparse index is **impossible**. Dense indexes work on any column regardless of sort order |
+| **Only one per table** | Since a table can only be physically sorted one way, you can have **at most one** sparse index. Need to search by `email`, `phone`, AND `created_at`? Only one of those can have a sparse index — the rest need dense indexes |
+| **Worse for non-contiguous matches** | If matching rows are scattered across many blocks (e.g., a range query that hits every other block), a sparse index still has to load each of those blocks and scan them. A dense index would point directly to each matching row |
+| **Cannot cover queries** | A dense index can be a **covering index** (stores all needed columns, answering the query without touching the table). A sparse index only stores one key per block — you always have to read the actual data block |
+| **Less precise statistics** | The optimizer has less granular information about data distribution. A dense index tells MySQL exactly how many rows match a value; a sparse index can only estimate at the block level |
+
+---
+
+## Why Would Anyone Use a Sparse Index?
+
+The core reason: **the trade-off is worth it when data is sorted.**
+
+1. **The scan within a block is nearly free** — a disk block is typically 4-16 KB. Once you load it into memory (one I/O), scanning 50–500 rows inside it is microseconds. The bottleneck is always the disk I/O, not the in-memory scan.
+
+2. **Index fits in memory** — a dense index on a 1-billion-row table might not fit in RAM. A sparse index almost certainly does. An in-memory index lookup + one disk read for the block **beats** multiple disk reads to traverse a large dense index that spills to disk.
+
+3. **Write-heavy workloads** — if your table gets millions of inserts per second (logs, events, time-series), updating a dense index on every insert is expensive. A sparse index only updates when block boundaries change — much cheaper.
+
+4. **It's the natural design for clustered/sorted data** — if data is already physically sorted (like InnoDB's clustered index, or a log table sorted by timestamp), a sparse index is the obvious choice. You're just bookmarking the start of each page.
+
+> **Real-world analogy:** A book's index is sparse — it tells you "Chapter 5 starts on page 87." It doesn't say "sentence 1 is on page 87, sentence 2 is on page 87, sentence 3 is on page 87..." You jump to page 87 and scan from there. That's fast enough.
+
+---
+
+## How Is a Sparse Index Created?
+
+A sparse index **requires the data file to be sorted** on the indexed column. Here's the process:
+
+### Step 1: Data Must Be Sorted on the Search Key
+
+```
+Data file sorted by employee_id:
+Block 0: [1, 2, 3, ..., 500]
+Block 1: [501, 502, ..., 1000]
+Block 2: [1001, 1002, ..., 1500]
+```
+
+### Step 2: Pick the First Key from Each Block
+
+```
+Sparse index entries:
+  (1,    → pointer to Block 0)
+  (501,  → pointer to Block 1)
+  (1001, → pointer to Block 2)
+```
+
+### Step 3: Store the Index as a Sorted Structure
+
+The index itself is stored as a small sorted file (or B+ Tree). Since it's tiny, it usually fits in one or two disk pages.
+
+### In Practice (InnoDB)
+
+You don't explicitly say `CREATE SPARSE INDEX`. The database engine decides internally:
+
+- **InnoDB's clustered index (B+ Tree)** is conceptually similar to a sparse index at the internal node level — internal nodes point to **pages** (blocks), not individual rows. Only the leaf level has per-row entries.
+- **InnoDB's secondary indexes** are dense — they have one entry per row.
+
+The sparse index concept is most visible in:
+- **Database internals** (how B+ Tree internal nodes work)
+- **SSTable files** in LSM-Tree databases (Cassandra, RocksDB, LevelDB) — they use sparse indexes on sorted data blocks
+- **Academic/exam contexts** — the concept is taught as a fundamental indexing strategy
+
+### Critical Constraint
+
+> **A sparse index can ONLY be built on the column the data is physically sorted by.** You can have at most **one** sparse index per table (because a table can only be physically sorted one way). Any other column needs a dense index. This is exactly why InnoDB has one clustered index (sparse-like) and all secondary indexes are dense.
+
+---
+
+## Dense vs Sparse Index — Quick Comparison
+
+| Aspect | Dense Index | Sparse Index |
+|---|---|---|
+| **Entries** | One per row | One per block/page |
+| **Size** | Large (proportional to row count) | Small (proportional to block count) |
+| **Lookup speed** | Direct — find exact row | Jump to block + short scan |
+| **Insert/delete cost** | Must update index every time | Update only when block boundaries change |
+| **Requires sorted data?** | No | **Yes** — mandatory |
+| **Max per table** | Many | **One** (only on the sort column) |
+| **Can cover queries?** | ✅ Yes (covering index) | ❌ No — must read data block |
+| **Best for** | Any column, random access, covering queries | Sorted/clustered data, range scans, write-heavy workloads |
+
+> **The key trade-off in one line:** Sparse index trades **lookup precision** (must scan within a block) for **smaller size** (fits in memory, cheaper writes). Dense index trades **size and write cost** for **exact, direct access** to every row.
