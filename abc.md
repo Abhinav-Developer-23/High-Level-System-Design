@@ -603,3 +603,81 @@
 130. Compare Kong, AWS API Gateway, and Nginx as API gateway solutions.
 
 <details><summary>Answer</summary>Kong — open-source, plugin-based, highly extensible, supports gRPC and WebSockets. Good for complex, multi-cloud setups. AWS API Gateway — fully managed, tight integration with Lambda and AWS services, auto-scaling, pay-per-request pricing. Good for serverless architectures on AWS. Nginx — lightweight, high-performance reverse proxy that can function as a gateway, extensive community, good for on-premise or custom setups.</details>
+
+---
+
+## Group 7: Java Concurrency Internals
+
+### Thread Leak and Proper Thread Pool Shutdown in Java
+
+**What is a Thread Leak?**
+
+A thread leak occurs when threads are created but never properly terminated, causing them to accumulate in the JVM over time. Each thread consumes memory (stack space, ~512 KB–1 MB by default) and OS-level resources. If enough threads accumulate, the application runs out of memory or the OS refuses to create new threads, resulting in `OutOfMemoryError: unable to create new native thread`.
+
+Thread leaks are particularly common when developers manually create threads with `new Thread(() -> { ... }).start()` inside loops, request handlers, or service methods — without any mechanism to track or stop them.
+
+**Common Causes of Thread Leaks**
+
+- Creating raw threads with `new Thread(...)` inside business logic instead of using a managed `ExecutorService`.
+- Submitting tasks to an `ExecutorService` that is never shut down (threads stay alive forever waiting for new tasks).
+- Using `Executors.newCachedThreadPool()` under high load — it creates an unbounded number of threads with no cap.
+- Blocking threads stuck in infinite loops, waiting on a lock, or waiting on `queue.take()` with no interruption logic.
+- Not calling `shutdown()` or `shutdownNow()` on `ExecutorService` instances when they are no longer needed.
+
+**How ExecutorService Shutdown Works**
+
+Java's `ExecutorService` manages a pool of worker threads internally. When you submit tasks, threads from the pool pick them up. Even after all tasks are done, the threads remain alive and idle — waiting for future tasks. This is by design, but it means you must explicitly tell the pool to stop.
+
+There are two methods for this:
+
+- `executor.shutdown()` — signals the pool to stop accepting new tasks. Already-submitted tasks complete normally. Threads terminate gracefully once all pending work is done.
+- `executor.shutdownNow()` — attempts to stop all actively executing tasks immediately by interrupting them, and returns a list of tasks that were waiting but never started. Tasks must respond to interrupts (`Thread.interrupted()`) for this to work.
+
+The recommended shutdown pattern is:
+
+```java
+executor.shutdown(); // No new tasks
+try {
+    if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+        executor.shutdownNow(); // Force stop if not done in 60s
+        if (!executor.awaitTermination(60, TimeUnit.SECONDS)) {
+            System.err.println("Executor did not terminate");
+        }
+    }
+} catch (InterruptedException e) {
+    executor.shutdownNow();
+    Thread.currentThread().interrupt(); // Restore interrupt status
+}
+```
+
+**What Happens If You Don't Shut Down Properly?**
+
+If `shutdown()` is never called on an `ExecutorService`:
+
+1. **Threads stay alive forever.** Worker threads keep running in the background waiting for new tasks. They are non-daemon threads by default, which means the JVM itself will not exit until every one of them terminates. Your application process will hang at exit, never fully stopping.
+
+2. **Memory is never released.** Each idle thread holds its stack memory. If your application creates a new `ExecutorService` per request (a common mistake), you accumulate thousands of idle thread pools, each with live threads, rapidly consuming all available heap and native memory.
+
+3. **`OutOfMemoryError` under load.** In a web application that creates unmanaged threads per request, a sustained traffic spike will spawn hundreds of threads. Since none are cleaned up, the application crashes with `OutOfMemoryError: unable to create new native thread`.
+
+4. **Hidden during testing.** Thread leaks are silent in short-lived tests or development with low traffic. They only surface under sustained production load — making them difficult to diagnose without profiling tools like VisualVM, Java Flight Recorder, or thread dump analysis.
+
+5. **Application hangs on shutdown.** Because non-daemon threads block JVM exit, the application container (e.g., Tomcat, Spring Boot) appears to hang during restart or deployment, requiring a forced kill.
+
+**How to Prevent Thread Leaks in Java**
+
+- **Always use `ExecutorService` instead of raw threads.** Never call `new Thread(...).start()` in business logic.
+- **Declare `ExecutorService` as a singleton or scoped bean**, not as a local variable inside a method. In Spring, use `@Bean` with `@PreDestroy` shutdown hooks.
+- **Always call `shutdown()` in a `finally` block or lifecycle hook.** Use the two-phase shutdown pattern shown above.
+- **Use `try-with-resources`** when using `ExecutorService` in Java 19+ (it implements `AutoCloseable` via `ExecutorService.close()`), which calls `shutdown()` and `awaitTermination()` automatically.
+- **Prefer bounded thread pools** (`Executors.newFixedThreadPool(n)`) over unbounded ones (`newCachedThreadPool`) when the workload is unpredictable.
+- **Set threads as daemon threads** for background monitoring tasks that should not prevent JVM shutdown:
+  ```java
+  ThreadFactory daemonFactory = r -> {
+      Thread t = new Thread(r);
+      t.setDaemon(true);
+      return t;
+  };
+  ExecutorService executor = Executors.newFixedThreadPool(4, daemonFactory);
+  ```
+- **Monitor thread counts in production** using metrics (e.g., Micrometer + Prometheus) to alert when thread count grows anomalously.
