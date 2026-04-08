@@ -3953,3 +3953,99 @@ Anyone who bypasses your application (raw SQL, a DBA, another microservice) can 
 | Parent PK changes | `ON UPDATE CASCADE` | Rare — avoid changing PKs. Use surrogate keys (auto-increment) |
 
 > **Golden rule:** Use `CASCADE` when the child **cannot exist** without the parent. Use `SET NULL` when the child **can exist independently**. Use `RESTRICT` when you want to **force explicit handling** before deletion. And **always define foreign keys** — the alternative (no FK) leads to orphaned data and silent corruption.
+
+---
+
+# Multikey / Composite Sharding (e.g. `user_id` + `order_id`)
+
+**Sharding** splits one logical table across many physical databases or nodes. A **shard key** (or partition key) decides which node stores a row. **Multikey sharding** means the routing rule uses **more than one logical attribute** — often written as a composite such as `(user_id, order_id)` — but the critical detail is **how** those keys are combined: one column may define *which shard*, another may define *order within the shard*, or both may be hashed together (which changes query patterns completely).
+
+---
+
+## Two Different Meanings of "`user_id` + `order_id`"
+
+### A) Good pattern — **Shard by `user_id` only**; `order_id` is local identity + sort key
+
+All rows for a given user live on **one** shard. `order_id` (or `created_at`) is used for uniqueness and `ORDER BY`, not for picking the shard.
+
+```
+shard_id = hash(user_id) % NUM_SHARDS
+```
+
+**Effect on "last 5 orders for user 42":** One round-trip to the correct shard. The database can use an index on `(user_id, created_at DESC)` or `(user_id, order_id DESC)` and stop after 5 rows.
+
+```sql
+-- Router sends this to shard = hash(42) % N only
+SELECT order_id, total, created_at
+FROM orders
+WHERE user_id = 42
+ORDER BY created_at DESC
+LIMIT 5;
+```
+
+This is the usual design for an **order history** feature.
+
+### B) Risky pattern — **Shard by a function of both** (e.g. `hash(user_id, order_id)`)
+
+Each *order* may land on a different shard even for the same user. No single shard has "all orders for user 42."
+
+**Effect on "last 5 orders for user 42":** You must **scatter-gather**: run the same query (or index lookup) on **every** shard, collect up to 5 rows from each, then **merge and sort** in the application or a coordinator to produce the true "last 5 globally." Cost grows with shard count (latency, CPU, open connections).
+
+```sql
+-- Per shard k (app or proxy runs this N times)
+SELECT order_id, total, created_at
+FROM orders
+WHERE user_id = 42
+ORDER BY created_at DESC
+LIMIT 5;
+-- Then: merge all N result sets, sort by created_at, take top 5
+```
+
+So **`user_id` + `order_id` in the shard function** is rarely what you want for **per-user lists**; it can make sense when your hot path is always **point lookups** by both keys (e.g. "fetch this exact order") and you accept expensive user-scoped scans.
+
+---
+
+## Example Schema on One Shard (same SQL shape everywhere)
+
+```sql
+CREATE TABLE orders (
+    user_id     BIGINT NOT NULL,
+    order_id    BIGINT NOT NULL,      -- unique per user, or globally unique (Snowflake/UUID)
+    total       DECIMAL(10,2),
+    created_at  TIMESTAMP(3) NOT NULL,
+    PRIMARY KEY (user_id, order_id),
+    KEY idx_user_created (user_id, created_at DESC)
+);
+```
+
+- **Shard by `user_id`:** Primary key and secondary index both start with `user_id` → efficient **single-shard** access for that user.
+- If the **physical** DB is sharded, the router adds `AND user_id = ?` so each query is sent to one node.
+
+---
+
+## SQL Patterns After Sharding
+
+| Need | Shard by `user_id` | Shard by `hash(user_id, order_id)` |
+|---|---|---|
+| Last 5 orders for user | One shard; `WHERE user_id = ? ORDER BY created_at DESC LIMIT 5` | All shards + merge |
+| Order by id for known user | One shard; `WHERE user_id = ? AND order_id = ?` | Must know shard or query all (if only order_id known, **bad**) |
+| Admin: recent orders globally | Expensive anyway; may need **OLAP** / search index / separate read model | Same problem |
+
+**Lookup by `order_id` alone** when the shard key is only `user_id`: you need either a **secondary routing table** (`order_id → user_id` or `order_id → shard_id`), a **global index** service, or **duplicate storage** (e.g. order details keyed by `order_id` on a different sharding scheme). Otherwise the system does not know which shard to hit.
+
+```sql
+-- If you maintain order_id -> user_id in Redis or a tiny lookup table:
+-- 1) SELECT user_id FROM order_index WHERE order_id = 9001;
+-- 2) SELECT * FROM orders WHERE user_id = ? AND order_id = 9001;  -- single shard
+```
+
+---
+
+## Practical Takeaways
+
+1. **Align the shard key with your hottest queries.** For "my order history," that is almost always **`user_id` (or `tenant_id`)**, not `hash(user_id, order_id)`.
+2. **`user_id` + `order_id` as a composite primary key** is normal; it does **not** mean both must participate in the **shard** function.
+3. **Multikey sharding** that hashes both dimensions often optimizes **even spread** or **point reads** at the cost of **range/list queries** — document that trade-off in design reviews.
+4. **Scatter-gather** for "last N per user" is correct but costly; cap shard count impact with caching, a **per-user recent orders** cache, or a **CQRS** read model fed by events.
+
+---

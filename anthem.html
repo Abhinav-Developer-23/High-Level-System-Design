@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Anthem — Execute or Regret</title>
+    <meta name="description" content="Personal daily anthem and discipline reminder for consistent execution and growth.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: rgba(255, 255, 255, 0.03);
+            --bg-card-hover: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.06);
+            --text-primary: #f0f0f5;
+            --text-secondary: #8a8a9a;
+            --text-muted: #55556a;
+            --accent-fire: #ff4d4d;
+            --accent-gold: #fbbf24;
+            --accent-emerald: #34d399;
+            --accent-blue: #60a5fa;
+            --accent-purple: #a78bfa;
+            --accent-pink: #f472b6;
+            --glow-fire: rgba(255, 77, 77, 0.15);
+            --glow-gold: rgba(251, 191, 36, 0.15);
+            --glow-emerald: rgba(52, 211, 153, 0.1);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background grid */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background: 
+                radial-gradient(ellipse 80% 50% at 50% -20%, rgba(255, 77, 77, 0.08), transparent),
+                radial-gradient(ellipse 60% 40% at 80% 100%, rgba(251, 191, 36, 0.05), transparent),
+                radial-gradient(ellipse 60% 40% at 10% 80%, rgba(167, 139, 250, 0.05), transparent);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Floating particles */
+        .particles {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: var(--accent-fire);
+            border-radius: 50%;
+            animation: float-up linear infinite;
+            opacity: 0;
+        }
+
+        @keyframes float-up {
+            0% { transform: translateY(100vh) scale(0); opacity: 0; }
+            10% { opacity: 0.6; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-10vh) scale(1); opacity: 0; }
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 6rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ─── HERO ─── */
+        .hero {
+            text-align: center;
+            padding: 4rem 0 3rem;
+            position: relative;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            color: var(--accent-fire);
+            background: var(--glow-fire);
+            border: 1px solid rgba(255, 77, 77, 0.2);
+            padding: 0.4rem 1.2rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            animation: pulse-badge 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-badge {
+            0%, 100% { box-shadow: 0 0 20px rgba(255, 77, 77, 0.1); }
+            50% { box-shadow: 0 0 30px rgba(255, 77, 77, 0.25); }
+        }
+
+        .hero h1 {
+            font-size: clamp(2.5rem, 7vw, 4.5rem);
+            font-weight: 900;
+            line-height: 1.05;
+            letter-spacing: -0.03em;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #fff 0%, #ff4d4d 50%, #fbbf24 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: shimmer 3s ease-in-out infinite alternate;
+        }
+
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            100% { background-position: 100% 50%; }
+        }
+
+        .hero-sub {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 550px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .hero-sub strong {
+            color: var(--accent-fire);
+            font-weight: 600;
+        }
+
+        /* ─── TICKER ─── */
+        .ticker-wrap {
+            overflow: hidden;
+            margin: 2.5rem -1.5rem;
+            border-top: 1px solid var(--border);
+            border-bottom: 1px solid var(--border);
+            padding: 0.8rem 0;
+            background: rgba(255, 77, 77, 0.02);
+        }
+
+        .ticker {
+            display: flex;
+            animation: ticker-scroll 20s linear infinite;
+            white-space: nowrap;
+        }
+
+        .ticker span {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--accent-fire);
+            padding: 0 2rem;
+            opacity: 0.7;
+        }
+
+        .ticker span::before {
+            content: '◆ ';
+            opacity: 0.4;
+        }
+
+        @keyframes ticker-scroll {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-50%); }
+        }
+
+        /* ─── REALITY CHECK ─── */
+        .reality-card {
+            background: linear-gradient(135deg, rgba(255, 77, 77, 0.06), rgba(251, 191, 36, 0.03));
+            border: 1px solid rgba(255, 77, 77, 0.15);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .reality-card::before {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 20%;
+            right: 20%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-fire), transparent);
+        }
+
+        .section-label {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section-label::before {
+            content: '';
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-fire);
+            animation: dot-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes dot-pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.8); }
+        }
+
+        .reality-stat {
+            display: flex;
+            align-items: baseline;
+            gap: 0.8rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .reality-stat .num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--accent-fire);
+        }
+
+        .reality-stat .label {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            font-weight: 300;
+        }
+
+        .reality-quote {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 1.2rem;
+            padding-top: 1.2rem;
+            border-top: 1px solid var(--border);
+            line-height: 1.5;
+        }
+
+        .reality-quote em {
+            color: var(--accent-gold);
+            font-style: normal;
+        }
+
+        /* ─── NAMES SCROLL ─── */
+        .names-block {
+            text-align: center;
+            padding: 1.5rem 0;
+            margin-bottom: 2rem;
+        }
+
+        .names-block .ahead-label {
+            font-size: 0.65rem;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            color: var(--accent-fire);
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .names-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.6rem;
+        }
+
+        .name-chip {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.78rem;
+            font-weight: 600;
+            padding: 0.35rem 1rem;
+            border-radius: 100px;
+            border: 1px solid rgba(255, 77, 77, 0.25);
+            color: var(--accent-fire);
+            background: rgba(255, 77, 77, 0.06);
+            transition: all 0.3s ease;
+            animation: chip-breathe 3s ease-in-out infinite;
+        }
+
+        .name-chip:nth-child(2n) { animation-delay: 0.5s; }
+        .name-chip:nth-child(3n) { animation-delay: 1s; }
+
+        @keyframes chip-breathe {
+            0%, 100% { border-color: rgba(255, 77, 77, 0.25); }
+            50% { border-color: rgba(255, 77, 77, 0.5); }
+        }
+
+        /* ─── SCHEDULE GRID ─── */
+        .schedule-grid {
+            display: grid;
+            gap: 1px;
+            background: var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin-bottom: 2rem;
+            border: 1px solid var(--border);
+        }
+
+        .schedule-row {
+            display: grid;
+            grid-template-columns: 120px 1fr;
+            background: var(--bg-dark);
+            transition: background 0.3s ease;
+        }
+
+        .schedule-row:hover {
+            background: var(--bg-card-hover);
+        }
+
+        .schedule-time {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+            font-weight: 700;
+            padding: 1rem 1.2rem;
+            color: var(--accent-emerald);
+            border-right: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+        }
+
+        .schedule-task {
+            padding: 1rem 1.2rem;
+            font-size: 0.92rem;
+            font-weight: 400;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+        }
+
+        .schedule-task .emoji {
+            margin-right: 0.6rem;
+            font-size: 1.1rem;
+        }
+
+        /* ─── RULES SECTION ─── */
+        .rules-section {
+            margin-bottom: 2rem;
+        }
+
+        .rules-section h2 {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .rule-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            padding: 1.5rem 1.8rem;
+            margin-bottom: 0.8rem;
+            transition: all 0.3s ease;
+            cursor: default;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .rule-card::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent-fire);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .rule-card:hover {
+            background: var(--bg-card-hover);
+            border-color: rgba(255, 77, 77, 0.15);
+            transform: translateX(4px);
+        }
+
+        .rule-card:hover::before {
+            opacity: 1;
+        }
+
+        .rule-card .rule-header {
+            display: flex;
+            align-items: center;
+            gap: 0.7rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .rule-card .rule-icon {
+            font-size: 1.3rem;
+        }
+
+        .rule-card .rule-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .rule-card .rule-desc {
+            font-size: 0.88rem;
+            color: var(--text-secondary);
+            line-height: 1.55;
+            padding-left: 2rem;
+            font-weight: 300;
+        }
+
+        /* ─── POISON LIST ─── */
+        .poison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 0.8rem;
+            margin-bottom: 2rem;
+        }
+
+        .poison-item {
+            background: rgba(255, 77, 77, 0.04);
+            border: 1px solid rgba(255, 77, 77, 0.12);
+            border-radius: 12px;
+            padding: 1.2rem 1.4rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .poison-item:hover {
+            background: rgba(255, 77, 77, 0.08);
+            transform: scale(1.03);
+        }
+
+        .poison-item .strike {
+            font-size: 1.5rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .poison-item .poison-name {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--accent-fire);
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+        }
+
+        .poison-item .poison-why {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+            font-weight: 300;
+        }
+
+        /* ─── EXAM RULE ─── */
+        .exam-card {
+            background: linear-gradient(135deg, rgba(251, 191, 36, 0.05), rgba(167, 139, 250, 0.03));
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            border-radius: 16px;
+            padding: 2rem 2.2rem;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        .exam-card h3 {
+            font-size: 1.15rem;
+            font-weight: 800;
+            color: var(--accent-gold);
+            margin-bottom: 0.8rem;
+        }
+
+        .exam-card p {
+            font-size: 0.92rem;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .exam-card .highlight {
+            color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        /* ─── VISION SECTION ─── */
+        .vision-section {
+            background: linear-gradient(135deg, rgba(52, 211, 153, 0.05), rgba(96, 165, 250, 0.03));
+            border: 1px solid rgba(52, 211, 153, 0.12);
+            border-radius: 20px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .vision-section h2 {
+            font-size: 1.8rem;
+            font-weight: 900;
+            margin-bottom: 0.4rem;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .vision-section .vision-sub {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 2rem;
+        }
+
+        .vision-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1rem;
+        }
+
+        .vision-item {
+            padding: 1.5rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(52, 211, 153, 0.08);
+            border-radius: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .vision-item:hover {
+            transform: translateY(-4px);
+            border-color: rgba(52, 211, 153, 0.25);
+            background: rgba(52, 211, 153, 0.04);
+        }
+
+        .vision-item .v-icon {
+            font-size: 2rem;
+            margin-bottom: 0.6rem;
+        }
+
+        .vision-item .v-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.2rem;
+        }
+
+        .vision-item .v-desc {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            font-weight: 300;
+        }
+
+        .salary-highlight {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-emerald), var(--accent-gold));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 1.5rem 0 0.3rem;
+        }
+
+        .salary-sub {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        /* ─── BOTTOM OATH ─── */
+        .oath-section {
+            text-align: center;
+            padding: 3rem 0;
+            position: relative;
+        }
+
+        .oath-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 10%;
+            right: 10%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
+
+        .oath-text {
+            font-size: 1.6rem;
+            font-weight: 800;
+            line-height: 1.4;
+            max-width: 600px;
+            margin: 0 auto 1rem;
+            background: linear-gradient(135deg, #fff, var(--accent-fire));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .oath-date {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 0.15em;
+        }
+
+        /* countdown timer */
+        .countdown-bar {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .countdown-unit {
+            text-align: center;
+        }
+
+        .countdown-unit .c-num {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-fire);
+            line-height: 1;
+        }
+
+        .countdown-unit .c-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-muted);
+            margin-top: 0.3rem;
+        }
+
+        /* Core equation */
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            text-align: center;
+            padding: 1.5rem;
+            border: 1px dashed rgba(255, 77, 77, 0.2);
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            color: var(--text-secondary);
+        }
+
+        .equation strong {
+            color: var(--accent-fire);
+        }
+
+        .equation .equals {
+            color: var(--accent-emerald);
+            font-weight: 700;
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .container { padding: 1rem 1rem 4rem; }
+            .hero { padding: 2.5rem 0 2rem; }
+            .reality-card { padding: 1.8rem; }
+            .schedule-row { grid-template-columns: 90px 1fr; }
+            .schedule-time { font-size: 0.72rem; padding: 0.8rem; }
+            .vision-grid { grid-template-columns: 1fr 1fr; }
+            .poison-grid { grid-template-columns: 1fr 1fr; }
+            .countdown-bar { gap: 1rem; }
+            .countdown-unit .c-num { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Floating Particles -->
+    <div class="particles" id="particles"></div>
+
+    <div class="container">
+
+        <!-- ═══ HERO ═══ -->
+        <section class="hero">
+            <div class="hero-badge">🔥 Read Every Morning at 6:00 AM</div>
+            <h1>Execute or Regret.</h1>
+            <p class="hero-sub">
+                <strong>The pain of discipline today</strong><br>
+                is lighter than the <strong>weight of regret tomorrow.</strong><br><br>
+                <span style="color: var(--accent-gold); font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em;">
+                    Read this every morning. Not when you feel like it. <em style="color: var(--accent-fire);">Every morning.</em>
+                </span>
+            </p>
+        </section>
+
+        <!-- ═══ TICKER ═══ -->
+        <div class="ticker-wrap">
+            <div class="ticker">
+                <span>No Phone</span><span>No Roaming</span><span>No Overthinking</span>
+                <span>No Excuses</span><span>No Random Breaks</span><span>Only Action</span>
+                <span>Only Work</span><span>Execute Daily</span><span>Sleep at 11</span>
+                <span>Wake at 6</span><span>DSA After 6PM</span><span>Apply for Jobs</span>
+                <!-- repeated for continuous scroll -->
+                <span>No Phone</span><span>No Roaming</span><span>No Overthinking</span>
+                <span>No Excuses</span><span>No Random Breaks</span><span>Only Action</span>
+                <span>Only Work</span><span>Execute Daily</span><span>Sleep at 11</span>
+                <span>Wake at 6</span><span>DSA After 6PM</span><span>Apply for Jobs</span>
+            </div>
+        </div>
+
+        <!-- ═══ COUNTDOWN ═══ -->
+        <div class="countdown-bar" id="countdown">
+            <div class="countdown-unit">
+                <div class="c-num" id="cd-hours">--</div>
+                <div class="c-label">Hours Left</div>
+            </div>
+            <div class="countdown-unit">
+                <div class="c-num" id="cd-mins">--</div>
+                <div class="c-label">Minutes</div>
+            </div>
+            <div class="countdown-unit">
+                <div class="c-num" id="cd-secs">--</div>
+                <div class="c-label">Seconds</div>
+            </div>
+            <div class="countdown-unit">
+                <div class="c-num" style="color: var(--accent-gold);" id="cd-label">TODAY</div>
+                <div class="c-label">Until 11 PM</div>
+            </div>
+        </div>
+
+        <!-- ═══ REALITY CHECK ═══ -->
+        <div class="reality-card">
+            <div class="section-label">Reality Check — Face It</div>
+            <div class="reality-stat">
+                <span class="num">3</span>
+                <span class="label">years of experience — compensation not matching potential</span>
+            </div>
+            <div class="reality-stat">
+                <span class="num" style="color: var(--accent-gold);">1yr</span>
+                <span class="label">worth salary for 3 years of work — that's the gap</span>
+            </div>
+            <p class="reality-quote">
+                Others moved ahead. That gap <em>will not close</em> by thinking.<br>
+                Planning and overthinking is useless. <em>Action + Execution = Result.</em>
+            </p>
+        </div>
+
+        <!-- ═══ CORE EQUATION ═══ -->
+        <div class="equation">
+            <strong>Action</strong> + <strong>Execution</strong> <span class="equals">===</span> Result &nbsp;&nbsp;|&nbsp;&nbsp; Planning ≠ Result
+        </div>
+
+        <!-- ═══ NAMES — WHO MOVED AHEAD ═══ -->
+        <div class="names-block">
+            <div class="ahead-label">⚡ They Moved Ahead — Will You?</div>
+            <div class="names-list">
+                <span class="name-chip">Sai</span>
+                <span class="name-chip">Nikita</span>
+                <span class="name-chip">Nishank</span>
+                <span class="name-chip">Yash Doshi</span>
+                <span class="name-chip">Yash Mishra</span>
+                <span class="name-chip">Chanchal</span>
+            </div>
+        </div>
+
+        <!-- ═══ DAILY SCHEDULE ═══ -->
+        <section class="rules-section">
+            <h2>🕐 Non-Negotiable Schedule</h2>
+            <div class="schedule-grid">
+                <div class="schedule-row">
+                    <div class="schedule-time">06:00 AM</div>
+                    <div class="schedule-task"><span class="emoji">🌅</span> Wake up. No snooze. Read this anthem.</div>
+                </div>
+                <div class="schedule-row">
+                    <div class="schedule-time">06 – 07</div>
+                    <div class="schedule-task"><span class="emoji">🧘</span> Meditate & morning routine. Train sitting.</div>
+                </div>
+                <div class="schedule-row">
+                    <div class="schedule-time">07 – 11</div>
+                    <div class="schedule-task"><span class="emoji">📚</span> Deep work block — DSA / Study / Build.</div>
+                </div>
+                <div class="schedule-row">
+                    <div class="schedule-time">11 – 05</div>
+                    <div class="schedule-task"><span class="emoji">💼</span> Office. No questions asked. It pays your bills.</div>
+                </div>
+                <div class="schedule-row">
+                    <div class="schedule-time">05 – 06</div>
+                    <div class="schedule-task"><span class="emoji">🧠</span> Travel plans, thinking, admin tasks — only here.</div>
+                </div>
+                <div class="schedule-row">
+                    <div class="schedule-time">06 – 11</div>
+                    <div class="schedule-task"><span class="emoji">🔥</span> DSA + Job Applications. No matter what.</div>
+                </div>
+                <div class="schedule-row">
+                    <div class="schedule-time">11:00 PM</div>
+                    <div class="schedule-task"><span class="emoji">😴</span> Sleep. Throw the phone away. No delay.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ CURRENT JOB REMINDER ═══ -->
+        <div class="rule-card" style="border-left: 3px solid var(--accent-emerald); margin-bottom: 2rem;">
+            <div class="rule-header">
+                <span class="rule-icon">💰</span>
+                <span class="rule-title">Never Ignore Your Current Job</span>
+            </div>
+            <p class="rule-desc">
+                It pays your bills. It gives stability and experience.<br>
+                Work from <strong style="color: var(--accent-emerald);">11 to 5</strong> in office — no questions asked. Give your 100%.
+            </p>
+        </div>
+
+        <!-- ═══ DEADLY SINS — THINGS TO NEVER DO ═══ -->
+        <section class="rules-section">
+            <h2>🚫 Deadly Sins — Zero Tolerance</h2>
+            <div class="poison-grid">
+                <div class="poison-item">
+                    <div class="strike">📵</div>
+                    <div class="poison-name">No Phone</div>
+                    <div class="poison-why">#1 Distraction. Kill it.</div>
+                </div>
+                <div class="poison-item">
+                    <div class="strike">🚶‍♂️</div>
+                    <div class="poison-name">No Roaming</div>
+                    <div class="poison-why">Disease since Class 10 & 12</div>
+                </div>
+                <div class="poison-item">
+                    <div class="strike">🧠</div>
+                    <div class="poison-name">No Overthinking</div>
+                    <div class="poison-why">It's a disease. Only action = work</div>
+                </div>
+                <div class="poison-item">
+                    <div class="strike">☕</div>
+                    <div class="poison-name">No Random Breaks</div>
+                    <div class="poison-why">Sit and train focus</div>
+                </div>
+                <div class="poison-item">
+                    <div class="strike">🎵</div>
+                    <div class="poison-name">No "Thoda Sa"</div>
+                    <div class="poison-why">No thoda sa gaana, porn, YouTube</div>
+                </div>
+                <div class="poison-item">
+                    <div class="strike">📋</div>
+                    <div class="poison-name">No Planning Loops</div>
+                    <div class="poison-why">Planning ≠ doing. Execute.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ DISCIPLINE RULES ═══ -->
+        <section class="rules-section">
+            <h2>⚔️ Iron Rules</h2>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <span class="rule-icon">🧘</span>
+                    <span class="rule-title">Learn to Meditate</span>
+                </div>
+                <p class="rule-desc">Even if you think it's not required. It builds the mental engine.</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <span class="rule-icon">🪑</span>
+                    <span class="rule-title">Sitting Is a Skill. Train It.</span>
+                </div>
+                <p class="rule-desc">Your ability to sit and focus for hours is what separates you from the crowd.</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <span class="rule-icon">🍽️</span>
+                    <span class="rule-title">No Exceptions on Food or Anything</span>
+                </div>
+                <p class="rule-desc">Discipline is absolute. No "just this once" on anything.</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <span class="rule-icon">📱➡️🗑️</span>
+                    <span class="rule-title">Throw Phone Away While Sleeping</span>
+                </div>
+                <p class="rule-desc">Sleep at 11 PM sharp. Phone goes away. No delay, no scrolling.</p>
+            </div>
+
+            <div class="rule-card">
+                <div class="rule-header">
+                    <span class="rule-icon">🔮</span>
+                    <span class="rule-title">Think About the Future</span>
+                </div>
+                <p class="rule-desc">Every hour wasted is money and life potential lost. Visualize where you want to be.</p>
+            </div>
+        </section>
+
+        <!-- ═══ EXAM RULE ═══ -->
+        <div class="exam-card">
+            <h3>📝 Exam Rule — No Panic Mode</h3>
+            <p>
+                Do <span class="highlight">NOT</span> change the routine for exams.
+                No special preparation before exams, no panic revisions.<br><br>
+                You <span class="highlight">cannot change your level in 2 days.</span>
+                Performance is built in months.
+                What you can't do in 2 months, you can't do in 2 days.<br><br>
+                <strong style="color: var(--text-primary);">The routine stays. Always.</strong>
+            </p>
+        </div>
+
+        <!-- ═══ CRAMMING PROOF ═══ -->
+        <div class="exam-card" style="border-color: rgba(255, 77, 77, 0.25); background: linear-gradient(135deg, rgba(255, 77, 77, 0.05), rgba(251, 191, 36, 0.02));">
+            <h3 style="color: var(--accent-fire);">💀 Proof That Cramming Fails — Your Own History</h3>
+            <p>
+                You've done last-minute cramming many times before.<br>
+                <span class="highlight" style="color: var(--accent-fire);">90% of the time it did NOT work.</span><br><br>
+            </p>
+            <div style="display: flex; gap: 0.8rem; flex-wrap: wrap; margin-bottom: 1.2rem;">
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 8px; background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.25); color: var(--accent-fire);">❌ Razorpay</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 8px; background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.25); color: var(--accent-fire);">❌ KoreAI</span>
+                <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; font-weight: 700; padding: 0.4rem 1rem; border-radius: 8px; background: rgba(255, 77, 77, 0.1); border: 1px solid rgba(255, 77, 77, 0.25); color: var(--accent-fire);">❌ Groow</span>
+            </div>
+            <p>
+                <strong style="color: var(--accent-gold);">Only strategy for 1 day before exam:</strong><br>
+                ➜ Review previous questions<br>
+                ➜ Read through HLD / LLD — just a light pass<br>
+                ➜ That's it. No panic. No cramming. Trust the months of work.
+            </p>
+        </div>
+
+        <!-- ═══ THE VISION ═══ -->
+        <section class="vision-section">
+            <h2>The Vision</h2>
+            <p class="vision-sub">This is what daily execution unlocks</p>
+
+            <div class="salary-highlight">₹30 LPA</div>
+            <p class="salary-sub">₹2,00,000 / month — That's the target</p>
+
+            <div class="vision-grid">
+                <div class="vision-item">
+                    <div class="v-icon">💰</div>
+                    <div class="v-title">Financial Freedom</div>
+                    <div class="v-desc">No more salary stress</div>
+                </div>
+                <div class="vision-item">
+                    <div class="v-icon">✨</div>
+                    <div class="v-title">Better Lifestyle</div>
+                    <div class="v-desc">Live the life you deserve</div>
+                </div>
+                <div class="vision-item">
+                    <div class="v-icon">🛒</div>
+                    <div class="v-title">No Guilt Spending</div>
+                    <div class="v-desc">Buy without hesitation</div>
+                </div>
+                <div class="vision-item">
+                    <div class="v-icon">💍</div>
+                    <div class="v-title">Good Life Partner</div>
+                    <div class="v-desc">The life you envision</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ═══ BOTTOM OATH ═══ -->
+        <section class="oath-section">
+            <p class="oath-text">
+                Today I choose execution over comfort.<br>
+                I will not waste this day.
+            </p>
+            <p class="oath-date" id="today-date"></p>
+        </section>
+
+    </div>
+
+    <script>
+        // ─── Particles ───
+        (function() {
+            const container = document.getElementById('particles');
+            const colors = ['#ff4d4d', '#fbbf24', '#a78bfa', '#34d399', '#60a5fa'];
+            for (let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.className = 'particle';
+                p.style.left = Math.random() * 100 + '%';
+                p.style.animationDuration = (8 + Math.random() * 12) + 's';
+                p.style.animationDelay = Math.random() * 10 + 's';
+                p.style.background = colors[Math.floor(Math.random() * colors.length)];
+                p.style.width = (1 + Math.random() * 2) + 'px';
+                p.style.height = p.style.width;
+                container.appendChild(p);
+            }
+        })();
+
+        // ─── Today's Date ───
+        const dateEl = document.getElementById('today-date');
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        dateEl.textContent = now.toLocaleDateString('en-IN', options).toUpperCase();
+
+        // ─── Countdown to 11 PM ───
+        function updateCountdown() {
+            const now = new Date();
+            const target = new Date();
+            target.setHours(23, 0, 0, 0);
+
+            let diff = target - now;
+            if (diff < 0) {
+                document.getElementById('cd-hours').textContent = '00';
+                document.getElementById('cd-mins').textContent = '00';
+                document.getElementById('cd-secs').textContent = '00';
+                document.getElementById('cd-label').textContent = 'DONE';
+                return;
+            }
+
+            const hours = Math.floor(diff / 3600000);
+            diff %= 3600000;
+            const mins = Math.floor(diff / 60000);
+            diff %= 60000;
+            const secs = Math.floor(diff / 1000);
+
+            document.getElementById('cd-hours').textContent = String(hours).padStart(2, '0');
+            document.getElementById('cd-mins').textContent = String(mins).padStart(2, '0');
+            document.getElementById('cd-secs').textContent = String(secs).padStart(2, '0');
+        }
+
+        updateCountdown();
+        setInterval(updateCountdown, 1000);
+    </script>
+</body>
+</html>
