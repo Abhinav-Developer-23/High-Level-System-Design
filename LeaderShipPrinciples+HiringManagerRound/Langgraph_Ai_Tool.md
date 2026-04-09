@@ -1119,6 +1119,165 @@ client.data_object.create(
 # - Knows indexed columns (queries on indexed fields = fast)
 ```
 
+### How do you chunk data for the vector DB?
+
+We chunk runbooks into **~500 character pieces** with **50 char overlap** (so context isn't lost at boundaries). Each chunk stores metadata for filtering and tracing:
+
+| Metadata field | Why | Example |
+|---------------|-----|---------|
+| **source** | Trace back to original doc | `confluence/runbooks/payment-gateway.md` |
+| **service** | Filter by service | `payment-gateway` |
+| **alert_type** | Match to specific alerts | `gateway_timeout` |
+| **team** | Multi-tenancy | `payments` |
+| **chunk_index** | Preserve ordering | If chunk 3 matches, fetch chunks 2 & 4 for context |
+| **last_updated** | Freshness — prefer recent docs | `2026-04-01` |
+
+This lets us do **semantic search + metadata filtering** together — e.g., "find the most relevant P1 payment-gateway runbook for a gateway timeout."
+
+### Do you chunk everything?
+
+**No.** DB schemas are **NOT chunked** — the LLM needs ALL fields together to write correct SQL:
+
+```
+❌ Chunked schema → LLM sees only some fields → broken/incomplete SQL
+✅ Full schema → LLM sees all fields, types, allowed values → correct SQL
+```
+
+DB schemas are small (~200 chars per table), so they fit in one document easily.
+
+| Data type | Chunk? | Why |
+|-----------|--------|-----|
+| **Runbooks** (long docs) | ✅ Yes — 500 chars | Large, have independent sections |
+| **DB Schema** | ❌ No — one doc per table | LLM needs all fields to construct SQL |
+| **Prometheus queries** | ❌ No — one doc per query | Each query is small and independent |
+| **ES log patterns** | ❌ No — one doc per pattern | Each pattern is small and independent |
+
+### What format are the documents?
+
+All documents are **Markdown (.md) files** stored in a Git repo:
+
+```
+knowledge-base-repo/
+├── runbooks/
+│   ├── payment-gateway-timeout.md
+│   ├── database-connection-failure.md
+│   └── pod-oom-killed.md
+├── schemas/
+│   ├── txn_info_schema.md
+│   └── payment_events_schema.md
+├── prometheus-queries/
+│   └── payment-metrics.md
+└── es-patterns/
+    └── payment-service-logs.md
+```
+
+Engineers write/update these .md files via PRs — no special tooling needed.
+
+### How does the vector DB stay updated?
+
+A **cron job runs every 10 minutes** on main branch, checks for changes, and only updates what changed:
+
+```
+Every 10 minutes:
+    │
+    ▼
+git pull main → git diff (check for changes)
+    │
+    ├── No changes → done, skip ✅
+    │
+    └── Changes detected → ["runbooks/payment-gateway-timeout.md"]
+            │
+            ▼
+        1. Delete OLD chunks for that file (using source metadata)
+        2. Re-chunk the updated file
+        3. Insert NEW chunks into Weaviate
+        4. Other files untouched ✅
+```
+
+**Key:** Each chunk stores `source = "runbooks/payment-gateway-timeout.md"` in metadata. When that file changes, we delete all chunks `WHERE source = that file` and re-insert — only that file is affected, rest of the vector DB stays untouched.
+
+### How does git diff work since we're merging into main?
+
+We track the **last synced commit hash** in Redis. The diff is between that commit and current HEAD — handles multiple PRs merging between cron runs:
+
+```
+Time 10:00 — Cron runs
+  Last synced: commit A
+  Current HEAD: commit A (same)
+  → No changes, skip ✅
+
+Time 10:10 — Cron runs
+  Last synced: commit A
+  Current HEAD: commit D (3 PRs merged: B, C, D)
+  → git diff A..D -- *.md
+  → Changed: ["runbooks/payment-gateway-timeout.md"]
+  → Update Weaviate for that file
+  → Save last synced = commit D ✅
+
+Time 10:20 — Cron runs
+  Last synced: commit D
+  Current HEAD: commit D (same)
+  → No changes, skip ✅
+```
+
+```python
+def sync_job():
+    subprocess.run(["git", "pull", "origin", "main"])
+    
+    current_commit = subprocess.run(
+        ["git", "rev-parse", "HEAD"], capture_output=True, text=True
+    ).stdout.strip()
+    
+    last_synced = redis.get("weaviate:last_synced_commit")
+    
+    if last_synced == current_commit:
+        return  # no changes
+    
+    # Diff between last synced commit and current HEAD
+    changed_files = subprocess.run(
+        ["git", "diff", "--name-only", last_synced, current_commit, "--", "*.md"],
+        capture_output=True, text=True
+    ).stdout.strip().split("\n")
+    
+    for md_file in changed_files:
+        update_weaviate(md_file)  # delete old chunks, re-chunk, insert new
+    
+    redis.set("weaviate:last_synced_commit", current_commit)
+```
+
+`git diff A..D` shows ALL files changed between those commits — doesn't matter if 1 or 10 PRs merged.
+
+### What if a sync job is already running when the next cron triggers?
+
+We use a **Redis distributed lock** to prevent two sync jobs from running simultaneously:
+
+```
+Time 10:00 — Cron triggers → Job A acquires lock → starts syncing
+Time 10:10 — Cron triggers → Job B sees lock exists → SKIPS ✅
+Time 10:18 — Job A finishes → releases lock
+Time 10:20 — Cron triggers → Job C acquires lock → syncs normally ✅
+```
+
+```python
+def sync_job():
+    # Try to acquire lock (auto-expires in 15 min as safety net)
+    acquired = redis.set("weaviate:sync_lock", "running", nx=True, ex=900)
+    
+    if not acquired:
+        return  # another job is running, skip
+    
+    try:
+        # ... do the sync work ...
+    finally:
+        redis.delete("weaviate:sync_lock")  # always release lock
+```
+
+| Concern | Solution |
+|---------|----------|
+| **Two jobs run at same time** | `nx=True` — only set if key doesn't exist (atomic) |
+| **Job crashes, never releases lock** | `ex=900` — lock auto-expires in 15 min |
+| **Job finishes normally** | `finally: redis.delete()` — always release |
+
 ---
 
 ## Q15. What would you improve or do differently?

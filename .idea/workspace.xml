@@ -4,15 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="997fbbd4-1ad7-4ffa-8e50-0f58d45b1622" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/HLD_Questions/MovieTicketBooking.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/DBMS2.md" beforeDir="false" afterPath="$PROJECT_DIR$/DBMS2.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Live_Comments.md" beforeDir="false" afterPath="$PROJECT_DIR$/HLD_Questions/Live_Comments.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Whatsapp-System-Design.md" beforeDir="false" afterPath="$PROJECT_DIR$/HLD_Questions/Whatsapp-System-Design.md" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pastebin-questions.md" beforeDir="false" afterPath="$PROJECT_DIR$/HLD_Questions/pastebin-questions.md" afterDir="false" />
+    <list default="true" id="997fbbd4-1ad7-4ffa-8e50-0f58d45b1622" name="Changes" comment="commit">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LeaderShipPrinciples+HiringManagerRound/Langgraph_Ai_Tool.md" beforeDir="false" afterPath="$PROJECT_DIR$/LeaderShipPrinciples+HiringManagerRound/Langgraph_Ai_Tool.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -74,9 +68,23 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1774351954257</updated>
-      <workItem from="1775574743774" duration="4992000" />
+      <workItem from="1775574743774" duration="5874000" />
     </task>
+    <task id="LOCAL-00001" summary="commit">
+      <option name="closed" value="true" />
+      <created>1775664237029</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1775664237029</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <MESSAGE value="commit" />
+    <option name="LAST_COMMIT_MESSAGE" value="commit" />
   </component>
   <component name="github-copilot-workspace">
     <instructionFileLocations>
