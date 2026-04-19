@@ -1,0 +1,68 @@
+<svg viewBox="0 0 850 480" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, Arial, sans-serif">
+  <rect width="850" height="480" rx="12" fill="#0f172a"/>
+  <text x="425" y="30" text-anchor="middle" fill="#e2e8f0" font-size="16" font-weight="bold">Database Schema — Entity Relationship Diagram</text>
+
+  <!-- Users Table -->
+  <rect x="30" y="60" width="220" height="160" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+  <rect x="30" y="60" width="220" height="30" rx="6" fill="#0e4c75"/>
+  <text x="140" y="80" text-anchor="middle" fill="#7dd3fc" font-size="13" font-weight="bold">users</text>
+  <text x="42" y="105" fill="#94a3b8" font-size="11">🔑 user_id       UUID PK</text>
+  <text x="42" y="123" fill="#94a3b8" font-size="11">    email         VARCHAR UQ</text>
+  <text x="42" y="141" fill="#94a3b8" font-size="11">    display_name  VARCHAR</text>
+  <text x="42" y="159" fill="#94a3b8" font-size="11">    department    VARCHAR</text>
+  <text x="42" y="177" fill="#94a3b8" font-size="11">    timezone      VARCHAR</text>
+  <text x="42" y="195" fill="#94a3b8" font-size="11">    created_at    TIMESTAMPTZ</text>
+
+  <!-- Rooms Table -->
+  <rect x="590" y="60" width="230" height="190" rx="6" fill="#1e293b" stroke="#fb923c" stroke-width="1.5"/>
+  <rect x="590" y="60" width="230" height="30" rx="6" fill="#7c4a15"/>
+  <text x="705" y="80" text-anchor="middle" fill="#fdba74" font-size="13" font-weight="bold">rooms</text>
+  <text x="602" y="105" fill="#94a3b8" font-size="11">🔑 room_id    UUID PK</text>
+  <text x="602" y="123" fill="#94a3b8" font-size="11">    name       VARCHAR</text>
+  <text x="602" y="141" fill="#94a3b8" font-size="11">    building   VARCHAR</text>
+  <text x="602" y="159" fill="#94a3b8" font-size="11">    floor      INT</text>
+  <text x="602" y="177" fill="#94a3b8" font-size="11">    room_type  ENUM</text>
+  <text x="602" y="195" fill="#94a3b8" font-size="11">    capacity   INT</text>
+  <text x="602" y="213" fill="#94a3b8" font-size="11">    amenities  JSONB</text>
+  <text x="602" y="231" fill="#94a3b8" font-size="11">    is_active  BOOLEAN</text>
+
+  <!-- Meetings Table -->
+  <rect x="290" y="280" width="270" height="185" rx="6" fill="#1e293b" stroke="#34d399" stroke-width="1.5"/>
+  <rect x="290" y="280" width="270" height="30" rx="6" fill="#14532d"/>
+  <text x="425" y="300" text-anchor="middle" fill="#6ee7b7" font-size="13" font-weight="bold">meetings</text>
+  <text x="302" y="325" fill="#94a3b8" font-size="11">🔑 meeting_id     UUID PK</text>
+  <text x="302" y="343" fill="#94a3b8" font-size="11">🔗 organizer_id   UUID FK→users</text>
+  <text x="302" y="361" fill="#94a3b8" font-size="11">🔗 room_id        UUID FK→rooms</text>
+  <text x="302" y="379" fill="#94a3b8" font-size="11">    subject        VARCHAR</text>
+  <text x="302" y="397" fill="#94a3b8" font-size="11">    start_time     TIMESTAMPTZ</text>
+  <text x="302" y="415" fill="#94a3b8" font-size="11">    end_time       TIMESTAMPTZ</text>
+  <text x="302" y="433" fill="#94a3b8" font-size="11">    status         ENUM</text>
+  <text x="302" y="451" fill="#94a3b8" font-size="11">    🔍 IDX(room_id, start, end)</text>
+
+  <!-- Meeting Participants (junction) -->
+  <rect x="30" y="310" width="230" height="130" rx="6" fill="#1e293b" stroke="#a78bfa" stroke-width="1.5"/>
+  <rect x="30" y="310" width="230" height="30" rx="6" fill="#3b1e6e"/>
+  <text x="145" y="330" text-anchor="middle" fill="#c4b5fd" font-size="13" font-weight="bold">meeting_participants</text>
+  <text x="42" y="355" fill="#94a3b8" font-size="11">🔗 meeting_id   UUID FK→meetings</text>
+  <text x="42" y="373" fill="#94a3b8" font-size="11">🔗 user_id      UUID FK→users</text>
+  <text x="42" y="391" fill="#94a3b8" font-size="11">    rsvp_status  ENUM</text>
+  <text x="42" y="409" fill="#94a3b8" font-size="11">    notified_at  TIMESTAMPTZ</text>
+  <text x="42" y="427" fill="#94a3b8" font-size="11">    PK(meeting_id, user_id)</text>
+
+  <!-- Relationship lines -->
+  <!-- users → meeting_participants -->
+  <line x1="140" y1="220" x2="140" y2="310" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="148" y="270" fill="#a78bfa" font-size="10">1:N</text>
+
+  <!-- meetings → meeting_participants -->
+  <line x1="290" y1="370" x2="260" y2="370" stroke="#a78bfa" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="270" y="363" fill="#a78bfa" font-size="10">1:N</text>
+
+  <!-- users → meetings (organizer) -->
+  <path d="M 250 180 Q 380 180 380 280" stroke="#34d399" stroke-width="1.5" fill="none" stroke-dasharray="6,3"/>
+  <text x="310" y="210" fill="#34d399" font-size="10">organizer 1:N</text>
+
+  <!-- rooms → meetings -->
+  <path d="M 590 200 Q 500 240 500 280" stroke="#fb923c" stroke-width="1.5" fill="none" stroke-dasharray="6,3"/>
+  <text x="540" y="235" fill="#fb923c" font-size="10">1:N</text>
+</svg>

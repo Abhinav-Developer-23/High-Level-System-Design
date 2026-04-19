@@ -1,2 +1,5 @@
 # Obsidian workspace settings
 .obsidian/
+
+# IntelliJ IDEA settings
+.idea/
