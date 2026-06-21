@@ -19,6 +19,7 @@ These files are **personal quick-reference notes and runnable tutorials** — cr
 |---|---|---|
 | [Java.md](Java/Java.md) | Markdown notes | ThreadPoolExecutor, CompletableFuture theory, JVM Memory Model, Garbage Collection, GC Tuning |
 | [TutorialsJava.java](Java/JavaTutorial/src/test/java/org/example/TutorialsJava.java) | **Runnable JUnit 5 tests** | CompletableFuture — 14 fully documented examples with rich comments explaining every method and pattern |
+| [LeadershipQuestions.md](LeaderShipPrinciples+HiringManagerRound/LeadershipQuestions.md) | Markdown notes | Leadership principle interview questions & answers — all in STAR format |
 
 ## About TutorialsJava.java
 

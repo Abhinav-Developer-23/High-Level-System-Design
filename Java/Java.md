@@ -166,17 +166,112 @@ public class LogAndDiscardPolicy implements RejectedExecutionHandler {
 
 `CompletableFuture<T>` (Java 8+) is Java's answer to **composable, non-blocking asynchronous programming**. It implements both `Future<T>` and `CompletionStage<T>`.
 
-### 3.1 Why Not Just `Future<T>`?
+### 3.1 Future vs CompletableFuture: Deep Dive Comparison
 
-The old `Future<T>` returned by `ExecutorService.submit()` has a fundamental limitation — the **only** way to get the result is `future.get()`, which **blocks** the calling thread.
+While both `Future` and `CompletableFuture` represent the result of an asynchronous computation, they represent two different paradigms in Java concurrency.
+
+#### 3.1.1 The Class/Interface Hierarchy
+- **`Future<T>`** (introduced in Java 5): A read-only handle to an asynchronous task that will eventually complete. It provides no callback mechanisms.
+- **`CompletableFuture<T>`** (introduced in Java 8): Implements both **`Future<T>`** and **`CompletionStage<T>`**. This allows it to act as a reactive/event-driven promise, where you can attach callbacks and chain stages.
+
+```mermaid
+classDiagram
+    class Future {
+        <<interface>>
+        +get()
+        +cancel()
+        +isDone()
+    }
+    class CompletionStage {
+        <<interface>>
+        +thenApply()
+        +thenCompose()
+        +thenCombine()
+    }
+    class CompletableFuture {
+        +complete()
+        +completeExceptionally()
+    }
+    Future <|.. CompletableFuture
+    CompletionStage <|.. CompletableFuture
+```
+
+#### 3.1.2 Key Architectural Differences
+
+##### 1. Blocking vs. Non-blocking Callback Paradigm
+- **`Future<T>`**: The calling thread must block using `.get()` or poll using a loop with `.isDone()` and `Thread.sleep()` to wait for the result. This causes thread starvation, blocking valuable runtime/worker threads (e.g. Tomcat/HTTP request threads).
+- **`CompletableFuture<T>`**: Push-based callback model. You register a callback (e.g., `.thenAccept()`) which is automatically executed once the result is ready. The calling thread is never blocked.
+
+```java
+// --- THE OLD FUTURE WAY (Blocking & Synchronous-wait) ---
+Future<String> future = executorService.submit(() -> fetchUser(id));
+// Calling thread blocks here until fetchUser finishes!
+String user = future.get(); 
+System.out.println("User: " + user);
+
+// --- THE NEW COMPLETABLEFUTURE WAY (Non-blocking & Callback-driven) ---
+CompletableFuture.supplyAsync(() -> fetchUser(id))
+    .thenAccept(user -> System.out.println("User: " + user)); // Non-blocking callback
+```
+
+##### 2. Piping & Chaining (No Callback Hell)
+- **`Future<T>`**: If Task B depends on the output of Task A, you must call `futureA.get()` (blocking), retrieve the result, and then submit Task B.
+- **`CompletableFuture<T>`**: Supports fluent pipelining via `thenApply` (mapping) and `thenCompose` (flat-mapping).
+
+```java
+// Future: Requires blocking step-by-step
+String rawData = futureA.get(); // Blocks
+String processed = process(rawData);
+Future<Result> futureB = executor.submit(() -> save(processed));
+Result res = futureB.get(); // Blocks again
+
+// CompletableFuture: Fluent chaining
+CompletableFuture<Result> pipeline = CompletableFuture.supplyAsync(() -> fetchData())
+    .thenApply(data -> process(data))             // synchronous transform
+    .thenCompose(processed -> saveAsync(processed)); // dependent async step
+```
+
+##### 3. Coordination & Aggregation
+- **`Future<T>`**: If you run multiple tasks in parallel and want to wait for all of them or the first one, you must manually iterate, poll, or block on each.
+- **`CompletableFuture<T>`**: Provides declarative combinations like `allOf` (join all) and `anyOf` (race to the first).
+
+##### 4. Manual Completion
+- **`Future<T>`**: It is completely read-only. The JVM controls when it completes. You cannot manually set a value.
+- **`CompletableFuture<T>`**: Can be manually completed by any thread. This is extremely useful for bridging legacy callback APIs or event-driven message architectures.
+
+```java
+CompletableFuture<String> promise = new CompletableFuture<>();
+
+// Some message-listener thread gets a message
+eventBus.onMessage(msg -> {
+    promise.complete(msg.payload); 
+});
+
+// A caller can wait for it or chain callbacks
+promise.thenAccept(payload -> System.out.println("Received: " + payload));
+```
+
+##### 5. Declarative Exception Handling
+- **`Future<T>`**: Exceptions thrown inside the worker are wrapped in `ExecutionException` and re-thrown when you call `.get()`. You must handle them inside a standard `try-catch` block around `.get()`.
+- **`CompletableFuture<T>`**: Allows functional error recovery inline via `.exceptionally()`, `.handle()`, and `.whenComplete()`.
+
+---
+
+#### 3.1.3 Feature Comparison Matrix
 
 | Feature | `Future<T>` | `CompletableFuture<T>` |
 |---|---|---|
-| Get result | `get()` blocks the thread | `thenApply`, `thenAccept`, callbacks — non-blocking |
-| Chain operations | ❌ Not possible | ✅ `thenApply().thenCompose().thenAccept()` |
-| Combine multiple futures | ❌ Manual polling | ✅ `allOf()`, `anyOf()`, `thenCombine()` |
-| Exception handling | `ExecutionException` from `get()` | `exceptionally()`, `handle()`, `whenComplete()` |
-| Manually complete | ❌ | ✅ `complete()`, `completeExceptionally()` |
+| **Origin** | Java 5 | Java 8 |
+| **Paradigm** | Pull-based (Blocking / Polling) | Push-based (Reactive / Callback-driven) |
+| **Non-blocking Callbacks** | ❌ Not supported | ✅ Supported (`thenApply`, `thenAccept`, etc.) |
+| **Manual Completion** | ❌ Not possible | ✅ Possible (`complete()`, `completeExceptionally()`) |
+| **Fluent Pipelining** | ❌ Not possible | ✅ Possible (`thenCompose`, `thenApply`) |
+| **Exception Handling** | ❌ Manual try-catch around `get()` | ✅ Built-in functional pipelines (`exceptionally`, `handle`) |
+| **Multi-Future Coordination** | ❌ Requires manual boilerplate | ✅ Declarative static helpers (`allOf`, `anyOf`, `thenCombine`) |
+
+> [!TIP]
+> For CPU-bound operations, sharing the default `ForkJoinPool.commonPool()` is acceptable. However, for **I/O-bound** operations (e.g., calling remote APIs or querying DBs), always pass a custom thread pool/executor to `CompletableFuture` async methods (e.g., `supplyAsync(task, myCustomExecutor)`) to avoid starving CPU threads.
+
 
 ### 3.2 Creating a CompletableFuture
 
@@ -1898,3 +1993,173 @@ Java 21     Generational ZGC (young/old within ZGC regions).
 ```
 
 > 💡 **Interview answer:** "For a 64 GB heap with sub-10ms pauses, I'd use ZGC on Java 17+ or Shenandoah on OpenJDK. Neither is available on Java 8, which is one of the strongest arguments for upgrading. On Java 8, G1 with aggressive tuning is the best option but cannot guarantee sub-10ms at that heap size."
+
+---
+
+## 14. Streams vs Imperative Loops
+
+Java 8 introduced the Streams API — a functional-style pipeline for processing collections. This section compares streams with traditional imperative `for` loops to help you pick the right tool for the job.
+
+### 14.1 Advantages of Streams
+
+#### 1. More Concise Code
+
+Instead of writing loops and temporary collections:
+
+```java
+// Imperative — boilerplate-heavy
+List<String> result = new ArrayList<>();
+for (String name : names) {
+    if (name.startsWith("A")) {
+        result.add(name.toUpperCase());
+    }
+}
+```
+
+With Streams:
+
+```java
+// Declarative — intent is immediately clear
+List<String> result = names.stream()
+        .filter(name -> name.startsWith("A"))
+        .map(String::toUpperCase)
+        .toList();
+```
+
+The intent is clearer: **filter → transform → collect**.
+
+#### 2. Better Readability for Data Processing
+
+Streams allow you to express **what** you want rather than **how** to iterate.
+
+```java
+double avgSalary = employees.stream()
+        .mapToDouble(Employee::getSalary)
+        .average()
+        .orElse(0);
+```
+
+This is easier to understand than manually maintaining counters and sums.
+
+#### 3. Rich Functional-Style Operations
+
+Streams provide many built-in operations out of the box:
+
+| Operation | Purpose |
+|---|---|
+| `filter()` | Keep elements matching a predicate |
+| `map()` | Transform each element |
+| `flatMap()` | One-to-many transformation (flatten nested collections) |
+| `sorted()` | Sort elements |
+| `distinct()` | Remove duplicates |
+| `groupingBy()` | Group elements by a classifier (via `Collectors`) |
+| `partitioningBy()` | Split into two groups (true/false) (via `Collectors`) |
+
+Example — grouping employees by department:
+
+```java
+Map<String, List<Employee>> byDept =
+        employees.stream()
+                 .collect(Collectors.groupingBy(Employee::getDepartment));
+```
+
+Doing this manually requires much more code (creating the map, checking `containsKey`, initialising lists, etc.).
+
+#### 4. Easy Parallel Processing
+
+A stream can be converted to a parallel stream with a single method call:
+
+```java
+long count = numbers.parallelStream()
+                    .filter(n -> n % 2 == 0)
+                    .count();
+```
+
+With loops, parallelisation requires manual thread management or executors.
+
+> ⚠️ **Caveat:** `parallelStream()` uses `ForkJoinPool.commonPool()`. For I/O-bound operations, use a custom pool (same advice as CompletableFuture — see [Section 3](#3-completablefuture)).
+
+#### 5. Lazy Evaluation
+
+Intermediate operations (`filter`, `map`, `sorted`, etc.) are **not executed until a terminal operation** (`collect`, `forEach`, `findFirst`, etc.) is invoked. This means processing stops as soon as the result can be determined:
+
+```java
+names.stream()
+     .filter(name -> {
+         System.out.println("Testing: " + name);
+         return name.startsWith("A");
+     })
+     .findFirst();
+```
+
+If the list is `["Alice", "Bob", "Charlie"]`, only `"Alice"` is printed — processing **stops** after the first match. A traditional loop with `break` achieves this too, but streams make it declarative.
+
+---
+
+### 14.2 Advantages of Traditional `for` Loops
+
+#### 1. Usually Faster (Lower Overhead)
+
+Streams create additional objects (spliterators, pipeline stages, lambdas) and involve method calls at each stage. For performance-critical hot paths:
+
+```java
+// Faster for tight loops / small datasets
+long sum = 0;
+for (int n : arr) {
+    sum += n;
+}
+```
+
+vs.
+
+```java
+// Slightly more overhead from boxing/unboxing and pipeline setup
+long sum = Arrays.stream(arr).sum();
+```
+
+> 💡 For primitive arrays, `IntStream` / `LongStream` / `DoubleStream` avoid boxing overhead. The performance difference is negligible for most applications — only matters in hot loops processing millions of elements.
+
+#### 2. Easier When Complex State Is Involved
+
+When you need index-based access, early termination with state, or mutable accumulators:
+
+```java
+for (int i = 0; i < arr.length; i++) {
+    if (arr[i] == target) {
+        index = i;
+        break;
+    }
+}
+```
+
+This is often simpler than forcing the logic into a stream. Streams discourage mutable state, so patterns that naturally involve `break`, `continue`, index tracking, or multi-variable mutation are more awkward to express.
+
+#### 3. Better Debugging
+
+You can place breakpoints directly inside the loop body:
+
+```java
+for (Employee e : employees) {
+    double bonus = calculateBonus(e); // ← breakpoint here
+    e.setBonus(bonus);
+}
+```
+
+Debugging a long stream pipeline with lambdas can be harder — though IDE support (IntelliJ's "Trace Current Stream Chain") has improved significantly.
+
+---
+
+### 14.3 When to Use What — Quick Decision Guide
+
+| Scenario | Prefer | Why |
+|---|---|---|
+| Filter / map / collect patterns | **Stream** | Concise, readable, declarative |
+| Aggregations (sum, average, max, groupBy) | **Stream** | Built-in collectors & reducers |
+| Parallel processing of independent elements | **Stream** | `.parallelStream()` one-liner |
+| Index-based access (`arr[i]`, `arr[i-1]`) | **Loop** | Streams don't expose indices natively |
+| Complex mutable state / multi-variable tracking | **Loop** | Streams discourage side effects |
+| Performance-critical tight loops (millions of ops) | **Loop** | Lower overhead, no pipeline setup |
+| Nested `break` / `continue` / `return` logic | **Loop** | Streams have no `break`/`continue` |
+| Simple iteration with side effects (logging, DB writes) | **Either** | `forEach` works but loops are equally clear |
+
+> 💡 **Interview answer:** "I default to streams for data-transformation pipelines because the code reads like a specification — filter, transform, collect. I switch to loops when I need index-based access, complex mutable state, or when profiling shows the stream overhead matters in a hot path."
