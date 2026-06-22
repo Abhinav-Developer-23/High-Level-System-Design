@@ -63,5 +63,523 @@
 > - Quantify the impact — error %, revenue affected, time to resolve
 > - Highlight what you did *differently* or *proactively* (alert, post-mortem, test)
 
+---
+
+### <span style="color:red">Q2. Tell me something you built from scratch and what challenges you faced</span>
+
+> **💡 Principle:** Ownership · Deliver Results · Invent and Simplify · Dive Deep
+
+---
+
+#### Event Streaming Platform — Built From Scratch (STAR Format)
+
+---
+
+#### Situation
+
+Our organization had multiple downstream teams that required transaction data in near real-time:
+
+* Passbook Team
+* Notification Team
+* Promo Team
+* Clevertap Team
+* Risk Processing Team
+
+Before this platform, teams either directly integrated with source services or queried operational databases independently.
+
+This created several problems:
+
+* Tight coupling between systems
+* Duplicate integration efforts across teams
+* Increased load on transaction systems
+* Inconsistent data transformation logic
+* Inconsistent masking and redaction rules
+* Longer onboarding time for new consumers
+
+As transaction volume grew, this architecture became increasingly difficult to scale and maintain.
+
+---
+
+#### Task
+
+I was tasked with designing and building a centralized event-driven platform that could:
+
+* Capture transaction lifecycle events
+* Process and enrich events
+* Enforce data privacy and compliance rules
+* Reliably distribute events to multiple consumers
+* Scale with growing transaction volume
+* Ensure business-critical events were never lost
+
+The goal was to create a single platform that downstream teams could rely on instead of building separate integrations.
+
+---
+
+#### Action
+
+##### High-Level Architecture
+
+The platform was built around Kafka and event-driven communication.
+
+```text
+Source Systems / DB Updates
+            ↓
+         Kafka
+            ↓
+ Event Processing Platform
+            ↓
+ Enrichment + Redaction
+            ↓
+ Team-Specific Transformation
+            ↓
+ Downstream Consumers
+```
+
+Database writes and updates generated transaction events which were published to Kafka topics.
+
+My platform consumed these raw events, processed them, enriched them with additional information, applied compliance rules, and distributed standardized events to downstream systems.
+
+---
+
+##### Sub-Question: How Were Events Produced? Why Not CDC (Debezium/Maxwell)?
+
+> **Interviewer follow-up:** *"How did you produce events into Kafka? Did you use CDC tools like Debezium or Maxwell, or application-level publishing?"*
+
+We used **`@PostPersist` and `@PostUpdate` JPA lifecycle callbacks** in Spring Boot to publish events to Kafka after entities were persisted.
+
+When a transaction was created or updated in the database, the JPA callback triggered and published a Kafka message containing the transaction details.
+
+```text
+Service Layer → JPA Persist → DB Write → @PostPersist fires → Kafka Publish
+```
+
+---
+
+###### What Does Debezium Actually Produce?
+
+A common misconception is that Debezium only sends changed columns. It actually sends the **full row state** — before and after:
+
+```json
+{
+  "before": { "id": 101, "amount": 500, "status": "PENDING", "customer_id": 42 },
+  "after":  { "id": 101, "amount": 500, "status": "SUCCESS", "customer_id": 42 },
+  "op": "u",
+  "source": { "table": "transactions", "db": "payments" },
+  "ts_ms": 1719074400000
+}
+```
+
+So it gives you the full row before + full row after for every change — but it is **tied to the DB table schema** and contains **no business context** beyond what is stored in the row.
+
+---
+
+###### Why Application-Level Publishing Over CDC?
+
+| Factor | @PostPersist (App-Level) | CDC (Debezium / Maxwell) |
+|---|---|---|
+| **Business context** | Full access to domain objects, user session, request metadata | Only raw row-level changes from DB binlog — no business context |
+| **Event schema control** | We define the event payload — clean, consumer-friendly contracts | Events mirror DB table schema — leaks internal structure to consumers |
+| **Selective publishing** | Publish only meaningful business events — not every DB write | Captures ALL changes indiscriminately — noisy for consumers |
+| **Multi-table correlation** | Can join data from related entities into a single event | One event per table — consumers must correlate themselves |
+| **Infrastructure overhead** | No additional infra — just application code | Requires Kafka Connect cluster, connector management, schema registry, monitoring |
+| **Deployment simplicity** | Ships with the application — same CI/CD pipeline | Separate deployment, separate scaling, separate failure domain |
+
+---
+
+###### Known Operational Problems with CDC (Debezium)
+
+CDC tools like Debezium have several well-known operational pain points that factored into our decision:
+
+**1. Binlog Retention / Offset Drift**
+
+Debezium reads from MySQL binlog (or Postgres WAL). If Debezium goes down for too long and the binlog gets rotated/purged by the DB, it loses its position. When it comes back, it has to do a **full re-snapshot of the entire table** — which can take hours and put heavy load on the DB. This is the #1 operational nightmare with CDC.
+
+**2. Schema Evolution Is Painful**
+
+An `ALTER TABLE` to add/rename/drop a column requires Debezium to handle the schema change mid-stream. Historically, this has caused connector crashes, deserialization failures, and consumer breakage. Managing this requires a Schema Registry (Avro/Protobuf), adding more infrastructure.
+
+**3. Kafka Connect Is Complex to Operate**
+
+Debezium runs on Kafka Connect — a separate distributed system that needs its own deployment, scaling, and monitoring. Connector rebalancing, task failures, and offset management are all additional operational overhead. If a connector task dies silently, lag builds up without immediate visibility.
+
+**4. Database Performance Impact During Snapshots**
+
+During initial snapshots or recovery, Debezium runs `SELECT *` on the entire table. On large tables, this can cause lock contention, replication lag, and increased I/O on the production database.
+
+**5. Noisy Events — Captures Everything**
+
+CDC captures every single write to the table, including internal housekeeping updates, retry/idempotent re-writes, batch job flag updates, and audit column changes (`updated_at`). Consumers get flooded with events they don't care about, requiring downstream filtering logic.
+
+**6. Multi-Table Correlation Is Not Built-In**
+
+If a business event involves writes to 3 tables (e.g., `transactions`, `payments`, `ledger`), Debezium produces 3 separate events. There is no built-in way to correlate them into a single business event — consumers must do complex join/aggregation logic themselves.
+
+**7. Postgres-Specific: Replication Slot Issues**
+
+In Postgres, Debezium uses logical replication slots. If Debezium stops consuming, the slot retains WAL segments, disk fills up, and the **database can go down**. This has caused production outages at organizations.
+
+---
+
+###### Key Reasons for Our Decision
+
+1. **Business context was critical** — Downstream teams needed enriched, business-meaningful events (e.g., transaction type, product category, user intent), not raw column diffs. `@PostPersist` gave us access to the full domain model at publish time.
+
+2. **Schema independence** — We did not want downstream consumers coupled to our internal database schema. Application-level publishing let us define a stable event contract that could evolve independently from DB table changes.
+
+3. **Selective publishing** — Not every database write was a publishable event. Some writes were internal state updates, audit logs, or idempotent retries. `@PostPersist` let us apply business logic to decide what to publish.
+
+4. **Simpler operations** — Debezium would have introduced a Kafka Connect cluster as an additional moving part. Our team was small, and managing connector lifecycle, offset tracking, binlog retention, and snapshot recovery added operational complexity we didn't need.
+
+---
+
+###### Trade-Off Acknowledged
+
+> If the application crashed **after** the DB commit but **before** the Kafka publish, the event could be lost.
+
+This is a known limitation of application-level publishing compared to CDC, which reads directly from the database binlog and guarantees capture of every committed write.
+
+**How We Mitigated This:**
+
+* For critical flows, we used a **transactional outbox pattern** — the event was written to an outbox table within the same DB transaction, and a separate poller published it to Kafka. This gave us the reliability guarantee of CDC without the infrastructure overhead.
+* The downstream platform had an **8-level retry framework** and **DLQ** — so transient delivery failures were handled.
+* Idempotency controls ensured safe reprocessing if events were published more than once.
+
+---
+
+###### When Would CDC Have Been Better?
+
+* If multiple applications wrote to the same database and all changes needed to be captured.
+* If we needed to capture changes from legacy systems where modifying application code was not feasible.
+* If the team had existing Kafka Connect infrastructure and expertise.
+
+In our case, we owned the source services, had full control over the application code, and business-context-rich events were a hard requirement — making `@PostPersist` the right choice.
+
+---
+
+
+##### Event Processing Pipeline
+
+The platform was not simply consuming and forwarding Kafka messages.
+
+
+Raw transaction events often lacked information required by downstream consumers.
+
+The core responsibility of the platform was to convert raw transaction events into business-ready events.
+
+###### Data Enrichment
+
+The incoming transaction payload typically contained only core transaction details.
+
+Different downstream teams required additional context.
+
+The platform enriched events by fetching information from multiple services and databases, including:
+
+* Customer metadata
+* Merchant information
+* Product attributes
+* Payment instrument details
+* Business-specific classifications
+
+This prevented downstream teams from making additional service calls and reduced duplication across the organization.
+
+---
+
+###### Data Redaction and Masking
+
+Different teams had different data visibility requirements.
+
+For compliance and privacy reasons, sensitive customer information could not be exposed to every consumer.
+
+The platform applied centralized masking and redaction rules.
+
+Examples:
+
+* Masking account numbers
+* Redacting customer identifiers
+* Removing sensitive attributes
+* Restricting PII exposure
+
+This ensured that every downstream team only received the information required for their use case.
+
+---
+
+###### Team-Specific Transformations
+
+Different teams required different payload structures.
+
+For example:
+
+Passbook Team:
+
+* Complete transaction lifecycle details
+
+Notification Team:
+
+* Customer-facing transaction information
+
+Risk Team:
+
+* Fraud and risk analysis attributes
+
+Clevertap Team:
+
+* Analytics-focused data
+
+Promo Team:
+
+* Campaign and offer-related information
+
+The platform generated team-specific payloads while maintaining a standardized event contract.
+
+This significantly simplified downstream systems and accelerated onboarding of new consumers.
+
+---
+
+##### Ordering Guarantees
+
+Transaction ordering was extremely important.
+
+Example:
+
+```text
+PENDING
+SUCCESS
+SETTLED
+```
+
+If these events were processed out of order, downstream systems could show incorrect transaction states.
+
+To solve this, I used Transaction ID as the Kafka partition key.
+
+Benefits:
+
+* All events for the same transaction landed in the same partition.
+* Kafka maintained ordering within the partition.
+* Transaction lifecycle consistency was preserved.
+
+---
+
+##### Duplicate Processing Protection
+
+The platform followed an At-Least-Once delivery model.
+
+For transaction systems, losing an event was unacceptable.
+
+However, At-Least-Once delivery introduces the possibility of duplicate processing during:
+
+* Consumer restarts
+* Retry scenarios
+* Offset commit failures
+
+To handle this, I implemented idempotency controls.
+
+###### Layer 1
+
+In-memory cache
+
+Used for quick duplicate detection.
+
+###### Layer 2
+
+Redis-based cache with TTL
+
+Used for persistent duplicate prevention.
+
+Benefits:
+
+* Prevented duplicate notifications
+* Prevented duplicate downstream actions
+* Allowed safe retries
+* Maintained eventual consistency
+
+---
+
+#### Challenges Faced
+
+##### Challenge 1: Ensuring Events Were Never Lost During Downstream Failures
+
+**The Problem:**
+
+The most challenging aspect of the project was guaranteeing reliable event delivery even when downstream systems became unavailable.
+
+Examples:
+
+* Notification service outage
+* Risk service outage
+* Database failures
+* Network issues
+* Temporary rate limiting
+
+These events were business critical. Losing a transaction event could impact:
+
+* Customer experience
+* Passbook accuracy
+* Fraud detection
+* Analytics pipelines
+
+**The Solution — Multi-Level Retry Framework:**
+
+I designed an 8-level retry architecture.
+
+Instead of repeatedly retrying failed events immediately, events moved through progressively delayed retry topics.
+
+Example retry schedule:
+
+```text
+Retry 1 → 1 Hour
+Retry 2 → 2 Hours
+Retry 3 → 4 Hours
+Retry 4 → 8 Hours
+Retry 5 → 12 Hours
+Retry 6 → Configured Delay
+Retry 7 → Configured Delay
+Retry 8 → Configured Delay
+```
+
+Flow:
+
+```text
+Main Topic
+    ↓
+Retry-1 → Retry-2 → Retry-3 → ... → Retry-8
+                                         ↓
+                                        DLQ
+```
+
+Benefits:
+
+* Prevented retry storms
+* Allowed downstream systems time to recover
+* Improved eventual processing success rate
+* Reduced operational intervention
+* Increased reliability
+
+**Dead Letter Queue:**
+
+If an event exhausted all retry attempts, it was moved to a Dead Letter Queue.
+
+This ensured:
+
+* No silent message loss
+* Full auditability
+* Replay capability
+* Operational visibility
+
+An event always existed in one of the following states:
+
+* Main Topic
+* Retry Topic
+* Successfully Processed
+* DLQ
+
+This provided strong guarantees that events were never silently dropped.
+
+---
+
+##### Challenge 2: Scaling During Peak Traffic
+
+**The Problem:**
+
+As transaction volume increased, certain consumer groups started accumulating Kafka lag during peak traffic periods.
+
+Examples:
+
+* Salary credit days
+* Sale events
+* Peak transaction windows
+
+The challenge was ensuring that downstream processing kept pace with incoming events.
+
+**The Solution:**
+
+I analyzed:
+
+* Consumer lag
+* Processing throughput
+* Partition utilization
+* Consumer capacity
+
+Working with the DevOps team, we:
+
+* Increased Kafka partitions
+* Increased consumer concurrency
+* Introduced lag-based autoscaling
+
+One important consideration was:
+
+```text
+Number of Consumers ≤ Number of Partitions
+```
+
+because Kafka can only assign one active consumer per partition within a consumer group.
+
+Result:
+
+* Reduced consumer lag
+* Improved processing SLAs
+* Better handling of peak traffic
+
+---
+
+##### Challenge 3: Production Incident — Kafka Compression Compatibility
+
+**What Happened:**
+
+A producer-side deployment enabled Snappy compression for Kafka messages.
+
+However, consumer services were still using an older Kafka client version that could not properly handle the compressed payloads.
+
+As a result:
+
+* Producers continued publishing messages successfully
+* Consumers stopped processing messages
+* Consumer lag increased rapidly
+* Downstream event delivery was delayed
+
+**Investigation:**
+
+I analyzed consumer logs and observed repeated decompression and deserialization failures.
+
+After collaborating with the producer and infrastructure teams, we identified a compatibility mismatch between producer and consumer Kafka configurations.
+
+**Resolution:**
+
+We:
+
+* Identified impacted offsets
+* Upgraded consumer dependencies
+* Deployed the fix
+* Reprocessed the accumulated backlog
+
+Once consumers were upgraded, event processing resumed normally and lag gradually returned to healthy levels.
+
+**Learning:**
+
+Following this incident, we introduced compatibility validation checks whenever Kafka protocol, client version, or compression configurations changed.
+
+This prevented similar outages in future deployments.
+
+---
+
+#### Result
+
+The platform became the central event distribution layer for multiple business-critical teams.
+
+Outcomes included:
+
+* Standardized event processing across teams
+* Centralized enrichment and transformation logic
+* Centralized masking and compliance controls
+* Reduced coupling with source systems
+* Faster onboarding of new consumers
+* Reliable event delivery through retries and DLQ
+* Transaction ordering guarantees
+* Improved scalability during peak traffic
+* Reduced operational load on core transaction systems
+
+The platform successfully handled production-scale transaction traffic while maintaining reliability, correctness, and compliance.
+
+---
+
 <!-- Add more questions below -->
 
