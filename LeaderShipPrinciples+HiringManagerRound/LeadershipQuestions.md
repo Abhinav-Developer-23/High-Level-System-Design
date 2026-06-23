@@ -67,6 +67,10 @@
 
 ### <span style="color:red">Q2. Tell me something you built from scratch and what challenges you faced</span>
 
+**Also asked as:**
+- <span style="color:red">*What's the project you're most proud of?*</span>
+- <span style="color:red">*Tell me about a time when you took ownership of a project or task and saw it through to completion despite challenges.*</span>
+
 > **💡 Principle:** Ownership · Deliver Results · Invent and Simplify · Dive Deep
 
 ---
@@ -580,6 +584,192 @@ Outcomes included:
 The platform successfully handled production-scale transaction traffic while maintaining reliability, correctness, and compliance.
 
 ---
+
+#### Why I'm Proud of This Project
+
+> **If asked:** *"What's the project you're most proud of?"* — use this section to add a personal touch.
+
+This is the project I am most proud of because **I owned it 100% — end to end.**
+
+I didn't just write the business logic. I set up **everything** from scratch:
+
+* **Monitoring** — Configured Prometheus metrics for event processing rates, consumer lag, retry counts, DLQ depth, and enrichment latency.
+* **Alerting** — Set up alerts for critical thresholds — lag spikes, DLQ accumulation, downstream failures, processing errors.
+* **Dashboards** — Built Grafana dashboards that gave real-time visibility into the entire event pipeline — from ingestion to delivery.
+* **QA and Testing** — Wrote integration tests, simulated failure scenarios (downstream outages, Kafka restarts, duplicate events), and validated ordering guarantees before going live.
+* **Production Rollout** — Managed the phased rollout to production — onboarded consumers one team at a time, monitored impact, and iterated based on real traffic.
+
+I saw it through from **design to delivery** — including handling every challenge, incident, and scaling issue that came up along the way.
+
+It wasn't handed to me as a well-defined spec. I identified the problem, proposed the architecture, built the platform, set up the operational infrastructure around it, and made sure it ran reliably in production.
+
+That end-to-end ownership — from an empty repo to a platform that multiple business-critical teams depended on daily — is what makes me most proud of this project.
+
+---
+
+### <span style="color:red">Q3. What's the most complicated project you've worked on?</span>
+
+**Also asked as:**
+- <span style="color:red">*When did you have to learn something new to do your job?*</span>
+- <span style="color:red">*Tell me about a time when you had to implement something challenging.*</span>
+
+> **💡 Principle:** Dive Deep · Learn and Be Curious · Deliver Results
+
+*Answer coming soon — to be discussed.*
+
+---
+
+#### AI-Powered Oncall Debugging Tool — LangGraph (STAR Format)
+
+> 📖 **Detailed deep-dive:** [Langgraph_Ai_Tool.md](file:///c:/MyProjects/High-Level-System-Design/LeaderShipPrinciples+HiringManagerRound/Langgraph_Ai_Tool.md) — covers architecture, hallucination handling, guardrails, eval, RAG, vector DB, auth, memory, budget control, and more.
+
+---
+
+#### Situation
+
+Our oncall engineers and product managers spent **15–30 minutes per transaction** investigation — manually searching Kibana/Elasticsearch logs, querying the database, and cross-referencing Prometheus dashboards, all separately.
+
+* PMs directly pinged developers for every failed transaction, interrupting deep work
+* There was no single unified view of a transaction's journey
+* New oncall engineers took 2–3 weeks to ramp up on debugging workflows
+* The same manual investigation steps were repeated hundreds of times a day
+
+---
+
+#### Task
+
+I was tasked with building an **AI-powered debugging assistant** that could:
+
+* Accept a transaction ID (typed or extracted from a screenshot)
+* Automatically query all relevant data sources in parallel
+* Synthesize the findings into a clear root cause summary
+* Allow follow-up questions with full context retained
+* Be usable by both engineers and PMs without training
+
+This was entirely new territory for me — I had no prior experience with LLMs, prompt engineering, RAG, vector databases, or AI agent frameworks. I had to learn everything from scratch.
+
+---
+
+#### Action
+
+##### Architecture Overview
+
+```text
+User (Chat UI)
+    │
+    ▼
+Input Node (text or image → extract txn_id)
+    │
+    ▼
+┌─────────────────────────────────────────────┐
+│         Parallel Tool Execution             │
+│                                             │
+│  Elasticsearch  Database  Prometheus  Code  │
+│   (Logs)       (txn_info)  (Metrics) (Repos)│
+└─────────────────────────────────────────────┘
+    │
+    ▼
+Analysis Node (LLM reasons over combined data)
+    │
+    ▼
+Response Node (formatted summary + next steps)
+    │
+    ▼
+Follow-up (stateful conversation)
+```
+
+##### Tech Stack
+
+* **Backend:** Python, LangChain, LangGraph
+* **Frontend:** React-based chat UI
+* **LLM:** GPT 5.4 mini via AWS Bedrock (fast, cost-effective)
+* **Vector DB:** Weaviate (self-hosted, stores runbooks, Prometheus queries, ES patterns, DB schemas)
+* **State/Memory:** Redis (conversation state via LangGraph checkpointer)
+* **Auth:** Google OAuth + Google Groups for access control
+
+##### Why LangGraph Over Plain LangChain
+
+The debugging workflow wasn't a simple linear chain — it was a **stateful, multi-step graph** with conditional routing:
+
+* **State management** — conversation retains context across turns
+* **Conditional edges** — if Elasticsearch returns no logs, skips to DB-only analysis
+* **Parallel tool execution** — queries all data sources simultaneously
+* **Retry & fallback** — gracefully degrades if a data source is down
+
+##### Key Technical Challenges I Had to Learn & Solve
+
+**1. Hallucination Prevention**
+
+For a debugging tool, hallucinations are dangerous — engineers could waste hours chasing a fake root cause.
+
+* Strict grounding — LLM only uses retrieved data, never its own knowledge
+* Pydantic structured output — forced the LLM into a validated schema with mandatory evidence fields
+* Cross-verification — auto-checked factual fields (e.g., error code) against the actual DB
+* Temperature = 0 — most deterministic, least creative
+* Show raw evidence alongside AI's summary so users can verify
+
+**2. Guardrails — Security & Safety**
+
+* **Prompt injection protection** — 4-layer defense: regex keyword filter → Guardrails AI (ML-powered) → XML input/output separation → hardened system prompt
+* **PII masking** — Microsoft Presidio to detect and mask sensitive data before sending to LLM and after receiving the response
+* **Topic restriction** — tool only handles transaction debugging, blocks off-topic queries
+
+**3. RAG with Weaviate**
+
+* Stored runbooks, Prometheus query patterns, ES log patterns, and DB schemas in Weaviate
+* The AI agent looked up HOW to debug (which metrics to check, which queries to run) based on the error type
+* Chose Weaviate over FAISS (no persistence), Chroma (not production-ready), and Pinecone (cloud-only, paid, security concern)
+* Auto-sync via cron job — git pull every 10 min, diff for changes, update only modified docs
+
+**4. Evaluation (How Do You Test AI?)**
+
+* **Golden dataset** — ~50 real past transactions with known root causes
+* **RAGAS framework** — measured faithfulness, answer relevancy, context precision, context recall
+* **Runtime eval** — 1% of live traffic sampled via RabbitMQ → async LLM-as-judge scoring → Grafana dashboard
+* **User feedback** — thumbs up/down on every response, tracked weekly helpful rate
+
+**5. Cost Control**
+
+* Daily budget cap tracked in Redis — tool stops making LLM calls if exceeded
+* Per-request token limits — input trimmed to ~3000 tokens, output capped at 500
+* Max 3 LLM calls per request to prevent graph loops burning tokens
+* AWS Budgets alerts at 50%, 80%, 100% of monthly budget
+
+---
+
+#### Result
+
+| Metric | Before | After |
+|--------|--------|-------|
+| Avg investigation time per txn | 15–30 min | < 2 min |
+| PM escalations to engineering | ~20/day | ~5/day (75% reduction) |
+| Oncall context-switching | High | Significantly reduced |
+| New oncall engineer ramp-up | 2–3 weeks | Days (tool guides them) |
+
+* PMs became **self-sufficient** — could self-serve ~75% of transaction queries without pinging engineering
+* Reduced oncall fatigue and improved engineer satisfaction
+* Became a **go-to tool** across multiple teams
+
+---
+
+#### Why This Answers "When Did You Learn Something New?"
+
+I had **zero experience** with LLMs, prompt engineering, RAG, vector databases, or AI agent frameworks before this project.
+
+I learned:
+
+* LangChain & LangGraph — agent orchestration, state management, tool abstraction
+* Prompt engineering — grounding, structured output, hallucination prevention
+* RAG architecture — chunking, embeddings, semantic search, vector DB operations
+* Weaviate — self-hosted vector DB setup, hybrid search, multi-tenancy
+* LLM evaluation — RAGAS, LLM-as-judge, golden datasets
+* AI safety — guardrails, prompt injection defense, PII masking
+* Cost engineering — token budgeting, usage tracking
+
+All self-taught while building the tool — no training program, no dedicated AI team. I identified the opportunity, learned the technology, built the solution, and drove adoption.
+
+---
+
 
 <!-- Add more questions below -->
 
