@@ -1303,5 +1303,569 @@ I took ownership of the issue and worked to:
 
 ---
 
+### <span style="color:red">Q9. Tell me about a time you coached someone. What happened?</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time you mentored a junior developer.*</span>
+- <span style="color:red">*Describe a situation where you helped someone on your team grow.*</span>
+
+> **💡 Principle:** Develop the Best · Earn Trust · Learn and Be Curious · Invent and Simplify · Ownership
+
+---
+
+#### New Developer Onboarding — Microservices Bug Fix Coaching (STAR Format)
+
+---
+
+#### Situation
+
+A new developer joined our team at Paytm, and he was struggling to understand the microservices architecture and how different services interacted. He was assigned a bug fix, but since the codebase was large and complex, he felt overwhelmed and wasn't sure where to start.
+
+Additionally, he was unfamiliar with debugging techniques, API flow, and running the service locally, which made it even harder for him to solve the issue independently.
+
+---
+
+#### Task
+
+My goal was to help him:
+
+* Understand the API flow and how services communicate.
+* Learn debugging techniques instead of just printing logs.
+* Run the service locally to confidently test his changes.
+* Become independent in navigating the codebase and debugging issues.
+
+---
+
+#### Action
+
+**1. Taught him the API flow:**
+
+* Walked him through how API requests travel between microservices, showing him how controllers, services, and database interactions work.
+* Explained how to trace API calls using logs and breakpoints.
+* Provided a high-level system diagram to help him visualize the architecture and how his bug fix fit into the overall system.
+
+**2. Guided him through debugging instead of giving direct answers:**
+
+* Instead of pointing him directly to the function causing the bug, I showed him how to search logs in Kibana to trace where the issue was occurring.
+* Taught him how to use IntelliJ's "Find Usages" feature to track where the faulty function was being called.
+* Encouraged him to break the problem down into smaller parts instead of trying to understand everything at once.
+
+**3. Introduced him to IntelliJ debugging features:**
+
+* Showed him how to set breakpoints and step through code instead of relying only on print statements.
+* Taught him how to inspect variable states in real time while debugging.
+* Explained how to attach the debugger to a running service for remote debugging.
+
+**4. Helped him run the service locally:**
+
+* Guided him in setting up Docker, environment variables, and dependencies so he could run the service on his local machine.
+* Helped him troubleshoot issues that prevented the service from running properly.
+* Taught him how to simulate API calls and verify responses locally before raising a PR.
+
+**5. Helped him build confidence:**
+
+* Instead of reviewing his code line by line, I asked him to explain his thought process before submitting a PR.
+* Gave constructive feedback on his debugging approach and suggested best practices.
+* Encouraged him to write better log messages to make future debugging easier.
+
+---
+
+#### Result
+
+* He successfully fixed the bug on his own, feeling much more confident in navigating the codebase.
+* He later became self-sufficient in debugging and troubleshooting issues, needing less help from the team.
+* The structured coaching approach — guiding, not spoon-feeding — helped him develop strong problem-solving skills, making him more independent.
+
+---
+
+#### What I Learned
+
+1. **Coaching isn't about giving answers** — it's about teaching how to approach problems independently.
+2. **Breaking down complex systems into simple, understandable parts** helps new developers ramp up faster.
+3. **Building confidence is as important as technical knowledge** — encouraging someone to explain their thought process helps them learn better.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Develop the Best** | Invested time teaching debugging, architecture, and local setup — not just fixing the bug for him |
+| **Earn Trust** | Created a safe space to ask questions without judgment; guided instead of spoon-feeding |
+| **Learn and Be Curious** | Encouraged breaking problems into smaller parts and tracing issues through logs and breakpoints |
+| **Invent and Simplify** | Used a system diagram and structured debugging workflow to make a complex codebase approachable |
+| **Ownership** | Took responsibility for his ramp-up beyond my own deliverables |
+
+---
+
+#### Power Phrases to Use
+
+- *"I didn't point him to the bug — I showed him how to find it himself using Kibana and Find Usages"*
+- *"Coaching means teaching the approach, not handing over the answer"*
+- *"Before every PR review, I asked him to walk me through his thought process — that built confidence faster than line-by-line feedback"*
+- *"Once he could run the service locally and debug with breakpoints, he stopped needing me for every issue"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"How much time did you spend coaching him?"**
+> *"A few focused sessions over the first couple of weeks — walking through the API flow, pairing on Kibana log tracing, and helping with local setup. After that, he mostly came to me with specific questions rather than needing end-to-end guidance."*
+
+**"What if he still couldn't fix the bug?"**
+> *"I would have paired with him live — debugger attached, stepping through together — but still letting him drive. The goal was independence, not speed on one ticket."*
+
+**"How is coaching different from just helping someone?"**
+> *"Helping is giving the answer. Coaching is teaching the tools and mindset — Kibana, breakpoints, breaking problems down — so they don't need you next time."*
+
+---
+
+### <span style="color:red">Q10. Tell me about a time when you didn't know how to proceed — how did you figure it out, and how did you consider the options?</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time you were stuck and had to find your own way.*</span>
+- <span style="color:red">*Describe a situation where you had incomplete information but still delivered.*</span>
+
+> **💡 Principle:** Learn and Be Curious · Dive Deep · Ownership · Bias for Action · Invent and Simplify
+
+---
+
+#### Ambiguous Task Assignment — Finding the Right Service Without Guidance (STAR Format)
+
+---
+
+#### Situation
+
+One of my tech leads assigned me a task, but when I asked which API or service I needed to modify, he didn't respond. I asked again, but he still didn't provide a direct answer.
+
+At first, I felt stuck because I wasn't sure where to begin, but then I realized that he wanted me to figure it out myself — to learn more about the codebase, debugging process, and improve my problem-solving skills.
+
+---
+
+#### Task
+
+Since I wasn't given a direct starting point, I needed to:
+
+* Identify which service handled the functionality.
+* Find the relevant code and database tables where changes needed to be made.
+* Understand the existing logic before making modifications.
+
+---
+
+#### How I Considered the Options
+
+Before diving in, I weighed three paths:
+
+1. **Wait for the tech lead to respond** — safest, but I had already asked twice and the task had a deadline.
+2. **Ask another teammate for the exact file/service** — faster, but I'd miss the learning opportunity and create a dependency.
+3. **Trace the feature myself using logs, DB, and code search** — slower upfront, but would make me self-sufficient on a large codebase.
+
+I chose option 3 because the pattern suggested the lead wanted me to build investigative skills, not just ship one ticket.
+
+---
+
+#### Action
+
+**Started with logs (Kibana):**
+
+* Searched logs in Kibana based on keywords related to the feature to trace which service was handling the request.
+* This helped me find the exact API endpoint being called.
+
+**Checked the database:**
+
+* From the logs, I identified which database tables were being updated.
+* Queried the database to see how data was being stored and processed.
+
+**Searched the codebase:**
+
+* Using IntelliJ's "Find Usages" and grep commands, I searched for the API paths in the codebase.
+* Traced the request flow through different layers (controller → service → repository).
+
+**Validated my understanding and made the change:**
+
+* After identifying the correct service and API, I analyzed how the logic worked.
+* Implemented the required changes and tested the impact before raising a PR.
+
+---
+
+#### Result
+
+* Successfully identified the correct service and API without direct guidance.
+* Completed the task independently, improving my confidence in navigating a large codebase.
+* Learned valuable debugging skills — log analysis, DB queries, code searching.
+* My tech lead appreciated my approach, as I became more self-sufficient for future tasks.
+
+---
+
+#### What I Learned
+
+1. **When stuck, break the problem down** — logs, database, and code search can help find the answer.
+2. **Instead of relying on direct answers, exploring the system improves long-term learning.**
+3. **Debugging is a critical skill** — understanding logs and data flow is as important as coding.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Learn and Be Curious** | Chose to investigate the codebase rather than wait for or demand a direct answer |
+| **Dive Deep** | Traced the full path — Kibana logs → DB tables → controller/service/repository |
+| **Ownership** | Treated an ambiguous assignment as my problem to solve, not someone else's to clarify |
+| **Bias for Action** | Started with log search instead of staying blocked |
+| **Invent and Simplify** | Used a repeatable investigation workflow (logs → DB → code) I still use today |
+
+---
+
+#### Power Phrases to Use
+
+- *"I had three options — wait, ask someone else, or trace it myself. I chose trace because that's the skill I needed long-term"*
+- *"Kibana told me the endpoint, the DB told me the tables, IntelliJ told me the code — each layer confirmed the next"*
+- *"I didn't guess where to change code — I validated the flow end-to-end before touching anything"*
+- *"The tech lead wasn't ignoring me — he was pushing me to become self-sufficient in a large microservices codebase"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"Why didn't you escalate when the tech lead didn't respond?"**
+> *"I had asked twice with no answer — that signaled intent, not neglect. I set a time box: if I couldn't trace the feature in a day, I'd escalate with what I'd already found. I found it within a few hours."*
+
+**"What if you had traced the wrong service?"**
+> *"That's why I validated at each layer — logs pointed to an endpoint, DB queries confirmed the data path, and I tested locally before raising the PR. I would have caught a wrong service before merge."*
+
+**"Would you do the same if you were more senior?"**
+> *"The workflow stays the same — logs, DB, code search. What changes is speed and knowing when to ask vs investigate. For ambiguous tasks on unfamiliar code, I'd still trace first, then confirm with the lead."*
+
+---
+
+### <span style="color:red">Q11. Tell us about a time when you had to persuade your manager to change the course of action based on credible insights</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time you took a calculated risk. What was the situation, and what was the outcome?*</span>
+- <span style="color:red">*Describe a time you convinced leadership to approve a technical change they were hesitant about.*</span>
+
+> **💡 Principle:** Have Backbone; Disagree and Commit · Earn Trust · Dive Deep · Invent and Simplify · Think Big · Deliver Results
+
+---
+
+#### Post–Payments Bank Shutdown — Legacy Code Cleanup (STAR Format)
+
+---
+
+#### Situation
+
+After Paytm Payments Bank was shut down, a large portion of our codebase became obsolete since we no longer handled direct banking operations. The system had transitioned to a Third-Party Application Provider (TPAP) model, meaning only a fraction of the existing code was actually required.
+
+However, the legacy code remained, making the codebase:
+
+* Overly complex and difficult for new developers to understand.
+* Slower to build and deploy due to unnecessary dependencies.
+* Harder to maintain, as developers had to sift through redundant functions and APIs.
+
+I realized that removing dead code would make the system cleaner, more efficient, and easier to work with.
+
+---
+
+#### Task
+
+I needed to convince my manager to allow the removal of unused banking-related code, but he was reluctant because:
+
+* He was worried that we might delete some active functions or APIs that were still in use.
+* He feared that removing legacy code might break something in production.
+* There was no clear documentation on which parts were safe to delete.
+
+---
+
+#### Action
+
+**Gathered evidence to support the change:**
+
+* Used IntelliJ IDEA's "Find Unreferenced Methods" feature to identify functions that were no longer used anywhere in the codebase.
+* Analyzed logs and database usage to confirm which APIs and methods were still receiving calls.
+* Added temporary logs in production to track calls to suspect functions — if a function wasn't triggered for a few weeks, it was likely safe to remove.
+
+**Addressed manager's concerns with a safe approach:**
+
+* Proposed a step-by-step removal strategy:
+  * **Phase 1:** Mark suspect functions as deprecated and monitor them for 2 weeks.
+  * **Phase 2:** Remove unused functions in staging, test thoroughly, and verify logs for any errors.
+  * **Phase 3:** Gradually remove dead code from production after ensuring zero impact.
+* Ensured comprehensive logging and feature flags to restore any mistakenly removed code if needed.
+
+**Demonstrated the benefits:**
+
+* Showed that removing dead code reduced build time by **30%** and improved application startup time by **20%**.
+* Highlighted that a cleaner codebase would help new developers onboard faster, reducing ramp-up time.
+
+---
+
+#### Result
+
+* My manager approved the code cleanup plan, and we successfully removed outdated banking-related logic.
+* The codebase became leaner and easier to navigate, improving developer productivity.
+* Application build time improved, leading to faster deployments.
+* No functional impact was observed, proving that the cleanup was safe and beneficial.
+
+---
+
+#### What I Learned
+
+1. **Backing up decisions with data** — logs, analysis, and unreferenced method detection — builds confidence in major code refactoring.
+2. **Gradual, phased changes reduce risk** and make leadership more comfortable with technical decisions.
+3. **A cleaner codebase leads to long-term benefits**, including faster development cycles and improved maintainability.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Have Backbone; Disagree and Commit** | Proposed removing legacy code despite manager's fear of breaking production |
+| **Earn Trust** | Came with evidence — unreferenced methods, prod logs, phased rollout — not opinions |
+| **Dive Deep** | Used IntelliJ analysis, log tracing, and DB usage to prove what was truly dead |
+| **Invent and Simplify** | Removed obsolete banking logic after TPAP transition; 30% faster builds |
+| **Think Big** | Saw beyond one ticket — cleaner codebase, faster onboarding, faster deploys |
+| **Deliver Results** | Zero production impact; measurable build and startup time improvements |
+
+---
+
+#### Power Phrases to Use
+
+- *"Deleting code is a calculated risk — I de-risked it with unreferenced method analysis, prod logging, and a 3-phase rollout"*
+- *"My manager's concern was valid — so I proposed deprecate first, remove in staging second, production last"*
+- *"I didn't ask to delete a module overnight — I showed 30% faster builds and a path to zero blast radius"*
+- *"After Payments Bank shutdown, keeping dead code wasn't neutral — it was actively slowing every developer"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"What if you deleted something that was still used?"**
+> *"That's why Phase 1 was deprecation plus prod logging for 2 weeks. We also had feature flags and logging to roll back quickly. In practice, nothing was called — the data confirmed it before we deleted."*
+
+**"Why is this a calculated risk?"**
+> *"Removing production code without documentation is risky. I calculated the risk down by proving zero usage, testing in staging, and phasing the rollout. The upside — 30% faster builds, easier onboarding — justified a controlled approach."*
+
+**"How did you measure 30% build time improvement?"**
+> *"We compared CI build durations before and after removing unused modules and dependencies — same pipeline, same branch structure. Startup time improvement came from fewer beans and init paths at application boot."*
+
+---
+
+### <span style="color:red">Q12. How do you measure your success?</span>
+
+**Also asked as:**
+- <span style="color:red">*What does success look like for you in this role?*</span>
+- <span style="color:red">*How do you know you've done a good job on a project?*</span>
+
+> **💡 Principle:** Deliver Results · Customer Obsession · Learn and Be Curious · Invent and Simplify · Ownership
+
+---
+
+I measure my success through three key aspects: **impact, growth, and efficiency** — ensuring that my work delivers results without introducing new issues.
+
+---
+
+#### 1. Impact on Business & Customers
+
+Success means my work **adds measurable value**, whether by improving system reliability, reducing failures, or enhancing customer experience.
+
+**How I measure it:**
+
+* Error rates, latency, throughput, cost savings, or support ticket volume — before vs after.
+* Whether customers or ops teams feel the improvement, not just whether code shipped.
+
+**Example from my experience:**
+
+* Optimizing a payment service and bringing error rates from ~15% back to **<0.1%** during peak hours (Q1).
+* Manually resolving a stuck high-value UPI transaction and later driving a systemic fix for pending-state handling (Q5).
+* Reducing refund failures to **under 1%** and cutting refund-related support complaints by **50%** (Q6/Q7).
+
+If I optimize a system and it leads to faster processing, fewer errors, or cost savings — that's success.
+
+---
+
+#### 2. Continuous Learning & Improvement
+
+I assess success by how well I **learn new technologies, solve complex problems, and refine my skills** over time — not just by closing tickets.
+
+**How I measure it:**
+
+* Can I solve a similar problem faster and more independently next time?
+* Did I leave the team better off — documentation, patterns, tooling — not just a one-off fix?
+
+**Example from my experience:**
+
+* Tracing an ambiguous task through Kibana → DB → codebase when no one told me where to start (Q10).
+* Coaching a new developer to debug independently instead of handing him answers (Q9).
+* Building local dev infrastructure (Docker Compose, mocks, port forwarding) so the whole team moved faster (Q8).
+
+If I take on a challenging task, deeply understand it, and implement an effective solution — that reflects growth.
+
+---
+
+#### 3. Efficiency, Collaboration & Deployment Stability
+
+Success isn't just about delivering results — it's also about **efficiency, reliability, and smooth deployments**.
+
+**How I measure it:**
+
+* Build/deploy time, onboarding time, manual ops overhead.
+* Zero or minimal production incidents post-release.
+* Whether the team can maintain and extend what I built without me.
+
+**Example from my experience:**
+
+* Legacy code cleanup that cut build time by **30%** and startup time by **20%** with zero production impact (Q11).
+* Phased rollouts with feature flags and monitoring instead of big-bang releases (Q6).
+* Documented local setup that reduced onboarding friction for new developers (Q8).
+
+If my solution reduces manual work, improves team productivity, and goes live without post-release firefighting — I consider that a win.
+
+---
+
+#### Summary
+
+To me, success is about **delivering meaningful results, growing as an engineer, and ensuring smooth deployments without post-release incidents**. I prefer metrics over feelings — but the best metric is when the business, customers, and team all benefit and nothing breaks in production.
+
+---
+
+#### Quick Reference — Metrics I Track
+
+| Dimension | Example Metrics |
+|---|---|
+| **Impact** | Error rate, p99 latency, failed transactions, support tickets, cost |
+| **Growth** | Time to root-cause, independence on unfamiliar code, knowledge shared |
+| **Efficiency** | Build time, deploy frequency, onboarding time, manual ops hours |
+
+---
+
+#### Power Phrases to Use
+
+- *"I don't measure success by lines of code — I measure it by error rates, customer impact, and whether prod stayed stable"*
+- *"Shipping fast without breaking things is part of success — phased rollout and monitoring are how I prove that"*
+- *"If I solve a problem once but the team still can't solve it next time, that's incomplete success"*
+- *"Growth shows up when I can trace, debug, and deliver on ambiguous work without hand-holding"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"Can you give a specific example where you measured success?"**
+> *"During the UPI refund API work, success was refund failure rate dropping from 15% to under 1%, support complaints down 50%, and zero regulatory escalations — not just 'we shipped on time.'"*
+
+**"What if you hit your metrics but the team disagrees?"**
+> *"Then I'd revisit whether I picked the right metrics. Success should align with team and business goals — I validate with stakeholders upfront on what 'good' looks like."*
+
+**"How do you balance speed vs quality when measuring success?"**
+> *"Both matter. Speed without stability isn't success — that's why I track post-release incidents and rollback rate alongside delivery timelines."*
+
+---
+
+### <span style="color:red">Q13. Tell me about a time when you received critical feedback and how you handled it</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time when you improved upon your shortcomings.*</span>
+- <span style="color:red">*Describe a situation where code review feedback changed how you work.*</span>
+
+> **💡 Principle:** Learn and Be Curious · Earn Trust · Insist on the Highest Standards · Ownership · Dive Deep
+
+---
+
+#### UPI Refund API — Critical Code Review Feedback (STAR Format)
+
+---
+
+#### Situation
+
+While working on a UPI refund API at Paytm, I submitted my initial implementation for code review. I was focused on getting the core logic working quickly, but a senior engineer returned detailed critical feedback on my PR. The feedback highlighted gaps that could cause real production issues under load — not stylistic nitpicks.
+
+Specifically, he pointed out that:
+
+* **Error handling was missing**, which could lead to failed refunds without proper logs.
+* **Code readability was poor**, with some functions being too long and lacking modularity.
+* **Performance optimizations were ignored**, as I hadn't batched database updates, leading to potential slowdowns under high traffic.
+
+---
+
+#### Task
+
+I needed to take the feedback seriously, understand why each point mattered, and refactor the code so it was production-ready — not just functionally correct.
+
+---
+
+#### Action
+
+**Asked for guidance:**
+
+* I requested specific suggestions on improving error handling and performance optimizations rather than guessing what the reviewer wanted.
+
+**Stayed open to feedback:**
+
+* Instead of feeling defensive, I acknowledged the gaps and thanked my reviewer for catching them before they reached production.
+
+**Refactored the code:**
+
+* Broke down large functions into smaller, reusable methods for better readability.
+* Added proper exception handling with retry logic for failed transactions.
+* Optimized database queries by batching updates, reducing DB load.
+
+**Learned and applied the lessons:**
+
+* Studied best practices for writing scalable APIs and applied them in future projects.
+* Made it a habit to thoroughly test edge cases before submitting code.
+
+---
+
+#### Result
+
+* My improved version of the API passed the review smoothly and performed better under load.
+* My code quality improved, and future reviews required fewer changes.
+* I gained confidence in handling constructive criticism and used it as an opportunity for growth.
+
+---
+
+#### What I Learned
+
+1. **Critical feedback is not personal** — it's a chance to improve and write better code.
+2. **Taking time to optimize and test code early prevents bigger issues in production.**
+3. **Asking for clarification and learning from seniors accelerates professional growth.**
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Learn and Be Curious** | Asked for specific guidance and studied scalable API best practices after the review |
+| **Earn Trust** | Accepted feedback without defensiveness; thanked the reviewer for catching prod risks |
+| **Insist on the Highest Standards** | Refactored for error handling, readability, and performance — not just "make it work" |
+| **Ownership** | Treated review comments as my responsibility to fix fully, not minimal compliance |
+| **Dive Deep** | Addressed root gaps — missing retries, unbatched DB writes, poor modularity |
+
+---
+
+#### Power Phrases to Use
+
+- *"The review wasn't about me — it was about refunds failing silently in production"*
+- *"I asked for specifics on error handling and batching instead of making superficial fixes"*
+- *"That PR changed how I submit code — edge cases, logging, and DB efficiency before review, not after"*
+- *"My second submission passed cleanly because I treated feedback as a checklist for production readiness"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"Were you upset by the critical feedback?"**
+> *"Initially I was disappointed — I thought the logic was done. But once I understood the production impact — silent refund failures, DB load under traffic — I was grateful it was caught in review, not in prod."*
+
+**"What specifically changed in your workflow after this?"**
+> *"I now self-review for three things before every PR: error handling and logging, function size and modularity, and DB/API efficiency under load. I also test edge cases before requesting review."*
+
+**"How is this different from coaching someone else?"**
+> *"In Q9 I was the coach. Here I was the one being coached. Same mindset though — feedback is about building independence and quality, not criticism."*
+
+---
+
 <!-- Add more questions below -->
 
