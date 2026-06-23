@@ -865,5 +865,443 @@ The lesson I learned was that the coding effort was not the real risk. The real 
 
 ---
 
+#### My General Approach to Deadlines
+
+Before committing to any deadline, I follow this process:
+
+1. **Evaluate the task first** — I break down the work, identify dependencies, external integrations, and unknowns before giving a timeline.
+2. **Ask for the deadline** — I understand the business expectation and whether there is flexibility.
+3. **Keep a 1–2 day buffer** — I always build in a buffer for unexpected issues — edge cases, code review cycles, testing surprises, or dependency delays.
+
+This way, I'm committing to a timeline I'm confident in rather than an optimistic estimate. If I finish early, the buffer becomes time for polish and additional testing. If something goes wrong, I have room to absorb it without missing the deadline.
+
+---
+
+
+### <span style="color:red">Q5. Tell me about a time when you went above and beyond to meet the needs of a customer</span>
+
+> **💡 Principle:** Customer Obsession · Ownership · Bias for Action · Earn Trust · Think Big
+
+---
+
+#### High-Value Pending UPI Transaction — LinkedIn Escalation (STAR Format)
+
+---
+
+#### Situation
+
+In the Paytm UPI transactional team, we occasionally see high-value transactions get stuck in a **PENDING state** due to API timeouts between our system and the UPI switch. The transaction has left the user's bank but hasn't received a confirmed response from NPCI — so neither the user nor the app knows if the money actually moved.
+
+One day, I came across a LinkedIn post from a user who had done a high-value UPI transaction — we're talking a significant amount — and it had been sitting in PENDING for over an hour. He was visibly frustrated, didn't know if the money was gone, and was publicly calling it out.
+
+---
+
+#### Task
+
+This wasn't assigned to me. No ticket, no escalation, no manager asking me to look into it. But I knew exactly what this felt like from a user's perspective — your money is in limbo and the app is just showing a spinning pending status. I took it upon myself to investigate and resolve it.
+
+---
+
+#### Action
+
+I picked up his transaction ID from the post and pulled it up internally. The root cause was clear — an **API timeout** had occurred when our system tried to fetch the final status from the UPI switch. The transaction was waiting for our **automated reconciliation job** to run, which typically kicks in on a scheduled interval — but that was still **2 hours away.** The user couldn't wait that long.
+
+I didn't wait for the recon job. I **manually triggered a check-status call** against the UPI switch for that specific transaction. The switch confirmed the transaction had actually **failed** — the money had not moved. I then manually pushed the transaction to its **terminal FAILED state** in our system so it reflected correctly on the user's app immediately — with a clear failure message and the assurance that no money had been debited.
+
+I then reached out to the user directly on LinkedIn, told him the transaction had failed, his money was safe, and he could retry.
+
+---
+
+#### Result
+
+The user updated his LinkedIn post and publicly appreciated the response — said he was genuinely surprised that someone from the team saw his post and resolved it within minutes. Internally, this also sparked a discussion on our team about **reducing the reconciliation interval** for high-value transactions specifically, so no user has to wait 2 hours for clarity on a large-value pending payment. That improvement was later picked up as a proper initiative.
+
+---
+
+#### What I Could Have Done Better / What I Learned
+
+1. **Proactive alerting** — We should have an alert that flags high-value transactions stuck in PENDING beyond a threshold time — say 15-20 minutes. The user shouldn't have to post on LinkedIn for someone to notice.
+2. **In-app communication** — Even when a transaction is in PENDING due to a timeout, we could show a better message like "We're verifying your payment, your money is safe" instead of just a generic pending spinner.
+3. **Faster recon for high-value txns** — The 2-hour recon window is fine for low-value transactions, but for high-value ones, we should run check-status more aggressively.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Customer Obsession** | Acted without being asked, purely driven by user impact |
+| **Ownership** | Took end-to-end responsibility for a problem that wasn't assigned to me |
+| **Bias for Action** | Didn't wait for the recon job or escalate up — just solved it |
+| **Earn Trust** | Transparent with the user publicly on LinkedIn |
+| **Think Big** | Used the incident to propose a systemic improvement, not just a one-off fix |
+
+---
+
+#### Power Phrases to Use
+
+- *"I didn't wait for the system to fix itself — I manually intervened because the user couldn't afford to wait"*
+- *"My job didn't require me to look at LinkedIn, but I knew I had the ability to solve it right then"*
+- *"A single user's frustration became a systemic improvement for all high-value transactions"*
+- *"I moved the transaction to a terminal state so the user had clarity — uncertainty is worse than a failed transaction"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"Did your manager know you did this?"**
+> *"I informed him after I resolved it. He was supportive — and it actually led to a formal discussion about improving our pending state handling for high-value UPIs."*
+
+**"What if the transaction had actually succeeded?"**
+> *"That's exactly why I checked the UPI switch status first before taking any action. I never would have moved it to FAILED without a confirmed response from NPCI. The check-status API gave me ground truth before I touched anything."*
+
+**"How did you find the LinkedIn post?"**
+> *"I occasionally browse mentions of Paytm on social platforms — it's a good signal for real user pain that doesn't always come through formal support channels."*
+
+---
+
+### <span style="color:red">Q6. When did you have a disagreement with your manager?</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time you disagreed with your manager and how you handled it.*</span>
+- <span style="color:red">*Describe a situation where you pushed back on a decision from leadership.*</span>
+
+> **💡 Principle:** Have Backbone; Disagree and Commit · Earn Trust · Dive Deep · Customer Obsession · Deliver Results
+
+---
+
+#### UPI Refunds API — Disagreement Over Release Timing (STAR Format)
+
+---
+
+#### Situation
+
+While working on a critical API integration for UPI refunds at Paytm, my manager wanted to release the new API as soon as possible, as there was pressure from the business team to meet deadlines. However, during staging testing, I noticed several major issues:
+
+* The refund API had a **5% failure rate** due to bank-side timeouts.
+* There was **no proper retry mechanism**, meaning some users wouldn't get their refunds unless manually processed.
+* **Logging was incomplete**, making it difficult to debug failures in production.
+
+Despite these concerns, my manager insisted on proceeding with the release, arguing that other merchants had already integrated the API, we could fix issues post-release instead of delaying the launch, and delays would cause business pushback from stakeholders.
+
+---
+
+#### Task
+
+I had to convince my manager that launching the API without fixing these issues could lead to:
+
+* Customer complaints and escalations due to failed refunds.
+* Manual operational overhead for handling refund failures.
+* Financial and regulatory risks if refunds were delayed beyond UPI timelines.
+
+---
+
+#### Action
+
+**Backed my argument with data:**
+
+* Showed logs and failure reports proving that refund requests were failing intermittently.
+* Highlighted that our current system had no automated recovery, meaning every failed refund would require manual intervention.
+* Estimated the customer impact, projecting thousands of failed refunds if we launched as-is.
+
+**Proposed a middle-ground solution instead of just pushing back:**
+
+* Suggested a staged rollout with a feature flag so we could enable the API for a small percentage of users first.
+* Recommended implementing a retry mechanism before launch to auto-recover failed refunds.
+* Worked with DevOps to set up Prometheus alerts to monitor refund failures in real time.
+
+**Escalated to the product team when needed:**
+
+* When my manager was still reluctant, I brought in the product team and showed them the potential customer impact.
+* Product finally agreed that launching without fixes could lead to negative brand impact, and they supported delaying the release.
+
+---
+
+#### Result
+
+* My manager agreed to delay the launch until the retry mechanism was implemented.
+* The refund API was released in a phased manner, ensuring stability before full deployment.
+* Refund failures dropped from **15% to under 1%**, preventing customer complaints.
+* Our monitoring system helped catch API failures early, allowing proactive fixes.
+
+---
+
+#### What I Learned
+
+1. **Disagreements should be handled with data** — decisions should be based on facts, not opinions.
+2. **Offering a middle-ground solution** (like phased rollout) is more effective than outright disagreement.
+3. **Involving cross-functional teams** (like Product) can help align priorities and get better outcomes.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Have Backbone; Disagree and Commit** | Pushed back respectfully with evidence when release timing put customers at risk |
+| **Earn Trust** | Didn't just say no — brought data, a phased rollout plan, and monitoring |
+| **Dive Deep** | Found root issues in staging — timeouts, missing retries, incomplete logging |
+| **Customer Obsession** | Framed the disagreement around customer impact and regulatory refund timelines |
+| **Deliver Results** | Shipped a stable phased rollout with failures under 1% |
+
+---
+
+#### Power Phrases to Use
+
+- *"I didn't disagree for the sake of it — I came with logs, projected impact, and a phased rollout plan"*
+- *"The fastest release isn't always the right release when refunds and regulatory timelines are on the line"*
+- *"When data alone wasn't enough, I brought Product in so we were deciding on business risk, not just engineering preference"*
+- *"Once we aligned on the fix, I fully committed to the delayed launch and owned the rollout"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"Did you go over your manager's head?"**
+> *"I involved Product because the decision had direct customer and brand impact — not to bypass my manager. I shared the same data with both, and Product's support helped us align on delaying the release."*
+
+**"What if your manager had still insisted on launching?"**
+> *"I would have proposed the minimum viable safeguards — feature flag at 1%, retry mechanism, and real-time alerts — so we could limit blast radius even if we couldn't delay fully. But in this case, the data and Product alignment were enough to change the decision."*
+
+**"How did your relationship with your manager change after this?"**
+> *"It actually improved. He saw that I wasn't blocking progress — I was protecting the release. After the phased rollout succeeded with under 1% failures, he started asking me to review similar launches before commit dates."*
+
+---
+
+### <span style="color:red">Q7. When did you have to deal with a difficult stakeholder?</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time you worked with a difficult stakeholder.*</span>
+- <span style="color:red">*Describe a situation where an external partner or business team was blocking progress.*</span>
+
+> **💡 Principle:** Earn Trust · Have Backbone; Disagree and Commit · Dive Deep · Customer Obsession · Deliver Results · Think Big
+
+---
+
+#### UPI Refunds API — Difficult Banking Partner & Business Stakeholders (STAR Format)
+
+---
+
+#### Situation
+
+While working on a UPI payments feature at Paytm, I had to collaborate with a banking partner that provided the UPI gateway. We were integrating a new refund API, but the bank's API was poorly documented, had inconsistent behavior, and often failed intermittently in staging.
+
+The bank's technical team was unresponsive, and the business team insisted that we go live quickly, even though we hadn't been able to properly test edge cases. They pushed back when I requested more time for testing, arguing that other merchants had already integrated without issues.
+
+---
+
+#### Task
+
+* Ensure that the refund API integration was stable and reliable before going live.
+* Convince the business team and banking partner that we needed additional testing time.
+* Prevent failed refunds, which could lead to customer complaints and financial discrepancies.
+
+---
+
+#### Action
+
+**Collected data to support my argument:**
+
+* Analyzed API failure logs and found that **15–20% of refund requests** in staging were failing due to timeout issues.
+* Ran tests simulating high traffic and found that the bank's API was inconsistent, sometimes taking **over 10 seconds** to respond.
+
+**Escalated the issue with clear business impact:**
+
+* I first sent emails and messages to the bank's technical team and our business stakeholders, providing logs, failure rates, and response time issues.
+* After multiple follow-ups with no response, I escalated the issue to our product team.
+* I clearly outlined how launching without fixing these issues would lead to customer escalations due to failed refunds, manual intervention costs to reconcile stuck transactions, and potential **regulatory compliance issues** for failing to process refunds within mandated timelines.
+
+**Worked with the product team to push back against the bank:**
+
+* The product team initially resisted, saying we needed to move fast, but I presented data-backed risks that changed their stance.
+* They agreed to escalate the issue at the leadership level, pressuring the bank to provide a fix.
+* Meanwhile, I worked with engineering and product to implement a fallback plan.
+
+**Proposed a compromise instead of just rejecting the deadline:**
+
+* Suggested a partial rollout with real-time monitoring instead of a full launch.
+* Requested the bank to enable logging and debugging support to help us track failures.
+* Agreed to prioritize fixes for critical refund cases while monitoring non-critical refunds separately.
+
+**Worked around the bank's limitations:**
+
+* Implemented a retry mechanism and a fallback API call to handle failed refunds automatically.
+* Set up Prometheus alerts to detect API failures in real time.
+
+---
+
+#### Result
+
+* The product team fully supported delaying the full launch until the bank resolved API inconsistencies.
+* The bank acknowledged the API issues and committed to fixes before the full release.
+* Our retry mechanism reduced refund failures, ensuring **99% success in production**.
+* The customer support team saw a **50% drop** in refund-related complaints.
+
+---
+
+#### What I Learned
+
+1. **Escalation should be done strategically** — if initial messages are ignored, involve higher-level stakeholders.
+2. **Stakeholders respond better when you use data** to justify concerns instead of just pushing back.
+3. **Compromising** (e.g., phased rollout) is often more effective than outright rejection.
+4. **Difficult stakeholders aren't always resistant** — they may just lack technical insights, so translating risks into business impact helps align priorities.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Earn Trust** | Kept stakeholders informed with logs and failure data instead of vague concerns |
+| **Have Backbone; Disagree and Commit** | Pushed back on premature launch despite pressure from business and bank |
+| **Dive Deep** | Analyzed staging logs, ran load tests, and identified 10s+ response times |
+| **Customer Obsession** | Framed every escalation around failed refunds and customer complaints |
+| **Deliver Results** | Shipped retry + fallback + monitoring; 99% success, 50% fewer support tickets |
+| **Think Big** | Didn't wait for the bank — built fallback and monitoring to protect production |
+
+---
+
+#### Power Phrases to Use
+
+- *"The bank wasn't responding to emails — so I translated API timeouts into customer escalations and regulatory risk"*
+- *"I didn't just ask for more time — I came with failure rates, load test results, and a partial rollout plan"*
+- *"Product initially wanted speed; the data changed the conversation from timeline to business risk"*
+- *"We couldn't control the bank's API, but we could control retries, fallbacks, and real-time alerts"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"How did you handle the unresponsive bank team?"**
+> *"I documented every outreach — emails, messages, failure logs — and escalated through our product team to leadership level. Having a paper trail of unresponsiveness made it easier to justify delay and partial rollout internally."*
+
+**"What if the bank never fixed their API?"**
+> *"That's why we built the retry mechanism and fallback API call — we designed around their limitations rather than blocking indefinitely. Monitoring let us catch failures early and route around them automatically."*
+
+**"How is this different from disagreeing with your manager?"**
+> *"Here the difficult stakeholders were external — the bank's tech team and our business team pushing for speed. The challenge was aligning multiple parties who didn't have full visibility into the technical failures."*
+
+---
+
+### <span style="color:red">Q8. When were you able to remove a serious roadblock preventing your team from making progress?</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time you unblocked your team.*</span>
+- <span style="color:red">*Describe a situation where you improved developer productivity or removed an infrastructure bottleneck.*</span>
+
+> **💡 Principle:** Ownership · Invent and Simplify · Dive Deep · Deliver Results · Learn and Be Curious · Bias for Action
+
+---
+
+#### Legacy Node.js Services — Local Development Roadblock (STAR Format)
+
+---
+
+#### Situation
+
+Our team was working on legacy Node.js services, but there was a major roadblock — these services did not run locally, forcing developers to:
+
+* Log into EC2 servers, use Vim to edit code, and manually restart applications after every change.
+* Struggle with outdated Aerospike modules that were built for x86 but incompatible with Mac M1 ARM systems.
+* Find that Kafka consumers wouldn't work locally because they required access to the staging database, which wasn't directly available.
+* Hit APIs that relied on staging dependencies and failed locally, making testing difficult.
+
+This setup was slowing down development significantly, increasing debugging time, and making new developers feel overwhelmed.
+
+---
+
+#### Task
+
+I took ownership of the issue and worked to:
+
+* Make the services runnable locally so developers could work efficiently.
+* Resolve dependency and architecture mismatches to remove compatibility issues.
+* Ensure Kafka and database interactions worked locally without needing direct staging access.
+* Remove dependency on staging APIs by simulating responses locally.
+
+---
+
+#### Action
+
+**1. Fixed Aerospike compatibility issues:**
+
+* The Aerospike module was built for x86 architecture, making it incompatible with Mac M1 ARM chips.
+* I upgraded the Aerospike dependencies to a newer version that supported both x86 and ARM.
+* For those still facing issues, I containerized Aerospike using Docker, allowing it to run across all platforms seamlessly.
+
+**2. Made Kafka consumers work with staging DB using SSH port forwarding:**
+
+* Our Kafka consumers required staging DB access, but developers couldn't connect directly.
+* I set up SSH port forwarding, allowing services running locally to connect to the staging database securely.
+* Documented step-by-step instructions for setting up port forwarding so every developer could replicate the fix.
+* This enabled real-time Kafka event processing in local environments.
+
+**3. Enabled services to work locally without staging dependencies:**
+
+* Some APIs failed locally because they depended on services that were only accessible in staging.
+* I built a mock service that replicated API responses, allowing developers to work without needing staging dependencies.
+* This eliminated constant failures due to missing staging access and improved local development reliability.
+
+**4. Standardized local development setup:**
+
+* Created Docker Compose configurations so developers could spin up Kafka, Aerospike, and mock APIs with a single command.
+* Wrote detailed documentation on how to debug Kafka consumers locally, use SSH port forwarding to access staging DB safely, and set up environment variables for a seamless local experience.
+
+---
+
+#### Result
+
+* Developers no longer had to log into EC2 instances, making development much faster.
+* Kafka consumers started working locally, improving real-time debugging and testing.
+* Aerospike compatibility issues were resolved, allowing developers to work seamlessly across x86 and ARM systems.
+* APIs that previously failed due to staging dependencies now worked locally, reducing friction during development.
+* Developer onboarding time decreased, as everything was now well-documented and easy to set up.
+
+---
+
+#### What I Learned
+
+1. **Removing infrastructure bottlenecks drastically improves developer productivity.**
+2. **Port forwarding is a powerful tool** for securely accessing staging environments without exposing sensitive data.
+3. **Mocking dependencies reduces reliance on external systems** and speeds up development.
+4. **A well-documented local setup** helps new developers onboard quickly and work independently.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Ownership** | Took initiative to fix a team-wide problem that wasn't assigned to me |
+| **Invent and Simplify** | Docker Compose one-command setup replaced EC2 + Vim workflows |
+| **Dive Deep** | Traced root causes — ARM incompatibility, staging DB access, missing mocks |
+| **Deliver Results** | Entire team unblocked; faster dev cycles and shorter onboarding |
+| **Learn and Be Curious** | Explored port forwarding, containerization, and mock services to solve each blocker |
+| **Bias for Action** | Didn't wait for infra team — fixed Aerospike, Kafka, and mocks myself |
+
+---
+
+#### Power Phrases to Use
+
+- *"Developers were SSH-ing into EC2 and editing with Vim — that was the signal something had to change"*
+- *"I didn't just fix it for myself — I containerized Aerospike, documented port forwarding, and wrote Docker Compose so the whole team could run locally"*
+- *"Mocking staging APIs removed the single biggest source of local failures"*
+- *"The best unblock isn't a one-time fix — it's a documented, repeatable setup anyone can run in minutes"*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"Why didn't the team fix this earlier?"**
+> *"It had become accepted pain — everyone worked around it. The EC2 workflow was slow but 'worked.' I realized the cumulative cost — debugging time, onboarding friction, ARM incompatibility — was worth fixing properly once."*
+
+**"Was SSH port forwarding to staging DB safe?"**
+> *"Yes — it was read-only access through a bastion host, scoped to what Kafka consumers needed. I documented the setup so developers didn't expose credentials or open unnecessary ports."*
+
+**"What would you do differently today?"**
+> *"I'd push for full local parity earlier — Testcontainers for Aerospike/Kafka, contract testing against mocks, and CI that catches ARM/x86 compatibility before merge. The port-forwarding bridge was a good interim step, not the end state."*
+
+---
+
 <!-- Add more questions below -->
 
