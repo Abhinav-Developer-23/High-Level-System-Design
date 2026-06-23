@@ -771,5 +771,99 @@ All self-taught while building the tool — no training program, no dedicated AI
 ---
 
 
+### <span style="color:red">Q4. How do you handle deadlines? Have you ever missed one? If so, how did you manage the situation?</span>
+
+**Also asked as:**
+- <span style="color:red">*Tell me about a time when you missed a deadline, what could you have done better.*</span>
+
+> **💡 Principle:** Deliver Results · Earn Trust · Ownership · Bias for Action
+
+---
+
+#### UPI Transaction Validation Enhancement — Missed Deadline (STAR Format)
+
+---
+
+#### Situation
+
+In the Paytm UPI team, I was responsible for delivering an enhancement to our transaction validation and error handling service. The objective was to improve the customer experience by showing more accurate error messages instead of generic failures during UPI transactions.
+
+The feature involved consuming responses from multiple downstream systems and partner banks. We had committed to releasing it before a planned product milestone because customer support tickets related to unclear transaction failures were increasing.
+
+---
+
+#### Task
+
+I owned the backend implementation, API changes, testing, and release coordination.
+
+My initial estimate was around two weeks because the API contract appeared straightforward. We had several response fields from banks and internal systems, and the requirement was to map them to user-friendly error messages.
+
+---
+
+#### Action
+
+I completed most of the development on time. However, during end-to-end testing, I discovered that the integration was more complex than I had originally assumed.
+
+While reviewing production-like scenarios, we found that the same field could represent different failure conditions depending on combinations of other response parameters.
+
+For example:
+
+* A specific error code could mean "insufficient balance" for one bank.
+* The same error code combined with another status field could actually indicate a timeout scenario.
+* Some partner banks populated optional fields inconsistently.
+* Certain edge cases returned technically successful API responses but still required customer-facing failure messages.
+
+Because of these variations, our initial mapping logic would have shown incorrect messages to users in several scenarios.
+
+At that point, about a week before release, I realized we would miss the committed deadline.
+
+Instead of trying to force the release, I immediately informed my manager, PM, and dependent teams. I explained:
+
+* The edge cases we had discovered.
+* The customer impact of displaying incorrect messages.
+* The additional validation work required.
+* A revised timeline and mitigation plan.
+
+To recover time, I:
+
+* Created a detailed matrix of all error-code and field combinations.
+* Worked closely with the bank integration team to verify actual behavior.
+* Parallelized testing by involving another engineer.
+* Prioritized high-volume transaction failure scenarios first.
+* Added automated test cases covering all newly discovered combinations.
+
+---
+
+#### Result
+
+We missed the original deadline by three days.
+
+However, the release went live without production issues, and customers received significantly more accurate transaction failure messages. We also reduced the number of support escalations related to confusing payment failures.
+
+The feature became the reference implementation for handling similar validation flows in subsequent integrations.
+
+---
+
+#### What I Could Have Done Better
+
+The biggest mistake was assuming the external API behavior was fully understood based on documentation.
+
+I should have:
+
+1. Performed deeper validation of partner-bank responses much earlier.
+2. Reviewed historical production failures before finalizing estimates.
+3. Included risk buffers for external dependencies and undocumented behavior.
+4. Started end-to-end testing earlier instead of waiting until development was nearly complete.
+
+After this incident, I introduced a practice of creating response-mapping matrices and validating edge cases with partner teams before committing timelines. This significantly improved estimation accuracy and reduced late-stage surprises in future projects.
+
+---
+
+#### Closing
+
+The lesson I learned was that the coding effort was not the real risk. The real risk was hidden complexity in external integrations. Since then, I proactively validate assumptions and edge cases early before committing delivery dates.
+
+---
+
 <!-- Add more questions below -->
 
