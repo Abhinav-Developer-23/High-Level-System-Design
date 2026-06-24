@@ -118,7 +118,7 @@ The issue directly impacted customer payments during one of the highest traffic 
 ---
 
 ### <span style="color:red">Q2. Tell me something you built from scratch and what challenges you faced</span>
-
+Describe a time when you had to do a task from scratch. What approach did you take, and how did you accomplish it?
 **Also asked as:**
 - <span style="color:red">*What's the project you're most proud of?*</span>
 - <span style="color:red">*Tell me about a time when you took ownership of a project or task and saw it through to completion despite challenges.*</span>
@@ -664,6 +664,8 @@ That end-to-end ownership — from an empty repo to a platform that multiple bus
 **Also asked as:**
 - <span style="color:red">*When did you have to learn something new to do your job?*</span>
 - <span style="color:red">*Tell me about a time when you had to implement something challenging.*</span>
+- Have u ever done any innovative work in ur company?
+- Tell Me About a Time When You Had to Implement Something Challenging
 
 > **💡 Principle:** Dive Deep · Learn and Be Curious · Deliver Results
 
@@ -1245,78 +1247,80 @@ The bank's technical team was unresponsive, and the business team insisted that 
 
 ---
 
-#### Legacy Node.js Services — Local Development Roadblock (STAR Format)
+#### Local Development Framework — Unblocking Paytm UPI Team Testing (STAR Format)
 
 ---
 
 #### Situation
 
-Our team was working on legacy Node.js services, but there was a major roadblock — these services did not run locally, forcing developers to:
+In the Paytm UPI team, developers often needed to test changes across multiple dependent services before raising a release.
 
-* Log into EC2 servers, use Vim to edit code, and manually restart applications after every change.
-* Struggle with outdated Aerospike modules that were built for x86 but incompatible with Mac M1 ARM systems.
-* Find that Kafka consumers wouldn't work locally because they required access to the staging database, which wasn't directly available.
-* Hit APIs that relied on staging dependencies and failed locally, making testing difficult.
+The challenge was that our service depended on several downstream services, databases, and external integrations. Setting up a complete local environment was extremely difficult and time-consuming.
 
-This setup was slowing down development significantly, increasing debugging time, and making new developers feel overwhelmed.
+Because of this, many developers skipped local end-to-end testing and directly validated their changes in the staging environment.
+
+This created several problems:
+
+* Longer development cycles.
+* Frequent dependency issues in staging.
+* Accidental disruption of shared test environments.
+* Slower debugging because developers had to wait for deployments before validating changes.
+
+Over time, this became a significant productivity bottleneck for the team.
 
 ---
 
 #### Task
 
-I took ownership of the issue and worked to:
+Although solving this problem was not part of my assigned roadmap work, I saw that it was repeatedly slowing down development across the team.
 
-* Make the services runnable locally so developers could work efficiently.
-* Resolve dependency and architecture mismatches to remove compatibility issues.
-* Ensure Kafka and database interactions worked locally without needing direct staging access.
-* Remove dependency on staging APIs by simulating responses locally.
+I decided to create a solution that would allow engineers to perform realistic testing locally without depending on staging.
 
 ---
 
 #### Action
 
-**1. Fixed Aerospike compatibility issues:**
+I first spoke with multiple team members to understand the biggest pain points.
 
-* The Aerospike module was built for x86 architecture, making it incompatible with Mac M1 ARM chips.
-* I upgraded the Aerospike dependencies to a newer version that supported both x86 and ARM.
-* For those still facing issues, I containerized Aerospike using Docker, allowing it to run across all platforms seamlessly.
+The common issue was that bringing up all dependent services locally required significant manual effort, and some downstream dependencies were difficult to access outside shared environments.
 
-**2. Made Kafka consumers work with staging DB using SSH port forwarding:**
+To address this, I designed and implemented a lightweight local development framework.
 
-* Our Kafka consumers required staging DB access, but developers couldn't connect directly.
-* I set up SSH port forwarding, allowing services running locally to connect to the staging database securely.
-* Documented step-by-step instructions for setting up port forwarding so every developer could replicate the fix.
-* This enabled real-time Kafka event processing in local environments.
+The framework provided:
 
-**3. Enabled services to work locally without staging dependencies:**
+* A single shell command to start the entire local setup.
+* Mock implementations for downstream services.
+* Mock databases and required tables.
+* Configuration management for different testing scenarios.
+* Predefined test data for common transaction flows.
 
-* Some APIs failed locally because they depended on services that were only accessible in staging.
-* I built a mock service that replicated API responses, allowing developers to work without needing staging dependencies.
-* This eliminated constant failures due to missing staging access and improved local development reliability.
+Instead of requiring engineers to deploy to staging for every change, they could now run most end-to-end validation directly on their machines.
 
-**4. Standardized local development setup:**
-
-* Created Docker Compose configurations so developers could spin up Kafka, Aerospike, and mock APIs with a single command.
-* Wrote detailed documentation on how to debug Kafka consumers locally, use SSH port forwarding to access staging DB safely, and set up environment variables for a seamless local experience.
+I documented the setup, created onboarding guides, and helped team members adopt it.
 
 ---
 
 #### Result
 
-* Developers no longer had to log into EC2 instances, making development much faster.
-* Kafka consumers started working locally, improving real-time debugging and testing.
-* Aerospike compatibility issues were resolved, allowing developers to work seamlessly across x86 and ARM systems.
-* APIs that previously failed due to staging dependencies now worked locally, reducing friction during development.
-* Developer onboarding time decreased, as everything was now well-documented and easy to set up.
+The framework removed a major roadblock that had been slowing development for the entire team.
+
+As a result:
+
+* Developers could validate changes much earlier in the development cycle.
+* Dependence on the staging environment reduced significantly.
+* Debugging became faster because issues could be reproduced locally.
+* Staging stability improved because fewer incomplete or experimental changes were being tested there.
+* New engineers were able to become productive much faster.
+
+The framework became the preferred way to test many development scenarios and saved considerable engineering time across the team.
 
 ---
 
 #### What I Learned
 
-1. **Removing infrastructure bottlenecks drastically improves developer productivity.**
-2. **Port forwarding is a powerful tool** for securely accessing staging environments without exposing sensitive data.
-3. **Mocking dependencies reduces reliance on external systems** and speeds up development.
-4. **A well-documented local setup** helps new developers onboard quickly and work independently.
+1. **Sometimes the highest-impact work is not a product feature but removing friction for other engineers.**
+2. **Investing in developer productivity can improve the velocity of the entire team, not just your own work.**
+3. **Talking to teammates first helps you build the right abstraction — mocks and one-command setup only work if they match real pain points.**
 
 ---
 
@@ -1324,34 +1328,34 @@ I took ownership of the issue and worked to:
 
 | Principle | How |
 |---|---|
-| **Ownership** | Took initiative to fix a team-wide problem that wasn't assigned to me |
-| **Invent and Simplify** | Docker Compose one-command setup replaced EC2 + Vim workflows |
-| **Dive Deep** | Traced root causes — ARM incompatibility, staging DB access, missing mocks |
-| **Deliver Results** | Entire team unblocked; faster dev cycles and shorter onboarding |
-| **Learn and Be Curious** | Explored port forwarding, containerization, and mock services to solve each blocker |
-| **Bias for Action** | Didn't wait for infra team — fixed Aerospike, Kafka, and mocks myself |
+| **Ownership** | Took on a team-wide bottleneck that wasn't on my roadmap |
+| **Invent and Simplify** | One shell command + mocks replaced manual multi-service local setup |
+| **Dive Deep** | Understood dependency chains, staging failures, and what engineers actually needed to test |
+| **Deliver Results** | Reduced staging reliance, faster debugging, quicker onboarding for new engineers |
+| **Learn and Be Curious** | Interviewed teammates to understand pain points before designing the framework |
+| **Bias for Action** | Didn't wait for infra or platform team — built and documented the solution myself |
 
 ---
 
 #### Power Phrases to Use
 
-- *"Developers were SSH-ing into EC2 and editing with Vim — that was the signal something had to change"*
-- *"I didn't just fix it for myself — I containerized Aerospike, documented port forwarding, and wrote Docker Compose so the whole team could run locally"*
-- *"Mocking staging APIs removed the single biggest source of local failures"*
-- *"The best unblock isn't a one-time fix — it's a documented, repeatable setup anyone can run in minutes"*
+- *"Everyone was testing in staging because local setup was too painful — that was the roadblock"*
+- *"I didn't just fix it for myself — one command, mocks, test data, and docs so the whole team could run end-to-end locally"*
+- *"Staging got more stable because experimental changes stopped landing there first"*
+- *"The highest-impact work wasn't a feature — it was removing friction that slowed every engineer"*
 
 ---
 
 #### Likely Follow-up Questions & Quick Answers
 
 **"Why didn't the team fix this earlier?"**
-> *"It had become accepted pain — everyone worked around it. The EC2 workflow was slow but 'worked.' I realized the cumulative cost — debugging time, onboarding friction, ARM incompatibility — was worth fixing properly once."*
+> *"It had become accepted pain — staging 'worked' even though it was slow and fragile. The cumulative cost — long cycles, shared env breakage, slow debugging — was worth fixing once with a repeatable local framework."*
 
-**"Was SSH port forwarding to staging DB safe?"**
-> *"Yes — it was read-only access through a bastion host, scoped to what Kafka consumers needed. I documented the setup so developers didn't expose credentials or open unnecessary ports."*
+**"How did mocks stay realistic enough to trust?"**
+> *"I focused on common UPI transaction flows and the downstream contracts our service actually depended on. Predefined test data and scenario-based config let engineers validate the paths they cared about without needing every real dependency locally."*
 
 **"What would you do differently today?"**
-> *"I'd push for full local parity earlier — Testcontainers for Aerospike/Kafka, contract testing against mocks, and CI that catches ARM/x86 compatibility before merge. The port-forwarding bridge was a good interim step, not the end state."*
+> *"I'd add contract tests against real downstream APIs, CI checks that the local framework stays in sync with service changes, and maybe Testcontainers for anything that can't be mocked cleanly. The one-command + mocks approach was the right first unblock."*
 
 ---
 
