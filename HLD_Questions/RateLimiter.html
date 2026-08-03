@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Rate Limiter — HLD Notes</title>
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-card: #151515;
+    --border: #2a2a2a;
+    --text: #e6e6e6;
+    --text-dim: #a0a0a0;
+    --accent: #4ade80;
+    --accent-dim: #1c3d29;
+    --warn: #f0b429;
+    --code-bg: #101010;
+  }
+  * { box-sizing: border-box; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    line-height: 1.65;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 24px 100px;
+  }
+  h2 {
+    color: var(--accent);
+    font-size: 1.4rem;
+    margin-top: 0;
+    border-left: 3px solid var(--accent);
+    padding-left: 12px;
+  }
+  p { color: var(--text); }
+  code {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.9em;
+    color: var(--accent);
+  }
+  pre {
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px;
+    overflow-x: auto;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    font-size: 0.88rem;
+    line-height: 1.55;
+  }
+  pre code { border: none; background: none; padding: 0; color: #d4d4d4; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0;
+    font-size: 0.92rem;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th { background: var(--bg-card); color: var(--accent); }
+  tr:nth-child(even) td { background: #111111; }
+  .json-label {
+    display: inline-block;
+    font-size: 0.8rem;
+    color: var(--warn);
+    margin-bottom: 6px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+  }
+  .note {
+    background: var(--bg-card);
+    border-left: 4px solid var(--warn);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 16px 0 28px;
+    font-size: 0.92rem;
+  }
+  .note strong { color: var(--warn); }
+</style>
+</head>
+<body>
+
+<h2 id="schema">3. Database Schema — Rules Table</h2>
+
+<div class="note">
+  <strong>Improvement over the original design:</strong> dropped the separate <code>limit</code> and <code>window_seconds</code> columns and moved their values inside <code>rules</code> too. Reason — those two columns only ever applied to <code>fixed_window</code>/<code>sliding_window</code> rows and sat <code>NULL</code> for <code>token_bucket</code>/<code>leaky_bucket</code> rows, so the table still had algorithm-specific columns mixed in with the generic ones. Putting every algorithm's parameters in <code>rules</code> means one column holds the config regardless of algorithm, so the app logic is just "read <code>algorithm</code>, then read <code>rules</code>" with no special-casing for which columns happen to be populated.
+</div>
+
+<p>Every algorithm's parameters — even the simple ones like fixed window and sliding window — live in one flexible <code>rules</code> JSON column instead of separate typed columns. This keeps the row shape uniform: the app always reads <code>algorithm</code> to know which fields matter, then parses <code>rules</code> for that algorithm's specific parameters, no branching between real columns and JSON.</p>
+
+<table>
+<tr><th>Column</th><th>Type</th><th>Notes</th></tr>
+<tr><td><code>id</code></td><td>UUID (PK)</td><td>Row identifier.</td></tr>
+<tr><td><code>route_pattern</code></td><td>VARCHAR</td><td>Endpoint this rule applies to, e.g. <code>/api/orders/*</code>.</td></tr>
+<tr><td><code>tier</code></td><td>VARCHAR, nullable</td><td>Subscription tier (<code>free</code>, <code>pro</code>); null = applies to all tiers.</td></tr>
+<tr><td><code>algorithm</code></td><td>ENUM</td><td><code>fixed_window</code>, <code>sliding_window</code>, <code>token_bucket</code>, <code>leaky_bucket</code>.</td></tr>
+<tr><td><code>rules</code></td><td>JSON / JSONB</td><td>Algorithm-specific parameters for whichever algorithm this row uses (see samples below).</td></tr>
+<tr><td><code>enabled</code></td><td>BOOLEAN</td><td>Lets ops disable a rule without deleting it.</td></tr>
+<tr><td><code>updated_at</code></td><td>TIMESTAMP</td><td>Drives cache invalidation in the limiter service.</td></tr>
+</table>
+
+<span class="json-label">rules — fixed window row</span>
+<pre><code>{
+  "limit": 100,          // max requests allowed inside a single window
+  "windowSeconds": 60    // window length in seconds; counter resets when a new window starts
+}</code></pre>
+
+<span class="json-label">rules — sliding window row</span>
+<pre><code>{
+  "limit": 100,          // max requests allowed within the trailing window
+  "windowSeconds": 60    // length of the rolling window used for the weighted/log-based estimate
+}</code></pre>
+
+<span class="json-label">rules — token bucket row</span>
+<pre><code>{
+  "capacity": 50,        // max tokens the bucket can hold — i.e. the largest burst allowed
+  "refillRate": 10,      // tokens added back per second once consumed
+  "cost": 1              // tokens a single request consumes (default 1; expensive endpoints can cost more)
+}</code></pre>
+
+<span class="json-label">rules — leaky bucket row</span>
+<pre><code>{
+  "queueSize": 100,          // max requests allowed to sit queued at once
+  "leakRate": 20,            // requests drained/processed per second, at a constant pace
+  "overflowAction": "reject" // what happens once the queue is full: "reject" or "drop_oldest"
+}</code></pre>
+
+<p>The limiter service reads <code>algorithm</code> first to know which fields matter, then parses <code>rules</code> for that algorithm's parameters — keeping one row shape for every algorithm instead of a different table per algorithm.</p>
+
+</body>
+</html>
