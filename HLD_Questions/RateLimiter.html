@@ -135,5 +135,91 @@
 
 <p>The limiter service reads <code>algorithm</code> first to know which fields matter, then parses <code>rules</code> for that algorithm's parameters — keeping one row shape for every algorithm instead of a different table per algorithm.</p>
 
+<h2 id="ttl">4. Redis Key TTL by Algorithm</h2>
+
+<p>TTL differs per algorithm because each one stores different state in Redis. Get it wrong in one direction and idle clients' keys never get reclaimed; get it wrong in the other and a key can expire mid-calculation, corrupting the count.</p>
+
+<table>
+<tr><th>Algorithm</th><th>Key(s)</th><th>TTL</th><th>Why</th></tr>
+<tr>
+  <td>Fixed Window</td>
+  <td><code>ratelimit:{client}:{route}:{windowStart}</code></td>
+  <td><code>= windowSeconds</code> (1×)</td>
+  <td>Once the window passes, the counter is meaningless — expire it exactly when the window ends.</td>
+</tr>
+<tr>
+  <td>Sliding Window — counter variant</td>
+  <td>current-window + previous-window keys</td>
+  <td><code>= windowSeconds × 2</code> (2×)</td>
+  <td>The previous window's count must still be alive for the weighted calculation while a request is inside the current window. At 1× TTL, the previous key can vanish mid-calculation.</td>
+</tr>
+<tr>
+  <td>Sliding Window — log variant</td>
+  <td>ZSET of request timestamps</td>
+  <td><code>≈ windowSeconds</code> (safety net only)</td>
+  <td><code>ZREMRANGEBYSCORE</code> actively trims stale entries on every request — TTL is just a backstop for a client that goes silent and stops triggering trims.</td>
+</tr>
+<tr>
+  <td>Token Bucket</td>
+  <td>Hash <code>{tokens, lastRefill}</code></td>
+  <td>No strict requirement — soft TTL ≈ <code>capacity / refillRate</code></td>
+  <td>Refill math is time-elapsed based, so a stale key is still mathematically correct whenever it's next read. TTL here is purely memory cleanup for abandoned clients.</td>
+</tr>
+<tr>
+  <td>Leaky Bucket</td>
+  <td>Hash <code>{queueLevel, lastLeakTime}</code></td>
+  <td>No strict requirement — soft TTL ≈ <code>queueSize / leakRate</code></td>
+  <td>Mirror of token bucket: the leak/drain calc is time-elapsed based, so a missing key just resets to an empty queue — harmless. TTL only reclaims memory.</td>
+</tr>
+</table>
+
+<div class="note">
+  <strong>Rule of thumb:</strong> only Fixed Window and Sliding Window have a TTL that affects <em>correctness</em> — too short and you can under-count or read a prematurely-expired window. Token Bucket and Leaky Bucket TTLs are purely memory hygiene, since their state self-corrects via elapsed-time math regardless of how stale the key is when read.
+</div>
+
+<h2 id="estimation">5. Back-of-the-Envelope Estimation</h2>
+
+<p>Sizing assumption: <strong>10 million requests/sec</strong> average, across all clients.</p>
+
+<span class="json-label">1. Request volume</span>
+<pre><code>Average:  10M req/s
+Peak (3x factor for traffic spikes):
+  10M req/s × 3 = 30M req/s</code></pre>
+
+<span class="json-label">2. Unique / concurrent clients</span>
+<pre><code>Active unique clients per day: 10M
+Concurrency assumption:        10%
+Concurrent clients = 10M × 10% = 1M</code></pre>
+
+<span class="json-label">3. Rate limit check operations</span>
+<p>Each request needs 2 ops against the counter store: 1 <strong>read</strong> (fetch current count) + 1 <strong>write</strong> (increment/update).</p>
+<pre><code>At peak: 30M req/s × 2 ops/req = 60M ops/sec</code></pre>
+<p>This is the sustained throughput the Redis cluster (or counter store) must handle.</p>
+
+<span class="json-label">4. Storage per client</span>
+<table>
+<tr><th>Field</th><th>Size</th></tr>
+<tr><td>Client identifier</td><td>~50 bytes</td></tr>
+<tr><td>Request count</td><td>~8 bytes</td></tr>
+<tr><td>Window timestamp</td><td>~8 bytes</td></tr>
+<tr><td>Metadata</td><td>~34 bytes</td></tr>
+<tr><td><strong>Total</strong></td><td><strong>~100 bytes/client</strong></td></tr>
+</table>
+
+<span class="json-label">5. Total memory footprint</span>
+<pre><code>1M concurrent clients × 100 bytes/client = ~100 MB</code></pre>
+
+<table>
+<tr><th>Metric</th><th>Value</th></tr>
+<tr><td>Peak throughput</td><td>30M req/s</td></tr>
+<tr><td>Redis ops/sec required</td><td>60M ops/s</td></tr>
+<tr><td>Concurrent clients</td><td>1M</td></tr>
+<tr><td>Total memory needed</td><td>~100 MB</td></tr>
+</table>
+
+<div class="note">
+  <strong>Key insight:</strong> ~100MB is tiny — it fits entirely in RAM on a single node, let alone a Redis cluster. Storage capacity is a non-issue; the real engineering challenge is sustaining <strong>60M ops/sec at sub-5ms p99 latency</strong>, which is why the design leans on Redis sharded across multiple nodes rather than any exotic storage tier. This confirms the system is <em>read-heavy and latency-sensitive, not memory-constrained</em>.
+</div>
+
 </body>
 </html>
