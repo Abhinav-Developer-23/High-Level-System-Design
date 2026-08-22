@@ -67,11 +67,14 @@
   🔗 [Tutorialspoint — Referential Integrity Rule in RDBMS](https://www.tutorialspoint.com/Referential-Integrity-Rule-in-RDBMS)
 - **What is RDBMS & How is it Stored in Memory? (B-Trees / Internal Structures)**  
   ▶️ [B-Tree (Abdul Bari)](https://www.youtube.com/watch?v=aZjYr87r1b8&t=1657s)  
-  ▶️ [B+ Tree](https://www.youtube.com/watch?v=ownO77M4SWI)  
-  📚 [B-Trees & DB Indexes (PlanetScale)](https://planetscale.com/blog/btrees-and-database-indexes)
-- **What is the meaning of the word "Relational" in RDBMS?** `[HOMEWORK]`
+  ▶️ [B Tree Insert and Delete](https://www.youtube.com/watch?v=ownO77M4SWI)  
+  📚 [B-Trees & DB Indexes (PlanetScale)](https://planetscale.com/blog/btrees-and-database-indexes)  
+  🕹️ [Interactive B+ Tree Visualizer](https://bplustree.app/)  
+  🕹️ [Interactive B Tree Visualizer](https://btree.app/)
+- **What is the meaning of the word "Relational" in RDBMS?**  
+  📝 [DBMS1.md — What Is the Meaning of the Word "Relational" in RDBMS?](DBMS1.md#what-is-the-meaning-of-the-word-relational-in-rdbms)
 - **Degree of Relation / Cardinality / Relationship Types (1:1, 1:M, M:M)**  
-  🔗 [Relational DB Design — Three Relationship Types](https://www.relationaldbdesign.com/database-design/module6/three-relationship-types.php)
+  🔗 [ER Relationship Types — Binary](https://medium.com/@kushanaam/er-relationship-types-binary-8cd84cfdb983)
   - $1:1$ (One-to-One)
   - $1:M$ (One-to-Many)
   - $M:M$ (Many-to-Many)
@@ -92,14 +95,6 @@
 
 - **ER Model to Relational Model Conversion**  
   🔗 [GeeksforGeeks — Mapping from ER Model to Relational Model](https://www.geeksforgeeks.org/mapping-from-er-model-to-relational-model/)
-- **Relational Operations / Relational Algebra**  
-  🔗 [Guru99 — Relational Algebra in DBMS](https://www.guru99.com/relational-algebra-dbms.html)
-  - **Select** ($\sigma$)
-  - **Project** ($\pi$)
-  - **Union** ($\cup$)
-  - **Set Difference** ($-$)
-  - **Cartesian Product** ($\times$)
-  - **Rename** ($\rho$)
 
 ---
 

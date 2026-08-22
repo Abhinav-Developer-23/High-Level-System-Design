@@ -32,6 +32,8 @@
    - [WITH CHECK OPTION](#5-with-check-option)
 8. [SQL Triggers](#sql-triggers)
 9. [Stored Procedures in SQL](#stored-procedures-in-sql)
+   - [MySQL Trigger vs Stored Procedure — With Example](#mysql-trigger-vs-stored-procedure--with-example)
+   - [Why Do Most Companies Avoid Triggers & Stored Procedures?](#-why-do-most-companies-avoid-triggers--stored-procedures-and-keep-logic-in-the-application)
 10. [Primary Key vs Unique Key](#primary-key-vs-unique-key)
 11. [SQL Injection](#sql-injection)
 12. [MySQL GRANT / REVOKE Privileges (Detailed)](#mysql-grant--revoke-privileges-detailed)
@@ -49,25 +51,30 @@
     - [Schedules & Serializability](#serializability)
 17. [COMMIT, ROLLBACK & SAVEPOINT — In Detail](#commit-rollback--savepoint---in-detail)
 18. [How Each ACID Property Is Achieved — Deep Dive](#how-each-acid-property-is-achieved---deep-dive)
-19. [Concurrency Problems (Without Proper Isolation)](#concurrency-problems-without-proper-isolation)
+19. [What Is Consistency and Integrity in DBMS?](#-what-is-consistency-and-integrity-in-dbms)
+    - [Integrity — The Rules](#integrity--the-rules)
+    - [Consistency — The Guarantee](#consistency--the-guarantee)
+    - [ACID Consistency vs CAP Consistency](#️-gotcha--consistency-in-acid--consistency-in-cap)
+20. [Concurrency Problems (Without Proper Isolation)](#concurrency-problems-without-proper-isolation)
     - [Dirty Read](#1-dirty-read-reading-uncommitted-data)
     - [Lost Update](#2-lost-update)
     - [Non-Repeatable Read](#3-non-repeatable-read)
     - [Phantom Read](#4-phantom-read)
     - [SQL Isolation Levels](#sql-isolation-levels)
-20. [Concurrency Control in DBMS](#concurrency-control-in-dbms)
+21. [Concurrency Control in DBMS](#concurrency-control-in-dbms)
     - [Lock-Based Concurrency Control](#1-lock-based-concurrency-control)
     - [Two-Phase Locking (2PL)](#2-two-phase-locking-2pl)
     - [Timestamp-Based Concurrency Control](#3-timestamp-based-concurrency-control)
     - [Optimistic Concurrency Control](#4-optimistic-concurrency-control-validation-based)
     - [Deadlocks](#deadlocks)
     - [Recoverable & Cascadeless Schedules](#recoverable--cascadeless-schedules)
-21. [Types of Schedules in DBMS](#types-of-schedules-in-dbms)
+22. [Types of Schedules in DBMS](#types-of-schedules-in-dbms)
     - [Serial Schedule](#1-serial-schedule)
     - [Non-Serial Schedule](#2-non-serial-schedule)
     - [Serializable Schedule](#3-serializable-schedule)
     - [Non-Serializable Schedules](#4-non-serializable-schedules)
     - [Thomas' Write Rule](#thomas-write-rule)
+23. [What Is the Meaning of the Word "Relational" in RDBMS?](#what-is-the-meaning-of-the-word-relational-in-rdbms)
 
 ---
 
@@ -158,6 +165,352 @@ ALTER TABLE employees DROP COLUMN salary;
 ALTER TABLE employees ADD CONSTRAINT unique_email UNIQUE (email);
 ```
 
+### ❓ What Happens Internally When We Run an ALTER Query in MySQL?
+
+**Short answer:** It depends on the **algorithm** MySQL uses. Modern MySQL (5.6+) supports **Online DDL**, which means most `ALTER TABLE` operations **do NOT fully lock** the table — reads and writes can continue while the schema change is happening.
+
+#### The Three ALTER Algorithms
+
+| Algorithm | How It Works | Table Locked? | Speed |
+|-----------|-------------|:---:|:---:|
+| **INSTANT** (MySQL 8.0+) | Only modifies **metadata** (table definition) — no data is touched | ❌ No lock on data | ⚡ Milliseconds |
+| **INPLACE** | Rebuilds the table **in place** without making a full copy | ❌ Concurrent reads & writes allowed | 🔄 Depends on table size |
+| **COPY** (legacy) | Creates a **full copy** of the table with the new schema, then swaps | ✅ **Blocks all writes** during copy | 🐌 Slowest |
+
+MySQL automatically picks the best algorithm. You can force one:
+
+```sql
+-- Force INSTANT (fails if not possible, instead of silently falling back to COPY)
+ALTER TABLE employees ADD COLUMN age INT, ALGORITHM=INSTANT;
+
+-- Force INPLACE with no locking
+ALTER TABLE employees ADD INDEX idx_name (name), ALGORITHM=INPLACE, LOCK=NONE;
+```
+
+#### How Are Concurrent Writes Handled During INPLACE ALTER?
+
+This is the key insight — InnoDB uses an **online log** mechanism:
+
+```
+Timeline during ALTER TABLE (INPLACE):
+────────────────────────────────────────────────────────────
+
+1. BRIEF METADATA LOCK (exclusive)          ← blocks everything for milliseconds
+   └─ MySQL prepares the ALTER operation
+
+2. DDL RUNS (online, concurrent DML allowed)
+   ├─ InnoDB rebuilds the table/index in the background
+   ├─ Meanwhile, INSERTs/UPDATEs/DELETEs from other connections continue normally
+   └─ All concurrent DML changes are captured in a temporary "online log"
+
+3. APPLY ONLINE LOG
+   └─ InnoDB replays all buffered DML changes onto the new structure
+
+4. BRIEF METADATA LOCK (exclusive)          ← blocks everything for milliseconds
+   └─ Swap old structure with new, update metadata, done!
+
+────────────────────────────────────────────────────────────
+Result: Table was altered WITHOUT blocking your application
+```
+
+#### ⚠️ The Metadata Lock (MDL) Trap — This Catches Everyone
+
+Even though the ALTER itself is "online", it still needs a **metadata lock** at the start. If there's a **long-running query or uncommitted transaction** on that table, the ALTER will **wait** for the metadata lock. And here's the dangerous part:
+
+```
+Connection 1: SELECT * FROM big_table WHERE ...  (running for 30 seconds)
+Connection 2: ALTER TABLE big_table ADD COLUMN ...  (WAITING for metadata lock)
+Connection 3: SELECT * FROM big_table ...  (BLOCKED — queued behind ALTER!)
+Connection 4: INSERT INTO big_table ...   (BLOCKED — queued behind ALTER!)
+                ↑
+        ALL new queries pile up behind the waiting ALTER
+        → Application appears to hang! 💥
+```
+
+**Prevention:**
+- Kill long-running queries before running ALTER
+- Use `pt-online-schema-change` (Percona) or `gh-ost` (GitHub) for large production tables — these tools create a shadow copy and swap tables, avoiding metadata lock issues entirely
+- Always run ALTER during low-traffic windows
+
+#### Which Operations Use Which Algorithm?
+
+| Operation | Algorithm | Concurrent DML? |
+|-----------|:---------:|:---:|
+| Add a column (last position) | INSTANT ⚡ | ✅ Yes |
+| Drop a column | INSTANT ⚡ (MySQL 8.0.29+) | ✅ Yes |
+| Add an index | INPLACE | ✅ Yes |
+| Change column data type | COPY 🐌 | ❌ Blocked |
+| Add a foreign key | INPLACE | ✅ Yes (with `LOCK=NONE`) |
+| Change `VARCHAR` size (within 255) | INPLACE | ✅ Yes |
+| Convert charset | COPY 🐌 | ❌ Blocked |
+
+> **Best Practice:** Always specify `ALGORITHM` and `LOCK` explicitly in production:
+> ```sql
+> ALTER TABLE users ADD COLUMN bio TEXT, ALGORITHM=INPLACE, LOCK=NONE;
+> ```
+> If the operation can't support your requested algorithm/lock level, MySQL will **fail immediately** instead of silently falling back to a full table copy that blocks your app.
+
+### ❓ What is Schema Migration? (Prisma, Django, Rails, etc.)
+
+**Schema migration** is the process of **versioning and applying changes to your database schema** (tables, columns, indexes, constraints) in a controlled, repeatable way — just like Git tracks changes to your code, migrations track changes to your database structure.
+
+#### The Problem Migrations Solve
+
+Without migrations, schema changes are chaos:
+
+```
+❌ WITHOUT MIGRATIONS:
+──────────────────────────────────────────────────
+Developer A: "I added a 'phone' column to users table on my local DB"
+Developer B: "My local DB doesn't have that column... app crashes"
+Production:  "Nobody remembers what ALTER statements were run last month"
+Staging:     "Is this DB up to date? Who knows 🤷"
+
+✅ WITH MIGRATIONS:
+──────────────────────────────────────────────────
+Every schema change → a migration file (with timestamp)
+Every environment   → runs the SAME migration files in the SAME order
+Result: Local DB = Staging DB = Production DB (always in sync)
+```
+
+#### What Happens Under the Hood When You Run a Migration?
+
+Taking **Prisma** as an example:
+
+```
+You change schema.prisma:
+  model User {
+    id    Int    @id @default(autoincrement())
+    name  String
++   phone String?    ← NEW FIELD
+  }
+
+Run: npx prisma migrate dev --name add_phone
+
+Under the hood:
+──────────────────────────────────────────────────
+
+1. DIFF — Prisma compares your schema.prisma (desired state) 
+          vs the actual database (current state)
+
+2. GENERATE SQL — It produces the required SQL:
+   → ALTER TABLE users ADD COLUMN phone VARCHAR(191) NULL;
+
+3. SAVE MIGRATION FILE — Creates a timestamped file:
+   prisma/migrations/
+   └── 20260822_add_phone/
+       └── migration.sql    ← contains the ALTER TABLE
+
+4. EXECUTE — Runs the SQL against your database
+
+5. RECORD — Inserts a row into _prisma_migrations table:
+   | migration_name       | checksum (SHA256) | applied_at          |
+   |---------------------|-------------------|---------------------|
+   | 20260822_add_phone  | a3b8f1c2d9...     | 2026-08-22 19:30:00 |
+```
+
+#### The Migration Tracking Table
+
+Every ORM maintains a **migrations table** inside your database to track which migrations have been applied:
+
+| ORM | Tracking Table | What It Stores |
+|-----|:---:|---|
+| **Prisma** | `_prisma_migrations` | migration name, checksum (SHA256), timestamp |
+| **Django** | `django_migrations` | app name, migration name, timestamp |
+| **Rails** | `schema_migrations` | version (timestamp) |
+| **Sequelize** | `SequelizeMeta` | migration filename |
+| **TypeORM** | `migrations` | migration name, timestamp |
+| **Flyway** | `flyway_schema_history` | version, description, checksum, execution time |
+
+**Why the checksum matters (Prisma):** If you edit a migration file that was already applied, the SHA256 hash won't match what's stored in `_prisma_migrations`. Prisma detects this **drift** and refuses to proceed — preventing silent corruption.
+
+#### Migration Commands Across ORMs
+
+| Action | Prisma | Django | Rails | Sequelize |
+|--------|--------|--------|-------|-----------|
+| **Create migration** | `prisma migrate dev` | `python manage.py makemigrations` | `rails generate migration AddPhoneToUsers` | `npx sequelize migration:generate` |
+| **Apply migrations** | `prisma migrate deploy` | `python manage.py migrate` | `rails db:migrate` | `npx sequelize db:migrate` |
+| **Check status** | `prisma migrate status` | `python manage.py showmigrations` | `rails db:migrate:status` | `npx sequelize db:migrate:status` |
+| **Rollback** | ❌ (manual) | `python manage.py migrate app_name 0003` | `rails db:rollback` | `npx sequelize db:migrate:undo` |
+| **Reset DB** | `prisma migrate reset` | `python manage.py flush` | `rails db:reset` | `npx sequelize db:migrate:undo:all` |
+
+#### What SQL Does a Migration Actually Generate?
+
+```sql
+-- Adding a column
+ALTER TABLE users ADD COLUMN phone VARCHAR(191) NULL;
+
+-- Adding an index
+CREATE INDEX idx_users_email ON users(email);
+
+-- Renaming a column
+ALTER TABLE users RENAME COLUMN name TO full_name;
+
+-- Adding a foreign key
+ALTER TABLE orders ADD CONSTRAINT fk_user 
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+-- Creating a new table
+CREATE TABLE posts (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  user_id INT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+```
+
+> Every migration is just **DDL statements** (`ALTER`, `CREATE`, `DROP`) wrapped in a versioned, trackable file.
+
+#### Prisma: `migrate dev` vs `db push`
+
+| | `prisma migrate dev` | `prisma db push` |
+|--|:---:|:---:|
+| **Creates migration files?** | ✅ Yes (versioned SQL) | ❌ No |
+| **Uses tracking table?** | ✅ `_prisma_migrations` | ❌ Ignores it |
+| **Safe for production?** | ✅ Yes | ❌ No |
+| **Best for** | Teams, CI/CD, production | Quick prototyping, throwaway DBs |
+
+> **Key Takeaway:** Schema migration = **version control for your database**. The ORM diffs your desired schema vs the current DB, generates the SQL, saves it in a timestamped file, executes it, and records it in a tracking table. Every environment runs the same migrations in the same order — ensuring your database is always in sync across dev, staging, and production.
+
+### ❓ What Does "Seed a Database" Mean?
+
+**Seeding** means **populating a database with initial/sample data** so it's not empty after creation. Think of it like planting seeds in a garden — you're putting the initial data in so your app has something to work with.
+
+#### Why Do We Need Seeding?
+
+```
+After running migrations, your database looks like this:
+
+  ┌──────────────────────────┐
+  │  users table             │
+  │  ──────────────────────  │
+  │  id | name | email       │
+  │  ── | ──── | ─────       │
+  │     (empty)              │   ← Tables exist but NO data!
+  └──────────────────────────┘
+
+After seeding:
+
+  ┌──────────────────────────────────────────────┐
+  │  users table                                  │
+  │  ────────────────────────────────────────────  │
+  │  id | name       | email                      │
+  │  1  | Admin User | admin@example.com           │
+  │  2  | John Doe   | john@example.com            │
+  │  3  | Jane Smith | jane@example.com            │
+  └──────────────────────────────────────────────┘
+```
+
+**Common use cases for seeding:**
+
+| Use Case | What Gets Seeded | Example |
+|----------|-----------------|---------|
+| **Default/required data** | Data the app *needs* to function | Admin user, default roles (`admin`, `user`, `moderator`), countries list, categories |
+| **Development data** | Fake data to test with locally | 100 fake users, 500 sample products, dummy orders |
+| **Testing data** | Predictable data for automated tests | Specific users with known IDs for test assertions |
+| **Demo data** | Showcase data for demos/sales | Pre-built dashboards, sample reports |
+
+#### How Seeding Works — Raw SQL
+
+At its simplest, seeding is just `INSERT` statements:
+
+```sql
+-- Seed roles (required data — app won't work without these)
+INSERT INTO roles (name) VALUES ('admin'), ('editor'), ('viewer');
+
+-- Seed admin user
+INSERT INTO users (name, email, role_id) 
+VALUES ('Admin', 'admin@example.com', 1);
+
+-- Seed categories
+INSERT INTO categories (name, slug) VALUES 
+  ('Electronics', 'electronics'),
+  ('Clothing', 'clothing'),
+  ('Books', 'books');
+```
+
+#### How Seeding Works in Prisma
+
+Prisma uses a dedicated `prisma/seed.ts` (or `.js`) file:
+
+```typescript
+// prisma/seed.ts
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
+
+async function main() {
+  // Seed roles (upsert = create if not exists, update if exists)
+  await prisma.role.upsert({
+    where: { name: 'admin' },
+    update: {},
+    create: { name: 'admin' },
+  });
+
+  await prisma.role.upsert({
+    where: { name: 'user' },
+    update: {},
+    create: { name: 'user' },
+  });
+
+  // Seed admin user
+  await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      name: 'Admin User',
+      email: 'admin@example.com',
+      role: { connect: { name: 'admin' } },
+    },
+  });
+
+  console.log('✅ Database seeded!');
+}
+
+main()
+  .catch((e) => { console.error(e); process.exit(1); })
+  .finally(() => prisma.$disconnect());
+```
+
+```bash
+# Run the seed
+npx prisma db seed
+```
+
+> **Why `upsert`?** It's **idempotent** — you can run the seed multiple times without creating duplicates. If the data already exists, it skips or updates. This is crucial because seeds often run automatically after `prisma migrate reset`.
+
+#### Seed Commands Across ORMs
+
+| ORM / Framework | Seed Command | Seed File Location |
+|----------------|-------------|-------------------|
+| **Prisma** | `npx prisma db seed` | `prisma/seed.ts` |
+| **Django** | `python manage.py loaddata fixtures.json` | `app/fixtures/*.json` |
+| **Rails** | `rails db:seed` | `db/seeds.rb` |
+| **Sequelize** | `npx sequelize db:seed:all` | `seeders/*.js` |
+| **Laravel** | `php artisan db:seed` | `database/seeders/*.php` |
+| **TypeORM** | Custom script (no built-in) | Your own script |
+
+#### Migration vs Seeding — What's the Difference?
+
+| | Migration | Seeding |
+|--|:---:|:---:|
+| **Changes** | Database **structure** (tables, columns, indexes) | Database **data** (rows) |
+| **SQL generated** | `CREATE TABLE`, `ALTER TABLE`, `DROP` | `INSERT INTO`, `UPDATE` |
+| **When it runs** | Every environment (dev, staging, prod) | Usually dev/test only |
+| **Tracked?** | ✅ Versioned in migration table | ❌ Usually not tracked |
+| **Idempotent?** | ✅ (each migration runs once) | Should be (use `upsert` / `INSERT IGNORE`) |
+
+```
+Typical workflow:
+─────────────────────────────────────────────────
+
+1. prisma migrate dev     → Creates tables (structure)
+2. prisma db seed         → Fills tables with initial data
+3. Start coding!          → App has data to work with
+```
+
+> **Key Takeaway:** Migration creates the **container** (tables/columns). Seeding fills the container with **initial data**. Migrations are mandatory everywhere; seeding is mostly for dev/test environments. Always make seeds idempotent (safe to run multiple times).
+
 ---
 
 ## 2. DQL — Data Query Language
@@ -229,6 +582,179 @@ LIMIT 3;
 | Can use aggregate functions? | ❌ No | ✅ Yes |
 | Runs | Before grouping | After grouping |
 | Example | `WHERE salary > 50000` | `HAVING AVG(salary) > 50000` |
+
+### ❓ MySQL Pagination — OFFSET/LIMIT vs Cursor-Based (Keyset) Pagination
+
+🔗 [PlanetScale — MySQL Pagination](https://planetscale.com/blog/mysql-pagination)
+
+When you have millions of rows and need to show them page by page (like a product listing or infinite scroll feed), **how** you paginate matters enormously.
+
+#### Approach 1: OFFSET/LIMIT (The Naïve Way)
+
+```sql
+-- Page 1
+SELECT * FROM products ORDER BY id LIMIT 20 OFFSET 0;
+
+-- Page 2
+SELECT * FROM products ORDER BY id LIMIT 20 OFFSET 20;
+
+-- Page 500 (💥 SLOW!)
+SELECT * FROM products ORDER BY id LIMIT 20 OFFSET 10000;
+```
+
+**The Problem:** MySQL must **scan and discard** all `OFFSET` rows before returning your `LIMIT` rows. So `OFFSET 10000` means MySQL reads 10,020 rows but throws away 10,000 of them.
+
+```
+OFFSET = 0       → Scan 20 rows      → Return 20  ✅ Fast
+OFFSET = 1000    → Scan 1,020 rows   → Return 20  🔄 Okay
+OFFSET = 100,000 → Scan 100,020 rows → Return 20  🐌 Very slow
+OFFSET = 1M      → Scan 1,000,020    → Return 20  💀 Database crying
+```
+
+**Other issues with OFFSET/LIMIT:**
+- **Data inconsistency** — If a row is inserted or deleted while the user is paginating, they may see **duplicate items** or **skip entries** entirely
+- **Performance is O(OFFSET + LIMIT)** — gets linearly worse as you go deeper
+
+#### Approach 2: Cursor-Based / Keyset Pagination (The Right Way)
+
+Instead of saying "skip N rows", you say "give me rows **after** this specific value":
+
+```sql
+-- Page 1 (first request, no cursor yet)
+SELECT * FROM products ORDER BY id ASC LIMIT 20;
+-- Returns rows with id: 1, 2, 3, ... 20
+-- Last id = 20 → this becomes the "cursor" for the next page
+
+-- Page 2 (cursor = 20)
+SELECT * FROM products WHERE id > 20 ORDER BY id ASC LIMIT 20;
+-- Returns rows with id: 21, 22, ... 40
+-- MySQL jumps DIRECTLY to id=20 using the index → O(log N)
+
+-- Page 500 (cursor = 9980)
+SELECT * FROM products WHERE id > 9980 ORDER BY id ASC LIMIT 20;
+-- Still just as fast! MySQL seeks to id=9980 in the B+ Tree index
+```
+
+**Why it's fast:** The `WHERE id > cursor` uses the **B+ Tree index** to jump directly to the right position — no scanning, no discarding. Performance is **O(log N)** regardless of how deep you are.
+
+#### Handling Non-Unique Sort Columns
+
+If you're sorting by a non-unique column (like `price`), you need a **tiebreaker** to avoid skipping/duplicating rows with the same value:
+
+```sql
+-- ❌ WRONG — rows with same price can be skipped or duplicated
+SELECT * FROM products WHERE price > 29.99 ORDER BY price ASC LIMIT 20;
+
+-- ✅ CORRECT — use (price, id) as a compound cursor
+SELECT * FROM products 
+WHERE (price > 29.99) OR (price = 29.99 AND id > 1042)
+ORDER BY price ASC, id ASC 
+LIMIT 20;
+```
+
+#### Comparison
+
+| | OFFSET/LIMIT | Cursor-Based (Keyset) |
+|--|:---:|:---:|
+| **Performance** | Degrades with depth — O(OFFSET + LIMIT) | Constant — O(log N) always |
+| **Data consistency** | ❌ Duplicates/skips if data changes | ✅ Stable — cursor maintains position |
+| **"Jump to page X"** | ✅ Easy (`OFFSET = (page-1) * size`) | ❌ Not natively supported |
+| **UX style** | Numbered pages (1, 2, 3...) | Infinite scroll / "Load More" |
+| **Implementation** | Simple | Moderate (need to track cursor) |
+| **Best for** | Admin panels, small datasets, static reports | APIs, feeds, infinite scroll, large datasets |
+
+> **Rule of Thumb:**
+> - **< 10K rows** or need page numbers? → OFFSET/LIMIT is fine
+> - **> 100K rows** or infinite scroll? → Always use cursor-based pagination
+> - **Production API serving millions of rows?** → Cursor-based is the **only** sane choice
+
+### ❓ What is the N+1 Query Problem and How to Solve It?
+
+🔗 [PlanetScale — What is N+1 Query Problem and How to Solve It](https://planetscale.com/blog/what-is-n-1-query-problem-and-how-to-solve-it)
+
+The **N+1 query problem** is one of the most common performance killers in database-backed applications. It happens when your code executes **1 query** to fetch a list of parent records, and then **N additional queries** (one per parent) to fetch related child data.
+
+#### The Problem — A Concrete Example
+
+Say you want to display 100 authors with their books:
+
+```
+❌ N+1 WAY (101 queries!)
+──────────────────────────────────────────────────────
+
+Query 1 (the "1"):
+  SELECT * FROM authors;                          -- Returns 100 authors
+
+Query 2 (the "N" — one per author):
+  SELECT * FROM books WHERE author_id = 1;        -- Books for author 1
+  SELECT * FROM books WHERE author_id = 2;        -- Books for author 2
+  SELECT * FROM books WHERE author_id = 3;        -- Books for author 3
+  ...
+  SELECT * FROM books WHERE author_id = 100;      -- Books for author 100
+
+Total: 1 + 100 = 101 queries 💀
+Each query = 1 network round trip to the database
+```
+
+With 100 authors, this is 101 queries. With 10,000 authors → 10,001 queries. **Each query involves a separate network round trip**, so even if each query is fast (1ms), 10,001 queries = **10 seconds** of just network overhead.
+
+#### Solution 1: Use a JOIN (Best — 1 Query)
+
+Fetch everything in a **single query** using a JOIN:
+
+```sql
+-- ✅ 1 query — gets ALL authors and ALL their books at once
+SELECT a.name, b.title
+FROM authors a
+LEFT JOIN books b ON a.id = b.author_id;
+```
+
+MySQL fetches everything in one round trip. The database does the heavy lifting instead of your application code.
+
+#### Solution 2: Batch with IN Clause (2 Queries)
+
+If a JOIN creates too many duplicate rows (e.g., authors with many books), use two queries with an `IN` clause:
+
+```sql
+-- Query 1: Get all authors
+SELECT * FROM authors;
+
+-- Query 2: Get ALL books for ALL those authors in ONE query
+SELECT * FROM books WHERE author_id IN (1, 2, 3, ..., 100);
+```
+
+**Total: 2 queries** instead of 101. Your application code then groups the books by `author_id` in memory.
+
+#### Solution 3: ORM Eager Loading
+
+Most ORMs have built-in solutions that generate the optimized queries for you:
+
+| Framework | Lazy Loading (❌ N+1) | Eager Loading (✅ Fixed) |
+|-----------|:---:|:---:|
+| **Hibernate (Java)** | `author.getBooks()` in a loop | `JOIN FETCH` or `@EntityGraph` |
+| **Django (Python)** | `author.books.all()` in a loop | `.select_related()` / `.prefetch_related()` |
+| **Rails (Ruby)** | `author.books` in a loop | `.includes(:books)` |
+| **Entity Framework (.NET)** | Navigation property access | `.Include(a => a.Books)` |
+| **Sequelize (Node.js)** | `author.getBooks()` in a loop | `{ include: [Book] }` |
+
+#### How to Detect N+1 in Your App
+
+```
+Signs you have an N+1 problem:
+─────────────────────────────────────────────────
+
+1. Query logs show the SAME query template repeating hundreds of times
+   e.g., "SELECT * FROM books WHERE author_id = ?" × 500
+
+2. Page load time increases LINEARLY with the number of records
+   10 authors → 100ms,  100 authors → 1s,  1000 authors → 10s
+
+3. Database connection pool is exhausted under normal load
+
+4. Your ORM is configured with "lazy loading" as default
+```
+
+> **Key Takeaway:** Never query inside a loop. If you're doing `for each parent → query children`, you have an N+1 problem. Always **batch** your queries using JOINs, IN clauses, or ORM eager loading.
 
 ---
 
@@ -988,6 +1514,8 @@ When documenting a relationship, specify **two things**:
 
 Keys are attributes (or sets of attributes) used to **uniquely identify rows**, **establish relationships** between tables, and **enforce data integrity**. Understanding keys is fundamental — they drive every table design decision.
 
+🔗 [PlanetScale — Schema Design 101 for Relational Databases](https://planetscale.com/blog/schema-design-101-relational-databases)
+
 We'll use this single table throughout to explain every key type:
 
 ### `students` Table
@@ -1138,6 +1666,11 @@ Neither `student_id` alone nor `course_id` alone is unique. But `{student_id, co
 ```sql
 PRIMARY KEY (student_id, course_id)
 ```
+
+
+### Why UUID is Not Preferred as Primary Key
+
+🔗 [PlanetScale — The Problem with Using a UUID Primary Key in MySQL](https://planetscale.com/blog/the-problem-with-using-a-uuid-primary-key-in-mysql)
 
 ---
 
@@ -2380,6 +2913,209 @@ END;
 
 ---
 
+## MySQL Trigger vs Stored Procedure — With Example
+
+| Aspect | Trigger | Stored Procedure |
+|---|---|---|
+| **Invocation** | Fires **automatically** on `INSERT`/`UPDATE`/`DELETE` | Called **explicitly** with `CALL` |
+| **Tied to a table event?** | ✅ Yes — always bound to a table + event | ❌ No — standalone, invoked whenever you want |
+| **Accepts parameters?** | ❌ No (only gets `OLD`/`NEW` row values) | ✅ Yes (`IN`, `OUT`, `INOUT`) |
+| **Returns values?** | ❌ No | ✅ Yes (`OUT` params, result sets) |
+| **Called from application code?** | ❌ No — can't be invoked directly | ✅ Yes (`CALL proc_name(...)`) |
+| **Can be forgotten/skipped?** | ❌ No — always runs, guaranteed | ⚠️ Yes — only runs if someone remembers to call it |
+| **Typical use case** | Auditing, enforcing rules, keeping derived data in sync | Reusable business logic, batch jobs, reporting |
+
+### Example — Auditing Salary Changes
+
+**Trigger (runs automatically, can't be bypassed):**
+
+```sql
+CREATE TABLE salary_audit (
+    audit_id    INT AUTO_INCREMENT PRIMARY KEY,
+    emp_id      INT,
+    old_salary  DECIMAL(10,2),
+    new_salary  DECIMAL(10,2),
+    changed_at  DATETIME
+);
+
+DELIMITER $$
+CREATE TRIGGER trg_salary_audit
+AFTER UPDATE ON employees
+FOR EACH ROW
+BEGIN
+    IF OLD.salary <> NEW.salary THEN
+        INSERT INTO salary_audit (emp_id, old_salary, new_salary, changed_at)
+        VALUES (OLD.emp_id, OLD.salary, NEW.salary, NOW());
+    END IF;
+END$$
+DELIMITER ;
+
+-- Any UPDATE on employees.salary auto-logs itself — no extra call needed:
+UPDATE employees SET salary = 75000 WHERE emp_id = 101;
+```
+
+**Stored Procedure (same result, but must be called explicitly):**
+
+```sql
+DELIMITER $$
+CREATE PROCEDURE update_salary(IN p_emp_id INT, IN p_new_salary DECIMAL(10,2))
+BEGIN
+    DECLARE v_old_salary DECIMAL(10,2);
+
+    SELECT salary INTO v_old_salary FROM employees WHERE emp_id = p_emp_id;
+    UPDATE employees SET salary = p_new_salary WHERE emp_id = p_emp_id;
+
+    INSERT INTO salary_audit (emp_id, old_salary, new_salary, changed_at)
+    VALUES (p_emp_id, v_old_salary, p_new_salary, NOW());
+END$$
+DELIMITER ;
+
+-- Must be called every time — a plain UPDATE bypasses it entirely:
+CALL update_salary(101, 75000);
+```
+
+> **Key takeaway:** The trigger guarantees the audit **always** happens, no matter who/what updates `salary` (app code, a manual query, another procedure). The stored procedure only audits if every caller remembers to use `CALL update_salary(...)` instead of a raw `UPDATE` — a developer running `UPDATE employees SET salary = ...` directly would silently skip the audit.
+
+---
+
+## ❓ Why Do Most Companies Avoid Triggers & Stored Procedures and Keep Logic in the Application?
+
+Triggers and stored procedures are powerful — yet most modern product companies (especially at scale) deliberately keep business logic **in the application layer** instead. Here's why.
+
+### 1. Invisible / Hidden Logic — "Spooky Action at a Distance"
+
+A trigger runs **without appearing anywhere in your codebase**. A new developer reads the app code, sees a simple `UPDATE`, and has no idea that three other tables just changed.
+
+```
+Developer reads the app code:
+    UPDATE employees SET salary = 75000 WHERE emp_id = 101;
+    ↓
+    "Okay, this just updates one row." ✅ (what they think)
+
+What ACTUALLY happens in the database:
+    UPDATE employees ...
+      ├─▶ trg_salary_audit      → INSERT into salary_audit
+      ├─▶ trg_sync_payroll      → UPDATE payroll table
+      └─▶ trg_notify_finance    → INSERT into notification_queue
+                                     ↓
+                              (another trigger fires!) 💥
+
+Result: Debugging a production issue becomes a nightmare — the cause
+        isn't in the code you're reading.
+```
+
+### 2. Not Version Controlled with the Code
+
+This is arguably the biggest practical issue:
+
+| | Application Logic | Trigger / Stored Procedure |
+|---|---|---|
+| **Lives in** | Git repository | Inside the database |
+| **Code review** | ✅ Standard PR review | ❌ Often changed via direct SQL, unreviewed |
+| **Rollback** | ✅ `git revert` + redeploy | ⚠️ Requires a reverse migration |
+| **History / blame** | ✅ Full `git log`, `git blame` | ❌ "Who changed this proc and why?" — no answer |
+| **Diff between environments** | ✅ Same commit = same code | ❌ Prod proc may silently differ from staging |
+
+> Even *with* migration tooling, a DBA hotfixing a procedure directly in prod at 2 AM instantly desyncs the database from Git — and nobody finds out until something breaks.
+
+### 3. Testing Is Painful
+
+```
+Testing application logic:              Testing a trigger/procedure:
+─────────────────────────────           ──────────────────────────────
+✅ Plain unit test, no DB needed        ❌ Needs a running database
+✅ Mock the dependencies                ❌ Must set up real tables + data
+✅ Runs in milliseconds                 ❌ Slow integration test
+✅ Runs in CI out of the box            ❌ Needs DB container in CI
+✅ Rich assertion libraries             ❌ Assert by querying tables afterwards
+✅ Debugger, breakpoints, stack traces  ❌ Very limited debugging tools
+```
+
+### 4. Poor Scalability — The Database Is the Hardest Thing to Scale
+
+```
+   Application servers                    Database
+   ──────────────────                     ────────
+   ┌────┐ ┌────┐ ┌────┐ ┌────┐          ┌──────────────┐
+   │ #1 │ │ #2 │ │ #3 │ │ #4 │ ...      │   PRIMARY    │  ← usually ONE writer
+   └────┘ └────┘ └────┘ └────┘          └──────────────┘
+        Add more anytime  ✅               Vertical scaling only  ❌
+        (cheap, stateless)                 (expensive, hits a ceiling)
+```
+
+CPU spent running procedures and triggers is CPU **stolen from query execution** on your most expensive, least scalable, hardest-to-replace tier. Application servers are cheap and horizontally scalable; the database primary is not.
+
+### 5. Vendor Lock-In
+
+Stored procedure languages are **not portable** — each vendor has its own:
+
+| Database | Procedural Language |
+|---|---|
+| MySQL | SQL/PSM (MySQL dialect) |
+| PostgreSQL | PL/pgSQL |
+| Oracle | PL/SQL |
+| SQL Server | T-SQL |
+
+Thousands of lines of PL/SQL make migrating off Oracle a multi-year project. Business logic in Java/Python/Go moves to any database.
+
+### 6. Weak Ecosystem & Developer Tooling
+
+| Application Code | Stored Procedures |
+|---|---|
+| Linters, formatters, static analysis | Almost none |
+| Rich IDE support, refactoring tools | Minimal |
+| Package managers & libraries (HTTP clients, JSON, crypto, date libs) | Very limited built-ins |
+| Easy calls to external services/APIs | Effectively impossible |
+| Deep talent pool | Shrinking pool of specialists |
+
+### 7. Hidden Performance & Correctness Traps
+
+```sql
+-- Looks harmless: one statement
+DELETE FROM orders WHERE order_date < '2020-01-01';   -- 5 million rows
+
+-- But if a FOR EACH ROW trigger exists on orders:
+--   → The trigger body executes 5,000,000 times
+--   → Each execution may INSERT into an audit table
+--   → All inside ONE transaction → huge lock + massive undo log
+--   → Table locked for minutes → application times out 💥
+```
+
+Other traps: **cascading triggers** (trigger A fires trigger B fires trigger C), triggers silently breaking bulk imports, and trigger failures **rolling back the entire parent transaction** in ways callers never anticipated.
+
+---
+
+### So When ARE They Still the Right Choice?
+
+They're a tool, not an anti-pattern — the argument is about *default placement* of business logic, not a ban.
+
+| Good Use Case | Why It Wins |
+|---|---|
+| **Audit / history tables** | Must be unbypassable — even manual SQL and other apps get logged |
+| **Multiple apps sharing one DB** | Logic enforced once at the DB, not duplicated in 4 codebases |
+| **Data integrity constraints** | Rules too complex for `CHECK`/`FOREIGN KEY` but that must never be violated |
+| **Legacy / enterprise systems** | Banking, insurance, ERP — decades of proven PL/SQL already in place |
+| **Heavy data-local batch work** | Bulk aggregations where shipping millions of rows to the app is far slower |
+| **Compliance requirements** | Regulators may require DB-level enforcement, not app-level trust |
+
+### The Modern Consensus
+
+```
+Keep in the DATABASE:                Keep in the APPLICATION:
+──────────────────────               ────────────────────────
+✅ Constraints (PK, FK, UNIQUE,      ✅ Business rules & workflows
+   NOT NULL, CHECK)                  ✅ Validation
+✅ Indexes                            ✅ Orchestration / external API calls
+✅ Transactions                       ✅ Pricing, permissions, state machines
+✅ Occasionally: audit triggers       ✅ Anything that changes often
+```
+
+> **Key takeaway:** The database should guarantee **data integrity**; the application should own **business logic**. Companies avoid triggers and stored procedures mainly because that logic becomes invisible, untested, un-versioned, unscalable, and vendor-locked — not because the features are bad. Declarative constraints (`FOREIGN KEY`, `UNIQUE`, `CHECK`) are the exception: always push those into the database.
+
+> **Interview tip:** Answer with the trade-off, not a blanket rule — "Most teams keep logic in the app because it's version-controlled, testable, horizontally scalable, and portable, while the DB primary is the hardest tier to scale. But I'd still use a trigger for audit logging that must be unbypassable, and I always enforce integrity with database constraints rather than app code alone."
+
+---
+
 ## Viewing & Managing Procedures
 
 ```sql
@@ -2890,6 +3626,8 @@ GRANT UPDATE (status) ON shop.orders TO 'support'@'localhost';
 
 Indexes are data structures that **speed up data retrieval**. Without indexes, the database must scan every row (full table scan). With indexes, it can jump directly to the relevant rows.
 
+🔗 [PlanetScale — How Do Database Indexes Work](https://planetscale.com/blog/how-do-database-indexes-work)
+
 ---
 
 ## What Is an Index?
@@ -2983,6 +3721,8 @@ A **non-clustered index** is a **separate structure** that stores the index key 
 ## How They Work Internally (B-Tree)
 
 Both clustered and non-clustered indexes typically use a **B-Tree** (Balanced Tree) structure:
+
+🔗 [B-Trees and B+ Trees — Explained](https://medium.com/@akashsdas_dev/b-trees-and-b-trees-682d363df1f7)
 
 ```
   B-Tree Structure (Clustered Index on emp_id):
@@ -4615,6 +5355,142 @@ Before any change is applied to the database, a **log entry** is first written t
 ---
 ---
 
+# ❓ What Is Consistency and Integrity in DBMS?
+
+These two terms are constantly used interchangeably — but they mean different things. The cleanest way to separate them:
+
+> - **Integrity** = the **RULES** that define what "valid data" means.
+> - **Consistency** = the **GUARANTEE** that the database never violates those rules.
+
+**Analogy:** In chess, **integrity** is the rulebook (a bishop moves diagonally, a king can't move into check). **Consistency** is the promise that after *every* move, the board is still in a legal position.
+
+```
+      INTEGRITY (the rules)              CONSISTENCY (the guarantee)
+   ┌───────────────────────────┐      ┌───────────────────────────────┐
+   │ • PK must be unique/NOT   │      │  Valid State  ──[TXN]──▶  Valid State │
+   │   NULL                    │      │                                │
+   │ • FK must reference an    │ ───▶ │  Every transaction takes the   │
+   │   existing PK             │      │  DB from one rule-obeying      │
+   │ • age BETWEEN 0 AND 150   │      │  state to another — never      │
+   │ • balance >= 0            │      │  leaving it half-broken.       │
+   └───────────────────────────┘      └───────────────────────────────┘
+      Static — a property of DATA        Dynamic — a property of TRANSACTIONS
+```
+
+---
+
+## Integrity — The Rules
+
+**Integrity** means the data in the database is **accurate, valid, and trustworthy**. It's enforced through **integrity constraints** — rules you declare at schema-design time.
+
+### The Four Types of Integrity Constraints
+
+| Type | Rule | Enforced By | Example |
+|---|---|---|---|
+| **Entity Integrity** | Every row must be uniquely identifiable — the primary key can never be `NULL` or duplicated | `PRIMARY KEY` | `emp_id` cannot be NULL |
+| **Referential Integrity** | A foreign key must match an existing primary key in the parent table, or be `NULL` | `FOREIGN KEY` | `employees.dept_id` must exist in `departments` |
+| **Domain Integrity** | Every value must belong to the column's allowed set of values | Data type, `NOT NULL`, `CHECK`, `DEFAULT` | `age INT CHECK (age BETWEEN 18 AND 65)` |
+| **User-Defined (Business) Integrity** | Custom business rules that don't fit the above | `CHECK`, triggers, application code | "A savings account balance can never go below ₹500" |
+
+```sql
+CREATE TABLE employees (
+    emp_id   INT PRIMARY KEY,                              -- Entity Integrity
+    name     VARCHAR(50) NOT NULL,                         -- Domain Integrity
+    age      INT CHECK (age BETWEEN 18 AND 65),            -- Domain Integrity
+    salary   DECIMAL(10,2) CHECK (salary > 0),             -- Domain Integrity
+    dept_id  INT,
+    FOREIGN KEY (dept_id) REFERENCES departments(dept_id)  -- Referential Integrity
+);
+```
+
+> **Key point:** Integrity is about the **data at rest**. At any given moment, you can inspect the database and ask: "does every row obey every rule?" If yes → integrity holds.
+
+---
+
+## Consistency — The Guarantee
+
+**Consistency** (the **C** in ACID) means a transaction takes the database from **one valid state to another valid state**. It never leaves the database in a half-finished, rule-violating state.
+
+### Example — Bank Transfer
+
+The business rule (an integrity constraint): **the total money in the system must never change during a transfer.**
+
+```
+BEFORE:  Alice = ₹1000   Bob = ₹500   ──▶  TOTAL = ₹1500  ✅ valid state
+
+BEGIN TRANSACTION;
+    UPDATE accounts SET balance = balance - 200 WHERE name = 'Alice';
+    ─────────────────────────────────────────────────────────────────
+    ⚠️ INTERMEDIATE STATE:  Alice = ₹800   Bob = ₹500  →  TOTAL = ₹1300
+       Money vanished! This state is INVALID — but it's invisible to
+       everyone else (that's Isolation's job to hide it).
+    ─────────────────────────────────────────────────────────────────
+    UPDATE accounts SET balance = balance + 200 WHERE name = 'Bob';
+COMMIT;
+
+AFTER:   Alice = ₹800    Bob = ₹700   ──▶  TOTAL = ₹1500  ✅ valid state
+```
+
+Consistency guarantees that **no observer ever sees the ₹1300 state as a committed reality** — the transaction either completes fully (₹1500 preserved) or rolls back entirely (₹1500 preserved).
+
+> **Note the dependency:** Consistency isn't achieved alone — it rides on the other three ACID properties. **Atomicity** prevents half-done transactions, **Isolation** hides intermediate states from other transactions, and **Durability** ensures the valid final state survives a crash.
+
+---
+
+## Side-by-Side Comparison
+
+| Aspect | Integrity | Consistency |
+|---|---|---|
+| **What it is** | The **rules** defining valid data | The **guarantee** those rules are never violated |
+| **Nature** | Static — a property of the stored **data** | Dynamic — a property of **transactions** |
+| **Scope** | Individual rows, columns, and relationships | The database as a whole, across a transaction |
+| **When checked** | On every `INSERT` / `UPDATE` / `DELETE` | At transaction boundaries (commit) |
+| **Enforced by** | `PRIMARY KEY`, `FOREIGN KEY`, `CHECK`, `NOT NULL`, `UNIQUE` | The transaction manager + all constraints + app logic |
+| **Who's responsible** | Database (once you declare the constraints) | **Shared** — DBMS enforces constraints, developer writes correct transaction logic |
+| **Failure looks like** | An orphan row, a NULL primary key, `age = -5` | Money disappearing mid-transfer, a booked seat with no booking record |
+| **Relationship** | Integrity defines *what* valid means | Consistency ensures every transaction *preserves* it |
+
+> **The link between them:** Consistency is enforced **by** integrity constraints. If a transaction would leave the database violating any integrity constraint, the DBMS aborts and rolls it back — that rollback *is* consistency in action.
+
+---
+
+## ⚠️ Gotcha — "Consistency" in ACID ≠ "Consistency" in CAP
+
+This trips up almost everyone in system design interviews. Same word, completely different meanings:
+
+| | **C** in **ACID** | **C** in **CAP** |
+|---|---|---|
+| **Means** | The database obeys all defined rules/constraints | All nodes return the same data at the same time |
+| **Context** | Single-node transactions | Distributed systems / replication |
+| **Concerned with** | Data **validity** | Data **freshness across replicas** |
+| **Violated when** | A constraint is broken (orphan FK, negative balance) | A read hits a stale replica and returns old data |
+| **Also called** | Correctness | Linearizability / Strong consistency |
+
+```
+  ACID Consistency:                    CAP Consistency:
+  ─────────────────                    ────────────────
+  Is the data VALID?                   Is the data the SAME everywhere?
+
+  balance = -500  ❌                   Node A: balance = 800  ┐
+  (violates CHECK balance >= 0)        Node B: balance = 1000 ┘ ❌ mismatch
+```
+
+---
+
+## Summary
+
+| Question | Answer |
+|---|---|
+| What is **integrity**? | The correctness and validity of data, enforced by constraints (Entity, Referential, Domain, User-defined) |
+| What is **consistency**? | The guarantee that every transaction moves the DB from one valid state to another, never breaking any rule |
+| How are they related? | Integrity defines the rules; consistency enforces them across transactions |
+| Which ACID property is *partly the developer's job*? | **Consistency** — the DBMS enforces declared constraints, but you must write transaction logic that actually preserves business rules |
+
+> **Interview tip:** "Integrity is the *what* — the rules that define valid data, like a foreign key needing to reference a real row. Consistency is the *guarantee* that a transaction never leaves the database in a state where those rules are broken. And I'd flag that ACID consistency (data validity) is a completely different concept from CAP consistency (all replicas agreeing) — the shared name is purely coincidental."
+
+---
+---
+
 # Concurrency Problems (Without Proper Isolation)
 
 When multiple transactions run concurrently WITHOUT proper isolation, these problems can occur:
@@ -5746,3 +6622,25 @@ Check for **view serializability**:
 ```
 
 > **Interview tip:** "What is the difference between Cascadeless and Strict schedules?" — Cascadeless prevents dirty reads (transactions read only committed data). Strict prevents both dirty reads AND dirty writes (no transaction reads OR writes data written by an uncommitted transaction). Strict ⊂ Cascadeless.
+
+---
+---
+
+# What Is the Meaning of the Word "Relational" in RDBMS?
+
+**Common misconception ❌:** "Relational means tables are related to each other via foreign keys/joins." That's not where the word comes from.
+
+**Actual origin:** It comes from **E. F. Codd's 1970 paper**, borrowing the mathematical term **"relation"** — a set of **tuples** drawn from the Cartesian product of **domains**. In plain English: a **relation** is just a table, where each row is a tuple of values from fixed columns.
+
+| Mathematical Term | DBMS Equivalent |
+|---|---|
+| **Relation** | Table |
+| **Tuple** | Row |
+| **Attribute** | Column |
+| **Domain** | Valid value set for a column |
+
+So "the `employees` relation" means the table itself — not its relationships to other tables.
+
+> **Why it matters:** Because a relation is mathematically a *set*, it's the reason relational databases support **Relational Algebra** (σ select, π project, ∪ union, − difference, × product, ⋈ join) — the theoretical basis for SQL.
+
+> **Interview tip:** Lead with the correction — "It's commonly misunderstood as tables being related via foreign keys, but it actually comes from the mathematical term *relation* (a set of tuples over a Cartesian product of domains), which is also why relational databases support relational algebra."
