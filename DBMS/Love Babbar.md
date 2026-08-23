@@ -63,8 +63,6 @@
 
 ## 2. RDBMS Concepts & Architecture
 
-- **What is Referential Integrity?**  
-  🔗 [Tutorialspoint — Referential Integrity Rule in RDBMS](https://www.tutorialspoint.com/Referential-Integrity-Rule-in-RDBMS)
 - **What is RDBMS & How is it Stored in Memory? (B-Trees / Internal Structures)**  
   ▶️ [B-Tree (Abdul Bari)](https://www.youtube.com/watch?v=aZjYr87r1b8&t=1657s)  
   ▶️ [B Tree Insert and Delete](https://www.youtube.com/watch?v=ownO77M4SWI)  

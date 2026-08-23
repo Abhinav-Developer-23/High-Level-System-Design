@@ -75,6 +75,8 @@
     - [Non-Serializable Schedules](#4-non-serializable-schedules)
     - [Thomas' Write Rule](#thomas-write-rule)
 23. [What Is the Meaning of the Word "Relational" in RDBMS?](#what-is-the-meaning-of-the-word-relational-in-rdbms)
+24. [How to Optimize a SQL Query](#how-to-optimize-a-sql-query)
+25. [Compound (Composite) Index](#compound-composite-index)
 
 ---
 
@@ -1120,6 +1122,8 @@ A **sub-schema** is a **subset of the schema** — it defines what portion of th
 # Referential Integrity Rule in RDBMS
 
 ## What Is Referential Integrity?
+
+🔗 [Tutorialspoint — Referential Integrity Rule in RDBMS](https://www.tutorialspoint.com/Referential-Integrity-Rule-in-RDBMS)
 
 Referential Integrity is a rule that ensures **relationships between tables remain consistent**. Specifically:
 
@@ -6644,3 +6648,117 @@ So "the `employees` relation" means the table itself — not its relationships t
 > **Why it matters:** Because a relation is mathematically a *set*, it's the reason relational databases support **Relational Algebra** (σ select, π project, ∪ union, − difference, × product, ⋈ join) — the theoretical basis for SQL.
 
 > **Interview tip:** Lead with the correction — "It's commonly misunderstood as tables being related via foreign keys, but it actually comes from the mathematical term *relation* (a set of tuples over a Cartesian product of domains), which is also why relational databases support relational algebra."
+
+---
+
+# How to Optimize a SQL Query
+
+Query optimization means reducing the amount of data the database reads, joins, sorts, and returns. Start with evidence: inspect the execution plan before changing the query or adding an index.
+
+```sql
+EXPLAIN ANALYZE
+SELECT order_id, total_amount
+FROM orders
+WHERE customer_id = 42
+  AND status = 'PAID'
+ORDER BY created_at DESC
+LIMIT 20;
+```
+
+`EXPLAIN` shows the plan the optimizer chose. Look for full table scans, a very large estimated or actual row count, expensive sorts, and joins that process many more rows than expected. `EXPLAIN ANALYZE` also runs the query and reports actual timings; availability and exact syntax vary by database.
+
+## Practical Checklist
+
+| Check | Why it helps | Example |
+|---|---|---|
+| Index filter and join columns | Lets the database find matching rows instead of scanning every row | `WHERE customer_id = ?`, `JOIN orders.customer_id = customers.id` |
+| Use a selective composite index for filters used together | Narrows rows quickly and can avoid a sort | `INDEX(customer_id, status, created_at)` |
+| Select only required columns | Reduces I/O, network transfer, and memory use | Prefer `SELECT order_id, total_amount` over `SELECT *` |
+| Keep indexed columns bare in predicates | A function or calculation can prevent an index range lookup | Prefer `created_at >= '2026-08-01'` over `DATE(created_at) = '2026-08-01'` |
+| Avoid a leading wildcard | `LIKE '%phone'` usually cannot seek efficiently in a B-tree index | Prefer `LIKE 'phone%'`; use full-text search for contains search |
+| Filter early and join on indexed keys | Reduces rows carried into later joins | Filter `orders` before joining large detail tables |
+| Avoid unnecessary `DISTINCT`, `ORDER BY`, and large `OFFSET` | They may require sorting or scanning many rows | Use keyset pagination: `WHERE id > ? ORDER BY id LIMIT 20` |
+| Keep table statistics current | The optimizer needs accurate row-count estimates | Run the database's `ANALYZE` or statistics maintenance command |
+
+### Example: From Scan and Sort to Index Lookup
+
+```sql
+-- Query: fetch a customer's newest paid orders
+SELECT order_id, total_amount, created_at
+FROM orders
+WHERE customer_id = 42
+  AND status = 'PAID'
+ORDER BY created_at DESC
+LIMIT 20;
+
+CREATE INDEX idx_orders_customer_status_created
+    ON orders (customer_id, status, created_at DESC);
+```
+
+With this index, the database can navigate directly to the rows for one customer and status, read them in `created_at` order, and stop after 20 rows. Confirm the benefit with `EXPLAIN`: indexes add storage cost and make `INSERT`, `UPDATE`, and `DELETE` slower.
+
+> **Interview answer:** "I first use `EXPLAIN ANALYZE` to find the costly scan, join, or sort. Then I reduce rows and columns early, ensure predicates and join keys are indexed, design composite indexes for the query pattern, and re-check the actual plan. I avoid adding indexes blindly because every index increases write cost."
+
+---
+
+# Compound (Composite) Index
+
+A **compound index** (also called a **composite** or **multi-column** index) is one B-tree index built from two or more columns.
+
+```sql
+CREATE INDEX idx_orders_customer_status_created
+    ON orders (customer_id, status, created_at);
+```
+
+The index is ordered lexicographically, like a phone book sorted by `(customer_id, status, created_at)`: first by `customer_id`; within the same customer by `status`; and within the same customer and status by `created_at`.
+
+```
+(customer_id, status, created_at)
+(10, 'PAID',    2026-08-01)
+(10, 'PAID',    2026-08-05)
+(10, 'PENDING', 2026-08-02)
+(11, 'PAID',    2026-08-03)
+```
+
+## Leftmost-Prefix Rule
+
+For an index on `(customer_id, status, created_at)`, the database can efficiently use the leading, contiguous columns. This is called the **leftmost-prefix rule**.
+
+| Query predicate / ordering | Uses this index efficiently? | Why |
+|---|:---:|---|
+| `WHERE customer_id = 10` | Yes | Uses the first column |
+| `WHERE customer_id = 10 AND status = 'PAID'` | Yes | Uses the first two columns |
+| `WHERE customer_id = 10 AND status = 'PAID' AND created_at >= '2026-08-01'` | Yes | Equality on leading columns, then a range on the next column |
+| `WHERE status = 'PAID'` | Usually no | The leading `customer_id` is missing |
+| `WHERE customer_id = 10 ORDER BY status, created_at` | Yes | The requested order matches the remaining index order |
+| `WHERE customer_id = 10 AND status > 'PAID' AND created_at >= '2026-08-01'` | Partly | The range on `status` limits how usefully later columns can narrow/search or satisfy ordering |
+
+> **Key idea:** An index on `(A, B, C)` is generally useful for `(A)`, `(A, B)`, and `(A, B, C)`, but not usually for `(B)` or `(C)` alone. It is not the same as three independent single-column indexes.
+
+## Choosing Column Order
+
+Design the index for the actual query pattern:
+
+1. Put columns tested with equality (`=` or `IN`) first.
+2. Put the range column (`>`, `<`, `BETWEEN`, prefix `LIKE`) after those equality columns.
+3. Put columns used to satisfy `ORDER BY` next, when their direction/order can match the query.
+4. Consider adding selected output columns last only when the database supports a covering index and the extra index size is justified.
+
+For the earlier query, `(customer_id, status, created_at)` is better than `(created_at, customer_id, status)` because the query first fixes `customer_id` and `status`, then needs the matching rows ordered by `created_at`.
+
+## Composite Index vs Separate Indexes
+
+If a common query filters on both columns, a composite index is often better:
+
+```sql
+-- Common query
+SELECT * FROM orders
+WHERE customer_id = 42 AND status = 'PAID';
+
+-- Usually preferable for this query pattern
+CREATE INDEX idx_orders_customer_status ON orders (customer_id, status);
+```
+
+Separate indexes on `customer_id` and `status` may require the optimizer to use only one index or merge two index result sets. A composite index already stores the exact pair in useful order, so it usually reads fewer entries.
+
+> **Trade-off:** Do not create every possible column combination. Composite indexes consume space and increase write overhead. Keep only indexes that support real, measured query patterns, and verify them with `EXPLAIN`.
