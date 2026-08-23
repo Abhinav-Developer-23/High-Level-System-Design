@@ -1025,6 +1025,8 @@ Each of these is at a *different state* (different data) even though they all sh
 
 ## Schema (Database Design / Blueprint)
 
+🔗 [Tutorialspoint — DBMS Data Schemas](https://www.tutorialspoint.com/dbms/dbms_data_schemas.htm)
+
 A **schema** is the **overall structure or design** of the database. It defines *what* tables exist, *what* columns they have, and *what types* those columns are — but NOT the actual data values.
 
 > **Think of it this way:** Schema = the **frame/blueprint** of a building. Instance = the **people and furniture** currently inside.
@@ -1280,6 +1282,8 @@ If `ON DELETE SET NULL` is set and we delete department 10:
 # Three Relationship Types in ER Modeling
 
 Entity-Relationship (ER) diagrams model how entities relate to each other. In practice, almost every design choice — keys, foreign keys, junction tables — follows from the **type of relationship** and whether participation is optional or mandatory.
+
+🔗 [GeeksforGeeks — Introduction of ER Model](https://www.geeksforgeeks.org/dbms/introduction-of-er-model/)
 
 ---
 

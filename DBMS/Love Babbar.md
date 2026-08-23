@@ -19,14 +19,13 @@
 
 1. [Introduction to DBMS](#1-introduction-to-dbms)
 2. [RDBMS Concepts & Architecture](#2-rdbms-concepts--architecture)
-3. [Relational Model & Relational Algebra](#3-relational-model--relational-algebra)
-4. [SQL (Structured Query Language)](#4-sql-structured-query-language)
-5. [Relational Database Design & Normalization](#5-relational-database-design--normalization)
-6. [Storage & File Structure](#6-storage--file-structure)
-7. [Transaction Management](#7-transaction-management)
-8. [Concurrency Control](#8-concurrency-control)
-9. [Deadlock Management](#9-deadlock-management)
-10. [Must Do — System Design & Advanced Database Concepts](#10-must-do--system-design--advanced-database-concepts)
+3. [SQL (Structured Query Language)](#3-sql-structured-query-language)
+4. [Relational Database Design & Normalization](#4-relational-database-design--normalization)
+5. [Storage & File Structure](#5-storage--file-structure)
+6. [Transaction Management](#6-transaction-management)
+7. [Concurrency Control](#7-concurrency-control)
+8. [Deadlock Management](#8-deadlock-management)
+9. [Must Do — System Design & Advanced Database Concepts](#9-must-do--system-design--advanced-database-concepts)
 
 ---
 
@@ -63,33 +62,9 @@
 
 ## 2. RDBMS Concepts & Architecture
 
-\
-- **Degree of Relation / Cardinality / Relationship Types (1:1, 1:M, M:M)**  
-  🔗 [ER Relationship Types — Binary](https://medium.com/@kushanaam/er-relationship-types-binary-8cd84cfdb983)
-  - $1:1$ (One-to-One)
-  - $1:M$ (One-to-Many)
-  - $M:M$ (Many-to-Many)
-- **Keys in Relational Model**  
-  🔗 [GeeksforGeeks — Types of Keys in Relational Model (Candidate, Super, Primary, Alternate, Foreign, Secondary)](https://www.geeksforgeeks.org/types-of-keys-in-relational-model-candidate-super-primary-alternate-and-foreign/)
-  - Super Key
-  - Candidate Key
-  - Primary Key
-  - Alternate Key
-  - Foreign Key
-  - Secondary Key
-- **Database Schema (Physical vs Logical Schema & Schema Diagrams)**  
-  🔗 [Tutorialspoint — DBMS Data Schemas](https://www.tutorialspoint.com/dbms/dbms_data_schemas.htm)
-
 ---
 
-## 3. Relational Model & Relational Algebra
-
-- **ER Model to Relational Model Conversion**  
-  🔗 [GeeksforGeeks — Mapping from ER Model to Relational Model](https://www.geeksforgeeks.org/mapping-from-er-model-to-relational-model/)
-
----
-
-## 4. SQL (Structured Query Language)
+## 3. SQL (Structured Query Language)
 
 - **What is SQL?**  
   🔗 [W3Schools — SQL Introduction](https://www.w3schools.com/sql/sql_intro.asp)
@@ -141,7 +116,7 @@
 
 ---
 
-## 5. Relational Database Design & Normalization
+## 4. Relational Database Design & Normalization
 
 - **Features of Good Relational Design**  
   🔗 [Micro Focus — Features of Good Relational Design](https://www.microfocus.com/documentation/xdbc/win20/GUID-82D58958-278F-482C-B76F-AAF94A28DCCF.html)
@@ -161,7 +136,7 @@
 
 ---
 
-## 6. Storage & File Structure
+## 5. Storage & File Structure
 
 - **Storage System in DBMS (Primary, Secondary, Tertiary Storage)**  
   🔗 [Tutorialspoint — DBMS Storage System](https://www.tutorialspoint.com/dbms/dbms_storage_system.htm)
@@ -170,7 +145,7 @@
 
 ---
 
-## 7. Transaction Management
+## 6. Transaction Management
 
 - **What is a Transaction?**  
   🔗 [Tutorialspoint — DBMS Transaction](https://www.tutorialspoint.com/dbms/dbms_transaction.htm)
@@ -185,7 +160,7 @@
 
 ---
 
-## 8. Concurrency Control
+## 7. Concurrency Control
 
 - **Concurrent Transactions & Concurrency Problems**  
   🔗 [GeeksforGeeks — Concurrency Problems in DBMS Transactions](https://www.geeksforgeeks.org/concurrency-problems-in-dbms-transactions/)
@@ -203,7 +178,7 @@
 
 ---
 
-## 9. Deadlock Management
+## 8. Deadlock Management
 
 - **What is Deadlock? (Examples, 4 Necessary Conditions)**  
   🔗 [GeeksforGeeks — Deadlock in DBMS](https://www.geeksforgeeks.org/deadlock-in-dbms/)
@@ -224,7 +199,7 @@
 
 ---
 
-## 10. Must Do — System Design & Advanced Database Concepts
+## 9. Must Do — System Design & Advanced Database Concepts
 
 - **SQL vs NoSQL**  
   🔗 [MongoDB — NoSQL Explained: NoSQL vs SQL](https://www.mongodb.com/nosql-explained/nosql-vs-sql)
