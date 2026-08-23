@@ -18,14 +18,10 @@
 ## 📑 Table of Contents
 
 1. [Introduction to DBMS](#1-introduction-to-dbms)
-2. [RDBMS Concepts & Architecture](#2-rdbms-concepts--architecture)
-3. [SQL (Structured Query Language)](#3-sql-structured-query-language)
-4. [Relational Database Design & Normalization](#4-relational-database-design--normalization)
-5. [Storage & File Structure](#5-storage--file-structure)
-6. [Transaction Management](#6-transaction-management)
-7. [Concurrency Control](#7-concurrency-control)
-8. [Deadlock Management](#8-deadlock-management)
-9. [Must Do — System Design & Advanced Database Concepts](#9-must-do--system-design--advanced-database-concepts)
+2. [Transaction Management](#2-transaction-management)
+3. [Concurrency Control](#3-concurrency-control)
+4. [Deadlock Management](#4-deadlock-management)
+5. [Must Do — System Design & Advanced Database Concepts](#5-must-do--system-design--advanced-database-concepts)
 
 ---
 
@@ -60,92 +56,7 @@
 
 ---
 
-## 2. RDBMS Concepts & Architecture
-
----
-
-## 3. SQL (Structured Query Language)
-
-- **What is SQL?**  
-  🔗 [W3Schools — SQL Introduction](https://www.w3schools.com/sql/sql_intro.asp)
-- **Difference between SQL and MySQL**  
-  🔗 [upGrad — SQL vs MySQL](https://www.upgrad.com/blog/sql-vs-mysql/)
-- **Important SQL Keywords**  
-  🔗 [EDUCBA — SQL Keywords](https://www.educba.com/sql-keywords/)
-- **SQL Cheatsheet**  
-  🔗 [EDUCBA — SQL Cheat Sheet](https://www.educba.com/cheat-sheet-sql/?source=leftnav)
-- **Composite Key in SQL**  
-  🔗 [EDUCBA — Composite Key in SQL](https://www.educba.com/composite-key-in-sql/?source=leftnav)
-- **What is a JOIN & its Types?**  
-  🔗 [GeeksforGeeks — SQL Joins (Inner, Left, Right, Full, Self)](https://www.geeksforgeeks.org/sql-join-set-1-inner-left-right-and-full-joins/)
-  - Inner Join
-  - Left Join
-  - Right Join
-  - Full Join
-  - Self Join
-- **What is a View?**  
-  🔗 [GeeksforGeeks — SQL Views](https://www.geeksforgeeks.org/sql-views/)
-- **What is a Trigger?**  
-  🔗 [GeeksforGeeks — SQL Triggers](https://www.geeksforgeeks.org/sql-trigger-student-database/)
-- **Difference Between Primary Key and Unique Key**  
-  🔗 [GeeksforGeeks — Difference between Primary Key and Unique Key](https://www.geeksforgeeks.org/difference-between-primary-key-and-unique-key/)
-- **What is SQL Injection?**  
-  🔗 [W3Schools — SQL Injection](https://www.w3schools.com/sql/sql_injection.asp)
-- **DELETE vs TRUNCATE (vs DROP)**  
-  🔗 [GeeksforGeeks — Difference between DELETE and TRUNCATE](https://www.geeksforgeeks.org/difference-between-delete-and-truncate/)
-- **SQL Privileges (GRANT & REVOKE)**  
-  🔗 [GeeksforGeeks — MySQL GRANT and REVOKE Privileges](https://www.geeksforgeeks.org/mysql-grant-revoke-privileges/)
-- **What is a Subquery? (Nested & Correlated Subqueries)**  
-  🔗 [Tutorialspoint — SQL Subqueries](https://www.tutorialspoint.com/sql/sql-sub-queries.htm)
-- **Clustered vs Non-Clustered Indexes**  
-  🔗 [Guru99 — Clustered vs Non-Clustered Index](https://www.guru99.com/clustered-vs-non-clustered-index.html)
-- **What is a Cursor in SQL?**  
-  🔗 [GeeksforGeeks — What is Cursor in SQL](https://www.geeksforgeeks.org/what-is-cursor-in-sql/)
-- **What is an Index in DBMS & its Types?**  
-  🔗 [Guru99 — Indexing in Databases](https://www.guru99.com/indexing-in-database.html)
-
-### 💡 Practice Query Questions `[DO BY YOURSELF]`
-1. Write an SQL query to get the third maximum salary of an employee from a table named `employee_table`.
-2. Write an SQL query to find names of employees starting with `'A'`.
-3. How can you create an empty table from an existing table?
-4. How to fetch common records from two tables?
-5. How to fetch alternate records from a table?
-6. How to select unique records from a table?
-7. What is the command used to fetch the first 5 characters of a string?
-8. Which operator is used in a query for pattern matching?
-
----
-
-## 4. Relational Database Design & Normalization
-
-- **Features of Good Relational Design**  
-  🔗 [Micro Focus — Features of Good Relational Design](https://www.microfocus.com/documentation/xdbc/win20/GUID-82D58958-278F-482C-B76F-AAF94A28DCCF.html)
-- **Functional Dependency & Types (Trivial, Non-Trivial, Full, Partial, Transitive)**  
-  🔗 [Guru99 — Functional Dependency in DBMS](https://www.guru99.com/dbms-functional-dependency.html)
-- **What is Normalization?**  
-  🔗 [Guru99 — Database Normalization](https://www.guru99.com/database-normalization.html)
-- **Purpose of Normalization**  
-  🔗 [Medium — What is the Purpose of Database Normalisation?](https://medium.com/@bbrumm/what-is-the-purpose-of-database-normalisation-8070b2948d70)
-- **3 Anomalies Resolved by Normalization (Insertion, Deletion, Update)**  
-  🔗 [DBA StackExchange — How does Normalization fix the three types of update anomalies?](https://dba.stackexchange.com/questions/194631/how-does-normalization-fix-the-three-types-of-update-anomalies)
-- **Normal Forms (Definitions, Purpose, and Conversion Steps):**
-  - **1NF (First Normal Form):** 🔗 [GeeksforGeeks — 1NF](https://www.geeksforgeeks.org/first-normal-form-1nf/)
-  - **2NF (Second Normal Form):** 🔗 [GeeksforGeeks — 2NF](https://www.geeksforgeeks.org/second-normal-form-2nf/)
-  - **3NF (Third Normal Form):** 🔗 [GeeksforGeeks — 3NF](https://www.geeksforgeeks.org/third-normal-form-3nf/)
-  - **BCNF (Boyce-Codd Normal Form):** 🔗 [GeeksforGeeks — BCNF](https://www.geeksforgeeks.org/boyce-codd-normal-form-bcnf/)
-
----
-
-## 5. Storage & File Structure
-
-- **Storage System in DBMS (Primary, Secondary, Tertiary Storage)**  
-  🔗 [Tutorialspoint — DBMS Storage System](https://www.tutorialspoint.com/dbms/dbms_storage_system.htm)
-- **File Structure in DBMS (Heap, Sorted, Hash Organizations)**  
-  🔗 [Tutorialspoint — DBMS File Structure](https://www.tutorialspoint.com/dbms/dbms_file_structure.htm)
-
----
-
-## 6. Transaction Management
+## 2. Transaction Management
 
 - **What is a Transaction?**  
   🔗 [Tutorialspoint — DBMS Transaction](https://www.tutorialspoint.com/dbms/dbms_transaction.htm)
@@ -160,7 +71,7 @@
 
 ---
 
-## 7. Concurrency Control
+## 3. Concurrency Control
 
 - **Concurrent Transactions & Concurrency Problems**  
   🔗 [GeeksforGeeks — Concurrency Problems in DBMS Transactions](https://www.geeksforgeeks.org/concurrency-problems-in-dbms-transactions/)
@@ -178,7 +89,7 @@
 
 ---
 
-## 8. Deadlock Management
+## 4. Deadlock Management
 
 - **What is Deadlock? (Examples, 4 Necessary Conditions)**  
   🔗 [GeeksforGeeks — Deadlock in DBMS](https://www.geeksforgeeks.org/deadlock-in-dbms/)
@@ -199,7 +110,7 @@
 
 ---
 
-## 9. Must Do — System Design & Advanced Database Concepts
+## 5. Must Do — System Design & Advanced Database Concepts
 
 - **SQL vs NoSQL**  
   🔗 [MongoDB — NoSQL Explained: NoSQL vs SQL](https://www.mongodb.com/nosql-explained/nosql-vs-sql)

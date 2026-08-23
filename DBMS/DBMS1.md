@@ -45,38 +45,47 @@
     - [Full Functional Dependency](#3-full-functional-dependency-fully-functional)
     - [Partial Functional Dependency](#4-partial-functional-dependency)
     - [Transitive Functional Dependency](#5-transitive-functional-dependency)
-16. [Transactions in DBMS](#transactions-in-dbms)
+16. [Database Normalization — 1NF, 2NF, 3NF & BCNF](#database-normalization--1nf-2nf-3nf--bcnf)
+    - [Why Normalize? — The Three Anomalies](#why-normalize--the-three-anomalies)
+    - [Anomalies Resolved by Normalization — Deep Dive](#anomalies-resolved-by-normalization--deep-dive)
+    - [1NF — First Normal Form](#1nf--first-normal-form)
+    - [2NF — Second Normal Form](#2nf--second-normal-form)
+    - [3NF — Third Normal Form](#3nf--third-normal-form)
+    - [BCNF — Boyce–Codd Normal Form](#bcnf--boycecodd-normal-form-35nf)
+    - [Lossless Join & Dependency Preservation](#two-rules-every-decomposition-must-respect)
+    - [Denormalization](#denormalization--deliberately-going-backwards)
+17. [Transactions in DBMS](#transactions-in-dbms)
     - [ACID Properties](#acid-properties)
     - [Transaction States](#transaction-states)
     - [Schedules & Serializability](#serializability)
-17. [COMMIT, ROLLBACK & SAVEPOINT — In Detail](#commit-rollback--savepoint---in-detail)
-18. [How Each ACID Property Is Achieved — Deep Dive](#how-each-acid-property-is-achieved---deep-dive)
-19. [What Is Consistency and Integrity in DBMS?](#-what-is-consistency-and-integrity-in-dbms)
+18. [COMMIT, ROLLBACK & SAVEPOINT — In Detail](#commit-rollback--savepoint---in-detail)
+19. [How Each ACID Property Is Achieved — Deep Dive](#how-each-acid-property-is-achieved---deep-dive)
+20. [What Is Consistency and Integrity in DBMS?](#-what-is-consistency-and-integrity-in-dbms)
     - [Integrity — The Rules](#integrity--the-rules)
     - [Consistency — The Guarantee](#consistency--the-guarantee)
     - [ACID Consistency vs CAP Consistency](#️-gotcha--consistency-in-acid--consistency-in-cap)
-20. [Concurrency Problems (Without Proper Isolation)](#concurrency-problems-without-proper-isolation)
+21. [Concurrency Problems (Without Proper Isolation)](#concurrency-problems-without-proper-isolation)
     - [Dirty Read](#1-dirty-read-reading-uncommitted-data)
     - [Lost Update](#2-lost-update)
     - [Non-Repeatable Read](#3-non-repeatable-read)
     - [Phantom Read](#4-phantom-read)
     - [SQL Isolation Levels](#sql-isolation-levels)
-21. [Concurrency Control in DBMS](#concurrency-control-in-dbms)
+22. [Concurrency Control in DBMS](#concurrency-control-in-dbms)
     - [Lock-Based Concurrency Control](#1-lock-based-concurrency-control)
     - [Two-Phase Locking (2PL)](#2-two-phase-locking-2pl)
     - [Timestamp-Based Concurrency Control](#3-timestamp-based-concurrency-control)
     - [Optimistic Concurrency Control](#4-optimistic-concurrency-control-validation-based)
     - [Deadlocks](#deadlocks)
     - [Recoverable & Cascadeless Schedules](#recoverable--cascadeless-schedules)
-22. [Types of Schedules in DBMS](#types-of-schedules-in-dbms)
+23. [Types of Schedules in DBMS](#types-of-schedules-in-dbms)
     - [Serial Schedule](#1-serial-schedule)
     - [Non-Serial Schedule](#2-non-serial-schedule)
     - [Serializable Schedule](#3-serializable-schedule)
     - [Non-Serializable Schedules](#4-non-serializable-schedules)
     - [Thomas' Write Rule](#thomas-write-rule)
-23. [What Is the Meaning of the Word "Relational" in RDBMS?](#what-is-the-meaning-of-the-word-relational-in-rdbms)
-24. [How to Optimize a SQL Query](#how-to-optimize-a-sql-query)
-25. [Compound (Composite) Index](#compound-composite-index)
+24. [What Is the Meaning of the Word "Relational" in RDBMS?](#what-is-the-meaning-of-the-word-relational-in-rdbms)
+25. [How to Optimize a SQL Query](#how-to-optimize-a-sql-query)
+26. [Compound (Composite) Index](#compound-composite-index)
 
 ---
 
@@ -4464,6 +4473,673 @@ Now `dept_head` is stored only ONCE per department — no redundancy!
 | **BCNF** | Only candidate key → non-key | ❌ Any FD where LHS is not a candidate key |
 
 > **Interview tip:** The most common FD question is: "What is a transitive dependency and how does it relate to 3NF?" Answer: `X → Y → Z` where Y is not a candidate key. To achieve 3NF, you decompose the table to eliminate this chain. Similarly, "What is a partial dependency?" relates to 2NF — non-key attributes must depend on the **entire** primary key, not just part of it.
+
+> 👉 The next section covers each normal form end-to-end: [Database Normalization — 1NF to BCNF](#database-normalization--1nf-2nf-3nf--bcnf).
+
+---
+---
+
+# Database Normalization — 1NF, 2NF, 3NF & BCNF
+
+📖 **Reference:** [Database Normalization: 1NF, 2NF, 3NF & BCNF Examples — DigitalOcean](https://www.digitalocean.com/community/tutorials/database-normalization)
+
+**Normalization** is the process of organizing the columns and tables of a relational database to **minimize data redundancy** and **eliminate update anomalies**. You do it by repeatedly **decomposing** a large table into smaller tables and linking them with **foreign keys**, so that every fact is stored in exactly **one place**.
+
+> **One-line definition for interviews:** "Normalization is a step-by-step decomposition of tables, driven by functional dependencies, to remove redundancy and insert/update/delete anomalies — each normal form is a stricter rule about which dependencies are allowed to survive."
+
+It was introduced by **E. F. Codd** (1NF/2NF/3NF in 1970–72) and refined into **BCNF** by Codd and Boyce (1974). Higher forms (4NF, 5NF) exist for multivalued and join dependencies, but real-world schemas are designed to **3NF**, occasionally **BCNF** — which is where this section stops.
+
+---
+
+## Why Normalize? — The Three Anomalies
+
+Take an **unnormalized** table that stores everything about a student's enrolment in one place:
+
+**`student_report` (bad design)**
+
+| roll_no | student_name | phone | course_id | course_name | marks | dept | dept_head |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | Alice | 9990001111, 9990002222 | C1 | DBMS | 88 | CSE | Dr. Smith |
+| 1 | Alice | 9990001111, 9990002222 | C2 | OS | 91 | CSE | Dr. Smith |
+| 2 | Bob | 8880003333 | C1 | DBMS | 75 | ECE | Dr. Jones |
+| 3 | Carol | 7770004444 | C3 | Networks | 82 | CSE | Dr. Smith |
+
+Notice `Alice`, `CSE`, and `Dr. Smith` repeated across rows. That redundancy creates three classic problems:
+
+| Anomaly | What goes wrong | Example on the table above |
+|---|---|---|
+| **Insertion anomaly** | You cannot record a fact because unrelated data is missing | Can't add a new course `C4 — Compilers` until at least one student enrols in it (the PK needs `roll_no`) |
+| **Update anomaly** | The same fact lives in many rows, so a partial update makes the data inconsistent | Alice changes her name → you must update **every** row for `roll_no = 1`; miss one and Alice has two names |
+| **Deletion anomaly** | Deleting a row silently destroys an unrelated fact | Delete Bob's only enrolment row → you also lose the fact that `ECE`'s head is `Dr. Jones` |
+
+```
+  Redundancy  ──►  Anomalies  ──►  Inconsistent data
+       │
+       └──► Fix: decompose so every fact is stored EXACTLY ONCE
+```
+
+### Benefits vs Costs
+
+| ✅ Benefits of normalizing | ❌ Costs of normalizing |
+|---|---|
+| Less redundancy → smaller storage | More tables → more **JOINs** per read query |
+| No insert/update/delete anomalies | Reads can get slower (join cost) |
+| Each fact updated in one place → consistency | More complex queries to write |
+| Cleaner schema, easier to extend | Reporting/analytics queries may need denormalized copies |
+
+---
+
+## Anomalies Resolved by Normalization — Deep Dive
+
+🔗 **Reference:** [DBA StackExchange — How does normalization fix the three types of update anomalies?](https://dba.stackexchange.com/questions/194631/how-does-normalization-fix-the-three-types-of-update-anomalies)
+
+> **Terminology note:** all three are often grouped under the umbrella term **"update anomalies"** — because all three are symptoms of the *same* root cause. The three specific kinds are **insertion**, **deletion**, and **modification** (the last one is what most people mean by "update anomaly").
+
+### The Root Cause — One Fact Stored in Many Places
+
+```
+  A non-key attribute depends on something that is NOT a key
+                      │
+                      ▼
+  The DBMS cannot stop that value from repeating across rows
+                      │
+                      ▼
+        REDUNDANCY  (the same fact stored N times)
+                      │
+        ┌─────────────┼─────────────┐
+        ▼             ▼             ▼
+   Insertion     Modification    Deletion
+    anomaly        anomaly        anomaly
+```
+
+The key insight: **normalization does not "detect and repair" anomalies at runtime.** It restructures the schema so that each fact has exactly **one** home, which makes the anomaly *structurally impossible* — and turns the rule into a **key constraint the DBMS itself enforces**, instead of a convention your application code has to remember.
+
+> **The single sentence that answers the interview question:** "An anomaly is a symptom of redundancy; redundancy is a symptom of a dependency on a non-key. Remove the dependency by decomposing, and all three anomalies disappear at once — because there's no longer more than one row that has to agree."
+
+### The Faulty Table We'll Fix
+
+**`student_report`** — PK is `{roll_no, course_id}`:
+
+| roll_no | student_name | course_id | course_name | marks | dept | dept_head |
+|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
+| 1 | Alice | C1 | DBMS | 88 | CSE | Dr. Smith |
+| 1 | Alice | C2 | OS | 91 | CSE | Dr. Smith |
+| 2 | Bob | C1 | DBMS | 75 | ECE | Dr. Jones |
+| 3 | Carol | C3 | Networks | 82 | CSE | Dr. Smith |
+
+---
+
+### 1. Insertion Anomaly
+
+**Definition:** you cannot store a valid, standalone fact because the table's key forces you to supply unrelated data you don't have yet.
+
+| Scenario | What blocks you |
+|---|---|
+| Add a new course `C4 — Compilers` that nobody has enrolled in yet | The PK requires `roll_no`, so there's no legal row for a course by itself |
+| Register a new department `MECH` with head `Dr. Iyer` | You need at least one student in `MECH` first |
+| Admit a student who hasn't picked courses yet | `course_id` is part of the PK and cannot be NULL |
+
+```sql
+-- ❌ Impossible on the unnormalized table: no student, no row
+INSERT INTO student_report (course_id, course_name) VALUES ('C4', 'Compilers');
+--   ERROR: Column 'roll_no' cannot be null (part of the primary key)
+
+-- The ugly workaround people reach for — a fake placeholder row:
+INSERT INTO student_report VALUES (NULL, NULL, 'C4', 'Compilers', NULL, NULL, NULL);
+--   Illegal (PK can't be NULL), and pollutes the table if forced through
+```
+
+**✅ How normalization fixes it — 2NF/3NF give each entity its own table:**
+
+```sql
+INSERT INTO courses     VALUES ('C4', 'Compilers');        -- course exists on its own
+INSERT INTO departments VALUES ('MECH', 'Dr. Iyer');       -- department exists on its own
+INSERT INTO students    VALUES (4, 'Dave', 'MECH');        -- student with no enrolments yet
+```
+
+**Why it works:** an *independent entity* now has an *independent table* with its own primary key, so its existence no longer depends on a related row existing.
+
+---
+
+### 2. Modification (Update) Anomaly
+
+**Definition:** the same fact is stored in multiple rows, so an update must touch **all** of them. Update some and not others → the database now holds **two contradictory versions of one truth**.
+
+| Scenario | Rows that must all change together |
+|---|---|
+| Rename course `DBMS` → `Database Systems` | Every enrolment row for `C1` |
+| CSE's head changes to `Dr. Nair` | Every row of every CSE student |
+| Alice's name is corrected to `Alicia` | Every enrolment row for `roll_no = 1` |
+
+```sql
+-- ❌ On the unnormalized table this MUST hit every matching row
+UPDATE student_report SET dept_head = 'Dr. Nair' WHERE dept = 'CSE';
+```
+
+If that statement is filtered wrongly, interrupted, or run as several statements and one fails, you get:
+
+| roll_no | dept | dept_head |
+|:---:|:---:|:---:|
+| 1 | CSE | Dr. Nair | ← updated
+| 3 | CSE | Dr. Smith | ← **missed — the database now contradicts itself**
+
+Nothing in the schema forbids this state: `dept_head` is not determined by any key, so the DBMS has no basis to reject it.
+
+**✅ How normalization fixes it — 3NF puts the fact in one row:**
+
+```sql
+UPDATE departments SET dept_head = 'Dr. Nair' WHERE dept = 'CSE';   -- exactly 1 row
+UPDATE courses     SET course_name = 'Database Systems' WHERE course_id = 'C1';
+UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
+```
+
+**Why it works:** a single-row update is **atomic by construction** — there is no second copy left behind to disagree with. Partial-update inconsistency becomes unrepresentable.
+
+---
+
+### 3. Deletion Anomaly
+
+**Definition:** deleting a row destroys **unrelated** facts that happened to be co-located in it, because that row was the *only* place they were stored.
+
+| Scenario | Collateral damage |
+|---|---|
+| Bob drops course `C1` (his only enrolment) | You also lose "Bob is a student" **and** "ECE's head is Dr. Jones" |
+| Course `C3` is discontinued | You lose the fact that Carol is a student in CSE |
+| Last CSE student graduates | The CSE department vanishes from the database |
+
+```sql
+-- ❌ Intent: "Bob dropped one course."  Actual effect: Bob and ECE cease to exist.
+DELETE FROM student_report WHERE roll_no = 2 AND course_id = 'C1';
+```
+
+**✅ How normalization fixes it — separate lifetimes, separate tables:**
+
+```sql
+-- Intent maps exactly to one table; nothing else is touched
+DELETE FROM enrollment WHERE roll_no = 2 AND course_id = 'C1';
+
+-- students(2, 'Bob', 'ECE')          → still there ✅
+-- departments('ECE', 'Dr. Jones')    → still there ✅
+```
+
+**Why it works:** each table now models one entity with its **own lifecycle**. Removing an enrolment removes only the enrolment. Foreign keys with `ON DELETE RESTRICT` / `CASCADE` then let you state deliberately what *should* cascade — instead of losing data by accident.
+
+---
+
+### Which Normal Form Fixes Which Anomaly?
+
+| Normal Form | Dependency removed | Anomalies it eliminates |
+|:---:|---|---|
+| **1NF** | Multi-valued cells / repeating groups | Can't insert, search, or delete an individual value inside a cell |
+| **2NF** | **Partial** (`part-of-key → non-key`) | Course/student facts duplicated per enrolment — insert a course with no students; rename a course once |
+| **3NF** | **Transitive** (`non-key → non-key`) | Department facts duplicated per student — register a department with no students; change its head once; keep it when the last student leaves |
+| **BCNF** | Any FD whose LHS isn't a super key | Residual anomalies when candidate keys overlap (e.g. record a teacher's subject before any student enrols) |
+
+---
+
+### Before ➜ After, Side by Side
+
+| Operation | Unnormalized `student_report` | Normalized (3NF) schema |
+|---|---|---|
+| Add a course nobody takes | ❌ Impossible (PK needs `roll_no`) | ✅ 1 `INSERT` into `courses` |
+| Add a department with no students | ❌ Impossible | ✅ 1 `INSERT` into `departments` |
+| Rename a course | ⚠️ N rows; partial failure ⇒ inconsistency | ✅ 1 row in `courses` |
+| Change a department head | ⚠️ N rows; partial failure ⇒ inconsistency | ✅ 1 row in `departments` |
+| Student drops one course | ❌ May delete the student and the department too | ✅ 1 `DELETE` from `enrollment` |
+| Who enforces the rule? | 🙋 Application code / developer discipline | 🔒 The DBMS, via primary and foreign keys |
+
+> **Key takeaway:** anomalies aren't a separate problem to be patched — they're the *observable symptom* of redundancy. Normalization attacks the cause. Every normal form is really the same instruction restated at a stricter level: **store each fact exactly once, in the table whose key determines it.**
+
+---
+
+## The Ladder of Normal Forms
+
+Each form **includes** the previous one — you cannot be in 3NF without already being in 2NF and 1NF.
+
+```
+  Unnormalized (UNF)
+        │  remove multi-valued / repeating groups → atomic values
+        ▼
+      1NF
+        │  remove PARTIAL dependencies (part of the composite key → non-key)
+        ▼
+      2NF
+        │  remove TRANSITIVE dependencies (non-key → non-key)
+        ▼
+      3NF
+        │  every determinant (LHS of an FD) must be a candidate key
+        ▼
+      BCNF
+```
+
+| Normal Form | Rule in one line | Removes |
+|:---:|---|---|
+| **1NF** | Every cell holds a **single atomic value**; no repeating groups | Multi-valued attributes |
+| **2NF** | 1NF **+** every non-key attribute depends on the **whole** key | Partial dependencies |
+| **3NF** | 2NF **+** no non-key attribute depends on another non-key attribute | Transitive dependencies |
+| **BCNF** | For every non-trivial FD `X → Y`, **X must be a super key** | Anomalies from overlapping candidate keys |
+
+---
+
+## 1NF — First Normal Form
+
+**Rule:** every attribute must be **atomic** (single-valued and indivisible), each column must hold one data type, and there must be **no repeating groups** or arrays inside a cell. Row order and column order must carry no meaning.
+
+### ❌ Violates 1NF
+
+`phone` stores two numbers in one cell:
+
+| roll_no | student_name | phone |
+|:---:|:---:|:---|
+| 1 | Alice | 9990001111, 9990002222 |
+| 2 | Bob | 8880003333 |
+
+**Why it's a problem:** you can't index or search a single phone efficiently, `WHERE phone = '9990002222'` needs string matching, and adding/removing one number means rewriting the whole cell.
+
+### The other bad "fix" — repeating columns
+
+| roll_no | student_name | phone1 | phone2 | phone3 |
+|:---:|:---:|:---:|:---:|:---:|
+| 1 | Alice | 9990001111 | 9990002222 | NULL |
+
+This is still wrong: it caps how many phones a student can have and fills the table with NULLs. **Repeating groups (`phone1..phoneN`) are a 1NF violation, not a solution.**
+
+### ✅ In 1NF — one row per value
+
+**`students`**
+
+| roll_no (PK) | student_name |
+|:---:|:---:|
+| 1 | Alice |
+| 2 | Bob |
+
+**`student_phones`**
+
+| roll_no (PK, FK) | phone (PK) |
+|:---:|:---:|
+| 1 | 9990001111 |
+| 1 | 9990002222 |
+| 2 | 8880003333 |
+
+```sql
+CREATE TABLE students (
+    roll_no      INT PRIMARY KEY,
+    student_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE student_phones (
+    roll_no INT,
+    phone   VARCHAR(15),
+    PRIMARY KEY (roll_no, phone),          -- composite key: a student can have many phones
+    FOREIGN KEY (roll_no) REFERENCES students(roll_no) ON DELETE CASCADE
+);
+```
+
+> **Gotcha:** a comma-separated list, a JSON array, or `tags = "sql,dbms,index"` inside a `VARCHAR` column all violate 1NF in the classical sense. Modern databases *support* JSON/array columns, and they're a pragmatic choice when the value is opaque to the database — but you lose per-element constraints, foreign keys, and clean indexing.
+
+---
+
+## 2NF — Second Normal Form
+
+**Rule:** the table is in **1NF**, and **no non-prime attribute is partially dependent on any candidate key**. In practice: every non-key column must depend on the **entire** primary key, not just part of it.
+
+> 2NF only becomes interesting when the primary key is **composite**. If the PK is a single column, no partial dependency is possible, so a 1NF table with a single-column PK is automatically in 2NF.
+
+### ❌ Violates 2NF
+
+**`enrollment`** with composite primary key `{roll_no, course_id}`:
+
+| roll_no | course_id | student_name | course_name | marks |
+|:---:|:---:|:---:|:---:|:---:|
+| 1 | C1 | Alice | DBMS | 88 |
+| 1 | C2 | Alice | OS | 91 |
+| 2 | C1 | Bob | DBMS | 75 |
+| 3 | C3 | Carol | Networks | 82 |
+
+The functional dependencies:
+
+```
+  {roll_no, course_id} → marks         ✅ FULL dependency (needs both)
+   roll_no             → student_name  ❌ PARTIAL (only part of the key)
+   course_id           → course_name   ❌ PARTIAL (only part of the key)
+```
+
+**Consequences:** `Alice` repeats for every course she takes; `DBMS` repeats for every student who takes it. Rename the course `DBMS` → `Database Systems` and you must touch every enrolment row.
+
+### ✅ In 2NF — one table per dependency
+
+**`students`**
+
+| roll_no (PK) | student_name |
+|:---:|:---:|
+| 1 | Alice |
+| 2 | Bob |
+| 3 | Carol |
+
+**`courses`**
+
+| course_id (PK) | course_name |
+|:---:|:---:|
+| C1 | DBMS |
+| C2 | OS |
+| C3 | Networks |
+
+**`enrollment`**
+
+| roll_no (PK, FK) | course_id (PK, FK) | marks |
+|:---:|:---:|:---:|
+| 1 | C1 | 88 |
+| 1 | C2 | 91 |
+| 2 | C1 | 75 |
+| 3 | C3 | 82 |
+
+```sql
+CREATE TABLE courses (
+    course_id   VARCHAR(10) PRIMARY KEY,
+    course_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE enrollment (
+    roll_no   INT,
+    course_id VARCHAR(10),
+    marks     INT,
+    PRIMARY KEY (roll_no, course_id),      -- marks depends on the FULL key
+    FOREIGN KEY (roll_no)   REFERENCES students(roll_no),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+```
+
+Now a course rename is a **single-row update** in `courses`, and a new course can be inserted before anyone enrols — the insertion anomaly is gone.
+
+---
+
+## 3NF — Third Normal Form
+
+**Rule:** the table is in **2NF**, and **no non-prime attribute is transitively dependent** on the primary key. Equivalently, for every non-trivial FD `X → Y`, either **X is a super key** *or* **Y is a prime attribute** (part of some candidate key).
+
+Plain English: **every non-key column must depend on the key, the whole key, and nothing but the key.**
+
+### ❌ Violates 3NF
+
+**`students`**
+
+| roll_no (PK) | student_name | dept | dept_head |
+|:---:|:---:|:---:|:---:|
+| 1 | Alice | CSE | Dr. Smith |
+| 2 | Bob | ECE | Dr. Jones |
+| 3 | Carol | CSE | Dr. Smith |
+
+The dependency chain:
+
+```
+  roll_no → dept → dept_head          (dept is NOT a candidate key)
+      └────────────────► transitive dependency
+```
+
+`dept_head` doesn't really describe a *student* — it describes a *department*. So `Dr. Smith` is duplicated for every CSE student.
+
+**Anomalies it causes:**
+- **Update:** CSE gets a new head → update every CSE student row.
+- **Delete:** remove the last CSE student → you lose the fact that CSE's head is Dr. Smith.
+- **Insert:** you can't register a brand-new department until a student joins it.
+
+### ✅ In 3NF
+
+**`students`**
+
+| roll_no (PK) | student_name | dept (FK) |
+|:---:|:---:|:---:|
+| 1 | Alice | CSE |
+| 2 | Bob | ECE |
+| 3 | Carol | CSE |
+
+**`departments`**
+
+| dept (PK) | dept_head |
+|:---:|:---:|
+| CSE | Dr. Smith |
+| ECE | Dr. Jones |
+
+```sql
+CREATE TABLE departments (
+    dept      VARCHAR(10) PRIMARY KEY,
+    dept_head VARCHAR(100) NOT NULL
+);
+
+ALTER TABLE students
+    ADD COLUMN dept VARCHAR(10),
+    ADD FOREIGN KEY (dept) REFERENCES departments(dept);
+```
+
+> **Rule of thumb:** if a column would still make sense in a table *about something else*, it probably belongs in that other table. `dept_head` describes a department, so it lives in `departments`.
+
+> **3NF is the practical target** for most OLTP schemas. It removes almost all redundancy while keeping the join count reasonable.
+
+---
+
+## BCNF — Boyce–Codd Normal Form (3.5NF)
+
+**Rule:** for **every** non-trivial functional dependency `X → Y`, **X must be a super key**. BCNF is 3NF *without* the escape clause "…or Y is a prime attribute" — so it is strictly stronger.
+
+BCNF only differs from 3NF when a table has **multiple overlapping candidate keys**.
+
+### ❌ In 3NF but violates BCNF — the classic example
+
+**`teaches`** — a student takes a subject from exactly one teacher, and each teacher teaches exactly one subject:
+
+| student | subject | teacher |
+|:---:|:---:|:---:|
+| Alice | DBMS | Dr. Smith |
+| Alice | OS | Dr. Rao |
+| Bob | DBMS | Dr. Verma |
+| Carol | DBMS | Dr. Smith |
+
+Functional dependencies and keys:
+
+```
+  {student, subject} → teacher        (candidate key → non-prime)
+   teacher           → subject        (teacher is NOT a super key!)
+
+  Candidate keys: {student, subject}  and  {student, teacher}
+  Prime attributes: student, subject, teacher   ← all of them!
+```
+
+**Why it's in 3NF:** in `teacher → subject`, the right-hand side `subject` *is* a prime attribute, so 3NF's escape clause is satisfied.
+**Why it fails BCNF:** the determinant `teacher` is not a super key.
+
+**The anomaly that survives 3NF:** you cannot record that `Dr. Kumar` teaches `Networks` until some student takes it, and if `Dr. Smith` switches to `Compilers` you must update multiple rows.
+
+### ✅ In BCNF — decompose on the offending determinant
+
+**`teacher_subject`**
+
+| teacher (PK) | subject |
+|:---:|:---:|
+| Dr. Smith | DBMS |
+| Dr. Rao | OS |
+| Dr. Verma | DBMS |
+
+**`student_teacher`**
+
+| student (PK) | teacher (PK, FK) |
+|:---:|:---:|
+| Alice | Dr. Smith |
+| Alice | Dr. Rao |
+| Bob | Dr. Verma |
+| Carol | Dr. Smith |
+
+> ⚠️ **The BCNF trade-off:** this decomposition is **lossless**, but it is **not dependency-preserving** — the FD `{student, subject} → teacher` can no longer be enforced by a key inside a single table. Nothing stops the same student from being assigned two teachers for DBMS unless you add an application-level or trigger-based check.
+
+### 3NF vs BCNF
+
+| | 3NF | BCNF |
+|---|---|---|
+| Condition on `X → Y` | X is a super key **OR** Y is prime | X **must** be a super key |
+| Strength | Weaker | Stronger (3NF ⊇ BCNF) |
+| Lossless decomposition | Always achievable | Always achievable |
+| Dependency preservation | **Always** achievable | **Not always** achievable |
+| Redundancy left | Some (when candidate keys overlap) | Essentially none from FDs |
+
+> **Interview answer:** "Every BCNF table is in 3NF, but not vice versa. 3NF allows an FD whose determinant isn't a super key as long as the dependent attribute is part of some candidate key. BCNF forbids that. The practical catch is that BCNF decomposition can lose dependency preservation, which is why real schemas often stop at 3NF."
+
+---
+
+## Two Rules Every Decomposition Must Respect
+
+When you split a table `R` into `R1` and `R2`, check both properties:
+
+### 1. Lossless Join (mandatory)
+
+`R1 ⋈ R2` must give back **exactly** `R` — no lost rows, no spurious extra rows.
+
+```
+  Condition:  attributes(R1) ∩ attributes(R2)  must contain a
+              super key of R1 or of R2
+```
+
+**Lossy example:** splitting `student_report(roll_no, course_id, marks)` into `(roll_no, marks)` and `(course_id, marks)` and joining on `marks` produces garbage rows — `marks` is not a key of either part.
+
+### 2. Dependency Preservation (desirable)
+
+Every FD of `R` should be checkable inside **one** of the decomposed tables, without needing a join. If not, the constraint has to move into application logic or a trigger.
+
+| Property | 3NF | BCNF |
+|---|:---:|:---:|
+| Lossless join | ✅ Always | ✅ Always |
+| Dependency preservation | ✅ Always | ⚠️ Not guaranteed |
+
+> **This is exactly why 3NF is the industry default:** it's the strongest form you can always reach while keeping *both* properties.
+
+---
+
+## Denormalization — Deliberately Going Backwards
+
+**Denormalization** is intentionally reintroducing redundancy to make reads faster: fewer joins, precomputed aggregates, duplicated columns.
+
+| Technique | Example | Cost |
+|---|---|---|
+| Duplicate a column | Store `customer_name` on `orders` to avoid a join | Must keep both copies in sync |
+| Precomputed aggregate | Store `order_count` on `customers` | Needs a trigger / batch job / app-level update |
+| Materialized view | Nightly refreshed report table | Data is stale until the next refresh |
+| Wide/flattened table | One analytics table instead of 8 joined ones | Large storage, expensive writes |
+
+**When denormalization is justified**
+
+- Read-heavy workload where the join is provably the bottleneck (confirm with `EXPLAIN` first — see [How to Optimize a SQL Query](#how-to-optimize-a-sql-query)).
+- Analytics / reporting / dashboards where staleness is acceptable.
+- Aggregates too expensive to compute per request (feed counts, leaderboards).
+
+**When it is not**
+
+- Before measuring. Indexing usually beats denormalizing.
+- On write-heavy, correctness-critical tables (money, inventory) — every duplicated copy is a chance to be inconsistent.
+
+> **Interview answer:** "Normalize first for correctness, then denormalize selectively where measurements show a join or aggregate is the bottleneck — and always with a clear plan for keeping the duplicated data in sync."
+
+---
+
+## Full Walkthrough — UNF ➜ 3NF in One Pass
+
+Starting from the very first table on this page:
+
+```
+  UNF:  student_report(roll_no, student_name, phone(multi), course_id,
+                       course_name, marks, dept, dept_head)
+
+  Step 1 — 1NF: phone has multiple values in one cell
+     ➜ students(roll_no, student_name, dept, dept_head)
+       student_phones(roll_no, phone)
+       enrollment(roll_no, course_id, course_name, marks)
+
+  Step 2 — 2NF: in enrollment, PK = {roll_no, course_id},
+                but course_id → course_name is PARTIAL
+     ➜ courses(course_id, course_name)
+       enrollment(roll_no, course_id, marks)
+
+  Step 3 — 3NF: in students, roll_no → dept → dept_head is TRANSITIVE
+     ➜ departments(dept, dept_head)
+       students(roll_no, student_name, dept)
+```
+
+**Final schema (3NF)**
+
+```sql
+CREATE TABLE departments (
+    dept      VARCHAR(10)  PRIMARY KEY,
+    dept_head VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE students (
+    roll_no      INT PRIMARY KEY,
+    student_name VARCHAR(100) NOT NULL,
+    dept         VARCHAR(10),
+    FOREIGN KEY (dept) REFERENCES departments(dept)
+);
+
+CREATE TABLE student_phones (
+    roll_no INT,
+    phone   VARCHAR(15),
+    PRIMARY KEY (roll_no, phone),
+    FOREIGN KEY (roll_no) REFERENCES students(roll_no) ON DELETE CASCADE
+);
+
+CREATE TABLE courses (
+    course_id   VARCHAR(10)  PRIMARY KEY,
+    course_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE enrollment (
+    roll_no   INT,
+    course_id VARCHAR(10),
+    marks     INT,
+    PRIMARY KEY (roll_no, course_id),
+    FOREIGN KEY (roll_no)   REFERENCES students(roll_no),
+    FOREIGN KEY (course_id) REFERENCES courses(course_id)
+);
+```
+
+```
+  departments 1───N students 1───N student_phones
+                      │
+                      N
+                      │
+                  enrollment  N───1 courses
+```
+
+Every fact now lives in exactly one place: a student's name in `students`, a course's title in `courses`, a department's head in `departments`, and a grade in `enrollment`.
+
+---
+
+## How to Normalize — A Practical Checklist
+
+1. **List the attributes** and the real-world facts they represent.
+2. **Write down the functional dependencies** (see [Functional Dependencies](#functional-dependencies-in-dbms)).
+3. **Find all candidate keys** using the attribute-closure method.
+4. **1NF** — is every cell atomic? Any list, array, or `col1..colN` group?
+5. **2NF** — is the PK composite? Does any non-key column depend on only *part* of it?
+6. **3NF** — does any non-key column depend on another *non-key* column?
+7. **BCNF** — is the LHS of every FD a super key? If not, decide whether losing dependency preservation is acceptable.
+8. **Verify** each decomposition is **lossless**, and note any FD you can no longer enforce with a key.
+9. **Measure**, then denormalize only where reads demand it.
+
+---
+
+## Quick-Fire Q&A
+
+| Question | Answer |
+|---|---|
+| **What is normalization?** | Decomposing tables to remove redundancy and insert/update/delete anomalies, guided by functional dependencies |
+| **Which normal form do real systems use?** | **3NF** (sometimes BCNF) for OLTP; deliberately denormalized star/snowflake schemas for analytics |
+| **Can a 1NF table with a single-column PK violate 2NF?** | No — partial dependencies require a **composite** key |
+| **Difference between 2NF and 3NF?** | 2NF removes **partial** dependencies; 3NF removes **transitive** ones |
+| **Is every 3NF table in BCNF?** | No. 3NF allows `X → Y` where X isn't a super key if Y is a prime attribute |
+| **Why not always go to BCNF?** | BCNF decomposition may not be **dependency-preserving**, forcing constraints into application code |
+| **What must every decomposition guarantee?** | **Lossless join** — rejoining the parts reproduces the original relation exactly |
+| **Downside of normalization?** | More tables → more joins → potentially slower reads and more complex queries |
+| **What is denormalization?** | Deliberately adding redundancy (duplicated columns, precomputed aggregates) to speed up reads |
+| **Higher normal form ⇒ better performance?** | No. It improves **integrity**; read performance often *drops* because of extra joins |
+
+> **Interview strategy:** define normalization in one sentence, name the anomaly it prevents, then walk one table from 1NF → 3NF using a concrete example (the `student_report` table above works well). Finish by mentioning that 3NF is the practical stopping point and that BCNF can cost dependency preservation — that last point is what separates a memorized answer from an understood one.
 
 ---
 ---
