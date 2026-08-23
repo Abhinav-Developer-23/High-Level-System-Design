@@ -3726,6 +3726,13 @@ A **non-clustered index** is a **separate structure** that stores the index key 
 
 Both clustered and non-clustered indexes typically use a **B-Tree** (Balanced Tree) structure:
 
+
+▶️ [B-Tree (Abdul Bari)](https://www.youtube.com/watch?v=aZjYr87r1b8&t=1657s)<br>
+▶️ [B Tree Insert and Delete](https://www.youtube.com/watch?v=ownO77M4SWI)<br>
+📚 [B-Trees & B+ Tree & DB Indexes (PlanetScale)](https://planetscale.com/blog/btrees-and-database-indexes)<br>
+🕹️ [Interactive B+ Tree Visualizer](https://bplustree.app/)<br>
+🕹️ [Interactive B Tree Visualizer](https://btree.app/)
+
 🔗 [B-Trees and B+ Trees — Explained](https://medium.com/@akashsdas_dev/b-trees-and-b-trees-682d363df1f7)
 
 ```
