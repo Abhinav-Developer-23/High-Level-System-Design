@@ -20,6 +20,18 @@ These files are **personal quick-reference notes and runnable tutorials** — cr
 | [Java.md](Java/Java.md) | Markdown notes | ThreadPoolExecutor, CompletableFuture theory, JVM Memory Model, Garbage Collection, GC Tuning |
 | [TutorialsJava.java](Java/JavaTutorial/src/test/java/org/example/TutorialsJava.java) | **Runnable JUnit 5 tests** | CompletableFuture — 14 fully documented examples with rich comments explaining every method and pattern |
 | [LeadershipQuestions.md](LeaderShipPrinciples+HiringManagerRound/LeadershipQuestions.md) | Markdown notes | Leadership principle interview questions & answers — all in STAR format |
+| [gemini.md](gemini.md) | Agent instructions | AlgoMaster HLD capture & iterative design enhancement workflow |
+| [hld/](hld/) | System Design MHTML | Captured & improved offline system design archives |
+
+## AlgoMaster HLD Workflow & Design Improvement
+
+When the user provides URLs to High-Level System Design pages (such as from [AlgoMaster.io](https://algomaster.io)):
+
+1. **Ingest & Capture (.mhtml)**: Use Chrome DevTools (CDP / Chrome DevTools MCP) to render the full page, scroll through to trigger lazy-loaded SVG diagrams, and capture an offline `.mhtml` archive in the [`hld/`](hld/) folder.
+2. **Review & Discussion**: The user and agent analyze the baseline design, discuss bottlenecks, missing components (e.g. rate limiters, DLQs, caching, idempotent delivery), and trade-offs.
+3. **Iterative Enhancement**: The `.mhtml` is a living baseline. The agent enhances and updates the MHTML / HLD notes with updated architecture diagrams, deep-dive sections, and edge-case mitigations.
+
+For full technical details and capture recipes, see [gemini.md](gemini.md).
 
 ## About TutorialsJava.java
 
@@ -51,3 +63,4 @@ These files are **personal quick-reference notes and runnable tutorials** — cr
 ---
 
 > 💡 **Keep adding more topics here as you learn them.** These notes are a living document.
+

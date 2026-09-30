@@ -6631,6 +6631,106 @@ To avoid a random disk read on every secondary index insert, InnoDB records the 
 
 > **Practical consequence:** a `UNIQUE` secondary index is meaningfully more expensive on writes than an ordinary one — it forces a random read that a non-unique index defers. Don't add `UNIQUE` unless you actually need the constraint.
 
+### ❓ If a Random UUID Hurts, Doesn't an Index on `email` Hurt Too?
+
+A very fair question — and the **mechanism is identical**. Emails arrive in no order at all (`zoe@…`, then `adam@…`, then `mike@…`), so every insert lands at a random leaf of the email B+ Tree, causing the same page splits and the same ~50% page fill.
+
+So why does nobody worry about it? Because the **blast radius** is completely different.
+
+#### What Actually Moves During a Split
+
+```
+Clustered index (PK) leaf              Secondary index (email) leaf
+─────────────────────────              ────────────────────────────
+ THE WHOLE ROW                          just (email, PK)
+ id, name, email, address,              "adam@x.com" → 4471
+ bio, created_at, ... ~800 B            ~40 bytes
+ ≈ 20 rows per 16 KB page               ≈ 400 entries per 16 KB page
+```
+
+A split in the clustered index relocates half a page of **full rows**. A split in a secondary index relocates half a page of **tiny pointers**.
+
+#### Blast Radius — The Real Reason
+
+| | Random **PK** (UUIDv4) | Random **secondary index** (email) |
+|---|---|---|
+| **What gets fragmented** | ☠️ **The entire table** | Only that one index |
+| **Effect on other indexes** | ☠️ **Every** secondary index gets fatter — they all store the PK as their row pointer, so a 16-byte UUID bloats all of them | ✅ None |
+| **Effect on range scans over the table** | ☠️ Destroyed — the table's physical order *is* the PK order | ✅ None — the table stays perfectly packed |
+| **Can you undo it later?** | ❌ Only by rebuilding the whole table | ✅ `ALTER TABLE t DROP INDEX idx_email` — instant |
+
+**The root cause of the asymmetry:** InnoDB's clustered index *forces the physical order of your rows* to follow the primary key. A secondary index has no such power — it's just a side tree. So a bad PK poisons **everything**; a bad secondary index poisons **only itself**.
+
+#### The Same Percentage, a Wildly Different Bill
+
+If your table is 100 GB and the email index is 3 GB, 50% fragmentation means:
+
+| | Before | After |
+|---|---|---|
+| Random PK | 100 GB | **~200 GB** |
+| Random email index | 3 GB | ~6 GB |
+
+#### Where the Worry *Does* Have Teeth
+
+`email` is almost always `UNIQUE` — and unique secondary indexes **cannot use the change buffer** (see the table above). Every insert must read the target page from disk *right now* to check for duplicates.
+
+```sql
+UNIQUE KEY uk_email (email)   -- ❌ no change buffer, forced random read per insert
+KEY idx_email (email)         -- ✅ change buffer defers the write
+```
+
+So `UNIQUE(email)` genuinely is one of the more expensive secondary indexes you can have. It's still worth it — you want the database enforcing that constraint, not application code — but that's the honest cost.
+
+#### The Contrast That Makes It Click
+
+```
+idx_created_at    →  values always increase  →  appends to the rightmost leaf
+                     ✅ cheapest possible secondary index — no splits at all
+
+idx_email         →  values are random       →  random leaf, splits
+                     ⚠️ normal cost, entirely acceptable
+
+PRIMARY KEY uuid  →  values are random       →  random leaf, splits,
+                     ☠️ AND drags the entire row with it,
+                        AND bloats every other index
+```
+
+#### ⭐ The Rule — Only the Primary Key Has to Be Sequential
+
+> **Never let a random value be your clustered index. Anywhere else, randomness is a bounded, local cost you pay in exchange for a lookup you actually need.**
+>
+> | | Random value OK? | Why |
+> |---|:---:|---|
+> | **PRIMARY KEY** (clustered) | ❌ **No** | It dictates the physical order of your rows, and its size is copied into every secondary index |
+> | **Secondary index / `UNIQUE` key** | ✅ **Yes** | It's just a side tree — the cost is local, bounded, and undoable with one `DROP INDEX` |
+
+Every real schema has random-valued secondary indexes — email, username, phone, external references, API keys. That is **normal and correct**. The problem was never "random values in indexes"; it was only ever "random values in the *clustered* index."
+
+#### It's "Random Bad", Not "UUID Bad"
+
+Not every UUID is random. The time-ordered ones sort like an `AUTO_INCREMENT` and are perfectly fine as a primary key:
+
+| ID type | Ordering | OK as PK? |
+|---|---|:---:|
+| **UUIDv4** | Fully random | ❌ No |
+| **UUIDv7** | Timestamp-prefixed | ✅ Yes |
+| **ULID** | Timestamp-prefixed | ✅ Yes |
+| **Snowflake** | Timestamp-prefixed | ✅ Yes |
+
+And if you're stuck with v4, you don't have to choose — keep a sequential PK for storage and expose the UUID through a secondary index, where randomness is affordable:
+
+```sql
+CREATE TABLE users (
+    id         BIGINT PRIMARY KEY AUTO_INCREMENT,   -- internal: sequential, clustered
+    public_id  BINARY(16) NOT NULL,                 -- external: random UUID
+    email      VARCHAR(255) NOT NULL,
+    UNIQUE KEY uk_public_id (public_id),            -- random → but only a secondary index
+    UNIQUE KEY uk_email (email)
+);
+```
+
+🔗 Full treatment in [UUID v7 / ULID — The Best of Both Worlds?](#uuid-v7--ulid--the-best-of-both-worlds) and [Best Practice: Use Both (Hybrid Approach)](#best-practice-use-both-hybrid-approach).
+
 ### DELETE — Nothing Is Removed Immediately
 
 ```
@@ -6712,6 +6812,7 @@ SELECT * FROM information_schema.INNODB_TRX ORDER BY trx_started LIMIT 5;
 | Which is cheapest: updating an indexed column, a non-indexed column, or the PK? | Non-indexed column (in place) < indexed column (delete+insert on that index) < PK (delete+insert on **every** index) |
 | Why is a UNIQUE secondary index slower to write than a normal one? | It can't use the change buffer — uniqueness must be checked immediately, forcing a disk read |
 | What causes a page split? | Inserting into a leaf page that is already full — typical with a random PK |
+| If a random UUID is bad as a PK, is a random `email` index bad too? | Same mechanism, far smaller blast radius. Only the **clustered index** must be sequential; random secondary indexes are normal and correct |
 | What is "History list length" telling you? | How far behind the purge thread is; a large value means a long transaction is blocking purge |
 
 ---

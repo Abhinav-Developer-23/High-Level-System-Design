@@ -1,0 +1,23 @@
+{
+  "mcpServers": {
+    "chrome-devtools": {
+      "command": "C:\\Users\\Abhinav\\AppData\\Local\\Programs\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\Abhinav\\AppData\\Local\\Programs\\nodejs\\node_modules\\chrome-devtools-mcp\\build\\src\\bin\\chrome-devtools-mcp.js"
+      ],
+      "env": {
+        "PATH": "C:\\Users\\Abhinav\\AppData\\Local\\Programs\\nodejs;C:\\Program Files\\Google\\Chrome\\Application;C:\\WINDOWS\\system32;C:\\WINDOWS"
+      }
+    },
+    "chrome-devtools-active": {
+      "command": "C:\\Users\\Abhinav\\AppData\\Local\\Programs\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\Abhinav\\AppData\\Local\\Programs\\nodejs\\node_modules\\chrome-devtools-mcp\\build\\src\\bin\\chrome-devtools-mcp.js",
+        "--autoConnect"
+      ],
+      "env": {
+        "PATH": "C:\\Users\\Abhinav\\AppData\\Local\\Programs\\nodejs;C:\\Program Files\\Google\\Chrome\\Application;C:\\WINDOWS\\system32;C:\\WINDOWS"
+      }
+    }
+  }
+}
