@@ -1,0 +1,321 @@
+<svg viewBox="0 0 1060 630" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <!-- Arrow marker -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#0ea5e9"/>
+    </marker>
+
+    <!-- Server Icon Definition -->
+    <g id="server-icon">
+      <rect width="18" height="38" rx="3" fill="#22c55e" stroke="#16a34a" stroke-width="1.2"/>
+      <!-- Server slots -->
+      <line x1="3" y1="8" x2="15" y2="8" stroke="#14532d" stroke-width="1.5"/>
+      <line x1="3" y1="15" x2="15" y2="15" stroke="#14532d" stroke-width="1.5"/>
+      <line x1="3" y1="22" x2="15" y2="22" stroke="#14532d" stroke-width="1.5"/>
+      <line x1="3" y1="29" x2="15" y2="29" stroke="#14532d" stroke-width="1.5"/>
+      <!-- LED dots -->
+      <circle cx="5" cy="34" r="1" fill="#bbf7d0"/>
+      <circle cx="9" cy="34" r="1" fill="#bbf7d0"/>
+    </g>
+
+    <!-- Queue Icon Definition -->
+    <g id="queue-icon">
+      <!-- Queue pipe body -->
+      <path d="M 0 4 L 70 4 A 12 12 0 0 1 82 16 L 82 24 A 12 12 0 0 1 70 36 L 0 36 Z" fill="#0369a1" fill-opacity="0.2" stroke="#0284c7" stroke-width="2"/>
+      <path d="M 70 4 A 12 12 0 0 1 82 16 L 82 24 A 12 12 0 0 1 70 36 A 12 12 0 0 1 58 24 L 58 16 A 12 12 0 0 1 70 4" fill="none" stroke="#0284c7" stroke-width="1.5"/>
+      <!-- 3 Mail envelopes inside -->
+      <g transform="translate(6, 8)">
+        <rect width="16" height="12" rx="1.5" fill="#f8fafc" stroke="#0284c7" stroke-width="1"/>
+        <polyline points="1,2 8,7 15,2" fill="none" stroke="#0284c7" stroke-width="1"/>
+      </g>
+      <g transform="translate(24, 8)">
+        <rect width="16" height="12" rx="1.5" fill="#f8fafc" stroke="#0284c7" stroke-width="1"/>
+        <polyline points="1,2 8,7 15,2" fill="none" stroke="#0284c7" stroke-width="1"/>
+      </g>
+      <g transform="translate(42, 8)">
+        <rect width="16" height="12" rx="1.5" fill="#f8fafc" stroke="#0284c7" stroke-width="1"/>
+        <polyline points="1,2 8,7 15,2" fill="none" stroke="#0284c7" stroke-width="1"/>
+      </g>
+    </g>
+
+    <!-- Smartphone Icon -->
+    <g id="phone-icon">
+      <rect x="0" y="0" width="22" height="38" rx="4" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="2" y="4" width="18" height="28" rx="1" fill="#38bdf8" fill-opacity="0.25"/>
+      <circle cx="11" cy="35" r="1.2" fill="#cbd5e1"/>
+    </g>
+
+    <!-- Laptop Icon -->
+    <g id="laptop-icon">
+      <rect x="4" y="4" width="28" height="18" rx="2" fill="#0f172a" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="6" y="6" width="24" height="14" rx="1" fill="#38bdf8" fill-opacity="0.25"/>
+      <path d="M 0 24 L 36 24 L 34 27 L 2 27 Z" fill="#94a3b8"/>
+    </g>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="1060" height="630" rx="16" fill="#0b1329" stroke="#1e293b" stroke-width="1.5"/>
+
+  <!-- ==================== 1. CALLING SERVICES (LEFT) ==================== -->
+  <g>
+    <!-- Service 1 -->
+    <rect x="40" y="145" width="85" height="42" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <text x="82" y="171" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="600">Service 1</text>
+
+    <!-- Service 2 -->
+    <rect x="40" y="215" width="85" height="42" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <text x="82" y="241" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="600">Service 2</text>
+
+    <!-- Dots -->
+    <circle cx="82" cy="285" r="2.5" fill="#94a3b8"/>
+    <circle cx="82" cy="300" r="2.5" fill="#94a3b8"/>
+    <circle cx="82" cy="315" r="2.5" fill="#94a3b8"/>
+
+    <!-- Service N -->
+    <rect x="40" y="340" width="85" height="42" rx="8" fill="#1e293b" stroke="#64748b" stroke-width="1.5"/>
+    <text x="82" y="366" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="600">Service N</text>
+  </g>
+
+  <!-- Arrows: Services → Notification Servers -->
+  <line x1="125" y1="166" x2="218" y2="280" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="125" y1="236" x2="218" y2="295" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="125" y1="361" x2="218" y2="330" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step (1) Circle -->
+  <circle cx="170" cy="215" r="11" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="170" y="219.5" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">1</text>
+
+  <!-- ==================== 2. NOTIFICATION SERVERS ==================== -->
+  <g>
+    <!-- Dashed Container -->
+    <rect x="220" y="265" width="105" height="90" rx="10" fill="#0f172a" fill-opacity="0.8" stroke="#38bdf8" stroke-width="1.8" stroke-dasharray="5,4"/>
+    
+    <!-- 3 Green Servers -->
+    <use href="#server-icon" x="238" y="280"/>
+    <use href="#server-icon" x="263" y="280"/>
+    <use href="#server-icon" x="288" y="280"/>
+    
+    <!-- Label -->
+    <text x="272" y="337" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">Notification</text>
+    <text x="272" y="349" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">servers</text>
+  </g>
+
+  <!-- Arrow: Notification Servers → Cache/DB -->
+  <line x1="272" y1="355" x2="272" y2="395" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step (2) Circle -->
+  <circle cx="288" cy="376" r="10" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="288" y="380" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">2</text>
+
+  <!-- ==================== CACHE & DATABASE ==================== -->
+  <g transform="translate(232, 400)">
+    <!-- Cache Stack (3 overlapping cards) -->
+    <rect x="16" y="0" width="60" height="26" rx="4" fill="#0369a1" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="46" y="16" text-anchor="middle" fill="#e0f2fe" font-size="9" font-weight="bold">CACHE</text>
+    <rect x="8" y="8" width="60" height="26" rx="4" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2"/>
+    <text x="38" y="24" text-anchor="middle" fill="#e0f2fe" font-size="9" font-weight="bold">CACHE</text>
+    <rect x="0" y="16" width="60" height="26" rx="4" fill="#0ea5e9" stroke="#e0f2fe" stroke-width="1.2"/>
+    <text x="30" y="32" text-anchor="middle" fill="#ffffff" font-size="9" font-weight="bold">CACHE</text>
+
+    <!-- Connector to DB -->
+    <line x1="40" y1="46" x2="40" y2="60" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+    <!-- DB Cylinders (Stacked) -->
+    <g transform="translate(10, 64)">
+      <!-- Cylinder 1 -->
+      <path d="M 0 10 L 0 28 A 18 7 0 0 0 36 28 L 36 10 Z" fill="#0369a1" stroke="#38bdf8" stroke-width="1.2"/>
+      <ellipse cx="18" cy="10" rx="18" ry="7" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2"/>
+      <!-- Cylinder 2 -->
+      <path d="M 18 10 L 18 28 A 18 7 0 0 0 54 28 L 54 10 Z" fill="#0284c7" stroke="#38bdf8" stroke-width="1.2"/>
+      <ellipse cx="36" cy="10" rx="18" ry="7" fill="#0ea5e9" stroke="#38bdf8" stroke-width="1.2"/>
+      <!-- Cylinder 3 -->
+      <path d="M 36 10 L 36 28 A 18 7 0 0 0 72 28 L 72 10 Z" fill="#0369a1" stroke="#38bdf8" stroke-width="1.2"/>
+      <ellipse cx="54" cy="10" rx="18" ry="7" fill="#38bdf8" stroke="#ffffff" stroke-width="1.2"/>
+      <!-- DB Text -->
+      <text x="36" y="44" text-anchor="middle" fill="#f8fafc" font-size="12" font-weight="bold">DB</text>
+    </g>
+  </g>
+
+  <!-- ==================== 3. BRANCH ARROWS (TO QUEUES) ==================== -->
+  <line x1="325" y1="285" x2="408" y2="135" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="325" y1="300" x2="408" y2="245" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="325" y1="315" x2="408" y2="355" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="325" y1="330" x2="408" y2="465" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step (3) Circle -->
+  <circle cx="365" cy="205" r="11" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="365" y="209.5" text-anchor="middle" fill="#ffffff" font-size="11" font-weight="bold">3</text>
+
+  <!-- ==================== 4. MESSAGE QUEUES ==================== -->
+  <!-- 1. iOS PN Queue -->
+  <g transform="translate(415, 115)">
+    <use href="#queue-icon"/>
+    <text x="41" y="52" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">iOS PN</text>
+  </g>
+
+  <!-- 2. Android PN Queue -->
+  <g transform="translate(415, 225)">
+    <use href="#queue-icon"/>
+    <text x="41" y="52" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Android PN</text>
+  </g>
+
+  <!-- 3. SMS Queue -->
+  <g transform="translate(415, 335)">
+    <use href="#queue-icon"/>
+    <text x="41" y="52" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">SMS queue</text>
+  </g>
+
+  <!-- 4. Email Queue -->
+  <g transform="translate(415, 445)">
+    <use href="#queue-icon"/>
+    <text x="41" y="52" text-anchor="middle" fill="#e2e8f0" font-size="11" font-weight="600">Email queue</text>
+  </g>
+
+  <!-- ==================== ARROWS: QUEUE → WORKERS ==================== -->
+  <line x1="500" y1="133" x2="542" y2="133" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="243" x2="542" y2="243" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="353" x2="542" y2="353" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="500" y1="463" x2="542" y2="463" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step (4) Circle -->
+  <circle cx="522" cy="120" r="10" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="522" y="124" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">4</text>
+
+  <!-- ==================== RETRY ON ERROR LOOP ==================== -->
+  <g>
+    <!-- Solid clean line matching Alex Xu style -->
+    <path d="M 588 98 L 588 52 L 456 52 L 456 110" fill="none" stroke="#38bdf8" stroke-width="1.5" marker-end="url(#arrow)"/>
+    <text x="522" y="44" text-anchor="middle" fill="#38bdf8" font-size="11" font-weight="600">retry on error</text>
+  </g>
+
+  <!-- ==================== 5. WORKERS ==================== -->
+  <!-- Worker 1 (iOS) -->
+  <g transform="translate(545, 100)">
+    <rect width="86" height="66" rx="8" fill="#0f172a" fill-opacity="0.8" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <use href="#server-icon" x="9" y="8"/>
+    <use href="#server-icon" x="34" y="8"/>
+    <use href="#server-icon" x="59" y="8"/>
+    <text x="43" y="58" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">Workers</text>
+  </g>
+
+  <!-- Worker 2 (Android) -->
+  <g transform="translate(545, 210)">
+    <rect width="86" height="66" rx="8" fill="#0f172a" fill-opacity="0.8" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <use href="#server-icon" x="9" y="8"/>
+    <use href="#server-icon" x="34" y="8"/>
+    <use href="#server-icon" x="59" y="8"/>
+    <text x="43" y="58" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">Workers</text>
+  </g>
+
+  <!-- Worker 3 (SMS) -->
+  <g transform="translate(545, 320)">
+    <rect width="86" height="66" rx="8" fill="#0f172a" fill-opacity="0.8" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <use href="#server-icon" x="9" y="8"/>
+    <use href="#server-icon" x="34" y="8"/>
+    <use href="#server-icon" x="59" y="8"/>
+    <text x="43" y="58" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">Workers</text>
+  </g>
+
+  <!-- Worker 4 (Email) -->
+  <g transform="translate(545, 430)">
+    <rect width="86" height="66" rx="8" fill="#0f172a" fill-opacity="0.8" stroke="#38bdf8" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <use href="#server-icon" x="9" y="8"/>
+    <use href="#server-icon" x="34" y="8"/>
+    <use href="#server-icon" x="59" y="8"/>
+    <text x="43" y="58" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="bold">Workers</text>
+  </g>
+
+  <!-- ==================== ARROWS: WORKERS → THIRD PARTY ==================== -->
+  <line x1="631" y1="133" x2="688" y2="133" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="631" y1="243" x2="688" y2="243" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="631" y1="353" x2="688" y2="353" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="631" y1="463" x2="688" y2="463" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step (5) Circle -->
+  <circle cx="658" cy="120" r="10" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="658" y="124" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">5</text>
+
+  <!-- ==================== 6. THIRD PARTY SERVICES CONTAINER ==================== -->
+  <g transform="translate(695, 65)">
+    <!-- Enclosing dashed box with extra bottom height -->
+    <rect width="118" height="475" rx="14" fill="#0f172a" fill-opacity="0.6" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,4"/>
+
+    <!-- 1. APNs -->
+    <g transform="translate(26, 38)">
+      <!-- Cloud icon -->
+      <path d="M 12 28 A 10 10 0 0 1 8 9 A 14 14 0 0 1 32 4 A 14 14 0 0 1 52 11 A 10 10 0 0 1 50 28 Z" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+      <text x="31" y="22" text-anchor="middle" fill="#f8fafc" font-size="11" font-weight="bold">APNs</text>
+    </g>
+
+    <!-- 2. FCM -->
+    <g transform="translate(26, 148)">
+      <!-- Folded page / Firebase icon -->
+      <path d="M 10 28 L 22 4 L 38 14 L 52 28 Z" fill="#f59e0b" fill-opacity="0.25" stroke="#f59e0b" stroke-width="1.5"/>
+      <path d="M 22 4 L 38 14 L 30 28 Z" fill="#fbbf24" fill-opacity="0.5"/>
+      <text x="31" y="44" text-anchor="middle" fill="#f8fafc" font-size="11" font-weight="bold">FCM</text>
+    </g>
+
+    <!-- 3. SMS Service -->
+    <g transform="translate(26, 258)">
+      <!-- Speech bubble / SMS icon -->
+      <rect x="10" y="4" width="42" height="28" rx="5" fill="#1e293b" stroke="#a855f7" stroke-width="1.5"/>
+      <circle cx="21" cy="18" r="2" fill="#c084fc"/>
+      <circle cx="31" cy="18" r="2" fill="#c084fc"/>
+      <circle cx="41" cy="18" r="2" fill="#c084fc"/>
+      <path d="M 20 32 L 20 37 L 27 32 Z" fill="#a855f7"/>
+      <text x="31" y="48" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="bold">SMS</text>
+      <text x="31" y="59" text-anchor="middle" fill="#cbd5e1" font-size="9">Service</text>
+    </g>
+
+    <!-- 4. Email Service -->
+    <g transform="translate(26, 368)">
+      <!-- Email envelope -->
+      <rect x="11" y="4" width="40" height="26" rx="4" fill="#1e293b" stroke="#34d399" stroke-width="1.5"/>
+      <polyline points="13,7 31,20 49,7" fill="none" stroke="#34d399" stroke-width="1.5"/>
+      <text x="31" y="44" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="bold">Email</text>
+      <text x="31" y="55" text-anchor="middle" fill="#cbd5e1" font-size="9">Service</text>
+    </g>
+
+    <!-- Container bottom label with clean spacing -->
+    <text x="59" y="452" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600">Third Party</text>
+    <text x="59" y="464" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600">Services</text>
+  </g>
+
+  <!-- ==================== ARROWS: THIRD PARTY → CLIENTS ==================== -->
+  <line x1="813" y1="133" x2="895" y2="133" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="813" y1="243" x2="895" y2="243" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="813" y1="353" x2="895" y2="353" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+  <line x1="813" y1="463" x2="895" y2="463" stroke="#0ea5e9" stroke-width="1.5" marker-end="url(#arrow)"/>
+
+  <!-- Step (6) Circle -->
+  <circle cx="850" cy="120" r="10" fill="#0284c7" stroke="#38bdf8" stroke-width="1.5"/>
+  <text x="850" y="124" text-anchor="middle" fill="#ffffff" font-size="10" font-weight="bold">6</text>
+
+  <!-- ==================== 7. END DEVICES / CHANNELS (RIGHT) ==================== -->
+  <!-- iOS Phone -->
+  <g transform="translate(910, 110)">
+    <use href="#phone-icon"/>
+    <text x="42" y="24" fill="#f8fafc" font-size="13" font-weight="600">iOS</text>
+  </g>
+
+  <!-- Android Phone -->
+  <g transform="translate(910, 220)">
+    <use href="#phone-icon"/>
+    <text x="42" y="24" fill="#f8fafc" font-size="13" font-weight="600">Android</text>
+  </g>
+
+  <!-- SMS Phone -->
+  <g transform="translate(910, 330)">
+    <use href="#phone-icon"/>
+    <text x="42" y="24" fill="#f8fafc" font-size="13" font-weight="600">SMS</text>
+  </g>
+
+  <!-- Email Laptop -->
+  <g transform="translate(900, 442)">
+    <use href="#laptop-icon"/>
+    <text x="48" y="22" fill="#f8fafc" font-size="13" font-weight="600">Email</text>
+  </g>
+
+  <!-- Caption -->
+  <text x="530" y="605" text-anchor="middle" fill="#94a3b8" font-size="13" font-weight="600" letter-spacing="0.5">Figure 10-10</text>
+</svg>

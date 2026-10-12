@@ -5137,7 +5137,245 @@ ne-height)">In this chapter, we will walk through the <strong class=3D"font=
 -bold">high-level design of a notification service.</strong></p><p class=3D=
 "mb-4 text-foreground/90 max-w-4xl space-y-2" style=3D"font-size:var(--read=
 ing-font-size);line-height:var(--reading-line-height)">Let=E2=80=99s begin =
-by clarifying the requirements.</p><div data-orientation=3D"horizontal" rol=
+by clarifying the requirements.</p>
+
+<div class=3D"my-8 rounded-2xl border border-sky-500/30 bg-sky-500/5 p-5 sm=
+:p-6 shadow-sm">
+  <div class=3D"flex items-center gap-3 mb-4">
+    <span class=3D"inline-flex h-9 w-9 items-center justify-center rounded-=
+xl bg-sky-500/15 text-sky-600 dark:text-sky-400">
+      <svg xmlns=3D"http://www.w3.org/2000/svg" width=3D"22" height=3D"22" =
+viewBox=3D"0 0 24 24" fill=3D"none" stroke=3D"currentColor" stroke-width=3D=
+"2" stroke-linecap=3D"round" stroke-linejoin=3D"round" class=3D"lucide luci=
+de-help-circle"><circle cx=3D"12" cy=3D"12" r=3D"10"></circle><path d=3D"M9=
+.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path><path d=3D"M12 17h.01"></path></=
+svg>
+    </span>
+    <div>
+      <h2 class=3D"text-xl font-bold tracking-tight text-foreground">Questi=
+ons to Ask the Interviewer</h2>
+      <p class=3D"text-xs text-muted-foreground mt-0.5">Clarify system scop=
+e, external dependencies, and SLA boundaries before diving into architectur=
+e</p>
+    </div>
+  </div>
+  <div class=3D"space-y-4 mt-4">
+    <!-- Question 1 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">1</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Which channe=
+ls do we need to support? Do we need SMS, Push, In-App, and Email?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Different chan=
+nels use completely different 3rd-party gateways (APNs for iOS, FCM for And=
+roid, Twilio/Sinch for SMS, SendGrid/SES for Email, WebSockets for in-app).=
+ Each has different cost models, payload limits, and rate limits.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 2 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">2</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Do we need t=
+o segregate notifications based on type? (Transactional, Promotional, Socia=
+l)</p>
+          <div class=3D"text-muted-foreground leading-relaxed text-sm space=
+-y-1.5 mt-1">
+            <p><strong class=3D"text-foreground/90 font-medium">Why ask:</s=
+trong> Each type has completely different latency SLAs, delivery priorities=
+, and processing pipelines:</p>
+            <ul class=3D"list-disc ml-5 space-y-1 text-foreground/80 mt-1">
+              <li><strong class=3D"text-foreground">Transactional</strong> =
+(OTPs, order confirmation): High priority, strict SLA (&lt;2=E2=80=935s), 0=
+% loss, zero batching.</li>
+              <li><strong class=3D"text-foreground">Promotional</strong> (F=
+lash sale, marketing): High volume, delay-tolerant, bulk fan-out, requires =
+rate-limiting/unsubscribe support.</li>
+              <li><strong class=3D"text-foreground">Social / Interactive</s=
+trong> (Likes, comments, mentions): Needs aggregation/digesting (e.g., &ldq=
+uo;Alice and 5 others liked your post&rdquo;) so you don't spam the user.</=
+li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Question 3 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">3</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">What is the =
+expected scale: Daily Active Users (DAU) and total notifications sent per d=
+ay?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Informs QPS, q=
+ueue partitioning, and storage requirements. For example, 100M notification=
+s/day translates to ~1,160 average QPS, but peak traffic during campaigns o=
+r flash sales can surge to 10,000=E2=80=9350,000+ QPS, dictating queue shar=
+ding and worker auto-scaling.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 4 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">4</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Are there su=
+dden spike events or broadcast notifications to millions of users at once?<=
+/p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Broadcasting a=
+lerts (e.g., breaking news or flash sales to 50M+ users) creates extreme bu=
+rst traffic. This requires an asynchronous fan-out pipeline with backpressu=
+re, rate-limiting token buckets, and staggered batching so the service does=
+ not exhaust memory, crash downstream message queues, or get rate-limited b=
+y vendor gateways (APNs/FCM/Twilio).</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 5 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">5</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Can users co=
+nfigure preferences per channel and category, or opt-out entirely for parti=
+cular notification type?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Requires a low=
+-latency User Preference Service (cached in Redis) checked before queueing =
+or dispatching to avoid illegal spam and save vendor costs.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 6 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">6</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Do we need t=
+o support 'Quiet Hours' / Do-Not-Disturb (DND) based on the user's preferen=
+ce?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Non-urgent (pr=
+omotional/social) messages generated during a user's quiet window (e.g., 10=
+ PM &ndash; 8 AM in their local timezone) cannot be delivered immediately. =
+This introduces the need for a <strong>Delayed Queue / Distributed Schedule=
+r</strong> (e.g., Redis Sorted Sets or scheduled message queues) to hold no=
+tifications until the window passes, while strictly allowing critical trans=
+actional notifications (OTPs) to bypass DND.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 7 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">7</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Should the s=
+ystem enforce Rate Limiting / Frequency Capping per user?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Prevents notif=
+ication spam and fatigue (e.g., maximum 3 promotional pushes per day per us=
+er), even when multiple internal teams trigger marketing campaigns simultan=
+eously. Requires a centralized <strong>Rate Limiter / Frequency Capper</str=
+ong> backed by Redis sliding window counters or token buckets before messag=
+es reach dispatch queues.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 8 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">8</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">What deliver=
+y guarantee is required &mdash; At-least-once or Exactly-once?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Over distribut=
+ed networks, true end-to-end exactly-once delivery is impossible. Instead, =
+we achieve <strong>at-least-once delivery with idempotency deduplication</s=
+trong> (using unique <code class=3D"text-xs bg-muted px-1.5 py-0.5 rounded =
+text-foreground font-mono">idempotency_key</code> / <code class=3D"text-xs =
+bg-muted px-1.5 py-0.5 rounded text-foreground font-mono">dedup_id</code> c=
+ached in Redis/DB) to prevent sending duplicate OTPs or repeat charge recei=
+pts.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 9 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">9</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">What should =
+happen if a third-party provider (e.g., Twilio or APNs) experiences downtim=
+e or rate limits?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> 3rd-party vend=
+ors inevitably face outages or throttle incoming requests. We need <strong>=
+multi-provider fallback routing</strong> (e.g., Twilio failing over to Sinc=
+h or AWS SNS), exponential backoff with jitter, circuit breakers, and <stro=
+ng>Dead-Letter Queues (DLQ)</strong> for undeliverable messages to ensure z=
+ero message loss.</p>
+        </div>
+      </div>
+    </div>
+    <!-- Question 10 -->
+    <div class=3D"rounded-xl border border-border/70 bg-card/70 p-4 transit=
+ion-colors hover:border-sky-500/40">
+      <div class=3D"flex items-start gap-3">
+        <span class=3D"inline-flex h-6 w-6 shrink-0 items-center justify-ce=
+nter rounded-full bg-sky-500/15 text-xs font-bold text-sky-600 dark:text-sk=
+y-400">10</span>
+        <div class=3D"space-y-1.5">
+          <p class=3D"font-semibold text-foreground text-base">Do we need t=
+o track delivery status (Sent, Delivered, Opened/Clicked, Bounced)?</p>
+          <p class=3D"text-muted-foreground leading-relaxed text-sm"><stron=
+g class=3D"text-foreground/90 font-medium">Why ask:</strong> Requires vendo=
+r webhook endpoints (Twilio/SendGrid/APNs/FCM) feeding into an async ingest=
+ion pipeline (Kafka &rarr; ClickHouse / Elasticsearch) for delivery observa=
+bility, analytical funnel tracking, and vendor billing reconciliation.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div data-orientation=3D"horizontal" rol=
 e=3D"none" class=3D"shrink-0 bg-border h-[1px] w-full my-8"></div><div clas=
 s=3D"relative group"><button class=3D"absolute -left-7 top-1/2 -translate-y=
 -1/2 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foregr=
@@ -5350,406 +5588,464 @@ h><path d=3D"m21 3-7 7"></path><path d=3D"m3 21 7-7"></path><path d=3D"M9 2=
 1H3v-6"></path></svg></button></div></div><div class=3D"bg-background px-4 =
 py-6 sm:px-6 sm:py-8 overflow-x-auto"><div class=3D"inline-block min-w-full=
  relative"><div><div class=3D"mermaid-diagram-container flex justify-center=
- [&amp;&gt;svg]:max-w-full"><svg id=3D"mermaid-qa8adi7irds-1790790757604" w=
-idth=3D"100%" xmlns=3D"http://www.w3.org/2000/svg" class=3D"flowchart" styl=
-e=3D"max-width: 1127.3125px;" viewBox=3D"0 10 1127.3125 855.4337768554688" =
-role=3D"graphics-document document" aria-roledescription=3D"flowchart-v2"><=
-style>#mermaid-qa8adi7irds-1790790757604{font-family:inherit;font-size:16px=
-;fill:#fafafa;}@keyframes edge-animation-frame{from{stroke-dashoffset:0;}}@=
-keyframes dash{to{stroke-dashoffset:0;}}#mermaid-qa8adi7irds-1790790757604 =
-.edge-animation-slow{stroke-dasharray:9,5!important;stroke-dashoffset:900;a=
-nimation:dash 50s linear infinite;stroke-linecap:round;}#mermaid-qa8adi7ird=
-s-1790790757604 .edge-animation-fast{stroke-dasharray:9,5!important;stroke-=
-dashoffset:900;animation:dash 20s linear infinite;stroke-linecap:round;}#me=
-rmaid-qa8adi7irds-1790790757604 .error-icon{fill:#000000;}#mermaid-qa8adi7i=
-rds-1790790757604 .error-text{fill:#fafafa;stroke:#fafafa;}#mermaid-qa8adi7=
-irds-1790790757604 .edge-thickness-normal{stroke-width:1px;}#mermaid-qa8adi=
-7irds-1790790757604 .edge-thickness-thick{stroke-width:3.5px;}#mermaid-qa8a=
-di7irds-1790790757604 .edge-pattern-solid{stroke-dasharray:0;}#mermaid-qa8a=
-di7irds-1790790757604 .edge-thickness-invisible{stroke-width:0;fill:none;}#=
-mermaid-qa8adi7irds-1790790757604 .edge-pattern-dashed{stroke-dasharray:3;}=
-#mermaid-qa8adi7irds-1790790757604 .edge-pattern-dotted{stroke-dasharray:2;=
-}#mermaid-qa8adi7irds-1790790757604 .marker{fill:#22c55e;stroke:#22c55e;}#m=
-ermaid-qa8adi7irds-1790790757604 .marker.cross{stroke:#22c55e;}#mermaid-qa8=
-adi7irds-1790790757604 svg{font-family:inherit;font-size:16px;}#mermaid-qa8=
-adi7irds-1790790757604 p{margin:0;}#mermaid-qa8adi7irds-1790790757604 .labe=
-l{font-family:inherit;color:#f0fdf4;}#mermaid-qa8adi7irds-1790790757604 .cl=
-uster-label text{fill:#fafafa;}#mermaid-qa8adi7irds-1790790757604 .cluster-=
-label span{color:#fafafa;}#mermaid-qa8adi7irds-1790790757604 .cluster-label=
- span p{background-color:transparent;}#mermaid-qa8adi7irds-1790790757604 .l=
-abel text,#mermaid-qa8adi7irds-1790790757604 span{fill:#f0fdf4;color:#f0fdf=
-4;}#mermaid-qa8adi7irds-1790790757604 .node rect,#mermaid-qa8adi7irds-17907=
-90757604 .node circle,#mermaid-qa8adi7irds-1790790757604 .node ellipse,#mer=
-maid-qa8adi7irds-1790790757604 .node polygon,#mermaid-qa8adi7irds-179079075=
-7604 .node path{fill:#166534;stroke:#22c55e;stroke-width:1px;}#mermaid-qa8a=
-di7irds-1790790757604 .rough-node .label text,#mermaid-qa8adi7irds-17907907=
-57604 .node .label text,#mermaid-qa8adi7irds-1790790757604 .image-shape .la=
-bel,#mermaid-qa8adi7irds-1790790757604 .icon-shape .label{text-anchor:middl=
-e;}#mermaid-qa8adi7irds-1790790757604 .node .katex path{fill:#000;stroke:#0=
-00;stroke-width:1px;}#mermaid-qa8adi7irds-1790790757604 .rough-node .label,=
-#mermaid-qa8adi7irds-1790790757604 .node .label,#mermaid-qa8adi7irds-179079=
-0757604 .image-shape .label,#mermaid-qa8adi7irds-1790790757604 .icon-shape =
-.label{text-align:center;}#mermaid-qa8adi7irds-1790790757604 .node.clickabl=
-e{cursor:pointer;}#mermaid-qa8adi7irds-1790790757604 .root .anchor path{fil=
-l:#22c55e!important;stroke-width:0;stroke:#22c55e;}#mermaid-qa8adi7irds-179=
-0790757604 .arrowheadPath{fill:#0b0b0b;}#mermaid-qa8adi7irds-1790790757604 =
-.edgePath .path{stroke:#22c55e;stroke-width:2.0px;}#mermaid-qa8adi7irds-179=
-0790757604 .flowchart-link{stroke:#22c55e;fill:none;}#mermaid-qa8adi7irds-1=
-790790757604 .edgeLabel{background-color:#0a0a0a;text-align:center;}#mermai=
-d-qa8adi7irds-1790790757604 .edgeLabel p{background-color:#0a0a0a;}#mermaid=
--qa8adi7irds-1790790757604 .edgeLabel rect{opacity:0.5;background-color:#0a=
-0a0a;fill:#0a0a0a;}#mermaid-qa8adi7irds-1790790757604 .labelBkg{background-=
-color:rgba(10, 10, 10, 0.5);}#mermaid-qa8adi7irds-1790790757604 .cluster re=
-ct{fill:#1a1a1a;stroke:#000000;stroke-width:1px;}#mermaid-qa8adi7irds-17907=
-90757604 .cluster text{fill:#fafafa;}#mermaid-qa8adi7irds-1790790757604 .cl=
-uster span{color:#fafafa;}#mermaid-qa8adi7irds-1790790757604 div.mermaidToo=
-ltip{position:absolute;text-align:center;max-width:200px;padding:2px;font-f=
-amily:inherit;font-size:12px;background:#000000;border:1px solid #262626;bo=
-rder-radius:2px;pointer-events:none;z-index:100;}#mermaid-qa8adi7irds-17907=
-90757604 .flowchartTitleText{text-anchor:middle;font-size:18px;fill:#fafafa=
-;}#mermaid-qa8adi7irds-1790790757604 rect.text{fill:none;stroke-width:0;}#m=
-ermaid-qa8adi7irds-1790790757604 .icon-shape,#mermaid-qa8adi7irds-179079075=
-7604 .image-shape{background-color:#0a0a0a;text-align:center;}#mermaid-qa8a=
-di7irds-1790790757604 .icon-shape p,#mermaid-qa8adi7irds-1790790757604 .ima=
-ge-shape p{background-color:#0a0a0a;padding:2px;}#mermaid-qa8adi7irds-17907=
-90757604 .icon-shape rect,#mermaid-qa8adi7irds-1790790757604 .image-shape r=
-ect{opacity:0.5;background-color:#0a0a0a;fill:#0a0a0a;}#mermaid-qa8adi7irds=
--1790790757604 .label-icon{display:inline-block;height:1em;overflow:visible=
-;vertical-align:-0.125em;}#mermaid-qa8adi7irds-1790790757604 .node .label-i=
-con path{fill:currentColor;stroke:revert;stroke-width:revert;}#mermaid-qa8a=
-di7irds-1790790757604 :root{--mermaid-font-family:inherit;}#mermaid-qa8adi7=
-irds-1790790757604 .primary&gt;*{fill:#00ceff!important;stroke:#000!importa=
-nt;color:#000!important;}#mermaid-qa8adi7irds-1790790757604 .primary span{f=
-ill:#00ceff!important;stroke:#000!important;color:#000!important;}#mermaid-=
-qa8adi7irds-1790790757604 .primary tspan{fill:#000!important;}#mermaid-qa8a=
-di7irds-1790790757604 .orange&gt;*{fill:#ffa94d!important;stroke:#000!impor=
-tant;color:#000!important;}#mermaid-qa8adi7irds-1790790757604 .orange span{=
-fill:#ffa94d!important;stroke:#000!important;color:#000!important;}#mermaid=
--qa8adi7irds-1790790757604 .orange tspan{fill:#000!important;}#mermaid-qa8a=
-di7irds-1790790757604 .green&gt;*{fill:#69db7c!important;stroke:#000!import=
-ant;color:#000!important;}#mermaid-qa8adi7irds-1790790757604 .green span{fi=
-ll:#69db7c!important;stroke:#000!important;color:#000!important;}#mermaid-q=
-a8adi7irds-1790790757604 .green tspan{fill:#000!important;}#mermaid-qa8adi7=
-irds-1790790757604 .rose&gt;*{fill:#f783ac!important;stroke:#000!important;=
-color:#000!important;}#mermaid-qa8adi7irds-1790790757604 .rose span{fill:#f=
-783ac!important;stroke:#000!important;color:#000!important;}#mermaid-qa8adi=
-7irds-1790790757604 .rose tspan{fill:#000!important;}</style><g><marker id=
-=3D"mermaid-qa8adi7irds-1790790757604_flowchart-v2-pointEnd" class=3D"marke=
-r flowchart-v2" viewBox=3D"0 0 10 10" refX=3D"5" refY=3D"5" markerUnits=3D"=
-userSpaceOnUse" markerWidth=3D"8" markerHeight=3D"8" orient=3D"auto"><path =
-d=3D"M 0 0 L 10 5 L 0 10 z" class=3D"arrowMarkerPath" style=3D"stroke-width=
-: 1; stroke-dasharray: 1, 0;"></path></marker><marker id=3D"mermaid-qa8adi7=
-irds-1790790757604_flowchart-v2-pointStart" class=3D"marker flowchart-v2" v=
-iewBox=3D"0 0 10 10" refX=3D"4.5" refY=3D"5" markerUnits=3D"userSpaceOnUse"=
- markerWidth=3D"8" markerHeight=3D"8" orient=3D"auto"><path d=3D"M 0 5 L 10=
- 10 L 10 0 z" class=3D"arrowMarkerPath" style=3D"stroke-width: 1; stroke-da=
-sharray: 1, 0;"></path></marker><marker id=3D"mermaid-qa8adi7irds-179079075=
-7604_flowchart-v2-circleEnd" class=3D"marker flowchart-v2" viewBox=3D"0 0 1=
-0 10" refX=3D"11" refY=3D"5" markerUnits=3D"userSpaceOnUse" markerWidth=3D"=
-11" markerHeight=3D"11" orient=3D"auto"><circle cx=3D"5" cy=3D"5" r=3D"5" c=
-lass=3D"arrowMarkerPath" style=3D"stroke-width: 1; stroke-dasharray: 1, 0;"=
-></circle></marker><marker id=3D"mermaid-qa8adi7irds-1790790757604_flowchar=
-t-v2-circleStart" class=3D"marker flowchart-v2" viewBox=3D"0 0 10 10" refX=
-=3D"-1" refY=3D"5" markerUnits=3D"userSpaceOnUse" markerWidth=3D"11" marker=
-Height=3D"11" orient=3D"auto"><circle cx=3D"5" cy=3D"5" r=3D"5" class=3D"ar=
-rowMarkerPath" style=3D"stroke-width: 1; stroke-dasharray: 1, 0;"></circle>=
-</marker><marker id=3D"mermaid-qa8adi7irds-1790790757604_flowchart-v2-cross=
-End" class=3D"marker cross flowchart-v2" viewBox=3D"0 0 11 11" refX=3D"12" =
-refY=3D"5.2" markerUnits=3D"userSpaceOnUse" markerWidth=3D"11" markerHeight=
-=3D"11" orient=3D"auto"><path d=3D"M 1,1 l 9,9 M 10,1 l -9,9" class=3D"arro=
-wMarkerPath" style=3D"stroke-width: 2; stroke-dasharray: 1, 0;"></path></ma=
-rker><marker id=3D"mermaid-qa8adi7irds-1790790757604_flowchart-v2-crossStar=
-t" class=3D"marker cross flowchart-v2" viewBox=3D"0 0 11 11" refX=3D"-1" re=
-fY=3D"5.2" markerUnits=3D"userSpaceOnUse" markerWidth=3D"11" markerHeight=
-=3D"11" orient=3D"auto"><path d=3D"M 1,1 l 9,9 M 10,1 l -9,9" class=3D"arro=
-wMarkerPath" style=3D"stroke-width: 2; stroke-dasharray: 1, 0;"></path></ma=
-rker><g class=3D"root"><g class=3D"clusters"></g><g class=3D"edgePaths"><pa=
-th d=3D"M157.844,143L162.281,143C166.719,143,175.594,143,188.141,146.879C20=
-0.689,150.758,216.909,158.516,225.019,162.395L233.129,166.274" id=3D"L_S1_L=
-B_0" class=3D"edge-thickness-normal edge-pattern-solid edge-thickness-norma=
-l edge-pattern-solid flowchart-link" style=3D";" data-edge=3D"true" data-et=
-=3D"edge" data-id=3D"L_S1_LB_0" data-points=3D"W3sieCI6MTU3Ljg0Mzc1LCJ5Ijox=
-NDN9LHsieCI6MTg0LjQ2ODc1LCJ5IjoxNDN9LHsieCI6MjM2LjczNzExNjIyODA3MDIsInkiOjE=
-2OH1d" marker-end=3D"url(#mermaid-qa8adi7irds-1790790757604_flowchart-v2-po=
-intEnd)"></path><path d=3D"M159.469,257L163.635,257C167.802,257,176.135,257=
-,188.412,253.121C200.689,249.242,216.909,241.484,225.019,237.605L233.129,23=
-3.726" id=3D"L_S2_LB_0" class=3D"edge-thickness-normal edge-pattern-solid e=
-dge-thickness-normal edge-pattern-solid flowchart-link" style=3D";" data-ed=
-ge=3D"true" data-et=3D"edge" data-id=3D"L_S2_LB_0" data-points=3D"W3sieCI6M=
-TU5LjQ2ODc1LCJ5IjoyNTd9LHsieCI6MTg0LjQ2ODc1LCJ5IjoyNTd9LHsieCI6MjM2LjczNzEx=
-NjIyODA3MDIsInkiOjIzMn1d" marker-end=3D"url(#mermaid-qa8adi7irds-1790790757=
-604_flowchart-v2-pointEnd)"></path><path d=3D"M397.813,200L401.979,200C406.=
-146,200,414.479,200,422.146,200C429.813,200,436.813,200,440.313,200L443.813=
-,200" id=3D"L_LB_NS_0" class=3D"edge-thickness-normal edge-pattern-solid ed=
-ge-thickness-normal edge-pattern-solid flowchart-link" style=3D";" data-edg=
-e=3D"true" data-et=3D"edge" data-id=3D"L_LB_NS_0" data-points=3D"W3sieCI6Mz=
-k3LjgxMjUsInkiOjIwMH0seyJ4Ijo0MjIuODEyNSwieSI6MjAwfSx7IngiOjQ0Ny44MTI1LCJ5I=
-joyMDB9XQ=3D=3D" marker-end=3D"url(#mermaid-qa8adi7irds-1790790757604_flowc=
-hart-v2-pointEnd)"></path><path d=3D"M568.379,152.856L580.285,137.713C592.1=
-9,122.57,616.001,92.285,631.407,77.143C646.813,62,653.813,62,657.313,62L660=
-.813,62" id=3D"L_NS_UPS_0" class=3D"edge-thickness-normal edge-pattern-soli=
-d edge-thickness-normal edge-pattern-solid flowchart-link" style=3D";" data=
--edge=3D"true" data-et=3D"edge" data-id=3D"L_NS_UPS_0" data-points=3D"W3sie=
-CI6NTY1LjkwNjcwMjg5ODU1MDcsInkiOjE1Nn0seyJ4Ijo2MzkuODEyNSwieSI6NjJ9LHsieCI6=
-NjY0LjgxMjUsInkiOjYyfV0=3D" marker-start=3D"url(#mermaid-qa8adi7irds-179079=
-0757604_flowchart-v2-pointStart)" marker-end=3D"url(#mermaid-qa8adi7irds-17=
-90790757604_flowchart-v2-pointEnd)"></path><path d=3D"M868.109,62L872.276,6=
-2C876.443,62,884.776,62,905.708,62C926.641,62,960.172,62,976.938,62L993.703=
-,62" id=3D"L_UPS_UDB_0" class=3D"edge-thickness-normal edge-pattern-solid e=
-dge-thickness-normal edge-pattern-solid flowchart-link" style=3D";" data-ed=
-ge=3D"true" data-et=3D"edge" data-id=3D"L_UPS_UDB_0" data-points=3D"W3sieCI=
-6ODY4LjEwOTM3NSwieSI6NjJ9LHsieCI6ODkzLjEwOTM3NSwieSI6NjJ9LHsieCI6OTk3LjcwMz=
-EyNSwieSI6NjJ9XQ=3D=3D" marker-end=3D"url(#mermaid-qa8adi7irds-179079075760=
-4_flowchart-v2-pointEnd)"></path><path d=3D"M618.813,200L622.313,200C625.81=
-3,200,632.813,200,643.697,200C654.581,200,669.349,200,676.733,200L684.117,2=
-00" id=3D"L_NS_SCH_0" class=3D"edge-thickness-normal edge-pattern-solid edg=
-e-thickness-normal edge-pattern-solid flowchart-link" style=3D";" data-edge=
-=3D"true" data-et=3D"edge" data-id=3D"L_NS_SCH_0" data-points=3D"W3sieCI6Nj=
-E0LjgxMjUsInkiOjIwMH0seyJ4Ijo2MzkuODEyNSwieSI6MjAwfSx7IngiOjY4OC4xMTcxODc1L=
-CJ5IjoyMDB9XQ=3D=3D" marker-start=3D"url(#mermaid-qa8adi7irds-1790790757604=
-_flowchart-v2-pointStart)" marker-end=3D"url(#mermaid-qa8adi7irds-179079075=
-7604_flowchart-v2-pointEnd)"></path><path d=3D"M844.805,200L852.855,200C860=
-.906,200,877.008,200,901.824,200C926.641,200,960.172,200,976.938,200L993.70=
-3,200" id=3D"L_SCH_SDB_0" class=3D"edge-thickness-normal edge-pattern-solid=
- edge-thickness-normal edge-pattern-solid flowchart-link" style=3D";" data-=
-edge=3D"true" data-et=3D"edge" data-id=3D"L_SCH_SDB_0" data-points=3D"W3sie=
-CI6ODQ0LjgwNDY4NzUsInkiOjIwMH0seyJ4Ijo4OTMuMTA5Mzc1LCJ5IjoyMDB9LHsieCI6OTk3=
-LjcwMzEyNSwieSI6MjAwfV0=3D" marker-end=3D"url(#mermaid-qa8adi7irds-17907907=
-57604_flowchart-v2-pointEnd)"></path><path d=3D"M544.235,244L560.165,298.23=
-9C576.094,352.478,607.953,460.956,634.158,515.273C660.362,569.59,680.912,56=
-9.747,691.186,569.825L701.461,569.903" id=3D"L_NS_NQ_0" class=3D"edge-thick=
-ness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid flo=
-wchart-link" style=3D";" data-edge=3D"true" data-et=3D"edge" data-id=3D"L_N=
-S_NQ_0" data-points=3D"W3sieCI6NTQ0LjIzNDk3ODcyOTEzMzgsInkiOjI0NH0seyJ4Ijo2=
-MzkuODEyNSwieSI6NTY5LjQzMzc2NzMxODcyNTZ9LHsieCI6NzA1LjQ2MDkzNzUsInkiOjU2OS4=
-5MzM3NjczMTg3MjU2fV0=3D" marker-end=3D"url(#mermaid-qa8adi7irds-17907907576=
-04_flowchart-v2-pointEnd)"></path><path d=3D"M827.961,569.434L838.819,569.4=
-34C849.677,569.434,871.393,569.434,885.751,569.434C900.109,569.434,907.109,=
-569.434,910.609,569.434L914.109,569.434" id=3D"L_NQ_CP_0" class=3D"edge-thi=
-ckness-normal edge-pattern-solid edge-thickness-normal edge-pattern-solid f=
-lowchart-link" style=3D";" data-edge=3D"true" data-et=3D"edge" data-id=3D"L=
-_NQ_CP_0" data-points=3D"W3sieCI6ODI3Ljk2MDkzNzUsInkiOjU2OS40MzM3NjczMTg3Mj=
-U2fSx7IngiOjg5My4xMDkzNzUsInkiOjU2OS40MzM3NjczMTg3MjU2fSx7IngiOjkxOC4xMDkzN=
-zUsInkiOjU2OS40MzM3NjczMTg3MjU2fV0=3D" marker-end=3D"url(#mermaid-qa8adi7ir=
-ds-1790790757604_flowchart-v2-pointEnd)"></path></g><g class=3D"edgeLabels"=
-><g class=3D"edgeLabel"><g class=3D"label" data-id=3D"L_S1_LB_0" transform=
-=3D"translate(0, 0)"><foreignObject width=3D"0" height=3D"0"><div xmlns=3D"=
-http://www.w3.org/1999/xhtml" class=3D"labelBkg" style=3D"display: table-ce=
-ll; white-space: nowrap; line-height: 1.5; max-width: 200px; text-align: ce=
-nter;"><span class=3D"edgeLabel"></span></div></foreignObject></g></g><g cl=
-ass=3D"edgeLabel"><g class=3D"label" data-id=3D"L_S2_LB_0" transform=3D"tra=
-nslate(0, 0)"><foreignObject width=3D"0" height=3D"0"><div xmlns=3D"http://=
-www.w3.org/1999/xhtml" class=3D"labelBkg" style=3D"display: table-cell; whi=
-te-space: nowrap; line-height: 1.5; max-width: 200px; text-align: center;">=
-<span class=3D"edgeLabel"></span></div></foreignObject></g></g><g class=3D"=
-edgeLabel"><g class=3D"label" data-id=3D"L_LB_NS_0" transform=3D"translate(=
-0, 0)"><foreignObject width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.=
-org/1999/xhtml" class=3D"labelBkg" style=3D"display: table-cell; white-spac=
-e: nowrap; line-height: 1.5; max-width: 200px; text-align: center;"><span c=
-lass=3D"edgeLabel"></span></div></foreignObject></g></g><g class=3D"edgeLab=
-el"><g class=3D"label" data-id=3D"L_NS_UPS_0" transform=3D"translate(0, 0)"=
-><foreignObject width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/19=
-99/xhtml" class=3D"labelBkg" style=3D"display: table-cell; white-space: now=
-rap; line-height: 1.5; max-width: 200px; text-align: center;"><span class=
-=3D"edgeLabel"></span></div></foreignObject></g></g><g class=3D"edgeLabel">=
-<g class=3D"label" data-id=3D"L_UPS_UDB_0" transform=3D"translate(0, 0)"><f=
-oreignObject width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999/=
-xhtml" class=3D"labelBkg" style=3D"display: table-cell; white-space: nowrap=
-; line-height: 1.5; max-width: 200px; text-align: center;"><span class=3D"e=
-dgeLabel"></span></div></foreignObject></g></g><g class=3D"edgeLabel"><g cl=
-ass=3D"label" data-id=3D"L_NS_SCH_0" transform=3D"translate(0, 0)"><foreign=
-Object width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999/xhtml"=
- class=3D"labelBkg" style=3D"display: table-cell; white-space: nowrap; line=
--height: 1.5; max-width: 200px; text-align: center;"><span class=3D"edgeLab=
-el"></span></div></foreignObject></g></g><g class=3D"edgeLabel"><g class=3D=
-"label" data-id=3D"L_SCH_SDB_0" transform=3D"translate(0, 0)"><foreignObjec=
-t width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999/xhtml" clas=
-s=3D"labelBkg" style=3D"display: table-cell; white-space: nowrap; line-heig=
-ht: 1.5; max-width: 200px; text-align: center;"><span class=3D"edgeLabel"><=
-/span></div></foreignObject></g></g><g class=3D"edgeLabel"><g class=3D"labe=
-l" data-id=3D"L_NS_NQ_0" transform=3D"translate(0, 0)"><foreignObject width=
-=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999/xhtml" class=3D"la=
-belBkg" style=3D"display: table-cell; white-space: nowrap; line-height: 1.5=
-; max-width: 200px; text-align: center;"><span class=3D"edgeLabel"></span><=
-/div></foreignObject></g></g><g class=3D"edgeLabel"><g class=3D"label" data=
--id=3D"L_NQ_CP_0" transform=3D"translate(0, 0)"><foreignObject width=3D"0" =
-height=3D"0"><div xmlns=3D"http://www.w3.org/1999/xhtml" class=3D"labelBkg"=
- style=3D"display: table-cell; white-space: nowrap; line-height: 1.5; max-w=
-idth: 200px; text-align: center;"><span class=3D"edgeLabel"></span></div></=
-foreignObject></g></g></g><g class=3D"nodes"><g class=3D"root" transform=3D=
-"translate(910.109375, 283.4337673187256)"><g class=3D"clusters"><g class=
-=3D"cluster" id=3D"CP" data-look=3D"classic"><rect style=3D"" x=3D"8" y=3D"=
--2" width=3D"201.203125" height=3D"576"></rect><g class=3D"cluster-label" t=
-ransform=3D"translate(32.734375, 8)"><foreignObject width=3D"151.734375" he=
-ight=3D"24"><div xmlns=3D"http://www.w3.org/1999/xhtml" style=3D"display: t=
-able-cell; white-space: nowrap; line-height: 1.5; max-width: 200px; text-al=
-ign: center;"><span class=3D"nodeLabel"><p>Channel Processors</p></span></d=
-iv></foreignObject></g></g></g><g class=3D"edgePaths"><path d=3D"M108.602,1=
-19.5L108.602,125.75C108.602,132,108.602,144.5,108.602,157C108.602,169.5,108=
-.602,182,108.602,188.25L108.602,194.5" id=3D"L_EM_SMS_0" class=3D"edge-thic=
-kness-invisible edge-pattern-solid" style=3D";" data-edge=3D"true" data-et=
-=3D"edge" data-id=3D"L_EM_SMS_0" data-points=3D"W3sieCI6MTA4LjYwMTU2MjUsInk=
-iOjExOS41fSx7IngiOjEwOC42MDE1NjI1LCJ5IjoxNTd9LHsieCI6MTA4LjYwMTU2MjUsInkiOj=
-E5NC41fV0=3D"></path><path d=3D"M108.602,258.5L108.602,264.75C108.602,271,1=
-08.602,283.5,108.602,296C108.602,308.5,108.602,321,108.602,327.25L108.602,3=
-33.5" id=3D"L_SMS_PU_0" class=3D"edge-thickness-invisible edge-pattern-soli=
-d" style=3D";" data-edge=3D"true" data-et=3D"edge" data-id=3D"L_SMS_PU_0" d=
-ata-points=3D"W3sieCI6MTA4LjYwMTU2MjUsInkiOjI1OC41fSx7IngiOjEwOC42MDE1NjI1L=
-CJ5IjoyOTZ9LHsieCI6MTA4LjYwMTU2MjUsInkiOjMzMy41fV0=3D"></path><path d=3D"M1=
-08.602,397.5L108.602,403.75C108.602,410,108.602,422.5,108.602,435C108.602,4=
-47.5,108.602,460,108.602,466.25L108.602,472.5" id=3D"L_PU_IA_0" class=3D"ed=
-ge-thickness-invisible edge-pattern-solid" style=3D";" data-edge=3D"true" d=
-ata-et=3D"edge" data-id=3D"L_PU_IA_0" data-points=3D"W3sieCI6MTA4LjYwMTU2Mj=
-UsInkiOjM5Ny41fSx7IngiOjEwOC42MDE1NjI1LCJ5Ijo0MzV9LHsieCI6MTA4LjYwMTU2MjUsI=
-nkiOjQ3Mi41fV0=3D"></path></g><g class=3D"edgeLabels"><g class=3D"edgeLabel=
-"><g class=3D"label" data-id=3D"L_EM_SMS_0" transform=3D"translate(0, 0)"><=
-foreignObject width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999=
-/xhtml" class=3D"labelBkg" style=3D"display: table-cell; white-space: nowra=
-p; line-height: 1.5; max-width: 200px; text-align: center;"><span class=3D"=
-edgeLabel"></span></div></foreignObject></g></g><g class=3D"edgeLabel"><g c=
-lass=3D"label" data-id=3D"L_SMS_PU_0" transform=3D"translate(0, 0)"><foreig=
-nObject width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999/xhtml=
-" class=3D"labelBkg" style=3D"display: table-cell; white-space: nowrap; lin=
-e-height: 1.5; max-width: 200px; text-align: center;"><span class=3D"edgeLa=
-bel"></span></div></foreignObject></g></g><g class=3D"edgeLabel"><g class=
-=3D"label" data-id=3D"L_PU_IA_0" transform=3D"translate(0, 0)"><foreignObje=
-ct width=3D"0" height=3D"0"><div xmlns=3D"http://www.w3.org/1999/xhtml" cla=
-ss=3D"labelBkg" style=3D"display: table-cell; white-space: nowrap; line-hei=
-ght: 1.5; max-width: 200px; text-align: center;"><span class=3D"edgeLabel">=
-</span></div></foreignObject></g></g></g><g class=3D"nodes"><g class=3D"nod=
-e default rose" id=3D"flowchart-EM-9" transform=3D"translate(108.6015625, 8=
-7.5)"><rect class=3D"basic label-container" style=3D"fill:#f783ac !importan=
-t;stroke:#000 !important" x=3D"-60.1875" y=3D"-32" width=3D"120.375" height=
-=3D"64"></rect><g class=3D"label" style=3D"color:#000 !important" transform=
-=3D"translate(-20.1875, -12)"><rect></rect><foreignObject width=3D"40.375" =
-height=3D"24"><div style=3D"color: rgb(0, 0, 0) !important; display: table-=
-cell; white-space: nowrap; line-height: 1.5; max-width: 300px; text-align: =
-center;" xmlns=3D"http://www.w3.org/1999/xhtml"><span style=3D"color:#000 !=
-important" class=3D"nodeLabel"><p>Email</p></span></div></foreignObject></g=
-></g><g class=3D"node default rose" id=3D"flowchart-SMS-10" transform=3D"tr=
-anslate(108.6015625, 226.5)"><rect class=3D"basic label-container" style=3D=
-"fill:#f783ac !important;stroke:#000 !important" x=3D"-57.4921875" y=3D"-32=
-" width=3D"114.984375" height=3D"64"></rect><g class=3D"label" style=3D"col=
-or:#000 !important" transform=3D"translate(-17.4921875, -12)"><rect></rect>=
-<foreignObject width=3D"34.984375" height=3D"24"><div style=3D"color: rgb(0=
-, 0, 0) !important; display: table-cell; white-space: nowrap; line-height: =
-1.5; max-width: 300px; text-align: center;" xmlns=3D"http://www.w3.org/1999=
-/xhtml"><span style=3D"color:#000 !important" class=3D"nodeLabel"><p>SMS</p=
-></span></div></foreignObject></g></g><g class=3D"node default rose" id=3D"=
-flowchart-PU-11" transform=3D"translate(108.6015625, 365.5)"><rect class=3D=
-"basic label-container" style=3D"fill:#f783ac !important;stroke:#000 !impor=
-tant" x=3D"-58.796875" y=3D"-32" width=3D"117.59375" height=3D"64"></rect><=
-g class=3D"label" style=3D"color:#000 !important" transform=3D"translate(-1=
-8.796875, -12)"><rect></rect><foreignObject width=3D"37.59375" height=3D"24=
-"><div style=3D"color: rgb(0, 0, 0) !important; display: table-cell; white-=
-space: nowrap; line-height: 1.5; max-width: 300px; text-align: center;" xml=
-ns=3D"http://www.w3.org/1999/xhtml"><span style=3D"color:#000 !important" c=
-lass=3D"nodeLabel"><p>Push</p></span></div></foreignObject></g></g><g class=
-=3D"node default rose" id=3D"flowchart-IA-12" transform=3D"translate(108.60=
-15625, 504.5)"><rect class=3D"basic label-container" style=3D"fill:#f783ac =
-!important;stroke:#000 !important" x=3D"-65.6015625" y=3D"-32" width=3D"131=
-.203125" height=3D"64"></rect><g class=3D"label" style=3D"color:#000 !impor=
-tant" transform=3D"translate(-25.6015625, -12)"><rect></rect><foreignObject=
- width=3D"51.203125" height=3D"24"><div style=3D"color: rgb(0, 0, 0) !impor=
-tant; display: table-cell; white-space: nowrap; line-height: 1.5; max-width=
-: 300px; text-align: center;" xmlns=3D"http://www.w3.org/1999/xhtml"><span =
-style=3D"color:#000 !important" class=3D"nodeLabel"><p>In-App</p></span></d=
-iv></foreignObject></g></g></g></g><g class=3D"node default orange" id=3D"f=
-lowchart-S1-0" transform=3D"translate(83.734375, 143)"><rect class=3D"basic=
- label-container" style=3D"fill:#ffa94d !important;stroke:#000 !important" =
-x=3D"-74.109375" y=3D"-32" width=3D"148.21875" height=3D"64"></rect><g clas=
-s=3D"label" style=3D"color:#000 !important" transform=3D"translate(-34.1093=
-75, -12)"><rect></rect><foreignObject width=3D"68.21875" height=3D"24"><div=
- style=3D"color: rgb(0, 0, 0) !important; display: table-cell; white-space:=
- nowrap; line-height: 1.5; max-width: 300px; text-align: center;" xmlns=3D"=
-http://www.w3.org/1999/xhtml"><span style=3D"color:#000 !important" class=
-=3D"nodeLabel"><p>Service 1</p></span></div></foreignObject></g></g><g clas=
-s=3D"node default orange" id=3D"flowchart-S2-1" transform=3D"translate(83.7=
-34375, 257)"><rect class=3D"basic label-container" style=3D"fill:#ffa94d !i=
-mportant;stroke:#000 !important" x=3D"-75.734375" y=3D"-32" width=3D"151.46=
-875" height=3D"64"></rect><g class=3D"label" style=3D"color:#000 !important=
-" transform=3D"translate(-35.734375, -12)"><rect></rect><foreignObject widt=
-h=3D"71.46875" height=3D"24"><div style=3D"color: rgb(0, 0, 0) !important; =
-display: table-cell; white-space: nowrap; line-height: 1.5; max-width: 300p=
-x; text-align: center;" xmlns=3D"http://www.w3.org/1999/xhtml"><span style=
-=3D"color:#000 !important" class=3D"nodeLabel"><p>Service 2</p></span></div=
-></foreignObject></g></g><g class=3D"node default primary" id=3D"flowchart-=
-LB-2" transform=3D"translate(303.640625, 200)"><rect class=3D"basic label-c=
-ontainer" style=3D"fill:#00ceff !important;stroke:#000 !important" x=3D"-94=
-.171875" y=3D"-32" width=3D"188.34375" height=3D"64"></rect><g class=3D"lab=
-el" style=3D"color:#000 !important" transform=3D"translate(-54.171875, -12)=
-"><rect></rect><foreignObject width=3D"108.34375" height=3D"24"><div style=
-=3D"color: rgb(0, 0, 0) !important; display: table-cell; white-space: nowra=
-p; line-height: 1.5; max-width: 300px; text-align: center;" xmlns=3D"http:/=
-/www.w3.org/1999/xhtml"><span style=3D"color:#000 !important" class=3D"node=
-Label"><p>Load Balancer</p></span></div></foreignObject></g></g><g class=3D=
-"node default orange" id=3D"flowchart-NS-3" transform=3D"translate(531.3125=
-, 200)"><rect class=3D"basic label-container" style=3D"fill:#ffa94d !import=
-ant;stroke:#000 !important" x=3D"-83.5" y=3D"-44" width=3D"167" height=3D"8=
-8"></rect><g class=3D"label" style=3D"color:#000 !important" transform=3D"t=
-ranslate(-43.5, -24)"><rect></rect><foreignObject width=3D"87" height=3D"48=
-"><div style=3D"color: rgb(0, 0, 0) !important; display: table-cell; white-=
-space: nowrap; line-height: 1.5; max-width: 300px; text-align: center;" xml=
-ns=3D"http://www.w3.org/1999/xhtml"><span style=3D"color:#000 !important" c=
-lass=3D"nodeLabel"><p>Notification<br>Service</p></span></div></foreignObje=
-ct></g></g><g class=3D"node default primary" id=3D"flowchart-UPS-4" transfo=
-rm=3D"translate(766.4609375, 62)"><rect class=3D"basic label-container" sty=
-le=3D"fill:#00ceff !important;stroke:#000 !important" x=3D"-101.6484375" y=
-=3D"-44" width=3D"203.296875" height=3D"88"></rect><g class=3D"label" style=
-=3D"color:#000 !important" transform=3D"translate(-61.6484375, -24)"><rect>=
-</rect><foreignObject width=3D"123.296875" height=3D"48"><div style=3D"colo=
-r: rgb(0, 0, 0) !important; display: table-cell; white-space: nowrap; line-=
-height: 1.5; max-width: 300px; text-align: center;" xmlns=3D"http://www.w3.=
-org/1999/xhtml"><span style=3D"color:#000 !important" class=3D"nodeLabel"><=
-p>User Preference<br>Service</p></span></div></foreignObject></g></g><g cla=
-ss=3D"node default green" id=3D"flowchart-UDB-5" transform=3D"translate(101=
-8.7109375, 62)"><path d=3D"M0,6.28917578819347 a21.0078125,6.28917578819347=
- 0,0,0 42.015625,0 a21.0078125,6.28917578819347 0,0,0 -42.015625,0 l0,50.28=
-917578819347 a21.0078125,6.28917578819347 0,0,0 42.015625,0 l0,-50.28917578=
-819347" class=3D"basic label-container" style=3D"fill:#69db7c !important;st=
-roke:#000 !important" transform=3D"translate(-21.0078125, -31.4337636822902=
-06)"></path><g class=3D"label" style=3D"color: rgb(0, 0, 0) !important; fon=
-t-size: 16px;" transform=3D"translate(-11.0078125, 1.333333333333334)"><rec=
-t></rect><foreignObject width=3D"22.015625" height=3D"24"><div style=3D"dis=
-play: table-cell; white-space: nowrap; line-height: 1.5; max-width: 300px; =
-text-align: center; color: rgb(0, 0, 0) !important; font-size: 16px;" xmlns=
-=3D"http://www.w3.org/1999/xhtml"><span style=3D"color: rgb(0, 0, 0) !impor=
-tant; font-size: 16px;" class=3D"nodeLabel"><p style=3D"font-size: 16px;">D=
-B</p></span></div></foreignObject></g></g><g class=3D"node default primary"=
- id=3D"flowchart-SCH-6" transform=3D"translate(766.4609375, 200)"><rect cla=
-ss=3D"basic label-container" style=3D"fill:#00ceff !important;stroke:#000 !=
-important" x=3D"-78.34375" y=3D"-44" width=3D"156.6875" height=3D"88"></rec=
-t><g class=3D"label" style=3D"color:#000 !important" transform=3D"translate=
-(-38.34375, -24)"><rect></rect><foreignObject width=3D"76.6875" height=3D"4=
-8"><div style=3D"color: rgb(0, 0, 0) !important; display: table-cell; white=
--space: nowrap; line-height: 1.5; max-width: 300px; text-align: center;" xm=
-lns=3D"http://www.w3.org/1999/xhtml"><span style=3D"color:#000 !important" =
-class=3D"nodeLabel"><p>Scheduler<br>Service</p></span></div></foreignObject=
-></g></g><g class=3D"node default green" id=3D"flowchart-SDB-7" transform=
-=3D"translate(1018.7109375, 200)"><path d=3D"M0,6.28917578819347 a21.007812=
-5,6.28917578819347 0,0,0 42.015625,0 a21.0078125,6.28917578819347 0,0,0 -42=
-.015625,0 l0,50.28917578819347 a21.0078125,6.28917578819347 0,0,0 42.015625=
-,0 l0,-50.28917578819347" class=3D"basic label-container" style=3D"fill:#69=
-db7c !important;stroke:#000 !important" transform=3D"translate(-21.0078125,=
- -31.433763682290206)"></path><g class=3D"label" style=3D"color: rgb(0, 0, =
-0) !important; font-size: 16px;" transform=3D"translate(-11.0078125, 1.3333=
-33333333334)"><rect></rect><foreignObject width=3D"22.015625" height=3D"24"=
-><div style=3D"display: table-cell; white-space: nowrap; line-height: 1.5; =
-max-width: 300px; text-align: center; color: rgb(0, 0, 0) !important; font-=
-size: 16px;" xmlns=3D"http://www.w3.org/1999/xhtml"><span style=3D"color: r=
-gb(0, 0, 0) !important; font-size: 16px;" class=3D"nodeLabel"><p style=3D"f=
-ont-size: 16px;">DB</p></span></div></foreignObject></g></g><g class=3D"nod=
-e default green" id=3D"flowchart-NQ-8" transform=3D"translate(766.4609375, =
-569.4337673187256)"><polygon points=3D"0,0 107,0 107,-68 0,-68 0,0 -8,0 115=
-,0 115,-68 -8,-68 -8,0" class=3D"label-container" transform=3D"translate(-5=
-3.5,34)" style=3D"fill:#69db7c !important;stroke:#000 !important"></polygon=
-><g class=3D"label" style=3D"color:#000 !important" transform=3D"translate(=
--43.5, -24)"><rect></rect><foreignObject width=3D"87" height=3D"48"><div st=
-yle=3D"color: rgb(0, 0, 0) !important; display: table-cell; white-space: no=
-wrap; line-height: 1.5; max-width: 300px; text-align: center;" xmlns=3D"htt=
-p://www.w3.org/1999/xhtml"><span style=3D"color:#000 !important" class=3D"n=
-odeLabel"><p>Notification<br>Queue</p></span></div></foreignObject></g></g>=
-</g></g></g></svg></div></div></div></div></div></div></figure></div></div>=
+ [&amp;&gt;svg]:max-w-full"><svg id=3D"fig-10-10-architecture" width=3D"100%" viewBox=3D"0 0 1060 630" =
+xmlns=3D"http://www.w3.org/2000/svg" style=3D"max-width: 1060px; height: au=
+to;" font-family=3D"-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, =
+Helvetica, Arial, sans-serif">
+  <defs>
+    <!-- Arrow marker -->
+    <marker id=3D"arrow" viewBox=3D"0 0 10 10" refX=3D"8" refY=3D"5" marker=
+Width=3D"6" markerHeight=3D"6" orient=3D"auto-start-reverse">
+      <path d=3D"M 0 1.5 L 8 5 L 0 8.5 z" fill=3D"#0ea5e9"/>
+    </marker>
+
+    <!-- Server Icon Definition -->
+    <g id=3D"server-icon">
+      <rect width=3D"18" height=3D"38" rx=3D"3" fill=3D"#22c55e" stroke=3D"=
+#16a34a" stroke-width=3D"1.2"/>
+      <!-- Server slots -->
+      <line x1=3D"3" y1=3D"8" x2=3D"15" y2=3D"8" stroke=3D"#14532d" stroke-=
+width=3D"1.5"/>
+      <line x1=3D"3" y1=3D"15" x2=3D"15" y2=3D"15" stroke=3D"#14532d" strok=
+e-width=3D"1.5"/>
+      <line x1=3D"3" y1=3D"22" x2=3D"15" y2=3D"22" stroke=3D"#14532d" strok=
+e-width=3D"1.5"/>
+      <line x1=3D"3" y1=3D"29" x2=3D"15" y2=3D"29" stroke=3D"#14532d" strok=
+e-width=3D"1.5"/>
+      <!-- LED dots -->
+      <circle cx=3D"5" cy=3D"34" r=3D"1" fill=3D"#bbf7d0"/>
+      <circle cx=3D"9" cy=3D"34" r=3D"1" fill=3D"#bbf7d0"/>
+    </g>
+
+    <!-- Queue Icon Definition -->
+    <g id=3D"queue-icon">
+      <!-- Queue pipe body -->
+      <path d=3D"M 0 4 L 70 4 A 12 12 0 0 1 82 16 L 82 24 A 12 12 0 0 1 70 =
+36 L 0 36 Z" fill=3D"#0369a1" fill-opacity=3D"0.2" stroke=3D"#0284c7" strok=
+e-width=3D"2"/>
+      <path d=3D"M 70 4 A 12 12 0 0 1 82 16 L 82 24 A 12 12 0 0 1 70 36 A 1=
+2 12 0 0 1 58 24 L 58 16 A 12 12 0 0 1 70 4" fill=3D"none" stroke=3D"#0284c=
+7" stroke-width=3D"1.5"/>
+      <!-- 3 Mail envelopes inside -->
+      <g transform=3D"translate(6, 8)">
+        <rect width=3D"16" height=3D"12" rx=3D"1.5" fill=3D"#f8fafc" stroke=
+=3D"#0284c7" stroke-width=3D"1"/>
+        <polyline points=3D"1,2 8,7 15,2" fill=3D"none" stroke=3D"#0284c7" =
+stroke-width=3D"1"/>
+      </g>
+      <g transform=3D"translate(24, 8)">
+        <rect width=3D"16" height=3D"12" rx=3D"1.5" fill=3D"#f8fafc" stroke=
+=3D"#0284c7" stroke-width=3D"1"/>
+        <polyline points=3D"1,2 8,7 15,2" fill=3D"none" stroke=3D"#0284c7" =
+stroke-width=3D"1"/>
+      </g>
+      <g transform=3D"translate(42, 8)">
+        <rect width=3D"16" height=3D"12" rx=3D"1.5" fill=3D"#f8fafc" stroke=
+=3D"#0284c7" stroke-width=3D"1"/>
+        <polyline points=3D"1,2 8,7 15,2" fill=3D"none" stroke=3D"#0284c7" =
+stroke-width=3D"1"/>
+      </g>
+    </g>
+
+    <!-- Smartphone Icon -->
+    <g id=3D"phone-icon">
+      <rect x=3D"0" y=3D"0" width=3D"22" height=3D"38" rx=3D"4" fill=3D"#0f=
+172a" stroke=3D"#cbd5e1" stroke-width=3D"1.5"/>
+      <rect x=3D"2" y=3D"4" width=3D"18" height=3D"28" rx=3D"1" fill=3D"#38=
+bdf8" fill-opacity=3D"0.25"/>
+      <circle cx=3D"11" cy=3D"35" r=3D"1.2" fill=3D"#cbd5e1"/>
+    </g>
+
+    <!-- Laptop Icon -->
+    <g id=3D"laptop-icon">
+      <rect x=3D"4" y=3D"4" width=3D"28" height=3D"18" rx=3D"2" fill=3D"#0f=
+172a" stroke=3D"#cbd5e1" stroke-width=3D"1.5"/>
+      <rect x=3D"6" y=3D"6" width=3D"24" height=3D"14" rx=3D"1" fill=3D"#38=
+bdf8" fill-opacity=3D"0.25"/>
+      <path d=3D"M 0 24 L 36 24 L 34 27 L 2 27 Z" fill=3D"#94a3b8"/>
+    </g>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width=3D"1060" height=3D"630" rx=3D"16" fill=3D"#0b1329" stroke=3D"=
+#1e293b" stroke-width=3D"1.5"/>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 1. CALL=
+ING SERVICES (LEFT) =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D -->
+  <g>
+    <!-- Service 1 -->
+    <rect x=3D"40" y=3D"145" width=3D"85" height=3D"42" rx=3D"8" fill=3D"#1=
+e293b" stroke=3D"#64748b" stroke-width=3D"1.5"/>
+    <text x=3D"82" y=3D"171" text-anchor=3D"middle" fill=3D"#f8fafc" font-s=
+ize=3D"12" font-weight=3D"600">Service 1</text>
+
+    <!-- Service 2 -->
+    <rect x=3D"40" y=3D"215" width=3D"85" height=3D"42" rx=3D"8" fill=3D"#1=
+e293b" stroke=3D"#64748b" stroke-width=3D"1.5"/>
+    <text x=3D"82" y=3D"241" text-anchor=3D"middle" fill=3D"#f8fafc" font-s=
+ize=3D"12" font-weight=3D"600">Service 2</text>
+
+    <!-- Dots -->
+    <circle cx=3D"82" cy=3D"285" r=3D"2.5" fill=3D"#94a3b8"/>
+    <circle cx=3D"82" cy=3D"300" r=3D"2.5" fill=3D"#94a3b8"/>
+    <circle cx=3D"82" cy=3D"315" r=3D"2.5" fill=3D"#94a3b8"/>
+
+    <!-- Service N -->
+    <rect x=3D"40" y=3D"340" width=3D"85" height=3D"42" rx=3D"8" fill=3D"#1=
+e293b" stroke=3D"#64748b" stroke-width=3D"1.5"/>
+    <text x=3D"82" y=3D"366" text-anchor=3D"middle" fill=3D"#f8fafc" font-s=
+ize=3D"12" font-weight=3D"600">Service N</text>
+  </g>
+
+  <!-- Arrows: Services =E2=86=92 Notification Servers -->
+  <line x1=3D"125" y1=3D"166" x2=3D"218" y2=3D"280" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"125" y1=3D"236" x2=3D"218" y2=3D"295" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"125" y1=3D"361" x2=3D"218" y2=3D"330" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+  <!-- Step (1) Circle -->
+  <circle cx=3D"170" cy=3D"215" r=3D"11" fill=3D"#0284c7" stroke=3D"#38bdf8=
+" stroke-width=3D"1.5"/>
+  <text x=3D"170" y=3D"219.5" text-anchor=3D"middle" fill=3D"#ffffff" font-=
+size=3D"11" font-weight=3D"bold">1</text>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 2. NOTI=
+FICATION SERVERS =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D -->
+  <g>
+    <!-- Dashed Container -->
+    <rect x=3D"220" y=3D"265" width=3D"105" height=3D"90" rx=3D"10" fill=3D=
+"#0f172a" fill-opacity=3D"0.8" stroke=3D"#38bdf8" stroke-width=3D"1.8" stro=
+ke-dasharray=3D"5,4"/>
+   =20
+    <!-- 3 Green Servers -->
+    <use href=3D"#server-icon" x=3D"238" y=3D"280"/>
+    <use href=3D"#server-icon" x=3D"263" y=3D"280"/>
+    <use href=3D"#server-icon" x=3D"288" y=3D"280"/>
+   =20
+    <!-- Label -->
+    <text x=3D"272" y=3D"337" text-anchor=3D"middle" fill=3D"#93c5fd" font-=
+size=3D"11" font-weight=3D"bold">Notification</text>
+    <text x=3D"272" y=3D"349" text-anchor=3D"middle" fill=3D"#93c5fd" font-=
+size=3D"11" font-weight=3D"bold">servers</text>
+  </g>
+
+  <!-- Arrow: Notification Servers =E2=86=92 Cache/DB -->
+  <line x1=3D"272" y1=3D"355" x2=3D"272" y2=3D"395" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+  <!-- Step (2) Circle -->
+  <circle cx=3D"288" cy=3D"376" r=3D"10" fill=3D"#0284c7" stroke=3D"#38bdf8=
+" stroke-width=3D"1.5"/>
+  <text x=3D"288" y=3D"380" text-anchor=3D"middle" fill=3D"#ffffff" font-si=
+ze=3D"10" font-weight=3D"bold">2</text>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D CACHE &=
+ DATABASE =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D -->
+  <g transform=3D"translate(232, 400)">
+    <!-- Cache Stack (3 overlapping cards) -->
+    <rect x=3D"16" y=3D"0" width=3D"60" height=3D"26" rx=3D"4" fill=3D"#036=
+9a1" stroke=3D"#38bdf8" stroke-width=3D"1.2"/>
+    <text x=3D"46" y=3D"16" text-anchor=3D"middle" fill=3D"#e0f2fe" font-si=
+ze=3D"9" font-weight=3D"bold">CACHE</text>
+    <rect x=3D"8" y=3D"8" width=3D"60" height=3D"26" rx=3D"4" fill=3D"#0284=
+c7" stroke=3D"#38bdf8" stroke-width=3D"1.2"/>
+    <text x=3D"38" y=3D"24" text-anchor=3D"middle" fill=3D"#e0f2fe" font-si=
+ze=3D"9" font-weight=3D"bold">CACHE</text>
+    <rect x=3D"0" y=3D"16" width=3D"60" height=3D"26" rx=3D"4" fill=3D"#0ea=
+5e9" stroke=3D"#e0f2fe" stroke-width=3D"1.2"/>
+    <text x=3D"30" y=3D"32" text-anchor=3D"middle" fill=3D"#ffffff" font-si=
+ze=3D"9" font-weight=3D"bold">CACHE</text>
+
+    <!-- Connector to DB -->
+    <line x1=3D"40" y1=3D"46" x2=3D"40" y2=3D"60" stroke=3D"#0ea5e9" stroke=
+-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+    <!-- DB Cylinders (Stacked) -->
+    <g transform=3D"translate(10, 64)">
+      <!-- Cylinder 1 -->
+      <path d=3D"M 0 10 L 0 28 A 18 7 0 0 0 36 28 L 36 10 Z" fill=3D"#0369a=
+1" stroke=3D"#38bdf8" stroke-width=3D"1.2"/>
+      <ellipse cx=3D"18" cy=3D"10" rx=3D"18" ry=3D"7" fill=3D"#0284c7" stro=
+ke=3D"#38bdf8" stroke-width=3D"1.2"/>
+      <!-- Cylinder 2 -->
+      <path d=3D"M 18 10 L 18 28 A 18 7 0 0 0 54 28 L 54 10 Z" fill=3D"#028=
+4c7" stroke=3D"#38bdf8" stroke-width=3D"1.2"/>
+      <ellipse cx=3D"36" cy=3D"10" rx=3D"18" ry=3D"7" fill=3D"#0ea5e9" stro=
+ke=3D"#38bdf8" stroke-width=3D"1.2"/>
+      <!-- Cylinder 3 -->
+      <path d=3D"M 36 10 L 36 28 A 18 7 0 0 0 72 28 L 72 10 Z" fill=3D"#036=
+9a1" stroke=3D"#38bdf8" stroke-width=3D"1.2"/>
+      <ellipse cx=3D"54" cy=3D"10" rx=3D"18" ry=3D"7" fill=3D"#38bdf8" stro=
+ke=3D"#ffffff" stroke-width=3D"1.2"/>
+      <!-- DB Text -->
+      <text x=3D"36" y=3D"44" text-anchor=3D"middle" fill=3D"#f8fafc" font-=
+size=3D"12" font-weight=3D"bold">DB</text>
+    </g>
+  </g>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 3. BRAN=
+CH ARROWS (TO QUEUES) =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D -->
+  <line x1=3D"325" y1=3D"285" x2=3D"408" y2=3D"135" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"325" y1=3D"300" x2=3D"408" y2=3D"245" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"325" y1=3D"315" x2=3D"408" y2=3D"355" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"325" y1=3D"330" x2=3D"408" y2=3D"465" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+  <!-- Step (3) Circle -->
+  <circle cx=3D"365" cy=3D"205" r=3D"11" fill=3D"#0284c7" stroke=3D"#38bdf8=
+" stroke-width=3D"1.5"/>
+  <text x=3D"365" y=3D"209.5" text-anchor=3D"middle" fill=3D"#ffffff" font-=
+size=3D"11" font-weight=3D"bold">3</text>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 4. MESS=
+AGE QUEUES =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D -->
+  <!-- 1. iOS PN Queue -->
+  <g transform=3D"translate(415, 115)">
+    <use href=3D"#queue-icon"/>
+    <text x=3D"41" y=3D"52" text-anchor=3D"middle" fill=3D"#e2e8f0" font-si=
+ze=3D"11" font-weight=3D"600">iOS PN</text>
+  </g>
+
+  <!-- 2. Android PN Queue -->
+  <g transform=3D"translate(415, 225)">
+    <use href=3D"#queue-icon"/>
+    <text x=3D"41" y=3D"52" text-anchor=3D"middle" fill=3D"#e2e8f0" font-si=
+ze=3D"11" font-weight=3D"600">Android PN</text>
+  </g>
+
+  <!-- 3. SMS Queue -->
+  <g transform=3D"translate(415, 335)">
+    <use href=3D"#queue-icon"/>
+    <text x=3D"41" y=3D"52" text-anchor=3D"middle" fill=3D"#e2e8f0" font-si=
+ze=3D"11" font-weight=3D"600">SMS queue</text>
+  </g>
+
+  <!-- 4. Email Queue -->
+  <g transform=3D"translate(415, 445)">
+    <use href=3D"#queue-icon"/>
+    <text x=3D"41" y=3D"52" text-anchor=3D"middle" fill=3D"#e2e8f0" font-si=
+ze=3D"11" font-weight=3D"600">Email queue</text>
+  </g>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D ARROWS:=
+ QUEUE =E2=86=92 WORKERS =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D -->
+  <line x1=3D"500" y1=3D"133" x2=3D"542" y2=3D"133" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"500" y1=3D"243" x2=3D"542" y2=3D"243" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"500" y1=3D"353" x2=3D"542" y2=3D"353" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"500" y1=3D"463" x2=3D"542" y2=3D"463" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+  <!-- Step (4) Circle -->
+  <circle cx=3D"522" cy=3D"120" r=3D"10" fill=3D"#0284c7" stroke=3D"#38bdf8=
+" stroke-width=3D"1.5"/>
+  <text x=3D"522" y=3D"124" text-anchor=3D"middle" fill=3D"#ffffff" font-si=
+ze=3D"10" font-weight=3D"bold">4</text>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D RETRY O=
+N ERROR LOOP =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D -=
+->
+  <g>
+    <!-- Solid clean line matching Alex Xu style -->
+    <path d=3D"M 588 98 L 588 52 L 456 52 L 456 110" fill=3D"none" stroke=
+=3D"#38bdf8" stroke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+    <text x=3D"522" y=3D"44" text-anchor=3D"middle" fill=3D"#38bdf8" font-s=
+ize=3D"11" font-weight=3D"600">retry on error</text>
+  </g>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 5. WORK=
+ERS =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D -->
+  <!-- Worker 1 (iOS) -->
+  <g transform=3D"translate(545, 100)">
+    <rect width=3D"86" height=3D"66" rx=3D"8" fill=3D"#0f172a" fill-opacity=
+=3D"0.8" stroke=3D"#38bdf8" stroke-width=3D"1.5" stroke-dasharray=3D"4,3"/>
+    <use href=3D"#server-icon" x=3D"9" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"34" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"59" y=3D"8"/>
+    <text x=3D"43" y=3D"58" text-anchor=3D"middle" fill=3D"#93c5fd" font-si=
+ze=3D"11" font-weight=3D"bold">Workers</text>
+  </g>
+
+  <!-- Worker 2 (Android) -->
+  <g transform=3D"translate(545, 210)">
+    <rect width=3D"86" height=3D"66" rx=3D"8" fill=3D"#0f172a" fill-opacity=
+=3D"0.8" stroke=3D"#38bdf8" stroke-width=3D"1.5" stroke-dasharray=3D"4,3"/>
+    <use href=3D"#server-icon" x=3D"9" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"34" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"59" y=3D"8"/>
+    <text x=3D"43" y=3D"58" text-anchor=3D"middle" fill=3D"#93c5fd" font-si=
+ze=3D"11" font-weight=3D"bold">Workers</text>
+  </g>
+
+  <!-- Worker 3 (SMS) -->
+  <g transform=3D"translate(545, 320)">
+    <rect width=3D"86" height=3D"66" rx=3D"8" fill=3D"#0f172a" fill-opacity=
+=3D"0.8" stroke=3D"#38bdf8" stroke-width=3D"1.5" stroke-dasharray=3D"4,3"/>
+    <use href=3D"#server-icon" x=3D"9" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"34" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"59" y=3D"8"/>
+    <text x=3D"43" y=3D"58" text-anchor=3D"middle" fill=3D"#93c5fd" font-si=
+ze=3D"11" font-weight=3D"bold">Workers</text>
+  </g>
+
+  <!-- Worker 4 (Email) -->
+  <g transform=3D"translate(545, 430)">
+    <rect width=3D"86" height=3D"66" rx=3D"8" fill=3D"#0f172a" fill-opacity=
+=3D"0.8" stroke=3D"#38bdf8" stroke-width=3D"1.5" stroke-dasharray=3D"4,3"/>
+    <use href=3D"#server-icon" x=3D"9" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"34" y=3D"8"/>
+    <use href=3D"#server-icon" x=3D"59" y=3D"8"/>
+    <text x=3D"43" y=3D"58" text-anchor=3D"middle" fill=3D"#93c5fd" font-si=
+ze=3D"11" font-weight=3D"bold">Workers</text>
+  </g>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D ARROWS:=
+ WORKERS =E2=86=92 THIRD PARTY =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D -->
+  <line x1=3D"631" y1=3D"133" x2=3D"688" y2=3D"133" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"631" y1=3D"243" x2=3D"688" y2=3D"243" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"631" y1=3D"353" x2=3D"688" y2=3D"353" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"631" y1=3D"463" x2=3D"688" y2=3D"463" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+  <!-- Step (5) Circle -->
+  <circle cx=3D"658" cy=3D"120" r=3D"10" fill=3D"#0284c7" stroke=3D"#38bdf8=
+" stroke-width=3D"1.5"/>
+  <text x=3D"658" y=3D"124" text-anchor=3D"middle" fill=3D"#ffffff" font-si=
+ze=3D"10" font-weight=3D"bold">5</text>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 6. THIR=
+D PARTY SERVICES CONTAINER =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D -->
+  <g transform=3D"translate(695, 65)">
+    <!-- Enclosing dashed box with extra bottom height -->
+    <rect width=3D"118" height=3D"475" rx=3D"14" fill=3D"#0f172a" fill-opac=
+ity=3D"0.6" stroke=3D"#94a3b8" stroke-width=3D"1.5" stroke-dasharray=3D"5,4=
+"/>
+
+    <!-- 1. APNs -->
+    <g transform=3D"translate(26, 38)">
+      <!-- Cloud icon -->
+      <path d=3D"M 12 28 A 10 10 0 0 1 8 9 A 14 14 0 0 1 32 4 A 14 14 0 0 1=
+ 52 11 A 10 10 0 0 1 50 28 Z" fill=3D"#1e293b" stroke=3D"#38bdf8" stroke-wi=
+dth=3D"1.5"/>
+      <text x=3D"31" y=3D"22" text-anchor=3D"middle" fill=3D"#f8fafc" font-=
+size=3D"11" font-weight=3D"bold">APNs</text>
+    </g>
+
+    <!-- 2. FCM -->
+    <g transform=3D"translate(26, 148)">
+      <!-- Folded page / Firebase icon -->
+      <path d=3D"M 10 28 L 22 4 L 38 14 L 52 28 Z" fill=3D"#f59e0b" fill-op=
+acity=3D"0.25" stroke=3D"#f59e0b" stroke-width=3D"1.5"/>
+      <path d=3D"M 22 4 L 38 14 L 30 28 Z" fill=3D"#fbbf24" fill-opacity=3D=
+"0.5"/>
+      <text x=3D"31" y=3D"44" text-anchor=3D"middle" fill=3D"#f8fafc" font-=
+size=3D"11" font-weight=3D"bold">FCM</text>
+    </g>
+
+    <!-- 3. SMS Service -->
+    <g transform=3D"translate(26, 258)">
+      <!-- Speech bubble / SMS icon -->
+      <rect x=3D"10" y=3D"4" width=3D"42" height=3D"28" rx=3D"5" fill=3D"#1=
+e293b" stroke=3D"#a855f7" stroke-width=3D"1.5"/>
+      <circle cx=3D"21" cy=3D"18" r=3D"2" fill=3D"#c084fc"/>
+      <circle cx=3D"31" cy=3D"18" r=3D"2" fill=3D"#c084fc"/>
+      <circle cx=3D"41" cy=3D"18" r=3D"2" fill=3D"#c084fc"/>
+      <path d=3D"M 20 32 L 20 37 L 27 32 Z" fill=3D"#a855f7"/>
+      <text x=3D"31" y=3D"48" text-anchor=3D"middle" fill=3D"#f8fafc" font-=
+size=3D"10" font-weight=3D"bold">SMS</text>
+      <text x=3D"31" y=3D"59" text-anchor=3D"middle" fill=3D"#cbd5e1" font-=
+size=3D"9">Service</text>
+    </g>
+
+    <!-- 4. Email Service -->
+    <g transform=3D"translate(26, 368)">
+      <!-- Email envelope -->
+      <rect x=3D"11" y=3D"4" width=3D"40" height=3D"26" rx=3D"4" fill=3D"#1=
+e293b" stroke=3D"#34d399" stroke-width=3D"1.5"/>
+      <polyline points=3D"13,7 31,20 49,7" fill=3D"none" stroke=3D"#34d399"=
+ stroke-width=3D"1.5"/>
+      <text x=3D"31" y=3D"44" text-anchor=3D"middle" fill=3D"#f8fafc" font-=
+size=3D"10" font-weight=3D"bold">Email</text>
+      <text x=3D"31" y=3D"55" text-anchor=3D"middle" fill=3D"#cbd5e1" font-=
+size=3D"9">Service</text>
+    </g>
+
+    <!-- Container bottom label with clean spacing -->
+    <text x=3D"59" y=3D"452" text-anchor=3D"middle" fill=3D"#94a3b8" font-s=
+ize=3D"10" font-weight=3D"600">Third Party</text>
+    <text x=3D"59" y=3D"464" text-anchor=3D"middle" fill=3D"#94a3b8" font-s=
+ize=3D"10" font-weight=3D"600">Services</text>
+  </g>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D ARROWS:=
+ THIRD PARTY =E2=86=92 CLIENTS =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D -->
+  <line x1=3D"813" y1=3D"133" x2=3D"895" y2=3D"133" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"813" y1=3D"243" x2=3D"895" y2=3D"243" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"813" y1=3D"353" x2=3D"895" y2=3D"353" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+  <line x1=3D"813" y1=3D"463" x2=3D"895" y2=3D"463" stroke=3D"#0ea5e9" stro=
+ke-width=3D"1.5" marker-end=3D"url(#arrow)"/>
+
+  <!-- Step (6) Circle -->
+  <circle cx=3D"850" cy=3D"120" r=3D"10" fill=3D"#0284c7" stroke=3D"#38bdf8=
+" stroke-width=3D"1.5"/>
+  <text x=3D"850" y=3D"124" text-anchor=3D"middle" fill=3D"#ffffff" font-si=
+ze=3D"10" font-weight=3D"bold">6</text>
+
+  <!-- =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D 7. END =
+DEVICES / CHANNELS (RIGHT) =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D -->
+  <!-- iOS Phone -->
+  <g transform=3D"translate(910, 110)">
+    <use href=3D"#phone-icon"/>
+    <text x=3D"42" y=3D"24" fill=3D"#f8fafc" font-size=3D"13" font-weight=
+=3D"600">iOS</text>
+  </g>
+
+  <!-- Android Phone -->
+  <g transform=3D"translate(910, 220)">
+    <use href=3D"#phone-icon"/>
+    <text x=3D"42" y=3D"24" fill=3D"#f8fafc" font-size=3D"13" font-weight=
+=3D"600">Android</text>
+  </g>
+
+  <!-- SMS Phone -->
+  <g transform=3D"translate(910, 330)">
+    <use href=3D"#phone-icon"/>
+    <text x=3D"42" y=3D"24" fill=3D"#f8fafc" font-size=3D"13" font-weight=
+=3D"600">SMS</text>
+  </g>
+
+  <!-- Email Laptop -->
+  <g transform=3D"translate(900, 442)">
+    <use href=3D"#laptop-icon"/>
+    <text x=3D"48" y=3D"22" fill=3D"#f8fafc" font-size=3D"13" font-weight=
+=3D"600">Email</text>
+  </g>
+
+  <!-- Caption -->
+  <text x=3D"530" y=3D"605" text-anchor=3D"middle" fill=3D"#94a3b8" font-si=
+ze=3D"13" font-weight=3D"600" letter-spacing=3D"0.5">Figure 10-10</text>
+</svg></div></div></div></div></div></div></figure></div></div>=
 <h3 id=3D"1-notification-service" class=3D"font-bold tracking-tight mb-2" s=
 tyle=3D"font-size:calc(1.5rem * var(--reading-heading-scale, 1))">1.&nbsp;N=
 otification Service</h3><p class=3D"mb-4 text-foreground/90 max-w-4xl space=
