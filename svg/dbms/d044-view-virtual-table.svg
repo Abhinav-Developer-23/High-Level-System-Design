@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="224" viewBox="0 0 760 224" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>View as a virtual table</title>
+  <desc>The physical tables StudentDetails and StudentMarks store data. A SELECT query over them defines DetailsView, a virtual table that stores no data and is just a window into the tables.</desc>
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="759" height="223" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="40" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ACTUAL TABLES (PHYSICAL)</text>
+  <text x="470" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">VIEW (VIRTUAL)</text>
+
+  <!-- physical tables -->
+  <rect x="40" y="58" width="210" height="56" rx="10" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="145" y="82" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">StudentDetails</text>
+  <text x="145" y="102" fill="#56d4dd" font-size="12" text-anchor="middle">(stores data)</text>
+
+  <rect x="40" y="140" width="210" height="56" rx="10" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="145" y="164" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">StudentMarks</text>
+  <text x="145" y="184" fill="#56d4dd" font-size="12" text-anchor="middle">(stores data)</text>
+
+  <!-- query arrows -->
+  <path d="M250,86 H300 V168 H250" fill="none" stroke="#58a6ff" stroke-width="1.6"/>
+  <line x1="300" y1="127" x2="466" y2="127" stroke="#58a6ff" stroke-width="1.6" marker-end="url(#arrB)"/>
+  <rect x="330" y="116" width="106" height="22" rx="11" fill="#161b22" stroke="#58a6ff"/>
+  <text x="383" y="131" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT</tspan> query</text>
+
+  <!-- view -->
+  <rect x="470" y="70" width="250" height="114" rx="10" fill="#bc8cff" fill-opacity=".06" stroke="#bc8cff" stroke-opacity=".8" stroke-dasharray="7 5"/>
+  <text x="595" y="98" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DetailsView</text>
+  <text x="595" y="122" fill="#d2a8ff" font-size="13" text-anchor="middle">(no data stored)</text>
+  <text x="595" y="146" fill="#c9d1d9" font-size="13" text-anchor="middle">just a "window"</text>
+  <text x="595" y="166" fill="#c9d1d9" font-size="13" text-anchor="middle">into the tables</text>
+</svg>

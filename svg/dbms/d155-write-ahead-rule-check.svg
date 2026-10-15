@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="196" viewBox="0 0 760 196" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Write-ahead rule check</title>
+  <desc>Before writing a page: if page_LSN &lt;= flushed_log_LSN, it is safe to write the page; otherwise flush the log first, then write the page.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="759" height="195" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="28" y="72" width="270" height="52" rx="10" fill="#58a6ff" fill-opacity="0.1" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <text x="163" y="103" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">page_LSN ≤ flushed_log_LSN ?</text>
+  <path d="M298,98 H350 V58 H406" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#a-green)"/>
+  <path d="M350,98 V138 H406" fill="none" stroke="#d29922" stroke-width="1.8" marker-end="url(#a-amber)"/>
+  <text x="360" y="50" fill="#56d364" font-size="13" font-weight="700">yes</text>
+  <text x="360" y="158" fill="#e3b341" font-size="13" font-weight="700">no</text>
+  <rect x="412" y="34" width="320" height="48" rx="10" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="430" y="63" fill="#56d364" font-size="13.5" font-weight="600">✓ safe to write the page</text>
+  <rect x="412" y="114" width="320" height="48" rx="10" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.7"/>
+  <text x="430" y="143" fill="#e3b341" font-size="13" font-weight="600">flush the log first, then write the page</text>
+</svg>

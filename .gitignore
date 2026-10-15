@@ -3,3 +3,8 @@
 
 # IntelliJ IDEA settings
 .idea/
+
+# SVG diagram tooling: local deps and scratch output
+tools/svg-diagrams/node_modules/
+tools/svg-diagrams/out/
+tools/svg-diagrams/work/

@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="250" viewBox="0 0 760 250" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>ACID properties</title>
+  <desc>The four ACID properties: Atomicity (all or nothing), Consistency (valid state always), Isolation (transactions don't interfere), Durability (committed data survives crashes).</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="759" height="249" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="380" y="46" font-size="22" fill="#e6edf3" font-weight="700" text-anchor="middle" letter-spacing="4">A  C  I  D</text>
+  <line x1="24" y1="66" x2="736" y2="66" stroke="#30363d" stroke-width="1"/>
+  <rect x="24" y="84" width="164" height="142" rx="10" fill="#58a6ff" fill-opacity="0.08" stroke="#58a6ff" stroke-opacity="0.55"/>
+  <text x="106.0" y="124" font-size="30" fill="#79c0ff" font-weight="700" text-anchor="middle">A</text>
+  <text x="106.0" y="152" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Atomicity</text>
+  <text x="106.0" y="182" font-size="13" fill="#c9d1d9" text-anchor="middle">All or</text>
+  <text x="106.0" y="201" font-size="13" fill="#c9d1d9" text-anchor="middle">Nothing</text>
+  <rect x="206" y="84" width="164" height="142" rx="10" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="288.0" y="124" font-size="30" fill="#56d364" font-weight="700" text-anchor="middle">C</text>
+  <text x="288.0" y="152" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Consistency</text>
+  <text x="288.0" y="182" font-size="13" fill="#c9d1d9" text-anchor="middle">Valid state</text>
+  <text x="288.0" y="201" font-size="13" fill="#c9d1d9" text-anchor="middle">always</text>
+  <rect x="388" y="84" width="164" height="142" rx="10" fill="#bc8cff" fill-opacity="0.08" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="470.0" y="124" font-size="30" fill="#d2a8ff" font-weight="700" text-anchor="middle">I</text>
+  <text x="470.0" y="152" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Isolation</text>
+  <text x="470.0" y="182" font-size="13" fill="#c9d1d9" text-anchor="middle">Txns don't</text>
+  <text x="470.0" y="201" font-size="13" fill="#c9d1d9" text-anchor="middle">interfere</text>
+  <rect x="570" y="84" width="164" height="142" rx="10" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="652.0" y="124" font-size="30" fill="#56d4dd" font-weight="700" text-anchor="middle">D</text>
+  <text x="652.0" y="152" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Durability</text>
+  <text x="652.0" y="182" font-size="13" fill="#c9d1d9" text-anchor="middle">Committed data</text>
+  <text x="652.0" y="201" font-size="13" fill="#c9d1d9" text-anchor="middle">survives crashes</text>
+</svg>

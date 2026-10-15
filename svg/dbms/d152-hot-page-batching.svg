@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="260" viewBox="0 0 820 260" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Hot page: write now vs later</title>
+  <desc>Writing the page at every commit: 1,000 commits cause 1,000 x 16 KB page writes. Writing the page later (WAL): 1,000 commits cause 1,000 tiny log appends plus 1 page write when it is flushed.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="819" height="259" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="772" height="84" rx="12" fill="#f85149" fill-opacity="0.07" stroke="#f85149" stroke-opacity="0.45"/>
+  <text x="44" y="71.0" fill="#e6edf3" font-size="14" font-weight="600">Write page at every commit:</text>
+  <rect x="270" y="48.0" width="140" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="340" y="71.0" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">1,000 commits</text>
+  <line x1="410" y1="66.0" x2="452" y2="66.0" stroke="#f85149" stroke-width="1.8" marker-end="url(#a-red)"/>
+  <rect x="458" y="48.0" width="318" height="36" rx="8" fill="#f85149" fill-opacity="0.14" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="476" y="71.0" fill="#ff7b72" font-size="13.5" font-weight="600">1,000 × 16 KB page writes</text>
+  <rect x="24" y="124" width="772" height="112" rx="12" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="44" y="185.0" fill="#e6edf3" font-size="14" font-weight="600">Write page later (WAL):</text>
+  <rect x="270" y="162.0" width="140" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="340" y="185.0" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">1,000 commits</text>
+  <line x1="410" y1="180.0" x2="452" y2="180.0" stroke="#3fb950" stroke-width="1.8" marker-end="url(#a-green)"/>
+  <rect x="458" y="149.0" width="318" height="62" rx="8" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="476" y="174.0" fill="#56d364" font-size="13.5" font-weight="600">1,000 tiny log appends</text>
+  <text x="476" y="196.0" fill="#c9d1d9" font-size="13">+ 1 page write when it's flushed</text>
+</svg>

@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="314" viewBox="0 0 860 314" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Serializability</title>
+  <desc>Serial schedule S1 runs T1 then T2; serial schedule S2 runs T2 then T1; concurrent schedule S3 interleaves T1 and T2. If S3 produces the same result as S1, or as S2, it is serializable: S3 is serializable.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="859" height="313" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="252" height="128" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="52" font-size="14.5" fill="#e6edf3" font-weight="600">Serial Schedule S1:</text>
+  <text x="42" y="74" font-size="13" fill="#8b949e">T1 then T2</text>
+  <rect x="42" y="100" width="98.0" height="30" rx="5" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="91.0" y="120" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <rect x="144.0" y="100" width="98.0" height="30" rx="5" fill="#39c5cf" fill-opacity=".22" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="193.0" y="120" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <rect x="304" y="24" width="252" height="128" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="322" y="52" font-size="14.5" fill="#e6edf3" font-weight="600">Serial Schedule S2:</text>
+  <text x="322" y="74" font-size="13" fill="#8b949e">T2 then T1</text>
+  <rect x="322" y="100" width="98.0" height="30" rx="5" fill="#39c5cf" fill-opacity=".22" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="371.0" y="120" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <rect x="424.0" y="100" width="98.0" height="30" rx="5" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="473.0" y="120" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <rect x="584" y="24" width="252" height="128" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="602" y="52" font-size="14.5" fill="#e6edf3" font-weight="600">Concurrent Schedule S3:</text>
+  <text x="602" y="74" font-size="13" fill="#8b949e">T1 &amp; T2 interleaved</text>
+  <rect x="602" y="100" width="47.0" height="30" rx="5" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="625.5" y="120" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <rect x="653.0" y="100" width="47.0" height="30" rx="5" fill="#39c5cf" fill-opacity=".22" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="676.5" y="120" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <rect x="704.0" y="100" width="47.0" height="30" rx="5" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="727.5" y="120" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <rect x="755.0" y="100" width="47.0" height="30" rx="5" fill="#39c5cf" fill-opacity=".22" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="778.5" y="120" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <rect x="24" y="184" width="252" height="84" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="212" font-size="13" fill="#c9d1d9">If S3 produces same</text>
+  <text x="42" y="232" font-size="13" fill="#c9d1d9">result as S1  →  <tspan fill="#56d364" font-weight="700">✓</tspan></text>
+  <text x="42" y="252" font-size="13" fill="#56d364" font-weight="600">serializable</text>
+  <line x1="150" y1="156" x2="150" y2="180" stroke="#8b949e" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#a-gray)"/>
+  <rect x="304" y="184" width="252" height="84" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="322" y="212" font-size="13" fill="#c9d1d9">If S3 produces same</text>
+  <text x="322" y="232" font-size="13" fill="#c9d1d9">result as S2  →  <tspan fill="#56d364" font-weight="700">✓</tspan></text>
+  <text x="322" y="252" font-size="13" fill="#56d364" font-weight="600">serializable</text>
+  <line x1="430" y1="156" x2="430" y2="180" stroke="#8b949e" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#a-gray)"/>
+  <line x1="710" y1="156" x2="710" y2="180" stroke="#8b949e" stroke-width="1.6" stroke-dasharray="3 3" marker-end="url(#a-gray)"/>
+  <rect x="584" y="184" width="252" height="84" rx="10" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="710" y="232" font-size="15" fill="#56d364" font-weight="700" text-anchor="middle">S3 is serializable!</text>
+  <path d="M150,268 V290 H710 V272" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#a-green)"/>
+  <line x1="560" y1="226" x2="580" y2="226" stroke="#3fb950" stroke-width="1.6" marker-end="url(#a-green)"/>
+</svg>

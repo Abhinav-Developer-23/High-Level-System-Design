@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="366" viewBox="0 0 780 366" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Buffer pool page lifecycle</title>
+  <desc>A page read from disk on a page miss enters the buffer pool as CLEAN (RAM equals disk). UPDATE/INSERT/DELETE makes it DIRTY (RAM differs from disk). A background flush or checkpoint writes it out and makes it clean again. Evicting a clean page just drops it; evicting a dirty page must flush first. Either way the frame is reused.</desc>
+  <defs>
+    <marker id="d212a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="d212g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="d212y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="779" height="365" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">PAGE LIFECYCLE INSIDE THE BUFFER POOL</text>
+  <line x1="24" y1="48" x2="756" y2="48" stroke="#21262d"/>
+
+  <!-- entry -->
+  <text x="170" y="74" fill="#8b949e" font-size="13" font-style="italic" text-anchor="middle">(not in memory)</text>
+  <line x1="170" y1="82" x2="170" y2="146" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d212a)"/>
+  <text x="182" y="119" fill="#c9d1d9" font-size="12.5">read from disk (page miss)</text>
+
+  <!-- CLEAN -->
+  <rect x="90" y="150" width="160" height="64" rx="10" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="170" y="177" fill="#56d364" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="1">CLEAN</text>
+  <text x="170" y="199" fill="#c9d1d9" font-size="12.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">RAM=disk</text>
+
+  <!-- DIRTY -->
+  <rect x="450" y="150" width="160" height="64" rx="10" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".85"/>
+  <text x="530" y="177" fill="#e3b341" font-size="15" font-weight="700" text-anchor="middle" letter-spacing="1">DIRTY</text>
+  <text x="530" y="199" fill="#c9d1d9" font-size="12.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">RAM≠disk</text>
+
+  <!-- transitions -->
+  <line x1="252" y1="166" x2="446" y2="166" stroke="#d29922" stroke-width="1.6" marker-end="url(#d212y)"/>
+  <text x="350" y="157" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE / INSERT / DELETE</text>
+  <line x1="448" y1="198" x2="254" y2="198" stroke="#3fb950" stroke-width="1.6" marker-end="url(#d212g)"/>
+  <text x="350" y="220" fill="#c9d1d9" font-size="12.5" text-anchor="middle">background flush /</text>
+  <text x="350" y="238" fill="#c9d1d9" font-size="12.5" text-anchor="middle">checkpoint writes it out</text>
+
+  <!-- evictions -->
+  <line x1="170" y1="214" x2="170" y2="314" stroke="#3fb950" stroke-width="1.5" marker-end="url(#d212g)"/>
+  <text x="182" y="270" fill="#56d364" font-size="13">evict: just drop it <tspan font-weight="700">✓</tspan></text>
+  <line x1="530" y1="214" x2="530" y2="314" stroke="#d29922" stroke-width="1.5" marker-end="url(#d212y)"/>
+  <text x="542" y="270" fill="#e3b341" font-size="13">evict: <tspan font-weight="700">MUST</tspan> flush first</text>
+  <!-- waiting clock -->
+  <circle cx="694" cy="265" r="7.5" fill="none" stroke="#d29922" stroke-width="1.5"/>
+  <line x1="694" y1="265" x2="694" y2="260" stroke="#d29922" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="694" y1="265" x2="698" y2="267" stroke="#d29922" stroke-width="1.5" stroke-linecap="round"/>
+
+  <rect x="110" y="318" width="120" height="24" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="170" y="334.5" fill="#8b949e" font-size="12" text-anchor="middle">(frame reused)</text>
+  <rect x="470" y="318" width="120" height="24" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="530" y="334.5" fill="#8b949e" font-size="12" text-anchor="middle">(frame reused)</text>
+</svg>

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="590" height="470" viewBox="0 0 590 470" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Savepoint flow</title>
+  <desc>BEGIN, UPDATE A (debit), SAVEPOINT, UPDATE B (credit) fails with an error, ROLLBACK TO SAVEPOINT undoes only the credit, UPDATE B (retry credit), COMMIT.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="589" height="469" rx="14" fill="#161b22" stroke="#30363d"/>
+  <line x1="56" y1="60" x2="56" y2="404" stroke="#30363d" stroke-width="2"/>
+  <rect x="24" y="24" width="140" height="36" rx="18" fill="#58a6ff" fill-opacity="0.16" stroke="#58a6ff" stroke-opacity="0.7"/>
+  <text x="94.0" y="47" font-size="14" fill="#79c0ff" font-weight="700" text-anchor="middle">BEGIN</text>
+  <circle cx="56" cy="104" r="4.5" fill="#8b949e"/>
+  <line x1="61" y1="104" x2="84" y2="104" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="84" y="86" width="296" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="100" y="109" font-size="13.5" fill="#e6edf3" font-weight="600">UPDATE A (debit)</text>
+  <circle cx="56" cy="166" r="4.5" fill="#bc8cff"/>
+  <line x1="61" y1="166" x2="84" y2="166" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="84" y="148" width="296" height="36" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.7"/>
+  <text x="100" y="171" font-size="13.5" fill="#d2a8ff" font-weight="600">SAVEPOINT</text>
+  <circle cx="56" cy="228" r="4.5" fill="#f85149"/>
+  <line x1="61" y1="228" x2="84" y2="228" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="84" y="210" width="296" height="36" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="100" y="233" font-size="13.5" fill="#ff7b72" font-weight="600">UPDATE B (credit) — ERROR!</text>
+  <circle cx="56" cy="290" r="4.5" fill="#d29922"/>
+  <line x1="61" y1="290" x2="84" y2="290" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="84" y="272" width="296" height="36" rx="8" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.7"/>
+  <text x="100" y="295" font-size="13.5" fill="#e3b341" font-weight="600">ROLLBACK TO SAVEPOINT</text>
+  <circle cx="56" cy="352" r="4.5" fill="#8b949e"/>
+  <line x1="61" y1="352" x2="84" y2="352" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="84" y="334" width="296" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="100" y="357" font-size="13.5" fill="#e6edf3" font-weight="600">UPDATE B (retry credit)</text>
+  <rect x="24" y="408" width="140" height="36" rx="18" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="94.0" y="431" font-size="14" fill="#56d364" font-weight="700" text-anchor="middle">COMMIT ✓</text>
+  <line x1="56" y1="390" x2="56" y2="404" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <path d="M380,290 H460 Q476,290 476,274 V182 Q476,166 460,166 H386" fill="none" stroke="#d29922" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a-amber)"/>
+  <text x="490" y="222" font-size="13" fill="#e3b341" font-weight="600">(undo only</text>
+  <text x="490" y="240" font-size="13" fill="#e3b341" font-weight="600">credit)</text>
+</svg>

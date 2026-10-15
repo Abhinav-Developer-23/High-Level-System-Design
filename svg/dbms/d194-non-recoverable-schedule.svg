@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="340" viewBox="0 0 640 340" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Non-recoverable schedule</title>
+  <desc>T2 reads T1's uncommitted A and commits before T1; when T1 aborts, T2's commit cannot be undone.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="639" height="339" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="82" y="24" width="146" height="292" rx="6" fill="#bc8cff" fill-opacity="0.05" stroke="none"/>
+  <rect x="232" y="24" width="146" height="292" rx="6" fill="#39c5cf" fill-opacity="0.05" stroke="none"/>
+  <text x="52.0" y="45" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">TIME</text>
+  <text x="155.0" y="45" font-size="14" fill="#d2a8ff" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T1</text>
+  <text x="305.0" y="45" font-size="14" fill="#56d4dd" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T2</text>
+  <line x1="24" y1="56" x2="380" y2="56" stroke="#30363d"/>
+  <text x="52.0" y="78.5" font-size="13" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <rect x="128.5" y="62.0" width="53" height="24" rx="6" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="155.0" y="78.5" font-size="13" fill="#d2a8ff" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">R(A)</text>
+  <line x1="24" y1="92" x2="380" y2="92" stroke="#21262d"/>
+  <text x="52.0" y="114.5" font-size="13" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <rect x="128.5" y="98.0" width="53" height="24" rx="6" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="155.0" y="114.5" font-size="13" fill="#d2a8ff" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">W(A)</text>
+  <line x1="24" y1="128" x2="380" y2="128" stroke="#21262d"/>
+  <rect x="24" y="130" width="356" height="32" rx="6" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.45"/>
+  <text x="52.0" y="150.5" font-size="13" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+  <rect x="278.5" y="134.0" width="53" height="24" rx="6" fill="#39c5cf" fill-opacity="0.14" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="305.0" y="150.5" font-size="13" fill="#56d4dd" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">R(A)</text>
+  <text x="396" y="150.5" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">← </tspan>reads T1's <tspan fill="#e3b341" font-weight="700">uncommitted</tspan> value</text>
+  <line x1="24" y1="164" x2="380" y2="164" stroke="#21262d"/>
+  <text x="52.0" y="186.5" font-size="13" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4</text>
+  <rect x="278.5" y="170.0" width="53" height="24" rx="6" fill="#39c5cf" fill-opacity="0.14" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="305.0" y="186.5" font-size="13" fill="#56d4dd" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">W(A)</text>
+  <line x1="24" y1="200" x2="380" y2="200" stroke="#21262d"/>
+  <text x="52.0" y="222.5" font-size="13" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5</text>
+  <rect x="270.5" y="206.0" width="69" height="24" rx="6" fill="#d29922" fill-opacity="0.14" stroke="#d29922" stroke-opacity="0.55"/>
+  <text x="305.0" y="222.5" font-size="13" fill="#e3b341" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <text x="396" y="222.5" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">← </tspan>T2 commits <tspan fill="#ff7b72" font-weight="700">BEFORE</tspan> T1!</text>
+  <line x1="24" y1="236" x2="380" y2="236" stroke="#21262d"/>
+  <rect x="24" y="238" width="356" height="76" rx="6" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.45"/>
+  <text x="52.0" y="258.5" font-size="13" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6</text>
+  <rect x="116.5" y="242.0" width="77" height="24" rx="6" fill="#f85149" fill-opacity="0.14" stroke="#f85149" stroke-opacity="0.55"/>
+  <text x="155.0" y="258.5" font-size="13" fill="#ff7b72" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ABORT ✗</text>
+  <text x="396" y="258.5" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">← </tspan>T1 rolls back...</text>
+  <text x="396" y="277.5" font-size="13" fill="#c9d1d9">but T2 already committed!</text>
+  <text x="396" y="296.5" font-size="13" fill="#c9d1d9"><tspan fill="#ff7b72" font-weight="700">IRRECOVERABLE!</tspan></text>
+  <path d="M155.0,122.0 V146.0 H273.0" stroke="#d29922" stroke-width="1.4" fill="none" stroke-dasharray="4 4" marker-end="url(#m-amber)"/>
+</svg>

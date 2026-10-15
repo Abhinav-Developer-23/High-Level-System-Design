@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="280" viewBox="0 0 720 280" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Pre-claiming lock protocol</title>
+  <desc>T1 needs locks A, B and C and requests all three at once. If all are granted it executes and releases all locks; if any is denied it rolls back, waits and retries later.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="719" height="279" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="330" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="49" font-size="13.5" fill="#c9d1d9"><tspan fill="#d2a8ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T1</tspan> needs: <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Lock(A), Lock(B), Lock(C)</tspan></text>
+  <line x1="60" y1="64" x2="60" y2="86" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-gray)"/>
+  <rect x="24" y="90" width="330" height="40" rx="8" fill="#58a6ff" fill-opacity="0.1" stroke="#58a6ff" stroke-opacity="0.55"/>
+  <text x="40" y="115" font-size="14" fill="#e6edf3" font-weight="600">Request all three at once</text>
+  <line x1="60" y1="130" x2="60" y2="232" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="60" y1="174" x2="92" y2="174" stroke="#3fb950" stroke-width="1.6" marker-end="url(#m-green)"/>
+  <rect x="96" y="156" width="128" height="36" rx="8" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="160.0" y="179" font-size="13.5" fill="#e6edf3" font-weight="600" text-anchor="middle">All granted?</text>
+  <line x1="224" y1="174" x2="252" y2="174" stroke="#3fb950" stroke-width="1.6" marker-end="url(#m-green)"/>
+  <rect x="256" y="156" width="120" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="316.0" y="179" font-size="13.5" fill="#e6edf3" font-weight="600" text-anchor="middle">Execute <tspan fill="#d2a8ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T1</tspan></text>
+  <line x1="376" y1="174" x2="404" y2="174" stroke="#3fb950" stroke-width="1.6" marker-end="url(#m-green)"/>
+  <rect x="408" y="156" width="180" height="36" rx="8" fill="#3fb950" fill-opacity="0.13" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="498.0" y="179" font-size="13.5" fill="#56d364" font-weight="600" text-anchor="middle">Release all locks ✓</text>
+  <line x1="60" y1="232" x2="92" y2="232" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+  <rect x="96" y="214" width="128" height="36" rx="8" fill="#f85149" fill-opacity="0.08" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="160.0" y="237" font-size="13.5" fill="#e6edf3" font-weight="600" text-anchor="middle">Any denied?</text>
+  <line x1="224" y1="232" x2="252" y2="232" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+  <rect x="256" y="214" width="104" height="36" rx="8" fill="#f85149" fill-opacity="0.13" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="308.0" y="237" font-size="13.5" fill="#ff7b72" font-weight="600" text-anchor="middle">Rollback</text>
+  <line x1="360" y1="232" x2="388" y2="232" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+  <rect x="392" y="214" width="80" height="36" rx="8" fill="#d29922" fill-opacity="0.13" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="432.0" y="237" font-size="13.5" fill="#e3b341" font-weight="600" text-anchor="middle">Wait</text>
+  <line x1="472" y1="232" x2="500" y2="232" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+  <rect x="504" y="214" width="136" height="36" rx="8" fill="#f85149" fill-opacity="0.13" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="572.0" y="237" font-size="13.5" fill="#ff7b72" font-weight="600" text-anchor="middle">Retry later ✗</text>
+  <path d="M640,232 H670 V110 H358" stroke="#d29922" stroke-width="1.5" fill="none" stroke-dasharray="5 4" marker-end="url(#m-amber)"/>
+</svg>

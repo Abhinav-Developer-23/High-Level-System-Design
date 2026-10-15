@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="296" viewBox="0 0 640 296" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Privilege scope hierarchy</title>
+  <desc>MySQL privilege scopes from broadest to narrowest: *.* (global) covers all databases and all tables; database.* covers all tables in one database; database.table covers one specific table; database.table(col) covers specific columns in a table.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="639" height="295" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SCOPE</text>
+  <text x="358" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">APPLIES TO</text>
+  <line x1="24" y1="54" x2="616" y2="54" stroke="#30363d"/>
+
+  <!-- connectors -->
+  <g stroke="#484f58" stroke-width="1.5" fill="none">
+    <path d="M44,104 V141 H56" marker-end="url(#arr)"/>
+    <path d="M74,160 V197 H80" marker-end="url(#arr)"/>
+    <path d="M98,216 V253 H104" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- rows -->
+  <rect x="32" y="66" width="268" height="38" rx="8" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="48" y="90" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3">*.*</text>
+  <rect x="198" y="74" width="88" height="22" rx="11" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="242" y="89" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">Global</text>
+  <line x1="308" y1="85" x2="344" y2="85" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="358" y="90" fill="#c9d1d9" font-size="13">All databases, all tables</text>
+
+  <rect x="62" y="122" width="238" height="38" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="78" y="146" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#79c0ff">database.*</text>
+  <line x1="308" y1="141" x2="344" y2="141" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="358" y="146" fill="#c9d1d9" font-size="13">All tables in one database</text>
+
+  <rect x="86" y="178" width="214" height="38" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="102" y="202" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#79c0ff">database.table</text>
+  <line x1="308" y1="197" x2="344" y2="197" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="358" y="202" fill="#c9d1d9" font-size="13">One specific table</text>
+
+  <rect x="110" y="234" width="190" height="38" rx="8" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="124" y="258" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3">database.table(col)</text>
+  <line x1="308" y1="253" x2="344" y2="253" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="358" y="258" fill="#c9d1d9" font-size="13">Specific column(s) in a table</text>
+</svg>

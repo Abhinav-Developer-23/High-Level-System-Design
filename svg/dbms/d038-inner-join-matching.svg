@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="870" height="270" viewBox="0 0 870 270" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>INNER JOIN step by step</title>
+  <desc>Student rows Alice (1) and Bob (2) match StudentCourse rows C101, C103 and C102. C104 has ROLL_NO 5, which is not in Student, so no match. Carol (3) and Dave (4) have no rows in StudentCourse, so no match.</desc>
+  <defs>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="869" height="269" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="40" y="40" fill="#e6edf3" font-size="14.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Student</text>
+  <text x="400" y="40" fill="#e6edf3" font-size="14.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">StudentCourse</text>
+
+  <!-- Student table -->
+  <rect x="40" y="56" width="190" height="158" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M40,86 V64 a8,8 0 0 1 8,-8 H222 a8,8 0 0 1 8,8 V86 z" fill="#21262d"/>
+  <path d="M40,150 H230 V206 a8,8 0 0 1 -8,8 H48 a8,8 0 0 1 -8,-8 z" fill="#f85149" fill-opacity=".10"/>
+  <line x1="130" y1="56" x2="130" y2="214" stroke="#30363d"/>
+  <line x1="40" y1="86" x2="230" y2="86" stroke="#30363d"/>
+  <line x1="40" y1="118" x2="230" y2="118" stroke="#21262d"/>
+  <line x1="40" y1="150" x2="230" y2="150" stroke="#21262d"/>
+  <line x1="40" y1="182" x2="230" y2="182" stroke="#21262d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">
+    <text x="52" y="76" fill="#8b949e" font-weight="700">ROLL_NO</text>
+    <text x="142" y="76" fill="#8b949e" font-weight="700">NAME</text>
+    <text x="52" y="107" fill="#c9d1d9">1</text><text x="142" y="107" fill="#e6edf3">Alice</text>
+    <text x="52" y="139" fill="#c9d1d9">2</text><text x="142" y="139" fill="#e6edf3">Bob</text>
+    <text x="52" y="171" fill="#ff7b72">3</text><text x="142" y="171" fill="#ff7b72">Carol</text>
+    <text x="52" y="203" fill="#ff7b72">4</text><text x="142" y="203" fill="#ff7b72">Dave</text>
+  </g>
+  <text x="40" y="240" fill="#ff7b72" font-size="13" font-weight="600">✗ no match <tspan fill="#8b949e" font-weight="400">(3,4 not in StudentCourse)</tspan></text>
+
+  <!-- StudentCourse table -->
+  <rect x="400" y="56" width="210" height="158" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M400,86 V64 a8,8 0 0 1 8,-8 H602 a8,8 0 0 1 8,8 V86 z" fill="#21262d"/>
+  <path d="M400,182 H610 V206 a8,8 0 0 1 -8,8 H408 a8,8 0 0 1 -8,-8 z" fill="#f85149" fill-opacity=".10"/>
+  <line x1="510" y1="56" x2="510" y2="214" stroke="#30363d"/>
+  <line x1="400" y1="86" x2="610" y2="86" stroke="#30363d"/>
+  <line x1="400" y1="118" x2="610" y2="118" stroke="#21262d"/>
+  <line x1="400" y1="150" x2="610" y2="150" stroke="#21262d"/>
+  <line x1="400" y1="182" x2="610" y2="182" stroke="#21262d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">
+    <text x="412" y="76" fill="#8b949e" font-weight="700">COURSE_ID</text>
+    <text x="522" y="76" fill="#8b949e" font-weight="700">ROLL_NO</text>
+    <text x="412" y="107" fill="#e6edf3">C101</text><text x="522" y="107" fill="#c9d1d9">1</text>
+    <text x="412" y="139" fill="#e6edf3">C103</text><text x="522" y="139" fill="#c9d1d9">1</text>
+    <text x="412" y="171" fill="#e6edf3">C102</text><text x="522" y="171" fill="#c9d1d9">2</text>
+    <text x="412" y="203" fill="#ff7b72">C104</text><text x="522" y="203" fill="#ff7b72">5</text>
+  </g>
+
+  <!-- match lines -->
+  <line x1="230" y1="102" x2="396" y2="102" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <line x1="230" y1="102" x2="396" y2="134" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <line x1="230" y1="134" x2="396" y2="166" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+
+  <!-- verdicts -->
+  <text x="628" y="107" fill="#56d364" font-size="13" font-weight="600">✓ match</text>
+  <text x="628" y="139" fill="#56d364" font-size="13" font-weight="600">✓ match</text>
+  <text x="628" y="171" fill="#56d364" font-size="13" font-weight="600">✓ match</text>
+  <text x="628" y="203" fill="#ff7b72" font-size="13" font-weight="600">✗ no match <tspan fill="#8b949e" font-weight="400">(5 not in Student)</tspan></text>
+</svg>

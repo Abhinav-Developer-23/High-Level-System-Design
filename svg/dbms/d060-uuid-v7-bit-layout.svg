@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="306" viewBox="0 0 760 306" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>UUID v7 bit layout</title>
+  <desc>UUID v7 structure: 48 bits Unix timestamp in milliseconds (gives ordering), 4 bits version (always 0111 for v7), 12 bits random, 2 bits variant, 62 bits random. 128 bits total, the same as UUID v4.</desc>
+  <rect x="0.5" y="0.5" width="759" height="305" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="40" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">UUID V7 STRUCTURE</text>
+
+  <!-- bit bar -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" font-weight="600" text-anchor="middle">
+    <rect x="40" y="58" width="252" height="40" fill="#3fb950" fill-opacity=".16" stroke="#3fb950"/>
+    <text x="166" y="83" fill="#56d364">48</text>
+    <rect x="292" y="58" width="24" height="40" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+    <text x="304" y="83" fill="#79c0ff">4</text>
+    <rect x="316" y="58" width="64" height="40" fill="#1c2128" stroke="#484f58"/>
+    <text x="348" y="83" fill="#c9d1d9">12</text>
+    <rect x="380" y="58" width="24" height="40" fill="#d29922" fill-opacity=".16" stroke="#d29922"/>
+    <text x="392" y="83" fill="#e3b341">2</text>
+    <rect x="404" y="58" width="316" height="40" fill="#1c2128" stroke="#484f58"/>
+    <text x="562" y="83" fill="#c9d1d9">62</text>
+  </g>
+
+  <!-- legend -->
+  <g font-size="13">
+    <rect x="40" y="125" width="12" height="12" rx="3" fill="#3fb950" fill-opacity=".5" stroke="#3fb950"/>
+    <text x="64" y="136" fill="#56d364" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">48 bits:</text>
+    <text x="150" y="136" fill="#c9d1d9">Unix timestamp in milliseconds <tspan fill="#56d364">(gives ordering)</tspan></text>
+
+    <rect x="40" y="151" width="12" height="12" rx="3" fill="#58a6ff" fill-opacity=".5" stroke="#58a6ff"/>
+    <text x="64" y="162" fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600"> 4 bits:</text>
+    <text x="150" y="162" fill="#c9d1d9">Version (always <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">0111</tspan> for v7)</text>
+
+    <rect x="40" y="177" width="12" height="12" rx="3" fill="#1c2128" stroke="#484f58"/>
+    <text x="64" y="188" fill="#c9d1d9" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">12 bits:</text>
+    <text x="150" y="188" fill="#c9d1d9">Random</text>
+
+    <rect x="40" y="203" width="12" height="12" rx="3" fill="#d29922" fill-opacity=".5" stroke="#d29922"/>
+    <text x="64" y="214" fill="#e3b341" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600"> 2 bits:</text>
+    <text x="150" y="214" fill="#c9d1d9">Variant</text>
+
+    <rect x="40" y="229" width="12" height="12" rx="3" fill="#1c2128" stroke="#484f58"/>
+    <text x="64" y="240" fill="#c9d1d9" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">62 bits:</text>
+    <text x="150" y="240" fill="#c9d1d9">Random</text>
+  </g>
+
+  <line x1="40" y1="258" x2="720" y2="258" stroke="#30363d"/>
+  <text x="40" y="284" fill="#e6edf3" font-size="14" font-weight="600"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">128</tspan> bits total <tspan fill="#8b949e" font-weight="400">(same as UUID v4)</tspan></text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="452" viewBox="0 0 900 452" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Precedence graph with a cycle</title>
+  <desc>Schedule T1 Read(A), T2 Write(A), T2 Read(B), T1 Write(B). T1 read A before T2 writes A gives T1 to T2; T2 read B before T1 writes B gives T2 to T1. The precedence graph has a cycle, so it is not conflict serializable.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="451" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" font-size="14.5" fill="#e6edf3" font-weight="600">Schedule:</text>
+  <rect x="24" y="56" width="812" height="34" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="46.0" y="78" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">T</text>
+  <text x="133.0" y="78" font-size="12" fill="#d2a8ff" font-weight="700" text-anchor="middle" letter-spacing="1.5">T1</text>
+  <text x="263.0" y="78" font-size="12" fill="#56d4dd" font-weight="700" text-anchor="middle" letter-spacing="1.5">T2</text>
+  <text x="344" y="78" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">NOTE</text>
+  <rect x="68" y="90" width="130" height="136" rx="0" fill="#bc8cff" fill-opacity="0.07" stroke="#bc8cff" stroke-opacity="0"/>
+  <rect x="198" y="90" width="130" height="136" rx="0" fill="#39c5cf" fill-opacity="0.07" stroke="#39c5cf" stroke-opacity="0"/>
+  <line x1="24" y1="90" x2="836" y2="90" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="111.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t1</text>
+  <text x="133.0" y="111.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <line x1="24" y1="124" x2="836" y2="124" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="145.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t2</text>
+  <text x="263.0" y="145.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <text x="344" y="145.5" font-size="13" fill="#ff7b72" font-weight="600">← T1 read A, T2 writes A → T1 → T2</text>
+  <line x1="24" y1="158" x2="836" y2="158" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="179.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t3</text>
+  <text x="263.0" y="179.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(B)</text>
+  <line x1="24" y1="192" x2="836" y2="192" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="213.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t4</text>
+  <text x="133.0" y="213.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(B)</text>
+  <text x="344" y="213.5" font-size="13" fill="#ff7b72" font-weight="600">← T2 read B, T1 writes B → T2 → T1</text>
+  <rect x="24" y="56" width="812" height="170" rx="10" fill="none" stroke="#30363d"/>
+  <rect x="24" y="250" width="400" height="178" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="278" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">PRECEDENCE GRAPH</text>
+  <circle cx="144.0" cy="353.0" r="26" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity=".8" stroke-width="1.5"/>
+  <circle cx="304.0" cy="353.0" r="26" fill="#39c5cf" fill-opacity="0.14" stroke="#39c5cf" stroke-opacity=".8" stroke-width="1.5"/>
+  <text x="144.0" y="358.0" font-size="15" fill="#d2a8ff" font-weight="700" text-anchor="middle">T1</text>
+  <text x="304.0" y="358.0" font-size="15" fill="#56d4dd" font-weight="700" text-anchor="middle">T2</text>
+  <path d="M166.0,339.0 Q224.0,295.0 280.0,337.0" fill="none" stroke="#f85149" stroke-width="2" marker-end="url(#a-red)"/>
+  <path d="M282.0,367.0 Q224.0,411.0 168.0,369.0" fill="none" stroke="#f85149" stroke-width="2" marker-end="url(#a-red)"/>
+  <text x="224.0" y="309.0" font-size="12" fill="#ff7b72" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T1 → T2</text>
+  <text x="224.0" y="407.0" font-size="12" fill="#ff7b72" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T2 → T1</text>
+  <rect x="186.0" y="342.0" width="76" height="22" rx="11.0" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="224.0" y="357.32" font-size="12" fill="#ff7b72" font-weight="600" text-anchor="middle">CYCLE!</text>
+  <rect x="444" y="250" width="432" height="178" rx="10" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="464" y="326" font-size="15" fill="#e6edf3" font-weight="600">Cycle detected  →</text>
+  <text x="464" y="356" font-size="16" fill="#ff7b72" font-weight="700">✗ NOT Conflict Serializable</text>
+</svg>

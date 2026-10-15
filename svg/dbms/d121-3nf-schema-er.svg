@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="200" viewBox="0 0 760 200" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Final 3NF schema relationships</title>
+  <desc>departments 1-N students, students 1-N student_phones, students 1-N enrollment, enrollment N-1 courses.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="759" height="199" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="32" y="32" width="150" height="40" rx="9" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="107.0" y="57" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">departments</text>
+  <rect x="300" y="32" width="130" height="40" rx="9" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="365.0" y="57" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">students</text>
+  <rect x="556" y="32" width="170" height="40" rx="9" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="641.0" y="57" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">student_phones</text>
+  <rect x="300" y="136" width="130" height="40" rx="9" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="365.0" y="161" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">enrollment</text>
+  <rect x="556" y="136" width="170" height="40" rx="9" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="641.0" y="161" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">courses</text>
+  <line x1="182" y1="52" x2="300" y2="52" stroke="#8b949e" stroke-width="1.6"/>
+  <text x="194" y="45" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">1</text>
+  <text x="288" y="45" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">N</text>
+  <line x1="430" y1="52" x2="556" y2="52" stroke="#8b949e" stroke-width="1.6"/>
+  <text x="442" y="45" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">1</text>
+  <text x="544" y="45" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">N</text>
+  <line x1="365" y1="72" x2="365" y2="136" stroke="#8b949e" stroke-width="1.6"/>
+  <text x="378" y="90" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">1</text>
+  <text x="378" y="128" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">N</text>
+  <line x1="430" y1="156" x2="556" y2="156" stroke="#8b949e" stroke-width="1.6"/>
+  <text x="442" y="149" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">N</text>
+  <text x="544" y="149" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">1</text>
+</svg>

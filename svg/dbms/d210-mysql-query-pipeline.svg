@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="552" viewBox="0 0 880 552" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>MySQL query pipeline</title>
+  <desc>SQL text passes through 1 connection/thread handling, 2 parser, 3 preprocessor, 4 cost-based optimizer, 5 execution engine and 6 storage engine before the result set is returned. Syntax errors die in the parser, unknown columns in the preprocessor, and slow-but-correct plans are decided by the optimizer.</desc>
+  <defs>
+    <marker id="d210a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="879" height="551" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- input -->
+  <rect x="130" y="20" width="100" height="24" rx="12" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="180" y="36.5" fill="#79c0ff" font-size="12.5" font-weight="600" text-anchor="middle">SQL text</text>
+  <line x1="180" y1="44" x2="180" y2="64" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- 1 -->
+  <rect x="40" y="66" width="280" height="56" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="58" y="99" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#8b949e" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1.</tspan> Connection / Thread handling</text>
+  <line x1="320" y1="94" x2="342" y2="94" stroke="#484f58" stroke-dasharray="3 3"/>
+  <text x="350" y="99" fill="#c9d1d9" font-size="13">authenticate, assign a thread, check privileges</text>
+  <line x1="180" y1="122" x2="180" y2="136" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- 2 -->
+  <rect x="40" y="138" width="280" height="56" rx="10" fill="#f85149" fill-opacity=".07" stroke="#f85149" stroke-opacity=".55"/>
+  <text x="58" y="161" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#8b949e" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2.</tspan> PARSER</text>
+  <text x="80" y="181" fill="#8b949e" font-size="12.5">(lexer + syntax)</text>
+  <line x1="320" y1="166" x2="342" y2="166" stroke="#484f58" stroke-dasharray="3 3"/>
+  <text x="350" y="161" fill="#c9d1d9" font-size="13">tokenize → build a parse tree</text>
+  <text x="350" y="183" fill="#ff7b72" font-size="13"><tspan font-weight="700">✗</tspan> dies here on: <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">"You have an error in your SQL syntax"</tspan></text>
+  <line x1="180" y1="194" x2="180" y2="208" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- 3 -->
+  <rect x="40" y="210" width="280" height="56" rx="10" fill="#f85149" fill-opacity=".07" stroke="#f85149" stroke-opacity=".55"/>
+  <text x="58" y="233" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#8b949e" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3.</tspan> PREPROCESSOR</text>
+  <text x="80" y="253" fill="#8b949e" font-size="12.5">(resolver)</text>
+  <line x1="320" y1="238" x2="342" y2="238" stroke="#484f58" stroke-dasharray="3 3"/>
+  <text x="350" y="233" fill="#c9d1d9" font-size="13">semantic validation ("the precompile step")</text>
+  <text x="350" y="255" fill="#ff7b72" font-size="13"><tspan font-weight="700">✗</tspan> dies here on: <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">"Unknown column 'x' in 'field list'"</tspan></text>
+  <line x1="180" y1="266" x2="180" y2="280" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- 4 -->
+  <rect x="40" y="282" width="280" height="56" rx="10" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="58" y="305" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#8b949e" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4.</tspan> OPTIMIZER</text>
+  <text x="80" y="325" fill="#8b949e" font-size="12.5">(cost-based)</text>
+  <line x1="320" y1="310" x2="342" y2="310" stroke="#484f58" stroke-dasharray="3 3"/>
+  <text x="350" y="305" fill="#c9d1d9" font-size="13">cost-based: pick indexes, join order, join algorithm</text>
+  <text x="350" y="327" fill="#e3b341" font-size="13"><tspan font-weight="700">⚠</tspan> slow-but-correct queries are decided <tspan font-weight="700">HERE</tspan></text>
+  <line x1="180" y1="338" x2="180" y2="352" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- 5 -->
+  <rect x="40" y="354" width="280" height="56" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="58" y="387" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#8b949e" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5.</tspan> EXECUTION ENGINE</text>
+  <line x1="320" y1="382" x2="342" y2="382" stroke="#484f58" stroke-dasharray="3 3"/>
+  <text x="350" y="387" fill="#c9d1d9" font-size="13">walk the chosen plan, call the storage engine</text>
+  <line x1="180" y1="410" x2="180" y2="424" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- 6 -->
+  <rect x="40" y="426" width="280" height="56" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".55"/>
+  <text x="58" y="459" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#8b949e" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6.</tspan> STORAGE ENGINE</text>
+  <line x1="320" y1="454" x2="342" y2="454" stroke="#484f58" stroke-dasharray="3 3"/>
+  <text x="350" y="459" fill="#c9d1d9" font-size="13"><tspan fill="#56d4dd" font-weight="600">InnoDB:</tspan> buffer pool → B+ tree lookups → disk</text>
+  <line x1="180" y1="482" x2="180" y2="502" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d210a)"/>
+
+  <!-- output -->
+  <rect x="125" y="504" width="110" height="24" rx="12" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="180" y="520.5" fill="#56d364" font-size="12.5" font-weight="600" text-anchor="middle">Result set</text>
+</svg>

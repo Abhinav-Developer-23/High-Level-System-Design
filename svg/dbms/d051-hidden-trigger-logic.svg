@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="514" viewBox="0 0 860 514" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Hidden trigger logic</title>
+  <desc>The developer reads UPDATE employees SET salary = 75000 WHERE emp_id = 101 and thinks it just updates one row. Actually the UPDATE fires trg_salary_audit (INSERT into salary_audit), trg_sync_payroll (UPDATE payroll table) and trg_notify_finance (INSERT into notification_queue), which fires another trigger. Debugging a production issue becomes a nightmare because the cause is not in the code you are reading.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="859" height="513" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">DEVELOPER READS THE APP CODE</text>
+  <rect x="24" y="48" width="520" height="38" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <text x="40" y="72" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE employees SET salary = 75000 WHERE emp_id = 101;</text>
+  <line x1="120" y1="86" x2="120" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="24" y="114" width="520" height="38" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="138" fill="#e6edf3" font-size="13.5" font-style="italic">"Okay, this just updates one row."  <tspan font-style="normal" fill="#56d364" font-weight="700">✓</tspan> <tspan font-style="normal" fill="#8b949e" font-size="12.5">(what they think)</tspan></text>
+  <line x1="24" y1="176" x2="836" y2="176" stroke="#21262d"/>
+  <text x="24" y="204" fill="#ff7b72" font-size="12" font-weight="700" letter-spacing="1.5">WHAT ACTUALLY HAPPENS IN THE DATABASE</text>
+  <rect x="24" y="268" width="200" height="36" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <text x="40" y="291" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE employees ...</text>
+  <path d="M224,286 H256 M256,238 V334" fill="none" stroke="#f0883e" stroke-width="1.6"/>
+  <line x1="256" y1="238.0" x2="286" y2="238.0" stroke="#f0883e" stroke-width="1.6" marker-end="url(#arrO)"/>
+  <rect x="290" y="220" width="200" height="36" rx="8" fill="#f0883e" fill-opacity=".12" stroke="#f0883e" stroke-opacity=".7"/>
+  <text x="306" y="242.5" fill="#ffa657" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">trg_salary_audit</text>
+  <line x1="490" y1="238.0" x2="536" y2="238.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="540" y="220" width="296" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="556" y="242.5" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">INSERT into salary_audit</text>
+  <line x1="256" y1="286.0" x2="286" y2="286.0" stroke="#f0883e" stroke-width="1.6" marker-end="url(#arrO)"/>
+  <rect x="290" y="268" width="200" height="36" rx="8" fill="#f0883e" fill-opacity=".12" stroke="#f0883e" stroke-opacity=".7"/>
+  <text x="306" y="290.5" fill="#ffa657" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">trg_sync_payroll</text>
+  <line x1="490" y1="286.0" x2="536" y2="286.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="540" y="268" width="296" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="556" y="290.5" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE payroll table</text>
+  <line x1="256" y1="334.0" x2="286" y2="334.0" stroke="#f0883e" stroke-width="1.6" marker-end="url(#arrO)"/>
+  <rect x="290" y="316" width="200" height="36" rx="8" fill="#f0883e" fill-opacity=".12" stroke="#f0883e" stroke-opacity=".7"/>
+  <text x="306" y="338.5" fill="#ffa657" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">trg_notify_finance</text>
+  <line x1="490" y1="334.0" x2="536" y2="334.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="540" y="316" width="296" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="556" y="338.5" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">INSERT into notification_queue</text>
+  <line x1="688" y1="352" x2="688" y2="376" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <rect x="568" y="380" width="240" height="34" rx="17" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <polygon points="605.0,397.0 599.7,398.5 602.4,403.4 597.5,400.7 596.0,406.0 594.5,400.7 589.6,403.4 592.3,398.5 587.0,397.0 592.3,395.5 589.6,390.6 594.5,393.3 596.0,388.0 597.5,393.3 602.4,390.6 599.7,395.5" fill="#ff7b72"/>
+  <text x="614" y="402" fill="#ff7b72" font-size="13" font-weight="700">(another trigger fires!)</text>
+  <rect x="24" y="436" width="812" height="54" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".5"/>
+  <text x="42" y="468" fill="#c9d1d9" font-size="13.5"><tspan font-weight="700" fill="#ff7b72">Result:</tspan> Debugging a production issue becomes a nightmare — the cause isn't in the code you're reading.</text>
+</svg>

@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="336" viewBox="0 0 860 336" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Commit cost: WAL vs writing data pages</title>
+  <desc>WAL commit appends ~100 bytes to the end of one file (1 sequential write, ~0.1-1 ms on SSD). Writing data pages directly writes a full 16 KB page for the row plus 16 KB for every index page touched (PK, idx_email, idx_city, ...), i.e. 3-5+ random writes all over the disk: several ms, far slower on HDD.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="859" height="335" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="396" height="288" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,36 a12,12 0 0 1 12,-12 h372 a12,12 0 0 1 12,12 v28 h-396 z" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="44" y="55" fill="#56d364" font-size="14.5" font-weight="600">Commit with WAL (what DBs do)</text>
+  <rect x="440" y="24" width="396" height="288" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M440,36 a12,12 0 0 1 12,-12 h372 a12,12 0 0 1 12,12 v28 h-396 z" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="460" y="55" fill="#ff7b72" font-size="14.5" font-weight="600">Commit writing data pages directly</text>
+  <text x="44" y="96" fill="#c9d1d9" font-size="13">append ~100 bytes to END of 1 file</text>
+  <text x="44" y="166" fill="#8b949e" font-size="12">log file</text>
+  <rect x="44" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="74" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="104" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="134" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="164" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="194" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="224" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="254" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="284" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="314" y="178" width="30" height="30" rx="0" fill="#1c2128" stroke="#30363d"/>
+  <rect x="344" y="178" width="56" height="30" rx="4" fill="#3fb950" fill-opacity="0.22" stroke="#3fb950" stroke-opacity="0.9"/>
+  <text x="372" y="198" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">~100 B</text>
+  <text x="372" y="152" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">END</text>
+  <line x1="372" y1="158" x2="372" y2="174" stroke="#3fb950" stroke-width="1.5" marker-end="url(#a-green)"/>
+  <text x="44" y="260" fill="#c9d1d9" font-size="13"><tspan fill="#56d364">→ </tspan><tspan fill="#e6edf3" font-weight="600">1 sequential write</tspan></text>
+  <rect x="137.0" y="276" width="170" height="22" rx="11.0" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="222.0" y="291.32" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">~0.1–1 ms on SSD</text>
+  <text x="460" y="96" fill="#c9d1d9" font-size="13">write a full 16 KB page for the row</text>
+  <text x="460" y="116" fill="#c9d1d9" font-size="13">+ 16 KB for EVERY index page touched</text>
+  <text x="472" y="136" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">(PK, idx_email, idx_city, ...)</text>
+  <rect x="460" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="496" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="532" y="156" width="30" height="22" rx="3" fill="#f85149" fill-opacity="0.25" stroke="#f85149" stroke-opacity="0.9"/>
+  <rect x="568" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="604" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="640" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="676" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="712" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="748" y="156" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="784" y="156" width="30" height="22" rx="3" fill="#f85149" fill-opacity="0.25" stroke="#f85149" stroke-opacity="0.9"/>
+  <rect x="460" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="496" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="532" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="568" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="604" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="640" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="676" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="712" y="184" width="30" height="22" rx="3" fill="#f85149" fill-opacity="0.25" stroke="#f85149" stroke-opacity="0.9"/>
+  <rect x="748" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="784" y="184" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="460" y="212" width="30" height="22" rx="3" fill="#f85149" fill-opacity="0.25" stroke="#f85149" stroke-opacity="0.9"/>
+  <rect x="496" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="532" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="568" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="604" y="212" width="30" height="22" rx="3" fill="#f85149" fill-opacity="0.25" stroke="#f85149" stroke-opacity="0.9"/>
+  <rect x="640" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="676" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="712" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="748" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <rect x="784" y="212" width="30" height="22" rx="3" fill="#1c2128" stroke="#30363d"/>
+  <text x="460" y="260" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72">→ </tspan><tspan fill="#e6edf3" font-weight="600">3–5+ random writes</tspan><tspan> all over the disk</tspan></text>
+  <rect x="523.0" y="276" width="230" height="22" rx="11.0" fill="#f85149" fill-opacity="0.14" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="638.0" y="291.32" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">several ms; far slower on HDD</text>
+</svg>

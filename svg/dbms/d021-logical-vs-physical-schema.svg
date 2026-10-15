@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="254" viewBox="0 0 620 254" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Types of schema</title>
+  <desc>Database Schema splits into the Logical Schema (what data is stored and its structure: tables, columns, types) and the Physical Schema (how data is actually stored on disk: files, indexes, pages, partitions).</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="619" height="253" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <rect x="210" y="24" width="200" height="44" rx="10" fill="#1c2128" stroke="#8b949e"/>
+  <text x="310" y="51" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Database Schema</text>
+
+  <line x1="310" y1="68" x2="310" y2="86" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="165" y1="86" x2="455" y2="86" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="165" y1="86" x2="165" y2="108" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="455" y1="86" x2="455" y2="108" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="40" y="112" width="250" height="118" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="165" y="138" fill="#79c0ff" font-size="14.5" font-weight="700" text-anchor="middle">Logical Schema</text>
+  <line x1="56" y1="150" x2="274" y2="150" stroke="#58a6ff" stroke-opacity=".3"/>
+  <g font-size="13" fill="#c9d1d9" text-anchor="middle">
+    <text x="165" y="172">What data is stored and</text>
+    <text x="165" y="192">its structure</text>
+    <text x="165" y="212" fill="#8b949e">(tables, columns, types)</text>
+  </g>
+
+  <rect x="330" y="112" width="250" height="118" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".8"/>
+  <text x="455" y="138" fill="#56d4dd" font-size="14.5" font-weight="700" text-anchor="middle">Physical Schema</text>
+  <line x1="346" y1="150" x2="564" y2="150" stroke="#39c5cf" stroke-opacity=".3"/>
+  <g font-size="13" fill="#c9d1d9" text-anchor="middle">
+    <text x="455" y="172">How data is actually stored</text>
+    <text x="455" y="192">on disk</text>
+    <text x="455" y="212" fill="#8b949e">(files, indexes, pages, partitions)</text>
+  </g>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="326" viewBox="0 0 860 326" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Shared and exclusive locks</title>
+  <desc>Scenario 1: T1 and T2 want to read A and both acquire shared locks (multiple readers OK); T3 wants to write A and is blocked until T1 and T2 release. Scenario 2: T1 wants to write A and acquires an exclusive lock; T2 (read) and T3 (write) are both blocked until T1 releases.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="859" height="325" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="812" height="132" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="40.0" y="43.0" width="44" height="22" rx="11.0" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="62" y="58.5" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <text x="98" y="59" font-size="13.5" fill="#c9d1d9">wants to <tspan fill="#79c0ff" font-weight="700">READ</tspan> A</text>
+  <line x1="248" y1="54" x2="284" y2="54" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="290" y="38" width="530" height="32" rx="7" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <text x="306" y="59" font-size="13.5" fill="#79c0ff" font-weight="600">Acquires <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Shared Lock(A)</tspan></text>
+  <rect x="40.0" y="79.0" width="44" height="22" rx="11.0" fill="#39c5cf" fill-opacity=".16" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="62" y="94.5" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <text x="98" y="95" font-size="13.5" fill="#c9d1d9">wants to <tspan fill="#79c0ff" font-weight="700">READ</tspan> A</text>
+  <line x1="248" y1="90" x2="284" y2="90" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="290" y="74" width="530" height="32" rx="7" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="306" y="95" font-size="13.5" fill="#56d364" font-weight="600">Acquires <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Shared Lock(A)</tspan>  ✓   <tspan fill="#8b949e" font-weight="400">(multiple readers OK)</tspan></text>
+  <rect x="40.0" y="115.0" width="44" height="22" rx="11.0" fill="#f0883e" fill-opacity=".16" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="62" y="130.5" font-size="12.5" fill="#ffa657" font-weight="600" text-anchor="middle">T3</text>
+  <text x="98" y="131" font-size="13.5" fill="#c9d1d9">wants to <tspan fill="#ff7b72" font-weight="700">WRITE</tspan> A</text>
+  <line x1="248" y1="126" x2="284" y2="126" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="290" y="110" width="530" height="32" rx="7" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="306" y="131" font-size="13.5" fill="#ff7b72" font-weight="600">Blocked!  ✗   <tspan fill="#8b949e" font-weight="400">(must wait for T1 &amp; T2 to release)</tspan></text>
+  <rect x="24" y="170" width="812" height="132" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="40.0" y="189.0" width="44" height="22" rx="11.0" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="62" y="204.5" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <text x="98" y="205" font-size="13.5" fill="#c9d1d9">wants to <tspan fill="#ff7b72" font-weight="700">WRITE</tspan> A</text>
+  <line x1="248" y1="200" x2="284" y2="200" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="290" y="184" width="530" height="32" rx="7" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="306" y="205" font-size="13.5" fill="#e3b341" font-weight="600">Acquires <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Exclusive Lock(A)</tspan></text>
+  <rect x="40.0" y="225.0" width="44" height="22" rx="11.0" fill="#39c5cf" fill-opacity=".16" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="62" y="240.5" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <text x="98" y="241" font-size="13.5" fill="#c9d1d9">wants to <tspan fill="#79c0ff" font-weight="700">READ</tspan> A</text>
+  <line x1="248" y1="236" x2="284" y2="236" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="290" y="220" width="530" height="32" rx="7" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="306" y="241" font-size="13.5" fill="#ff7b72" font-weight="600">Blocked!  ✗   <tspan fill="#8b949e" font-weight="400">(must wait for T1)</tspan></text>
+  <rect x="40.0" y="261.0" width="44" height="22" rx="11.0" fill="#f0883e" fill-opacity=".16" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="62" y="276.5" font-size="12.5" fill="#ffa657" font-weight="600" text-anchor="middle">T3</text>
+  <text x="98" y="277" font-size="13.5" fill="#c9d1d9">wants to <tspan fill="#ff7b72" font-weight="700">WRITE</tspan> A</text>
+  <line x1="248" y1="272" x2="284" y2="272" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="290" y="256" width="530" height="32" rx="7" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="306" y="277" font-size="13.5" fill="#ff7b72" font-weight="600">Blocked!  ✗   <tspan fill="#8b949e" font-weight="400">(must wait for T1)</tspan></text>
+</svg>

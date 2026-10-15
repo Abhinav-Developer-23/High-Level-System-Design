@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="236" viewBox="0 0 840 236" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Optimistic concurrency control phases</title>
+  <desc>Read phase executes on local copies, validate phase checks for conflicts (YES: abort, NO: proceed), write phase applies changes to the database.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="839" height="235" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="230" height="188" rx="10" fill="#58a6ff" fill-opacity="0.08" stroke="#58a6ff" stroke-opacity="0.55"/>
+  <text x="139.0" y="56" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Read Phase</text>
+  <line x1="40" y1="72" x2="238" y2="72" stroke="#58a6ff" stroke-opacity=".35"/>
+  <rect x="305" y="24" width="230" height="188" rx="10" fill="#d29922" fill-opacity="0.08" stroke="#d29922" stroke-opacity="0.55"/>
+  <text x="420.0" y="56" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Validate Phase</text>
+  <line x1="321" y1="72" x2="519" y2="72" stroke="#d29922" stroke-opacity=".35"/>
+  <rect x="586" y="24" width="230" height="188" rx="10" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="701.0" y="56" font-size="15" fill="#e6edf3" font-weight="600" text-anchor="middle">Write Phase</text>
+  <line x1="602" y1="72" x2="800" y2="72" stroke="#3fb950" stroke-opacity=".35"/>
+  <line x1="254" y1="52" x2="301" y2="52" stroke="#8b949e" stroke-width="1.8" marker-end="url(#m-gray)"/>
+  <line x1="535" y1="52" x2="582" y2="52" stroke="#8b949e" stroke-width="1.8" marker-end="url(#m-gray)"/>
+  <text x="139.0" y="102" font-size="13" fill="#c9d1d9" text-anchor="middle">Execute all operations</text>
+  <text x="139.0" y="122" font-size="13" fill="#c9d1d9" text-anchor="middle">on local copies</text>
+  <text x="420.0" y="102" font-size="13" fill="#c9d1d9" text-anchor="middle">Check for conflicts</text>
+  <text x="420.0" y="134" font-size="14" fill="#e3b341" font-weight="700" text-anchor="middle">Conflict?</text>
+  <rect x="345.0" y="149.0" width="150" height="22" rx="11.0" fill="#f85149" fill-opacity="0.15" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="420.0" y="164.3" font-size="12" fill="#ff7b72" font-weight="600" text-anchor="middle">YES: Abort</text>
+  <rect x="345.0" y="179.0" width="150" height="22" rx="11.0" fill="#3fb950" fill-opacity="0.15" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="420.0" y="194.3" font-size="12" fill="#56d364" font-weight="600" text-anchor="middle">NO: Proceed</text>
+  <path d="M495.0,190 H549 V144 H582" stroke="#3fb950" stroke-width="1.6" fill="none" marker-end="url(#m-green)"/>
+  <text x="701.0" y="102" font-size="13" fill="#c9d1d9" text-anchor="middle">Apply changes</text>
+  <text x="701.0" y="122" font-size="13" fill="#c9d1d9" text-anchor="middle">to database</text>
+</svg>

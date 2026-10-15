@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="714" viewBox="0 0 900 714" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cursor pagination round trip</title>
+  <desc>First load: frontend sends GET /api/products?limit=20, backend runs ORDER BY price, id LIMIT 21 (limit + 1), gets 21 rows so there is more, returns 20 items with next_cursor and has_more true. Load more: frontend echoes the cursor verbatim, backend decodes it to price 29.99 and id 1042 and runs a keyset WHERE clause with LIMIT 21. Last page: 7 items, next_cursor null, has_more false.</desc>
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="713" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="184" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">FRONTEND</text>
+  <text x="698" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">BACKEND</text>
+  <line x1="24" y1="50" x2="876" y2="50" stroke="#30363d"/>
+
+  <!-- ===== 1. First load ===== -->
+  <text x="24" y="78" fill="#e6edf3" font-size="14" font-weight="600">1. First load — <tspan fill="#e3b341">NO cursor</tspan></text>
+  <rect x="24" y="92" width="320" height="32" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="38" y="113" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">GET /api/products?limit=20</text>
+  <line x1="344" y1="108" x2="514" y2="108" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#arrB)"/>
+
+  <rect x="520" y="92" width="356" height="66" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#e6edf3">
+    <text x="534" y="112">SELECT * FROM products</text>
+    <text x="534" y="130">ORDER BY price, id</text>
+    <text x="534" y="148">LIMIT 21;</text>
+  </g>
+  <text x="626" y="148" fill="#e3b341" font-size="12" font-weight="600">← note: limit + 1</text>
+  <text x="520" y="182" fill="#c9d1d9" font-size="13">Got 21 rows → there <tspan fill="#e6edf3" font-weight="700">IS</tspan> more.</text>
+  <text x="520" y="202" fill="#c9d1d9" font-size="13">Return 20, build cursor from row #20.</text>
+
+  <line x1="520" y1="246" x2="350" y2="246" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <rect x="24" y="216" width="320" height="64" rx="8" fill="#3fb950" fill-opacity=".07" stroke="#3fb950" stroke-opacity=".6"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#e6edf3">
+    <text x="38" y="236">{ data: [20 items],</text>
+    <text x="38" y="254">&#160;&#160;next_cursor: <tspan fill="#e3b341">"eyJwcmlj..."</tspan>,</text>
+    <text x="38" y="272">&#160;&#160;has_more: <tspan fill="#56d364">true</tspan> }</text>
+  </g>
+
+  <line x1="24" y1="296" x2="876" y2="296" stroke="#21262d"/>
+
+  <!-- ===== 2. Load more ===== -->
+  <text x="24" y="322" fill="#e6edf3" font-size="14" font-weight="600">2. User scrolls / clicks "Load More"</text>
+  <text x="24" y="342" fill="#e3b341" font-size="12.5" font-weight="600">Echo the cursor back VERBATIM</text>
+  <rect x="24" y="352" width="320" height="50" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">
+    <text x="38" y="372">GET /api/products?limit=20</text>
+    <text x="38" y="390">&#160;&#160;&#160;&#160;&amp;cursor=<tspan fill="#e3b341">eyJwcmlj...</tspan></text>
+  </g>
+  <line x1="344" y1="376" x2="514" y2="376" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#arrB)"/>
+
+  <rect x="520" y="360" width="356" height="32" rx="8" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="534" y="381" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Decode cursor → { price: 29.99, id: 1042 }</text>
+
+  <rect x="520" y="404" width="356" height="102" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#e6edf3">
+    <text x="534" y="424">SELECT * FROM products</text>
+    <text x="534" y="442">WHERE (price &gt; 29.99)</text>
+    <text x="534" y="460">&#160;&#160;&#160;OR (price = 29.99 AND id &gt; 1042)</text>
+    <text x="534" y="478">ORDER BY price, id</text>
+    <text x="534" y="496">LIMIT 21;</text>
+  </g>
+
+  <line x1="520" y1="550" x2="350" y2="550" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <rect x="24" y="520" width="320" height="64" rx="8" fill="#3fb950" fill-opacity=".07" stroke="#3fb950" stroke-opacity=".6"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#e6edf3">
+    <text x="38" y="540">{ data: [20 items],</text>
+    <text x="38" y="558">&#160;&#160;next_cursor: <tspan fill="#e3b341">"eyJwcmlj..."</tspan>,</text>
+    <text x="38" y="576">&#160;&#160;has_more: <tspan fill="#56d364">true</tspan> }</text>
+  </g>
+
+  <line x1="24" y1="598" x2="876" y2="598" stroke="#21262d"/>
+
+  <!-- ===== 3. Last page ===== -->
+  <text x="24" y="624" fill="#e6edf3" font-size="14" font-weight="600">3. Last page</text>
+  <line x1="520" y1="662" x2="350" y2="662" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <rect x="24" y="634" width="320" height="56" rx="8" fill="#1c2128" stroke="#8b949e" stroke-opacity=".6"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#e6edf3">
+    <text x="38" y="652">{ data: [7 items],</text>
+    <text x="38" y="668">&#160;&#160;next_cursor: <tspan fill="#ff7b72">null</tspan>,</text>
+    <text x="38" y="684">&#160;&#160;has_more: <tspan fill="#ff7b72">false</tspan> }</text>
+  </g>
+  <text x="360" y="682" fill="#e3b341" font-size="12" font-weight="600">← null = you've hit the end</text>
+</svg>

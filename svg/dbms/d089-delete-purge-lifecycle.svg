@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="342" viewBox="0 0 820 342" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>DELETE lifecycle in InnoDB</title>
+  <desc>DELETE only delete-marks records; after commit the purge thread physically removes them and frees undo pages; under-filled pages are merged with a sibling.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="819" height="341" rx="14" fill="#161b22" stroke="#30363d"/>
+  <line x1="46" y1="57.0" x2="46" y2="285.0" stroke="#30363d" stroke-width="2"/>
+  <rect x="24" y="46.0" width="44" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="17.0" y="46.0" width="58" height="22" rx="11.0" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="46" y="61.14" fill="#e3b341" font-size="11.5" font-weight="600" text-anchor="middle">Step 1</text>
+  <rect x="88" y="24" width="708" height="66" rx="10" fill="#d29922" fill-opacity="0.08" stroke="#d29922" stroke-opacity="0.5"/>
+  <text x="108" y="54" fill="#e6edf3" font-size="14" font-weight="600">DELETE runs</text>
+  <text x="282" y="52" fill="#8b949e" font-size="13">→</text>
+  <text x="302" y="52" fill="#c9d1d9" font-size="13">record is <tspan fill="#e3b341" font-weight="700">DELETE-MARKED</tspan> in the clustered index</text>
+  <text x="302" y="72" fill="#c9d1d9" font-size="13">and in every secondary index. Bytes untouched.</text>
+  <rect x="24" y="119.0" width="44" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="17.0" y="119.0" width="58" height="22" rx="11.0" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="46" y="134.14" fill="#79c0ff" font-size="11.5" font-weight="600" text-anchor="middle">Step 2</text>
+  <rect x="88" y="106" width="708" height="48" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="108" y="135" fill="#e6edf3" font-size="14" font-weight="600">Transaction commits</text>
+  <rect x="24" y="192.0" width="44" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="17.0" y="192.0" width="58" height="22" rx="11.0" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="46" y="207.14" fill="#56d364" font-size="11.5" font-weight="600" text-anchor="middle">Step 3</text>
+  <rect x="88" y="170" width="708" height="66" rx="10" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.5"/>
+  <text x="108" y="200" fill="#e6edf3" font-size="14" font-weight="600">PURGE thread</text>
+  <text x="282" y="198" fill="#8b949e" font-size="13">→</text>
+  <text x="302" y="198" fill="#c9d1d9" font-size="13">physically removes the marked records once no active</text>
+  <text x="302" y="218" fill="#c9d1d9" font-size="13">read view can still see them, and frees the undo log pages</text>
+  <rect x="24" y="274.0" width="44" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="17.0" y="274.0" width="58" height="22" rx="11.0" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="46" y="289.14" fill="#56d4dd" font-size="11.5" font-weight="600" text-anchor="middle">Step 4</text>
+  <rect x="88" y="252" width="708" height="66" rx="10" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.5"/>
+  <text x="108" y="282" fill="#e6edf3" font-size="14" font-weight="600">Page merge</text>
+  <text x="282" y="280" fill="#8b949e" font-size="13">→</text>
+  <text x="302" y="280" fill="#c9d1d9" font-size="13">if a page drops below <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">MERGE_THRESHOLD</tspan> (default 50%),</text>
+  <text x="302" y="300" fill="#c9d1d9" font-size="13">it is merged with a sibling and freed</text>
+</svg>

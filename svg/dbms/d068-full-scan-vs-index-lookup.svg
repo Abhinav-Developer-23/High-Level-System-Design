@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="278" viewBox="0 0 800 278" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Full table scan vs index lookup</title>
+  <desc>Without an index, finding employee #500 scans row 1, row 2, row 3, up to row 500: O(n), slow for large tables. With an index, an index lookup goes directly to row 500: O(log n), fast even for millions of rows.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="799" height="277" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- Without index -->
+  <rect x="24" y="24" width="366" height="230" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".5"/>
+  <path d="M24,58 V34 a10,10 0 0 1 10,-10 H380 a10,10 0 0 1 10,10 V58 z" fill="#f85149" fill-opacity=".14"/>
+  <text x="42" y="46" fill="#ff7b72" font-size="12" font-weight="700" letter-spacing="1.5">WITHOUT INDEX <tspan font-weight="400" letter-spacing="0">(Full Table Scan)</tspan></text>
+  <line x1="24" y1="58" x2="390" y2="58" stroke="#f85149" stroke-opacity=".4"/>
+
+  <rect x="42" y="74" width="170" height="26" rx="13" fill="#0d1117" stroke="#30363d"/>
+  <text x="127" y="92" fill="#e6edf3" font-size="13" text-anchor="middle">"Find employee #500"</text>
+
+  <!-- scanning rows -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" text-anchor="middle">
+    <rect x="42" y="118" width="60" height="30" rx="6" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".6"/>
+    <text x="72" y="138" fill="#e3b341">row 1</text>
+    <rect x="114" y="118" width="60" height="30" rx="6" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".6"/>
+    <text x="144" y="138" fill="#e3b341">row 2</text>
+    <rect x="186" y="118" width="60" height="30" rx="6" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".6"/>
+    <text x="216" y="138" fill="#e3b341">row 3</text>
+    <text x="268" y="138" fill="#8b949e">...</text>
+    <rect x="292" y="118" width="80" height="30" rx="6" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".6"/>
+    <text x="332" y="138" fill="#e3b341">row 500</text>
+  </g>
+  <text x="42" y="180" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">→</tspan> Scan row 1, row 2, row 3, ... row 500</text>
+  <rect x="42" y="208" width="72" height="26" rx="13" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="78" y="226" fill="#ff7b72" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" font-weight="700" text-anchor="middle">O(n)</text>
+  <text x="126" y="226" fill="#ff7b72" font-size="13">slow for large tables</text>
+
+  <!-- With index -->
+  <rect x="410" y="24" width="366" height="230" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".5"/>
+  <path d="M410,58 V34 a10,10 0 0 1 10,-10 H766 a10,10 0 0 1 10,10 V58 z" fill="#3fb950" fill-opacity=".14"/>
+  <text x="428" y="46" fill="#56d364" font-size="12" font-weight="700" letter-spacing="1.5">WITH INDEX</text>
+  <line x1="410" y1="58" x2="776" y2="58" stroke="#3fb950" stroke-opacity=".4"/>
+
+  <rect x="428" y="74" width="170" height="26" rx="13" fill="#0d1117" stroke="#30363d"/>
+  <text x="513" y="92" fill="#e6edf3" font-size="13" text-anchor="middle">"Find employee #500"</text>
+
+  <rect x="428" y="118" width="130" height="30" rx="6" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="493" y="138" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle">Index lookup</text>
+  <line x1="562" y1="133" x2="664" y2="133" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <rect x="670" y="118" width="88" height="30" rx="6" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="714" y="138" fill="#56d364" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" text-anchor="middle">row 500</text>
+  <text x="428" y="180" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">→</tspan> Index lookup <tspan fill="#8b949e">→</tspan> directly go to row 500</text>
+  <rect x="428" y="208" width="96" height="26" rx="13" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="476" y="226" fill="#56d364" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" font-weight="700" text-anchor="middle">O(log n)</text>
+  <text x="536" y="226" fill="#56d364" font-size="13">fast even for millions of rows</text>
+</svg>

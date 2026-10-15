@@ -1,3 +1,38 @@
+<style>
+/* DBMS notes: dark-theme polish for MarkView. Viewers that strip <style> ignore this. */
+html.markview-dark #markview-container table {
+  display: block; width: max-content; max-width: 100%; overflow-x: auto;
+  border-collapse: separate; border-spacing: 0;
+  border: 1px solid #30363d; border-radius: 12px;
+  background: #0d1117; font-size: 14px; line-height: 1.5;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .35);
+}
+html.markview-dark #markview-container table th {
+  background: #1a2230; color: #e6edf3; font-weight: 600;
+  padding: 11px 16px; border: 0; border-bottom: 2px solid rgba(56, 139, 253, .55);
+}
+html.markview-dark #markview-container table td {
+  padding: 10px 16px; border: 0; border-top: 1px solid #21262d;
+  color: #c9d1d9; background: transparent;
+}
+html.markview-dark #markview-container table th + th,
+html.markview-dark #markview-container table td + td { border-left: 1px solid #21262d; }
+html.markview-dark #markview-container table tbody tr:first-child td { border-top: 0; }
+html.markview-dark #markview-container table tbody tr:nth-child(even) td { background: #11161d; }
+html.markview-dark #markview-container table tbody tr:hover td { background: rgba(56, 139, 253, .10); }
+html.markview-dark #markview-container table td:first-child { color: #e6edf3; font-weight: 500; }
+html.markview-dark #markview-container table strong { color: #f0f6fc; }
+html.markview-dark #markview-container table code {
+  background: rgba(110, 118, 129, .22); border-radius: 6px; padding: .1em .4em; font-size: 12.5px;
+}
+html.markview-dark #markview-container table th:not([style*="text-align"]) { text-align: left; }
+/* SVG diagrams */
+#markview-container img[src*="svg/dbms/"] {
+  display: block; margin: 22px auto; max-width: 100%; height: auto;
+  border-radius: 14px; opacity: 1; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
+}
+</style>
+
 # 📚 Table of Contents
 
 > **DBMS roadmap:** https://whimsical.com/dbms-roadmap-C9vhnZy9RY9QkGRPgpZnDN
@@ -219,18 +254,7 @@ SQL (Structured Query Language) is the standard language for interacting with re
 
 These commands are categorized into **five distinct groups** based on what they do:
 
-```
-                        ┌─────────────────────┐
-                        │    SQL Commands      │
-                        └─────────┬───────────┘
-          ┌───────────┬───────────┼───────────┬───────────┐
-          ▼           ▼           ▼           ▼           ▼
-       ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐    ┌─────┐
-       │ DDL │    │ DQL │    │ DML │    │ DCL │    │ TCL │
-       └─────┘    └─────┘    └─────┘    └─────┘    └─────┘
-      Structure   Querying   Data       Access     Transaction
-      Define      Fetch      Manipulate Control    Control
-```
+![SQL Commands split into five groups: DDL (structure/define), DQL (querying/fetch), DML (data/manipulate), DCL (access control), TCL (transaction control)](../svg/dbms/d001-sql-command-categories.svg)
 
 > **Think of it this way:**
 > - **DDL** = Building the house (structure)
@@ -331,17 +355,7 @@ ALTER TABLE employees ADD CONSTRAINT unique_email UNIQUE (email);
 
 This is crucial to understand — SQL does NOT execute in the order you write it:
 
-```
-Written Order:          Execution Order:
-─────────────          ────────────────
-SELECT          →  5.  SELECT / DISTINCT
-FROM            →  1.  FROM (& JOINs)
-WHERE           →  2.  WHERE
-GROUP BY        →  3.  GROUP BY
-HAVING          →  4.  HAVING
-ORDER BY        →  6.  ORDER BY
-LIMIT           →  7.  LIMIT
-```
+![SQL written order vs logical execution order: FROM, WHERE, GROUP BY, HAVING, SELECT/DISTINCT, ORDER BY, LIMIT, with SELECT moving from first to fifth](../svg/dbms/d002-sql-written-vs-execution-order.svg)
 
 > **Why does this matter?**
 > - You **can't** use a column alias defined in `SELECT` inside a `WHERE` clause — because `WHERE` runs *before* `SELECT`.
@@ -469,10 +483,7 @@ HAVING COUNT(*) >= 2;         -- step 3: drop small GROUPS
 
 How the data shrinks at each step:
 
-```
- 8 rows ──WHERE salary > 40000──▶ 5 rows ──GROUP BY──▶ 3 groups ──HAVING COUNT(*) >= 2──▶ 2 groups
-         (Chen, Eli, Fay out)             (🟦 2 · 🟩 1 · 🟨 2)       (🟩 Sales out: only 1)
-```
+![Data shrinking: 8 rows, WHERE salary > 40000 gives 5 rows, GROUP BY gives 3 groups, HAVING COUNT(*) >= 2 gives 2 groups (Sales dropped)](../svg/dbms/d003-where-groupby-having-shrink.svg)
 
 **Result:**
 
@@ -631,18 +642,7 @@ REVOKE ALL PRIVILEGES ON employees FROM intern_user;
 - **`WITH GRANT OPTION`** — allows the grantee to further grant the same privilege to other users (delegation).
 - **`CASCADE`** — when revoking, also revokes from anyone who received the privilege through the original grantee.
 
-```
-admin  ──GRANT SELECT──▶  team_lead (WITH GRANT OPTION)
-                                │
-                          GRANT SELECT
-                                │
-                                ▼
-                            developer
-
--- If admin revokes from team_lead with CASCADE:
-REVOKE SELECT ON employees FROM team_lead CASCADE;
--- Both team_lead AND developer lose SELECT access
-```
+![admin grants SELECT to team_lead WITH GRANT OPTION, team_lead grants to developer; REVOKE ... CASCADE removes SELECT from both](../svg/dbms/d004-grant-option-cascade.svg)
 
 ---
 
@@ -663,21 +663,7 @@ REVOKE SELECT ON employees FROM team_lead CASCADE;
 
 ### Transaction Lifecycle
 
-```
-BEGIN TRANSACTION
-       │
-       ▼
-   ┌───────────────────┐
-   │  SQL statements    │
-   │  (INSERT, UPDATE,  │
-   │   DELETE, etc.)    │
-   └────────┬──────────┘
-            │
-       ┌────┴────┐
-       ▼         ▼
-   COMMIT    ROLLBACK
-   (save)    (undo all)
-```
+![Transaction lifecycle: BEGIN TRANSACTION, SQL statements, then COMMIT (save) or ROLLBACK (undo all)](../svg/dbms/d005-transaction-lifecycle.svg)
 
 ### Example — Bank Transfer
 
@@ -1200,27 +1186,7 @@ ALTER TABLE users MODIFY COLUMN name VARCHAR(500), ALGORITHM=COPY;
 
 This is the key internal detail — InnoDB uses an **online log** mechanism:
 
-```
-Timeline during ALTER TABLE (INPLACE):
-────────────────────────────────────────────────────────────
-
-1. BRIEF METADATA LOCK (exclusive)          ← blocks everything for milliseconds
-   └─ MySQL prepares the ALTER operation
-
-2. DDL RUNS (online, concurrent DML allowed)
-   ├─ InnoDB rebuilds the table/index in the background
-   ├─ Meanwhile, INSERTs/UPDATEs/DELETEs from other connections continue normally
-   └─ All concurrent DML changes are captured in a temporary "online log"
-
-3. APPLY ONLINE LOG
-   └─ InnoDB replays all buffered DML changes onto the new structure
-
-4. BRIEF METADATA LOCK (exclusive)          ← blocks everything for milliseconds
-   └─ Swap old structure with new, update metadata, done!
-
-────────────────────────────────────────────────────────────
-Result: Table was altered WITHOUT blocking your application
-```
+![INPLACE ALTER timeline: brief exclusive MDL, online DDL with concurrent DML captured in the online log, apply online log, brief exclusive MDL swap; table altered without blocking the app](../svg/dbms/d006-alter-inplace-online-log-timeline.svg)
 
 ### Which Operations Use Which Algorithm?
 
@@ -1246,25 +1212,9 @@ Even though the ALTER itself is "online", `INSTANT` and `INPLACE` operations sti
 
 If there's a **long-running query or uncommitted transaction** on that table, the ALTER will **wait** for the metadata lock. And while the ALTER is waiting, **all new queries queue up behind it**:
 
-```
-Connection 1: SELECT * FROM big_table WHERE ...  (running for 30 seconds)
-Connection 2: ALTER TABLE big_table ADD COLUMN ...  (WAITING for metadata lock)
-Connection 3: SELECT * FROM big_table ...  (BLOCKED — queued behind ALTER!)
-Connection 4: INSERT INTO big_table ...   (BLOCKED — queued behind ALTER!)
-                ↑
-        ALL new queries pile up behind the waiting ALTER
-        → Application appears to hang! 💥
-```
+![MDL trap: a 30-second SELECT holds the table, the ALTER waits for the metadata lock, and new SELECT/INSERT connections are blocked behind it so the app appears to hang](../svg/dbms/d007-mdl-trap-connection-queue.svg)
 
-```
-Timeline:
-  T=0:   Slow SELECT starts (holds metadata lock in shared mode)
-  T=5:   ALTER TABLE runs → waits for metadata lock
-  T=5+:  ALL new SELECTs and INSERTs also wait (queue behind ALTER)
-  T=30:  Slow SELECT finishes → ALTER gets lock → ALTER completes → everything unblocks
-
-Result: 25 seconds of total downtime, even for an INSTANT ALTER!
-```
+![MDL trap timeline: slow SELECT T=0 to T=30, ALTER waits from T=5, new queries queue from T=5+, everything unblocks at T=30: 25 seconds of downtime even for an INSTANT ALTER](../svg/dbms/d008-mdl-trap-timeline.svg)
 
 **Prevention:**
 
@@ -1468,56 +1418,13 @@ SELECT * FROM users WHERE phone = '+1-555-1234';
 
 Without migrations, schema changes are chaos:
 
-```
-❌ WITHOUT MIGRATIONS:
-──────────────────────────────────────────────────
-Developer A: "I added a 'phone' column to users table on my local DB"
-Developer B: "My local DB doesn't have that column... app crashes"
-Production:  "Nobody remembers what ALTER statements were run last month"
-Staging:     "Is this DB up to date? Who knows 🤷"
-
-✅ WITH MIGRATIONS:
-──────────────────────────────────────────────────
-Every schema change → a migration file (with timestamp)
-Every environment   → runs the SAME migration files in the SAME order
-Result: Local DB = Staging DB = Production DB (always in sync)
-```
+![Without migrations, dev, staging and production schemas drift; with migrations every environment runs the same timestamped files in order so Local = Staging = Production](../svg/dbms/d009-without-vs-with-migrations.svg)
 
 ## What Happens Under the Hood When You Run a Migration?
 
 Taking **Prisma** as an example:
 
-```
-You change schema.prisma:
-  model User {
-    id    Int    @id @default(autoincrement())
-    name  String
-+   phone String?    ← NEW FIELD
-  }
-
-Run: npx prisma migrate dev --name add_phone
-
-Under the hood:
-──────────────────────────────────────────────────
-
-1. DIFF — Prisma compares your schema.prisma (desired state) 
-          vs the actual database (current state)
-
-2. GENERATE SQL — It produces the required SQL:
-   → ALTER TABLE users ADD COLUMN phone VARCHAR(191) NULL;
-
-3. SAVE MIGRATION FILE — Creates a timestamped file:
-   prisma/migrations/
-   └── 20260822_add_phone/
-       └── migration.sql    ← contains the ALTER TABLE
-
-4. EXECUTE — Runs the SQL against your database
-
-5. RECORD — Inserts a row into _prisma_migrations table:
-   | migration_name       | checksum (SHA256) | applied_at          |
-   |---------------------|-------------------|---------------------|
-   | 20260822_add_phone  | a3b8f1c2d9...     | 2026-08-22 19:30:00 |
-```
+![Prisma migrate dev under the hood: add phone field to schema.prisma, then diff, generate ALTER TABLE SQL, save timestamped migration.sql, execute, and record a checksum row in _prisma_migrations](../svg/dbms/d010-prisma-migrate-under-the-hood.svg)
 
 ## The Migration Tracking Table
 
@@ -1591,28 +1498,7 @@ CREATE TABLE posts (
 
 ## Why Do We Need Seeding?
 
-```
-After running migrations, your database looks like this:
-
-  ┌──────────────────────────┐
-  │  users table             │
-  │  ──────────────────────  │
-  │  id | name | email       │
-  │  ── | ──── | ─────       │
-  │     (empty)              │   ← Tables exist but NO data!
-  └──────────────────────────┘
-
-After seeding:
-
-  ┌──────────────────────────────────────────────┐
-  │  users table                                  │
-  │  ────────────────────────────────────────────  │
-  │  id | name       | email                      │
-  │  1  | Admin User | admin@example.com           │
-  │  2  | John Doe   | john@example.com            │
-  │  3  | Jane Smith | jane@example.com            │
-  └──────────────────────────────────────────────┘
-```
+![After migrations the users table exists but is empty; after seeding it holds Admin User, John Doe and Jane Smith](../svg/dbms/d011-seed-before-after.svg)
 
 **Common use cases for seeding:**
 
@@ -1713,14 +1599,7 @@ npx prisma db seed
 | **Tracked?** | ✅ Versioned in migration table | ❌ Usually not tracked |
 | **Idempotent?** | ✅ (each migration runs once) | Should be (use `upsert` / `INSERT IGNORE`) |
 
-```
-Typical workflow:
-─────────────────────────────────────────────────
-
-1. prisma migrate dev     → Creates tables (structure)
-2. prisma db seed         → Fills tables with initial data
-3. Start coding!          → App has data to work with
-```
+![Typical workflow: prisma migrate dev creates tables, prisma db seed fills them with initial data, then start coding with data to work with](../svg/dbms/d012-migrate-then-seed-workflow.svg)
 
 > **Key Takeaway:** Migration creates the **container** (tables/columns). Seeding fills the container with **initial data**. Migrations are mandatory everywhere; seeding is mostly for dev/test environments. Always make seeds idempotent (safe to run multiple times).
 
@@ -1748,12 +1627,7 @@ SELECT * FROM products ORDER BY id LIMIT 20 OFFSET 10000;
 
 **The Problem:** MySQL must **scan and discard** all `OFFSET` rows before returning your `LIMIT` rows. So `OFFSET 10000` means MySQL reads 10,020 rows but throws away 10,000 of them.
 
-```
-OFFSET = 0       → Scan 20 rows      → Return 20  ✅ Fast
-OFFSET = 1000    → Scan 1,020 rows   → Return 20  🔄 Okay
-OFFSET = 100,000 → Scan 100,020 rows → Return 20  🐌 Very slow
-OFFSET = 1M      → Scan 1,000,020    → Return 20  💀 Database crying
-```
+![OFFSET cost: rows scanned grow from 20 to 1,000,020 as OFFSET goes from 0 to 1M while every query still returns 20 rows](../svg/dbms/d013-offset-scan-cost.svg)
 
 **Other issues with OFFSET/LIMIT:**
 - **Data inconsistency** — If a row is inserted or deleted while the user is paginating, they may see **duplicate items** or **skip entries** entirely
@@ -1777,22 +1651,7 @@ SELECT * FROM products ORDER BY price, id LIMIT 20 OFFSET 450000;
 
 Here is what InnoDB actually does, step by step:
 
-```
-1. Walk the secondary index (price, id) in sorted order.
-   Each index entry is tiny: just [price | id]  ≈ 20 bytes.
-
-2. For EVERY entry it walks — all 450,020 of them — MySQL needs
-   the other columns (name, description, stock, created_at...)
-   because you asked for SELECT *.
-   Those columns are NOT in the index. So for each one it does a
-   "bookmark lookup": take the id → descend the clustered (primary
-   key) B+ Tree → read the full row.   ← 💀 THE KILLER
-
-3. Hand all 450,020 fully-built rows up to the SQL layer.
-
-4. The SQL layer applies LIMIT/OFFSET *here, at the very top* —
-   throws away the first 450,000 rows and returns 20.
-```
+![Why deep OFFSET is slow: InnoDB walks the (price, id) index, does a bookmark lookup into the clustered B+ tree for all 450,020 entries, then the SQL layer discards 450,000 rows and returns 20](../svg/dbms/d014-offset-innodb-bookmark-lookups.svg)
 
 > **The critical detail:** MySQL applies `LIMIT`/`OFFSET` at the **top** of the execution plan, *after* rows have been materialized. It does **not** push "skip 450,000" down into the index scan. So every single skipped row still pays for a full random-I/O row fetch — and is then discarded.
 
@@ -1860,29 +1719,7 @@ EXPLAIN SELECT id FROM products ORDER BY price, id LIMIT 20 OFFSET 450000;
 
 You want the books ranked **#450,001 to #450,010** in alphabetical order by author.
 
-```
-❌ NAÏVE OFFSET — "carry every book to the desk"
-────────────────────────────────────────────────────────────
-Walk the stacks in order. For EVERY book, physically pull it
-off the shelf, carry it to the front desk, look at it, say
-"not yet", and walk it back to its shelf.
-Do this 450,000 times. Then keep the last 10.
-
-You are hauling encyclopedias across the building just to
-count to 450,000.
-
-
-✅ DEFERRED JOIN — "flip the cards, then fetch 10 books"
-────────────────────────────────────────────────────────────
-Go to the CARD CATALOG. One drawer. Thin cards, already
-sorted by author, each card says only:
-        "author name  →  shelf B-42"
-
-Flip through 450,000 cards — fast, they're thin, ordered,
-and all in one drawer you never leave. Read the 10 shelf
-numbers you need. THEN walk into the stacks and pull
-exactly 10 books.
-```
+![Library analogy: naive OFFSET carries every book to the desk 450,000 times; deferred join flips thin sorted catalog cards, then fetches exactly 10 books](../svg/dbms/d015-library-catalog-analogy.svg)
 
 The mapping is one-to-one:
 
@@ -1966,41 +1803,7 @@ Cursor pagination only works if the **client and server agree on a contract**. T
 
 **The round trip:**
 
-```
-FRONTEND                                 BACKEND
-────────                                 ───────
-1. First load — NO cursor
-   GET /api/products?limit=20    ────▶   SELECT * FROM products
-                                          ORDER BY price, id
-                                          LIMIT 21;      ← note: limit + 1
-                                          
-                                         Got 21 rows → there IS more.
-                                         Return 20, build cursor from row #20.
-                                         
-   ◀────  { data: [20 items],
-            next_cursor: "eyJwcmlj...",
-            has_more: true }
-
-2. User scrolls / clicks "Load More"
-   Echo the cursor back VERBATIM
-   GET /api/products?limit=20
-       &cursor=eyJwcmlj...        ────▶   Decode cursor → { price: 29.99, id: 1042 }
-                                          
-                                          SELECT * FROM products
-                                          WHERE (price > 29.99)
-                                             OR (price = 29.99 AND id > 1042)
-                                          ORDER BY price, id
-                                          LIMIT 21;
-                                          
-   ◀────  { data: [20 items],
-            next_cursor: "eyJwcmlj...",
-            has_more: true }
-
-3. Last page
-   ◀────  { data: [7 items],
-            next_cursor: null,     ← null = you've hit the end
-            has_more: false }
-```
+![Cursor pagination round trip between frontend and backend: first load with LIMIT 21, load more echoing the cursor verbatim into a keyset WHERE clause, last page with next_cursor null and has_more false](../svg/dbms/d016-cursor-pagination-api-round-trip.svg)
 
 **➡️ What the BACKEND sends to the frontend:**
 
@@ -2164,18 +1967,7 @@ Without this index, MySQL falls back to a full table scan, and cursor pagination
 
 The cursor is **not stored in MySQL**. It's derived from the query results:
 
-```
-1. Server runs:  SELECT ... ORDER BY message_id DESC LIMIT 50
-2. Gets back:    [msg_200, msg_199, ..., msg_151]
-3. Takes the LAST item:  msg_151
-4. Encodes it:   base64('{"msg_id":"msg_151"}')  →  "eyJtc2dfaWQiOiJtc2dfMTUxIn0="
-5. Returns to client:
-   {
-     "data": [ ... 50 rows ... ],
-     "next_cursor": "eyJtc2dfaWQiOiJtc2dfMTUxIn0=",
-     "has_more": true
-   }
-```
+![Server builds the cursor: run the ORDER BY message_id DESC LIMIT 50 query, take the last item msg_151, base64-encode it, and return it as next_cursor with has_more true](../svg/dbms/d017-server-builds-cursor.svg)
 
 The cursor is base64-encoded to keep it **opaque** — the client doesn't need to know the internal format. The server can change the cursor structure (e.g., add a timestamp field) without breaking any client.
 
@@ -2237,23 +2029,7 @@ The **N+1 query problem** is one of the most common performance killers in datab
 
 Say you want to display 100 authors with their books:
 
-```
-❌ N+1 WAY (101 queries!)
-──────────────────────────────────────────────────────
-
-Query 1 (the "1"):
-  SELECT * FROM authors;                          -- Returns 100 authors
-
-Query 2 (the "N" — one per author):
-  SELECT * FROM books WHERE author_id = 1;        -- Books for author 1
-  SELECT * FROM books WHERE author_id = 2;        -- Books for author 2
-  SELECT * FROM books WHERE author_id = 3;        -- Books for author 3
-  ...
-  SELECT * FROM books WHERE author_id = 100;      -- Books for author 100
-
-Total: 1 + 100 = 101 queries 💀
-Each query = 1 network round trip to the database
-```
+![N+1 way: one SELECT for 100 authors plus one books query per author, 1 + 100 = 101 queries, each a network round trip](../svg/dbms/d018-n-plus-one-queries.svg)
 
 With 100 authors, this is 101 queries. With 10,000 authors → 10,001 queries. **Each query involves a separate network round trip**, so even if each query is fast (1ms), 10,001 queries = **10 seconds** of just network overhead.
 
@@ -2298,20 +2074,7 @@ Most ORMs have built-in solutions that generate the optimized queries for you:
 
 ## How to Detect N+1 in Your App
 
-```
-Signs you have an N+1 problem:
-─────────────────────────────────────────────────
-
-1. Query logs show the SAME query template repeating hundreds of times
-   e.g., "SELECT * FROM books WHERE author_id = ?" × 500
-
-2. Page load time increases LINEARLY with the number of records
-   10 authors → 100ms,  100 authors → 1s,  1000 authors → 10s
-
-3. Database connection pool is exhausted under normal load
-
-4. Your ORM is configured with "lazy loading" as default
-```
+![Four signs of N+1: same query template repeated hundreds of times, load time growing linearly with records, exhausted connection pool, lazy loading ORM default](../svg/dbms/d019-n-plus-one-warning-signs.svg)
 
 > **Key Takeaway:** Never query inside a loop. If you're doing `for each parent → query children`, you have an N+1 problem. Always **batch** your queries using JOINs, IN clauses, or ORM eager loading.
 
@@ -2328,15 +2091,7 @@ An **instance** is a **snapshot of the database at a particular moment in time**
 
 Every time the data changes (INSERT / DELETE / UPDATE), the database transitions from one instance (state) to another:
 
-```
-  Instance at T1         Instance at T2         Instance at T3
- ┌──────────────┐      ┌──────────────┐      ┌──────────────┐
- │ Alice  | HR  │      │ Alice  | HR  │      │ Alice  | IT  │
- │ Bob    | Eng │  ──▶ │ Bob    | Eng │  ──▶ │ Bob    | Eng │
- │              │      │ Carol  | Mkt │      │ Carol  | Mkt │
- └──────────────┘      └──────────────┘      └──────────────┘
-    (initial)           (INSERT Carol)        (UPDATE Alice)
-```
+![Database instances at T1, T2 and T3: initial Alice and Bob, then INSERT Carol, then UPDATE Alice from HR to IT](../svg/dbms/d020-database-instances-over-time.svg)
 
 ### Real-World Example — Multiple Instances
 
@@ -2387,23 +2142,7 @@ A **schema** is the **overall structure or design** of the database. It defines 
 
 ### Types of Schema
 
-```
-              ┌────────────────────────┐
-              │    Database Schema     │
-              └───────────┬────────────┘
-                    ┌─────┴─────┐
-                    ▼           ▼
-           ┌──────────────┐  ┌──────────────────┐
-           │Logical Schema│  │ Physical Schema   │
-           │              │  │                   │
-           │ What data is │  │ How data is       │
-           │ stored and   │  │ actually stored   │
-           │ its structure│  │ on disk (files,   │
-           │ (tables,     │  │ indexes, pages,   │
-           │  columns,    │  │ partitions)       │
-           │  types)      │  │                   │
-           └──────────────┘  └──────────────────┘
-```
+![Database schema splits into the logical schema (what data and structure: tables, columns, types) and the physical schema (how it is stored on disk: files, indexes, pages, partitions)](../svg/dbms/d021-logical-vs-physical-schema.svg)
 
 | | Logical Schema | Physical Schema |
 |--|---------------|-----------------|
@@ -2422,20 +2161,7 @@ A **sub-schema** is a **subset of the schema** — it defines what portion of th
 
 > **Think of it this way:** The full schema is the entire house. A sub-schema is a **window** — each user looks through a different window and sees only the rooms relevant to them.
 
-```
-           Full Schema (employees table)
-  ┌─────────────────────────────────────────────┐
-  │ emp_id | name | dept | salary | SSN | phone │
-  └───────────┬──────────────────┬──────────────┘
-              │                  │
-     ┌────────┴───────┐  ┌──────┴────────┐
-     │  Sub-Schema 1  │  │ Sub-Schema 2  │
-     │  (HR App)      │  │ (Manager App) │
-     │                │  │               │
-     │ emp_id, name,  │  │ emp_id, name, │
-     │ SSN, salary    │  │ dept          │
-     └────────────────┘  └───────────────┘
-```
+![Full employees schema (emp_id, name, dept, salary, SSN, phone) with sub-schema 1 for the HR app (emp_id, name, SSN, salary) and sub-schema 2 for the manager app (emp_id, name, dept)](../svg/dbms/d022-sub-schema-views.svg)
 
 - Different applications have **different views** of the data
 - The HR app can see salary and SSN, but the manager app cannot
@@ -2503,19 +2229,7 @@ Let's walk through each row:
 - **Dave → dept_id NULL** → ✅ Valid. NULL is allowed (Dave hasn't been assigned to a department yet)
 - **Eve → dept_id 50** → ❌ **VIOLATION!** `50` does not exist in `departments`. The database will **reject** this insert.
 
-```
-   departments (Parent)              employees (Child)
-  ┌─────────┬─────────────┐        ┌────────┬───────┬──────────┐
-  │ dept_id │ dept_name   │        │ emp_id │ name  │ dept_id  │
-  ├─────────┼─────────────┤        ├────────┼───────┼──────────┤
-  │   10    │ Engineering │◀───────│  101   │ Alice │   10 ✅  │
-  │   20    │ Marketing   │◀───────│  102   │ Bob   │   20 ✅  │
-  │   30    │ HR          │◀───────│  103   │ Carol │   30 ✅  │
-  └─────────┴─────────────┘    ╳───│  105   │ Eve   │   50 ❌  │
-         ▲                         └────────┴───────┴──────────┘
-         │  No dept_id = 50 exists!
-         │  REFERENTIAL INTEGRITY VIOLATION
-```
+![employees rows Alice, Bob and Carol point to existing departments 10, 20 and 30; Eve's dept_id 50 has no parent row: referential integrity violation](../svg/dbms/d023-referential-integrity-violation.svg)
 
 ---
 
@@ -2863,34 +2577,13 @@ Entity-Relationship (ER) diagrams model how entities relate to each other. In pr
 
 ## The Three Canonical Types
 
-```
-  1:1 (One-to-One)           1:N (One-to-Many)          M:N (Many-to-Many)
-  ┌───┐       ┌───┐         ┌───┐       ┌───┐          ┌───┐       ┌───┐
-  │ A │───────│ B │         │ A │───┬───│ B │          │ A │──┬──┬─│ B │
-  └───┘       └───┘         └───┘   │   └───┘          └───┘  │  │ └───┘
-  one A ↔ one B              one A   │   └───┐          many   │  │  many
-                                     ├───│ B │            ◀────┘  └────▶
-                                     │   └───┘
-                                     └───│ B │
-                                         └───┘
-```
+![Three ER relationship types: 1:1 one A to one B, 1:N one A to many B, M:N many A to many B](../svg/dbms/d024-er-relationship-types.svg)
 
 ### 1. One-to-One (1:1)
 
 One instance of A relates to **at most one** instance of B, and vice versa.
 
-```
-        Person                          Passport
-  ┌──────────────────┐            ┌──────────────────┐
-  │ person_id (PK)   │            │ passport_id (PK) │
-  │ name             │──── 1:1 ───│ passport_no      │
-  │ dob              │            │ person_id (FK,UQ) │
-  └──────────────────┘            └──────────────────┘
-
-  Alice  ◄────────────►  P12345
-  Bob    ◄────────────►  P67890
-  Carol  ◄────────────►  P11111
-```
+![1:1 Person and Passport entities (passport.person_id is FK and unique) with Alice to P12345, Bob to P67890, Carol to P11111](../svg/dbms/d025-one-to-one-person-passport.svg)
 
 **Real example:** Each person has at most one passport; each passport belongs to at most one person.
 
@@ -2918,20 +2611,7 @@ CREATE TABLE passport (
 
 One instance of A relates to **zero or many** instances of B. Each instance of B relates to **at most one** A.
 
-```
-     Department                        Employee
-  ┌──────────────────┐           ┌──────────────────┐
-  │ dept_id (PK)     │           │ emp_id (PK)      │
-  │ dept_name        │──── 1:N ──│ emp_name         │
-  └──────────────────┘           │ dept_id (FK)     │
-                                 └──────────────────┘
-
-  Engineering ──┬──► Alice
-                ├──► Bob
-                └──► Carol
-  Marketing   ──┬──► Dave
-                └──► Eve
-```
+![One-to-many: Department (dept_id PK) 1:N Employee (dept_id FK); Engineering has Alice, Bob, Carol and Marketing has Dave, Eve](../svg/dbms/d026-one-to-many-department-employee.svg)
 
 **Real example:** One department has many employees; each employee belongs to one department.
 
@@ -2966,33 +2646,13 @@ Same table design, same FK — just a different perspective.
 
 One instance of A relates to **zero or many** instances of B, **and** one instance of B relates to **zero or many** instances of A.
 
-```
-     Student                                        Course
-  ┌────────────────┐                           ┌────────────────┐
-  │ student_id(PK) │                           │ course_id (PK) │
-  │ name           │──── M:N ──────────────────│ course_name    │
-  └────────────────┘                           └────────────────┘
-
-  Alice ──┬──► DBMS          DBMS    ◄──┬── Alice
-          └──► OS            OS      ◄──┼── Alice
-  Bob   ──┬──► DBMS                     ├── Bob
-          └──► Networks      Networks◄──┘
-```
+![Many-to-many: Student M:N Course; Alice takes DBMS and OS, Bob takes DBMS and Networks, shown from both the student and course side](../svg/dbms/d027-many-to-many-student-course.svg)
 
 **The problem:** You can't implement M:N directly with a single foreign key. A single FK column can only hold ONE value.
 
 **The solution:** Create an **associative (junction) table** that breaks M:N into two 1:N relationships:
 
-```
-     Student              Enrollment              Course
-  ┌──────────────┐    ┌──────────────────┐    ┌──────────────┐
-  │student_id(PK)│    │ student_id (FK)  │    │course_id(PK) │
-  │ name         │◄──1:N── course_id(FK) ──N:1──►│ course_name  │
-  └──────────────┘    │ grade            │    └──────────────┘
-                      │ enrolled_on      │
-                      └──────────────────┘
-                       (Associative Table)
-```
+![Enrollment junction table (student_id FK, course_id FK, grade, enrolled_on) splits Student M:N Course into 1:N and N:1](../svg/dbms/d028-junction-table-enrollment.svg)
 
 **Enrollment table (the junction):**
 
@@ -3039,16 +2699,7 @@ When documenting a relationship, specify **two things**:
 | **Mandatory** (Total) | Every entity MUST participate | Min = 1 (e.g., `1..*`) |
 | **Optional** (Partial) | An entity MAY participate | Min = 0 (e.g., `0..*`) |
 
-```
-  Example: Employee MUST belong to a Department (mandatory)
-           Department MAY have zero employees (optional)
-
-  Employee ══════════════ Department
-  (mandatory/total)       (optional/partial)
-  min 1, max 1            min 0, max N
-
-  In UML notation:   Employee [1..1] ──── [0..*] Department
-```
+![Participation: Employee must belong to a Department (mandatory/total, min 1 max 1); Department may have zero employees (optional/partial, min 0 max N); UML  1..1  to  0..*](../svg/dbms/d029-participation-mandatory-optional.svg)
 
 **Impact on schema:**
 - **Mandatory participation** → use `NOT NULL` on the FK
@@ -3115,43 +2766,7 @@ We'll use this single table throughout to explain every key type:
 
 ## Key Hierarchy — How They Relate
 
-```
-                    ┌──────────────────────────────────┐
-                    │          SUPER KEY                │
-                    │  Any set of columns that can      │
-                    │  uniquely identify a row           │
-                    │                                   │
-                    │  Examples:                        │
-                    │  {roll_no}                        │
-                    │  {email}                          │
-                    │  {phone}                          │
-                    │  {roll_no, name}                  │
-                    │  {email, dept}                    │
-                    │  {roll_no, name, email, phone}    │
-                    └────────────┬─────────────────────┘
-                                 │
-                        Remove redundant
-                        columns (minimal)
-                                 │
-                    ┌────────────▼─────────────────────┐
-                    │       CANDIDATE KEY               │
-                    │  Minimal super keys (no extras)   │
-                    │                                   │
-                    │  {roll_no}                        │
-                    │  {email}                          │
-                    │  {phone}                          │
-                    └──┬──────────────────────┬────────┘
-                       │                      │
-                Pick one as                Remaining ones
-                the identifier             become...
-                       │                      │
-              ┌────────▼────────┐    ┌────────▼────────┐
-              │  PRIMARY KEY    │    │  ALTERNATE KEY   │
-              │                 │    │                  │
-              │  {roll_no}      │    │  {email}         │
-              │  (chosen one)   │    │  {phone}         │
-              └─────────────────┘    └──────────────────┘
-```
+![Key hierarchy: super keys, minimised to candidate keys, then one picked as primary key and the rest become alternate keys](../svg/dbms/d030-key-hierarchy.svg)
 
 ---
 
@@ -3270,12 +2885,7 @@ But InnoDB builds a clustered index **anyway** — it falls back to a hidden `GE
 
 **1. Replication falls over** — this is the big one
 
-```
-Replica applies a row-based DELETE affecting 10,000 rows:
-
-  WITH a primary key    →  10,000 index lookups        ⚡ fast
-  WITHOUT a primary key →  10,000 FULL TABLE SCANS     💀 replica lag: hours
-```
+![Replica applying a 10,000-row DELETE: with a PK, 10,000 index lookups (fast); without, 10,000 full table scans (replica lag: hours)](../svg/dbms/d031-replica-delete-with-without-pk.svg)
 
 With row-based binary logging (the default), the replica must **locate** each affected row before applying the change. No PK means no way to find it except scanning. This is the single most common cause of replica lag jumping from milliseconds to hours.
 
@@ -3333,14 +2943,7 @@ An **alternate key** is any candidate key that was **NOT chosen** as the primary
 
 > **In practice:** Alternate keys are enforced using `UNIQUE` constraints. They can still be used to look up rows — they're just not the "official" identifier.
 
-```
-  Candidate Keys = {roll_no, email, phone}
-                        │
-              ┌─────────┼──────────┐
-              ▼         ▼          ▼
-         PRIMARY    ALTERNATE   ALTERNATE
-         {roll_no}  {email}     {phone}
-```
+![Candidate keys {roll_no, email, phone} split into PRIMARY {roll_no} and ALTERNATE {email}, {phone}](../svg/dbms/d032-candidate-to-primary-alternate.svg)
 
 ---
 
@@ -3367,18 +2970,7 @@ A **foreign key** is a column (or set of columns) in one table that **references
 | 3 | Carol | carol@uni.edu | 9876543212 | CSE ✅ |
 | 4 | Dave | dave@uni.edu | 9876543213 | ME ✅ |
 
-```
-  departments (Parent)              students (Child)
- ┌─────────┬──────────────┐      ┌─────────┬───────┬──────┐
- │ dept_id │ dept_name    │      │ roll_no │ name  │ dept │
- ├─────────┼──────────────┤      ├─────────┼───────┼──────┤
- │  CSE    │ Comp. Sci.   │◄─────│  1      │ Alice │ CSE  │
- │         │              │◄─────│  3      │ Carol │ CSE  │
- │  ECE    │ Electronics  │◄─────│  2      │ Bob   │ ECE  │
- │  ME     │ Mechanical   │◄─────│  4      │ Dave  │ ME   │
- └─────────┴──────────────┘      └─────────┴───────┴──────┘
-    PK: dept_id                     FK: dept → dept_id
-```
+![Foreign key: students.dept rows point to departments.dept_id (Alice, Carol to CSE; Bob to ECE; Dave to ME)](../svg/dbms/d033-foreign-key-students-departments.svg)
 
 ### Foreign Key Properties:
 
@@ -3440,15 +3032,7 @@ CREATE INDEX idx_student_dept ON students(dept);
 
 ### The Relationship Chain
 
-```
-  Super Key  ⊇  Candidate Key  =  Primary Key  +  Alternate Key(s)
-                                        │
-                                 Referenced by
-                                        │
-                                   Foreign Key (in another table)
-
-  Secondary Key = any frequently searched column (orthogonal concept)
-```
+![Key chain: Super Key contains Candidate Key = Primary Key + Alternate Key(s); Primary Key is referenced by a Foreign Key; Secondary Key is orthogonal](../svg/dbms/d034-key-relationship-chain.svg)
 
 > **Interview tip:** The most common question is "What's the difference between a candidate key and a primary key?" Answer: *All* candidate keys are eligible to be the PK. The designer picks ONE → that becomes the PK. The rest become alternate keys.
 
@@ -3515,19 +3099,7 @@ Note what's **missing**: `name`. The summary table above calls it a *secondary k
 
 **1. No `PRIMARY KEY` declared? InnoDB builds one anyway.**
 
-```
-Did you declare a PRIMARY KEY?
-   │
-   ├── Yes → that becomes the clustered index
-   │
-   └── No → is there a UNIQUE NOT NULL index?
-              │
-              ├── Yes → InnoDB promotes the FIRST one to clustered index
-              │
-              └── No  → InnoDB creates a hidden GEN_CLUST_INDEX over a
-                        synthetic 6-byte row ID (DB_ROW_ID) that you can
-                        never query, reference, or use in a WHERE clause
-```
+![InnoDB clustered index fallback: declared PRIMARY KEY, else first UNIQUE NOT NULL index, else hidden GEN_CLUST_INDEX on DB_ROW_ID](../svg/dbms/d036-innodb-clustered-index-fallback.svg)
 
 You **always** have a clustered index. The only question is whether *you* chose it or InnoDB picked one for you.
 
@@ -3574,16 +3146,7 @@ SQL Joins combine rows from two or more tables based on a related column. Withou
 
 ## Join Types — Visual Overview
 
-```
-      INNER JOIN              LEFT JOIN              RIGHT JOIN             FULL JOIN
-   ┌─────┬─────┐          ┌─────┬─────┐          ┌─────┬─────┐         ┌─────┬─────┐
-   │     │█████│          │█████│█████│          │     │█████│         │█████│█████│
-   │  A  │█ B █│          │█ A █│█ B █│          │  A  │█ B █│         │█ A █│█ B █│
-   │     │█████│          │█████│█████│          │     │█████│         │█████│█████│
-   └─────┴─────┘          └─────┴─────┘          └─────┴─────┘         └─────┴─────┘
-   Only matching           All of A +              Matching +            All of A +
-   rows from both          matching B              all of B              All of B
-```
+![Venn diagrams for INNER, LEFT, RIGHT and FULL JOIN](../svg/dbms/d037-join-types-venn.svg)
 
 ---
 
@@ -3602,16 +3165,7 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 
 **How it works — step by step:**
 
-```
-Student                    StudentCourse
-ROLL_NO | NAME             COURSE_ID | ROLL_NO
---------|------            ----------|--------
-  1     | Alice    ──────►   C101    |  1       ✅ match
-  1     | Alice    ──────►   C103    |  1       ✅ match
-  2     | Bob      ──────►   C102    |  2       ✅ match
-  3     | Carol              C104    |  5       ❌ no match (5 not in Student)
-  4     | Dave                                  ❌ no match (3,4 not in StudentCourse)
-```
+![INNER JOIN matching: Alice and Bob match C101, C103, C102; C104 (ROLL_NO 5) and Carol, Dave (3, 4) have no match](../svg/dbms/d038-inner-join-matching.svg)
 
 **Result:**
 
@@ -3640,14 +3194,7 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 
 **How it works:**
 
-```
-  Keep ALL from LEFT (Student)     Match from RIGHT (StudentCourse)
-  ─────────────────────────────    ─────────────────────────────────
-  Alice  (ROLL_NO=1)        ────►  C101, C103    ✅ matched
-  Bob    (ROLL_NO=2)        ────►  C102          ✅ matched
-  Carol  (ROLL_NO=3)        ────►  NULL          ❌ no course found
-  Dave   (ROLL_NO=4)        ────►  NULL          ❌ no course found
-```
+![LEFT JOIN: keep all students; Alice matches C101, C103, Bob matches C102, Carol and Dave get NULL](../svg/dbms/d039-left-join-how-it-works.svg)
 
 **Result:**
 
@@ -3678,14 +3225,7 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 
 **How it works:**
 
-```
-  Match from LEFT (Student)      Keep ALL from RIGHT (StudentCourse)
-  ─────────────────────────      ──────────────────────────────────
-  Alice    ◄──── ROLL_NO=1 ────  C101    ✅ matched
-  Alice    ◄──── ROLL_NO=1 ────  C103    ✅ matched
-  Bob      ◄──── ROLL_NO=2 ────  C102    ✅ matched
-  NULL     ◄──── ROLL_NO=5 ────  C104    ❌ no student with ROLL_NO=5
-```
+![RIGHT JOIN: keep all StudentCourse rows; C101, C103 match Alice, C102 matches Bob, C104 (ROLL_NO=5) gets NULL](../svg/dbms/d040-right-join-how-it-works.svg)
 
 **Result:**
 
@@ -3713,16 +3253,7 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 
 **How it works:**
 
-```
-  LEFT (Student)           RIGHT (StudentCourse)
-  ──────────────           ─────────────────────
-  Alice (1) ◄──────────►  C101 (1)     ✅ match
-  Alice (1) ◄──────────►  C103 (1)     ✅ match
-  Bob   (2) ◄──────────►  C102 (2)     ✅ match
-  Carol (3) ──────────►   NULL         ❌ no course
-  Dave  (4) ──────────►   NULL         ❌ no course
-  NULL      ◄──────────   C104 (5)     ❌ no student
-```
+![FULL JOIN: matches for Alice and Bob, NULL course for Carol and Dave, NULL student for C104](../svg/dbms/d041-full-join-how-it-works.svg)
 
 **Result:**
 
@@ -3790,12 +3321,7 @@ LEFT JOIN employees m ON e.manager_id = m.emp_id;
 | Carol | Alice |
 | Dave | Bob |
 
-```
-  Alice (CEO)
-   ├── Bob
-   │    └── Dave
-   └── Carol
-```
+![Org chart: Alice (CEO) manages Bob and Carol; Bob manages Dave](../svg/dbms/d042-self-join-org-hierarchy.svg)
 
 ---
 
@@ -3855,15 +3381,7 @@ The database sees `dept_id` exists in both tables → automatically joins on it.
 
 ### When to Use Which?
 
-```
-  Need ONLY matches?                    → INNER JOIN
-  Need ALL from left table?             → LEFT JOIN
-  Need ALL from right table?            → RIGHT JOIN
-  Need ALL from both tables?            → FULL JOIN
-  Need every combination?               → CROSS JOIN
-  Need rows related to other rows       → SELF JOIN
-  in the SAME table?
-```
+![Which join to use: only matches INNER, all left LEFT, all right RIGHT, both FULL, every combination CROSS, same table SELF](../svg/dbms/d043-when-to-use-which-join.svg)
 
 > **Interview tip:** LEFT JOIN is the most commonly asked in interviews. The typical question is: *"Find all customers who have NOT placed any orders"* → Use `LEFT JOIN` + `WHERE order_id IS NULL`.
 >
@@ -3883,17 +3401,7 @@ A **View** is a **virtual table** created from a `SELECT` query. It does NOT sto
 
 > **Think of it this way:** A view is like a **saved bookmark** for a complex query. Instead of writing the same long query every time, you give it a name and reuse it like a table.
 
-```
-  Actual Tables (physical)              View (virtual)
- ┌──────────────────┐                 ┌──────────────────┐
- │  StudentDetails  │                 │  DetailsView     │
- │  (stores data)   │────SELECT──────▶│  (no data stored)│
- └──────────────────┘   query         │  just a "window" │
- ┌──────────────────┐    │            │  into the tables │
- │  StudentMarks    │────┘            └──────────────────┘
- │  (stores data)   │
- └──────────────────┘
-```
+![View: a SELECT query over physical tables StudentDetails and StudentMarks defines DetailsView, a virtual window that stores no data](../svg/dbms/d044-view-virtual-table.svg)
 
 ### Why Use Views?
 
@@ -4087,20 +3595,7 @@ The row is removed from the underlying `StudentDetails` table.
 | All `NOT NULL` columns must be included | Otherwise INSERT would fail on the base table |
 | No subqueries in `SELECT` | Complex derived values can't be reversed |
 
-```
-  Updatable View?
-  ───────────────
-  Single table?        ─── No ──► ❌ Not updatable
-       │ Yes
-  No GROUP BY/HAVING?  ─── No ──► ❌ Not updatable
-       │ Yes
-  No DISTINCT?         ─── No ──► ❌ Not updatable
-       │ Yes
-  No aggregates?       ─── No ──► ❌ Not updatable
-       │ Yes
-       ▼
-  ✅ Updatable!
-```
+![Updatable view checklist: single table, no GROUP BY/HAVING, no DISTINCT, no aggregates; any failure means not updatable](../svg/dbms/d045-updatable-view-checklist.svg)
 
 ---
 
@@ -4129,17 +3624,7 @@ VALUES (7, 'Grace', 'Mumbai');
 -- ERROR: CHECK OPTION failed
 ```
 
-```
-  Without WITH CHECK OPTION:
-  ──────────────────────────
-  INSERT 'Mumbai' row → ✅ Silently inserted into base table
-  But it won't appear in the view (confusing!)
-
-  With WITH CHECK OPTION:
-  ──────────────────────────
-  INSERT 'Mumbai' row → ❌ Rejected with error
-  Guarantees: if you can insert it, you can see it in the view
-```
+![WITH CHECK OPTION: without it a 'Mumbai' insert silently lands in the base table but not the view; with it the insert is rejected](../svg/dbms/d046-with-check-option.svg)
 
 > **Why use it?** Without `WITH CHECK OPTION`, you could insert a row through a view that immediately "disappears" from that view because it doesn't match the `WHERE` clause. This is confusing and error-prone. The check option prevents this.
 
@@ -4189,13 +3674,7 @@ A **trigger** is a special stored procedure that **runs automatically** when an 
 
 > **Think of it this way:** A trigger is like a **motion sensor light** — you don't press a switch; it turns on automatically when it detects movement (an event).
 
-```
-  User runs:                          Trigger fires automatically:
-  ─────────                           ──────────────────────────
-  INSERT INTO users ...    ──────►    Log the insertion to audit_log
-  UPDATE employees ...     ──────►    Recalculate total salary
-  DELETE FROM orders ...   ──────►    Archive the deleted order
-```
+![Triggers fire automatically: INSERT logs to audit_log, UPDATE recalculates total salary, DELETE archives the order](../svg/dbms/d047-trigger-fires-automatically.svg)
 
 ### Why Use Triggers?
 
@@ -4241,39 +3720,13 @@ END;
 | **Can modify the new data?** | ✅ Yes (`SET NEW.col = value`) | ❌ No (data already saved) |
 | **Use case** | Validation, auto-fill, calculations | Logging, updating other tables |
 
-```
-  BEFORE Trigger                    AFTER Trigger
-  ──────────────                    ─────────────
-  User → INSERT                    User → INSERT
-            │                                │
-     ┌──────▼──────┐                  Row is saved
-     │ BEFORE      │                         │
-     │ trigger     │                  ┌──────▼──────┐
-     │ (validate / │                  │ AFTER       │
-     │  modify)    │                  │ trigger     │
-     └──────┬──────┘                  │ (log /      │
-            │                         │  cascade)   │
-     Row is saved                     └─────────────┘
-```
+![BEFORE trigger validates/modifies before the row is saved; AFTER trigger logs/cascades after the row is saved](../svg/dbms/d048-before-vs-after-trigger.svg)
 
 ---
 
 ## Types of SQL Triggers
 
-```
-                    ┌──────────────────┐
-                    │   SQL Triggers   │
-                    └────────┬─────────┘
-              ┌──────────────┼──────────────┐
-              ▼              ▼              ▼
-        ┌──────────┐  ┌──────────┐  ┌────────────┐
-        │   DDL    │  │   DML    │  │   Logon    │
-        │ Triggers │  │ Triggers │  │  Triggers  │
-        └──────────┘  └──────────┘  └────────────┘
-        CREATE/ALTER   INSERT/       User login
-        DROP           UPDATE/       events
-                       DELETE
-```
+![Types of SQL triggers: DDL (CREATE/ALTER/DROP), DML (INSERT/UPDATE/DELETE), Logon (user login events)](../svg/dbms/d049-sql-trigger-types.svg)
 
 ### 1. DDL Triggers
 
@@ -4469,13 +3922,7 @@ A **stored procedure** is a **precompiled set of SQL statements** saved in the d
 
 > **Think of it this way:** A stored procedure is like a **function** — you define it once, then call it whenever you need it. It can accept inputs, process data, and return results.
 
-```
-  Without Stored Procedure:           With Stored Procedure:
-  ─────────────────────────           ──────────────────────
-  App sends 10 SQL queries   ──►     App calls one procedure
-  over the network                    CALL GetEmployeeReport(101)
-  (slow, repetitive)                  (fast, reusable, secure)
-```
+![Without a stored procedure the app sends 10 SQL queries over the network; with one it makes a single CALL GetEmployeeReport(101)](../svg/dbms/d050-stored-procedure-vs-many-queries.svg)
 
 ### Why Use Stored Procedures?
 
@@ -4718,23 +4165,7 @@ Triggers and stored procedures are powerful — yet most modern product companie
 
 A trigger runs **without appearing anywhere in your codebase**. A new developer reads the app code, sees a simple `UPDATE`, and has no idea that three other tables just changed.
 
-```
-Developer reads the app code:
-    UPDATE employees SET salary = 75000 WHERE emp_id = 101;
-    ↓
-    "Okay, this just updates one row." ✅ (what they think)
-
-What ACTUALLY happens in the database:
-    UPDATE employees ...
-      ├─▶ trg_salary_audit      → INSERT into salary_audit
-      ├─▶ trg_sync_payroll      → UPDATE payroll table
-      └─▶ trg_notify_finance    → INSERT into notification_queue
-                                     ↓
-                              (another trigger fires!) 💥
-
-Result: Debugging a production issue becomes a nightmare — the cause
-        isn't in the code you're reading.
-```
+![Hidden trigger logic: a simple UPDATE silently fires three triggers, one of which fires another trigger](../svg/dbms/d051-hidden-trigger-logic.svg)
 
 ### 2. Not Version Controlled with the Code
 
@@ -4752,28 +4183,11 @@ This is arguably the biggest practical issue:
 
 ### 3. Testing Is Painful
 
-```
-Testing application logic:              Testing a trigger/procedure:
-─────────────────────────────           ──────────────────────────────
-✅ Plain unit test, no DB needed        ❌ Needs a running database
-✅ Mock the dependencies                ❌ Must set up real tables + data
-✅ Runs in milliseconds                 ❌ Slow integration test
-✅ Runs in CI out of the box            ❌ Needs DB container in CI
-✅ Rich assertion libraries             ❌ Assert by querying tables afterwards
-✅ Debugger, breakpoints, stack traces  ❌ Very limited debugging tools
-```
+![Testing application logic (fast unit tests, mocks, debugger) vs testing triggers/procedures (real DB, slow integration tests, limited debugging)](../svg/dbms/d052-testing-app-logic-vs-triggers.svg)
 
 ### 4. Poor Scalability — The Database Is the Hardest Thing to Scale
 
-```
-   Application servers                    Database
-   ──────────────────                     ────────
-   ┌────┐ ┌────┐ ┌────┐ ┌────┐          ┌──────────────┐
-   │ #1 │ │ #2 │ │ #3 │ │ #4 │ ...      │   PRIMARY    │  ← usually ONE writer
-   └────┘ └────┘ └────┘ └────┘          └──────────────┘
-        Add more anytime  ✅               Vertical scaling only  ❌
-        (cheap, stateless)                 (expensive, hits a ceiling)
-```
+![Application servers scale out cheaply; the database primary is usually one writer and only scales vertically](../svg/dbms/d053-app-scales-out-db-does-not.svg)
 
 CPU spent running procedures and triggers is CPU **stolen from query execution** on your most expensive, least scalable, hardest-to-replace tier. Application servers are cheap and horizontally scalable; the database primary is not.
 
@@ -4832,15 +4246,7 @@ They're a tool, not an anti-pattern — the argument is about *default placement
 
 ### The Modern Consensus
 
-```
-Keep in the DATABASE:                Keep in the APPLICATION:
-──────────────────────               ────────────────────────
-✅ Constraints (PK, FK, UNIQUE,      ✅ Business rules & workflows
-   NOT NULL, CHECK)                  ✅ Validation
-✅ Indexes                            ✅ Orchestration / external API calls
-✅ Transactions                       ✅ Pricing, permissions, state machines
-✅ Occasionally: audit triggers       ✅ Anything that changes often
-```
+![Keep constraints, indexes, transactions and occasional audit triggers in the database; keep business rules, validation, orchestration and changing logic in the application](../svg/dbms/d054-database-vs-application-responsibilities.svg)
 
 > **Key takeaway:** The database should guarantee **data integrity**; the application should own **business logic**. Companies avoid triggers and stored procedures mainly because that logic becomes invisible, untested, un-versioned, unscalable, and vendor-locked — not because the features are bad. Declarative constraints (`FOREIGN KEY`, `UNIQUE`, `CHECK`) are the exception: always push those into the database.
 
@@ -4921,22 +4327,7 @@ CREATE TABLE employees (
 
 ## Visual Comparison
 
-```
-  PRIMARY KEY                         UNIQUE KEY
-  ──────────                          ──────────
-  ┌──────────────┐                   ┌──────────────┐
-  │ emp_id       │                   │ email        │
-  ├──────────────┤                   ├──────────────┤
-  │ 1 ✅         │                   │ alice@co ✅  │
-  │ 2 ✅         │                   │ bob@co   ✅  │
-  │ 3 ✅         │                   │ NULL     ✅  │
-  │ NULL ❌      │                   │ NULL     ❌  │ (second NULL)
-  │ 1 ❌ (dup)   │                   │ alice@co ❌  │ (duplicate)
-  └──────────────┘                   └──────────────┘
-        │                                  │
-   Clustered Index                  Non-Clustered Index
-   (physical order)                 (logical order)
-```
+![Primary key rejects NULL and duplicates (clustered index); unique key allows one NULL but rejects a second NULL and duplicates (non-clustered index)](../svg/dbms/d055-primary-vs-unique-key.svg)
 
 ---
 
@@ -4949,19 +4340,7 @@ CREATE TABLE employees (
 | **Speed** | Fastest for range queries | Slightly slower (extra lookup) |
 | **Analogy** | Phone book sorted by name | Index at the back of a textbook |
 
-```
-  Clustered (PK = emp_id):
-  ┌───┬───┬───┬───┐
-  │ 1 │ 2 │ 3 │ 4 │  ← data physically in this order
-  └───┴───┴───┴───┘
-
-  Non-Clustered (UQ = email):
-  ┌──────────┬─────┐
-  │ alice@co │ → 1 │  ← index points to row location
-  │ bob@co   │ → 2 │
-  │ carol@co │ → 3 │
-  └──────────┴─────┘
-```
+![Clustered PK on emp_id stores rows 1-4 physically in order; non-clustered UQ on email maps alice/bob/carol to row locations 1-3](../svg/dbms/d056-clustered-vs-nonclustered-pk-uq.svg)
 
 ---
 
@@ -5067,15 +4446,7 @@ This is the **biggest** performance difference between the two, and it comes dow
 
 Auto-increment IDs are **monotonically increasing**: 1, 2, 3, 4, 5, ... Each new row has a higher key than the last. In the B+ Tree, this means every insert goes to the **rightmost leaf page** — the same page, over and over, until it fills up and splits.
 
-```
-Insert id=1001:  goes to the END of the tree → append
-Insert id=1002:  goes to the END of the tree → append
-Insert id=1003:  goes to the END of the tree → append
-...
-
-B+ Tree leaf pages (sequential, orderly):
-[1-500] → [501-1000] → [1001-1003, ...] ← always appending here
-```
+![Auto-increment inserts 1001-1003 all append at the end of the B+ Tree; leaf pages  1-500  then  501-1000  then  1001-1003, ...  where appends always land](../svg/dbms/d057-autoincrement-sequential-inserts.svg)
 
 **Why this is fast:**
 - **One hot page** — the rightmost leaf stays in the buffer pool (memory). Writes hit RAM, not disk.
@@ -5087,16 +4458,7 @@ B+ Tree leaf pages (sequential, orderly):
 
 UUID v4 values are **completely random**: `a3b8d1b6...`, `f81d4fae...`, `0c8cfc82...`. Each new row's key lands at a **random position** in the B+ Tree — NOT at the end.
 
-```
-Insert id=a3b8d1b6...:  goes to the MIDDLE of the tree
-Insert id=f81d4fae...:  goes to the END of the tree
-Insert id=0c8cfc82...:  goes to the BEGINNING of the tree
-...
-
-B+ Tree leaf pages (fragmented, random):
-[0c8f..., 0e2a...] → [..., a3b8...] → [..., f81d...]
-     ↑ insert here        ↑ insert here       ↑ insert here
-```
+![UUID v4 inserts land at the middle, end and beginning of the tree; fragmented leaf pages each receive inserts](../svg/dbms/d058-uuid-v4-random-inserts.svg)
 
 **Why this is slow:**
 - **Random I/O** — every insert may touch a different leaf page, scattered across disk. Random reads are ~100× slower than sequential reads on HDDs, and ~10× slower on SSDs.
@@ -5125,22 +4487,10 @@ B+ Tree leaf pages (fragmented, random):
 
 The performance problems above apply to **UUID v4** (fully random). Newer formats like **UUID v7** (RFC 9562, 2024) and **ULID** solve this by embedding a **timestamp** in the most significant bits:
 
-```
-UUID v4:  550e8400-e29b-41d4-a716-446655440000   ← fully random
-UUID v7:  018e4f6c-5a00-7000-8000-1234567890ab   ← timestamp-prefixed (sortable!)
-ULID:     01ARZ3NDEKTSV4RRFFQ69G5FAV             ← timestamp-prefixed (sortable!)
-```
+![UUID v4 example is fully random; UUID v7 and ULID examples are timestamp-prefixed and sortable](../svg/dbms/d059-uuid-v4-v7-ulid-formats.svg)
 
 **UUID v7 structure:**
-```
- 48 bits: Unix timestamp in milliseconds (gives ordering)
-  4 bits: Version (always 0111 for v7)
- 12 bits: Random
-  2 bits: Variant
- 62 bits: Random
-──────────
-128 bits total (same as UUID v4)
-```
+![UUID v7 bit layout: 48-bit ms timestamp, 4-bit version 0111, 12 random, 2-bit variant, 62 random = 128 bits like UUID v4](../svg/dbms/d060-uuid-v7-bit-layout.svg)
 
 Because the timestamp occupies the most significant bits, UUID v7 values generated **later** are always **greater** than earlier ones — they're **roughly sequential**, just like auto-increment IDs. This means:
 
@@ -5316,19 +4666,7 @@ SQL Injection is a **code injection attack** where a hacker inserts malicious SQ
 
 ## How It Works
 
-```
-  Normal Flow:
-  ────────────
-  User enters:  105
-  SQL becomes:  SELECT * FROM Users WHERE UserId = 105
-  Result:       Returns user #105 only ✅
-
-  SQL Injection:
-  ──────────────
-  User enters:  105 OR 1=1
-  SQL becomes:  SELECT * FROM Users WHERE UserId = 105 OR 1=1
-  Result:       Returns ALL users ❌ (because 1=1 is always TRUE)
-```
+![Normal input 105 returns user #105 only; injected 105 OR 1=1 returns all users because 1=1 is always true](../svg/dbms/d061-sql-injection-normal-vs-injected.svg)
 
 ### The Vulnerable Code
 
@@ -5352,18 +4690,7 @@ The problem: **user input is directly concatenated** into the SQL query without 
 
 Since `1=1` is always TRUE, the `WHERE` clause is effectively removed → **returns ALL rows**.
 
-```
-  Users Table
-  ┌────────┬──────────┬──────────┐
-  │ UserId │ Name     │ Password │
-  ├────────┼──────────┼──────────┤
-  │ 101    │ Alice    │ pass123  │ ◄── All returned!
-  │ 102    │ Bob      │ secret   │ ◄── All returned!
-  │ 103    │ Carol    │ qwerty   │ ◄── All returned!
-  │ 105    │ Dave     │ mypass   │ ◄── All returned!
-  └────────┴──────────┴──────────┘
-  Attacker now has ALL usernames and passwords!
-```
+![Tautology attack returns every row of the Users table, exposing all usernames and passwords](../svg/dbms/d062-tautology-attack-all-rows.svg)
 
 ### 2. Login Bypass (" OR ""=")
 
@@ -5380,14 +4707,7 @@ SELECT * FROM Users WHERE Name = "" OR ""="" AND Pass = "" OR ""=""
 
 Since `""=""` is always TRUE → **bypasses authentication entirely**.
 
-```
-  Login Form                    What the Server Sees
-  ──────────                    ────────────────────
-  Username: " OR ""="    →     Name = "" OR ""=""    (always TRUE)
-  Password: " OR ""="   →     Pass = "" OR ""=""    (always TRUE)
-
-  Result: Attacker is logged in as the FIRST user in the table!
-```
+![Login bypass: " OR ""=" in both fields makes Name and Pass conditions always true, logging the attacker in as the first user](../svg/dbms/d063-login-bypass-or-empty-string.svg)
 
 ### 3. Batched Statements (Destructive)
 
@@ -5427,18 +4747,7 @@ The **#1 defense** against SQL Injection is **parameterized queries** (prepared 
 
 ### How It Works
 
-```
-  Vulnerable (String Concatenation):
-  ──────────────────────────────────
-  sql = "SELECT * FROM Users WHERE UserId = " + userInput
-  → Attacker input becomes part of the SQL structure ❌
-
-  Safe (Parameterized Query):
-  ───────────────────────────
-  sql = "SELECT * FROM Users WHERE UserId = @id"
-  → Attacker input is treated as a literal value ✅
-  → Even "105 OR 1=1" is treated as the string "105 OR 1=1"
-```
+![String concatenation lets input change SQL structure; a parameterized query with @id treats "105 OR 1=1" as a literal string](../svg/dbms/d064-concatenation-vs-parameterized.svg)
 
 ### Examples in Different Languages
 
@@ -5495,22 +4804,7 @@ const [rows] = await connection.execute(
 
 ## Quick Summary
 
-```
-  SQL Injection Attack Types:
-  ───────────────────────────
-  1. Tautology (OR 1=1)        → Returns all rows
-  2. Login Bypass (" OR ""=")  → Bypasses authentication
-  3. Batched Statements (;DROP)→ Destroys tables
-  4. UNION-Based               → Extracts data from other tables
-
-  Prevention:
-  ───────────
-  ✅ Parameterized queries (BEST)
-  ✅ Input validation
-  ✅ Stored procedures
-  ✅ Least privilege
-  ❌ String concatenation (NEVER)
-```
+![SQL injection summary: four attack types and their effects, and prevention measures (parameterized queries best, never string concatenation)](../svg/dbms/d065-sql-injection-summary.svg)
 
 > **Interview tip:** If asked "How do you prevent SQL Injection?" — the answer is always **parameterized queries / prepared statements**. Input validation is a secondary defense, not a replacement.
 
@@ -5632,15 +4926,7 @@ REVOKE EXECUTE ON PROCEDURE DBMSProcedure FROM 'Amit'@'localhost';
 
 ## Privilege Scope Hierarchy
 
-```
-  *.* (Global)         →  All databases, all tables
-    │
-  database.*           →  All tables in one database
-    │
-  database.table       →  One specific table
-    │
-  database.table(col)  →  Specific column(s) in a table
-```
+![MySQL privilege scope hierarchy from *.* (global) through database.* and database.table down to database.table(col)](../svg/dbms/d067-privilege-scope-hierarchy.svg)
 
 ```sql
 -- Global: user can do everything everywhere
@@ -5673,19 +4959,7 @@ Indexes are data structures that **speed up data retrieval**. Without indexes, t
 
 > **Think of it this way:** A database without an index is like a book without a table of contents — you'd have to read every page to find what you're looking for. An index is the table of contents that tells you exactly which page to go to.
 
-```
-  Without Index (Full Table Scan):
-  ─────────────────────────────────
-  "Find employee #500"
-  → Scan row 1, row 2, row 3, ... row 500
-  → O(n) — slow for large tables
-
-  With Index:
-  ───────────
-  "Find employee #500"
-  → Index lookup → directly go to row 500
-  → O(log n) — fast even for millions of rows
-```
+![Finding employee #500: full table scan reads rows 1..500 in O(n); an index lookup goes directly to row 500 in O(log n)](../svg/dbms/d068-full-scan-vs-index-lookup.svg)
 
 ---
 
@@ -5693,16 +4967,7 @@ Indexes are data structures that **speed up data retrieval**. Without indexes, t
 
 A **clustered index** physically sorts and stores the **actual data rows** in the order of the index key. The table data IS the index.
 
-```
-  Clustered Index on emp_id:
-  ┌─────────────────────────────────────────┐
-  │ Data pages are physically sorted by PK  │
-  ├─────┬─────┬─────┬─────┬─────┬─────────┤
-  │  1  │  2  │  3  │  4  │  5  │  ...    │
-  └─────┴─────┴─────┴─────┴─────┴─────────┘
-    ▲
-    The data IS the index (leaf nodes = data pages)
-```
+![Clustered index on emp_id: data pages physically sorted by PK; the data is the index (leaf nodes = data pages)](../svg/dbms/d069-clustered-index-data-sorted.svg)
 
 **Key characteristics:**
 - **Only ONE** per table (data can only be physically sorted one way)
@@ -5718,19 +4983,7 @@ A **clustered index** physically sorts and stores the **actual data rows** in th
 
 A **non-clustered index** is a **separate structure** that stores the index key + a pointer back to the actual data row. The table data stays in its original order.
 
-```
-  Non-Clustered Index on email:
-  ┌──────────────────────┐         ┌──────────────────────┐
-  │ Index (sorted)       │         │ Data (original order) │
-  ├──────────────┬───────┤         ├─────┬────────────────┤
-  │ alice@co     │ → Row 3│        │  1  │ Dave, dave@co  │
-  │ bob@co       │ → Row 1│        │  2  │ Carol, carol@co│
-  │ carol@co     │ → Row 2│        │  3  │ Alice, alice@co│
-  │ dave@co      │ → Row 4│ ──────►│  4  │ Bob, bob@co    │
-  └──────────────┴───────┘         └─────┴────────────────┘
-    Index is sorted                  Data is NOT sorted
-    by email                         by email
-```
+![Non-clustered index on email: sorted index entries point to rows in a data table that stays in original order](../svg/dbms/d070-nonclustered-index-pointers.svg)
 
 **Key characteristics:**
 - **Multiple** non-clustered indexes allowed per table
@@ -5770,31 +5023,7 @@ Both clustered and non-clustered indexes typically use a **B-Tree** (Balanced Tr
 
 🔗 [B-Trees and B+ Trees — Explained](https://medium.com/@akashsdas_dev/b-trees-and-b-trees-682d363df1f7)
 
-```
-  B-Tree Structure (Clustered Index on emp_id):
-  ═══════════════════════════════════════════════
-
-              ┌───────────┐
-              │  Root     │
-              │  [50]     │
-              └─────┬─────┘
-            ┌───────┴───────┐
-            ▼               ▼
-      ┌───────────┐   ┌───────────┐
-      │ [10, 30]  │   │ [70, 90]  │
-      └──┬──┬──┬──┘   └──┬──┬──┬──┘
-         │  │  │         │  │  │
-    ┌────┘  │  └────┐    │  │  └────┐
-    ▼       ▼       ▼    ▼  ▼       ▼
-  ┌─────┐┌─────┐┌─────┐   (leaf nodes)
-  │1-9  ││10-29││30-49│   ← Clustered: actual data rows
-  │DATA ││DATA ││DATA │   ← Non-clustered: key + pointer
-  └─────┘└─────┘└─────┘
-
-  Lookup for emp_id = 25:
-  Root(50) → go left → Node(10,30) → middle → Leaf(10-29) → found!
-  Only 3 steps instead of scanning all rows!
-```
+![B-Tree on emp_id with root  50 , internal nodes  10,30  and  70,90 , data leaves; lookup for 25 takes 3 steps: root, go left, middle, leaf 10-29](../svg/dbms/d071-btree-clustered-lookup.svg)
 
 ---
 
@@ -5867,15 +5096,7 @@ SELECT name, salary FROM employees WHERE department = 'CSE';
 CREATE INDEX idx_covering ON employees(department, name, salary);
 ```
 
-```
-  Without Covering Index:
-  Index lookup → find pointer → go to data row → read name, salary
-  (two steps)
-
-  With Covering Index:
-  Index lookup → name and salary are IN the index → done!
-  (one step — faster)
-```
+![Without a covering index: index lookup, pointer, data row, read name and salary (two steps); with one, name and salary are in the index (one step)](../svg/dbms/d072-covering-index-steps.svg)
 
 ---
 
@@ -5889,16 +5110,7 @@ CREATE INDEX idx_covering ON employees(department, name, salary);
 
 A non-unique secondary index in InnoDB stores `[indexed column | primary key]`. So `INDEX(name)` is physically sorted by `(name, id)` — every entry is still unique at the storage level. 500 people named "John Smith" = 500 index entries sitting contiguously, sorted by `id`. Nothing collides, nothing overflows.
 
-```
-  INDEX(name) leaf pages:
-  ┌──────────────────────────────────────┐
-  │ ("John Smith", 41)                   │
-  │ ("John Smith", 892)   ← duplicates   │
-  │ ("John Smith", 1503)     stored fine │
-  │ ("Priya Nair", 77)                   │
-  │ ("Priya Nair", 2201)                 │
-  └──────────────────────────────────────┘
-```
+![INDEX(name) leaf page stores duplicate names fine as (name, PK) pairs, e.g. three John Smith entries](../svg/dbms/d073-index-duplicates-leaf-page.svg)
 
 ### The Real Issue Is Selectivity
 
@@ -5924,23 +5136,7 @@ Closer to **1.0** is better. On a 1M-row table:
 
 ### Why the Optimizer Abandons a Low-Selectivity Index
 
-```
-WHERE gender = 'M'
-        │
-        ▼
-  500,000 matching index entries (cheap — sequential in the index)
-        │
-        ▼
-  500,000 RANDOM lookups into the clustered index
-  (to fetch the columns not in the index)
-        │
-        ▼
-  More expensive than just reading the whole table
-  sequentially from start to finish
-        │
-        ▼
-  ❌ Optimizer IGNORES the index → full table scan
-```
+![WHERE gender='M': 500,000 cheap index entries but 500,000 random clustered lookups cost more than a sequential scan, so the optimizer ignores the index](../svg/dbms/d074-optimizer-ignores-low-selectivity.svg)
 
 The rough tipping point is **~20–30% of the table**. Past that, a sequential scan wins. `EXPLAIN` gives it away:
 
@@ -6071,43 +5267,15 @@ Suppose we insert these employee IDs in order: `10, 20, 30, 40, 50, 60, 70, 80, 
 
 The resulting B+ Tree looks like this:
 
-```
-                         [40, 70]                          ← Root (internal node)
-                        /    |    \
-                       /     |     \
-              [10, 20, 30] [40, 50, 60] [70, 80, 90]       ← Leaf nodes (hold data)
-                   ↔            ↔            ↔              ← Linked list connections
-```
+![Order-4 B+ Tree: root  40, 70  over leaves  10,20,30 ,  40,50,60 ,  70,80,90  that hold data and are linked as a list](../svg/dbms/d075-bplus-tree-order-4.svg)
 
 **How a lookup works — Find employee_id = 50:**
 
-```
-Step 1: Start at root [40, 70]
-        → 50 >= 40 and 50 < 70
-        → Follow the MIDDLE pointer
-
-Step 2: Arrive at leaf [40, 50, 60]
-        → Scan within this small node → Found 50!
-
-Total: 2 disk reads (1 root page + 1 leaf page)
-```
+![B+ Tree lookup for 50: root  40,70 , follow middle pointer, scan leaf  40,50,60 ; 2 disk reads total](../svg/dbms/d076-bplus-lookup-50.svg)
 
 **How a range scan works — Find all employees WHERE id BETWEEN 30 AND 60:**
 
-```
-Step 1: Start at root [40, 70]
-        → 30 < 40 → Follow LEFT pointer
-
-Step 2: Arrive at leaf [10, 20, 30]
-        → Start from 30
-        → Follow linked list pointer →
-
-Step 3: Arrive at leaf [40, 50, 60]
-        → Read 40, 50, 60 → 60 is the upper bound, stop
-
-Result: [30, 40, 50, 60] — found by reading only 3 pages
-(No need to go back to the root for each value!)
-```
+![Range scan 30-60: root sends left, start at 30 in leaf  10,20,30 , follow the leaf link to  40,50,60 , stop at 60; 3 pages read](../svg/dbms/d077-bplus-range-scan-30-60.svg)
 
 ### How Inserts and Splits Work — Step by Step
 
@@ -6117,32 +5285,15 @@ Understanding splits is crucial because they explain why B+ Trees stay balanced 
 
 **Insert 10, 20, 30** — they fit in a single leaf:
 
-```
-[10, 20, 30]    ← Root is also a leaf at this point
-```
+![After inserting 10, 20, 30 the single node  10, 20, 30  is both root and leaf](../svg/dbms/d078-bplus-single-leaf-root.svg)
 
 **Insert 40** — the leaf is full (has 3 keys), so it **splits**:
 
-```
-Split [10, 20, 30, 40] into two halves:
-  Left leaf:  [10, 20]
-  Right leaf: [30, 40]
-  Promote middle key (30) up to a new root
-
-Result:
-           [30]               ← New root (internal node)
-          /    \
-   [10, 20]  [30, 40]         ← Leaf nodes
-       ↔           
-```
+![Inserting 40 splits  10,20,30,40  into leaves  10,20  and  30,40  and promotes 30 to a new root](../svg/dbms/d079-bplus-first-leaf-split.svg)
 
 **Insert 50, 60** — 50 and 60 go into the right leaf (since > 30):
 
-```
-           [30]
-          /    \
-   [10, 20]  [30, 40, 50, 60]   ← This leaf now has 4 keys — OVERFLOW!
-```
+![After inserting 50 and 60, root  30  has right leaf  30,40,50,60  with 4 keys: overflow](../svg/dbms/d080-bplus-right-leaf-overflow.svg)
 
 **Split the right leaf:**
 
@@ -6161,13 +5312,7 @@ Result:
 
 **Insert 70, 80, 90** — following the same pattern, the tree keeps growing and splitting:
 
-```
-Final tree:
-                         [40, 70]
-                        /    |    \
-              [10, 20, 30] [40, 50, 60] [70, 80, 90]
-                   ↔            ↔            ↔
-```
+![Final B+ Tree: root  40, 70  with linked leaves  10,20,30 ,  40,50,60 ,  70,80,90](../svg/dbms/d081-bplus-final-tree.svg)
 
 **Key observations about splits:**
 
@@ -6213,16 +5358,7 @@ CREATE TABLE employees (
 
 **What the B+ Tree looks like internally:**
 
-```
-Internal nodes: [50, 100]  — contain only IDs and page pointers
-
-Leaf nodes (contain the FULL ROW):
-  Page 1: [id=1, name='Alice', dept='Eng', salary=90000]
-           [id=2, name='Bob',   dept='Sales', salary=75000]
-           ...
-  Page 2: [id=51, name='Carol', dept='Eng', salary=95000]
-           ...
-```
+![Clustered index internals: internal node  50, 100  holds only IDs and page pointers; leaf pages hold full rows](../svg/dbms/d082-clustered-index-full-row-leaves.svg)
 
 **Key facts:**
 - Every InnoDB table has **exactly one** clustered index
@@ -6414,13 +5550,7 @@ SELECT * FROM employees WHERE salary > 100000;
 
 **How it works with an index on `order_date`:**
 
-```
-Step 1: B+ Tree seek to '2025-01-01'         → Find its leaf page
-Step 2: Walk the linked list forward          → Read all entries sequentially
-Step 3: Stop when you hit '2025-02-01'        → Done
-
-Only reads the pages containing matching rows — skips everything else.
-```
+![Range query on order_date: seek to 2025-01-01, walk the leaf linked list forward, stop at 2025-02-01; only matching pages are read](../svg/dbms/d083-range-query-index-walk.svg)
 
 **Without index:** MySQL reads the **entire table** and checks every row's `order_date`. If the table has 10 million rows and only 50,000 match, it still reads all 10 million.
 
@@ -6686,21 +5816,7 @@ SELECT * FROM employees WHERE department = 'Eng' AND created_at > '2025-01-01';
 
 One `INSERT` into a table with 4 secondary indexes is really **5 B+ Tree insertions** — one clustered, four secondary. Each lands in a *different* tree, at a *different* place on disk.
 
-```
-INSERT INTO orders (id, user_id, status, created_at, total) VALUES (...);
-
-        ┌──────────────────────────────────────────────┐
-        │              ONE SQL statement                │
-        └───────────────────────┬──────────────────────┘
-                                ▼
-   ┌───────────┬───────────┬───────────┬───────────┬───────────┐
-   ▼           ▼           ▼           ▼           ▼
- PRIMARY   idx_user    idx_status  idx_created  idx_total
- (row data) (user_id,   (status,    (created_at, (total,
-            id)          id)         id)          id)
-   │           │           │           │           │
-   └───────────┴───────────┴───────────┴───────────┴──────▶ 5 B+ Tree inserts
-```
+![One INSERT into orders fans out to five B+ Tree inserts: PRIMARY plus idx_user, idx_status, idx_created, idx_total](../svg/dbms/d084-one-insert-five-btree-inserts.svg)
 
 That is **write amplification**, and it is the real cost of "just add an index." Indexes are not free storage — they are a tax on every `INSERT`, `UPDATE` and `DELETE` forever.
 
@@ -6720,16 +5836,7 @@ That is **write amplification**, and it is the real cost of "just add an index."
 
 In InnoDB the **clustered index *is* the table** — the full row lives in the PK B+ Tree's leaf page. So the insert position is decided entirely by your primary key value:
 
-```
-Sequential PK (AUTO_INCREMENT / UUIDv7)      Random PK (UUID v4)
-──────────────────────────────────────       ────────────────────────────
-  ...│ 97 │ 98 │ 99 │  ◀── append              │ 12 │ 44 │ 91 │  ◀── lands mid-tree
-         rightmost leaf                                ↓
-                                               page is full → SPLIT
-  ✅ pages fill to ~100%                       ❌ pages settle at ~50% fill
-  ✅ one hot page stays in the buffer pool     ❌ random pages pulled from disk
-  ✅ no mid-tree splits                        ❌ constant splits + fragmentation
-```
+![Sequential PK appends to the rightmost leaf (full pages, hot page, no mid-tree splits) vs random UUID v4 PK landing mid-tree and splitting](../svg/dbms/d085-sequential-vs-random-pk-insert.svg)
 
 🔗 This is the single biggest argument in [UUID vs Auto-Increment Integer as Primary Key](#uuid-vs-auto-increment-integer-as-primary-key).
 
@@ -6737,13 +5844,7 @@ Sequential PK (AUTO_INCREMENT / UUIDv7)      Random PK (UUID v4)
 
 When the target 16 KB leaf page has no room left:
 
-```
-1. Allocate a new page
-2. Move roughly half the records into it
-3. Update the parent node's pointers
-4. If the parent is now full too → split the parent as well (can cascade upward)
-5. In the worst case the tree grows one level taller
-```
+![Page split steps: allocate page, move half the records, update parent pointers, split parent if full (can cascade), tree may grow a level](../svg/dbms/d086-page-split-steps.svg)
 
 Two consequences people miss:
 
@@ -6772,14 +5873,7 @@ So why does nobody worry about it? Because the **blast radius** is completely di
 
 #### What Actually Moves During a Split
 
-```
-Clustered index (PK) leaf              Secondary index (email) leaf
-─────────────────────────              ────────────────────────────
- THE WHOLE ROW                          just (email, PK)
- id, name, email, address,              "adam@x.com" → 4471
- bio, created_at, ... ~800 B            ~40 bytes
- ≈ 20 rows per 16 KB page               ≈ 400 entries per 16 KB page
-```
+![Clustered PK leaf holds whole ~800 B rows (~20 per 16 KB page) vs secondary email leaf holding ~40-byte (email, PK) entries (~400 per page)](../svg/dbms/d087-split-payload-clustered-vs-secondary.svg)
 
 A split in the clustered index relocates half a page of **full rows**. A split in a secondary index relocates half a page of **tiny pointers**.
 
@@ -6816,17 +5910,7 @@ So `UNIQUE(email)` genuinely is one of the more expensive secondary indexes you 
 
 #### The Contrast That Makes It Click
 
-```
-idx_created_at    →  values always increase  →  appends to the rightmost leaf
-                     ✅ cheapest possible secondary index — no splits at all
-
-idx_email         →  values are random       →  random leaf, splits
-                     ⚠️ normal cost, entirely acceptable
-
-PRIMARY KEY uuid  →  values are random       →  random leaf, splits,
-                     ☠️ AND drags the entire row with it,
-                        AND bloats every other index
-```
+![Insert cost by key pattern: sequential idx_created_at appends (cheapest), random idx_email splits (acceptable), random UUID primary key splits, drags whole rows and bloats every index](../svg/dbms/d088-index-insert-cost-contrast.svg)
 
 #### ⭐ The Rule — Only the Primary Key Has to Be Sequential
 
@@ -6866,16 +5950,7 @@ CREATE TABLE users (
 
 ### DELETE — Nothing Is Removed Immediately
 
-```
-Step 1  DELETE runs        → record is DELETE-MARKED in the clustered index
-                             and in every secondary index. Bytes untouched.
-Step 2  Transaction commits
-Step 3  PURGE thread       → physically removes the marked records once no
-                             active read view can still see them, and frees
-                             the undo log pages
-Step 4  Page merge         → if a page drops below MERGE_THRESHOLD (default
-                             50%), it is merged with a sibling and freed
-```
+![DELETE lifecycle: delete-mark in clustered and secondary indexes, commit, purge thread removes records and frees undo pages, page merge below MERGE_THRESHOLD](../svg/dbms/d089-delete-purge-lifecycle.svg)
 
 **Why delete-mark instead of deleting?** Two reasons:
 
@@ -6961,15 +6036,7 @@ This distinction is unique to InnoDB and is **critical** for understanding query
 - Data is **physically sorted** by the primary key on disk
 - Lookups by primary key reach the data directly — **one B+ Tree traversal**
 
-```
-Clustered Index B+ Tree (PRIMARY KEY = id):
-
-       Internal: [50, 100]
-                /    |    \
-Leaf pages:  [id=1, ALL_COLUMNS]  [id=51, ALL_COLUMNS]  [id=101, ALL_COLUMNS]
-             [id=2, ALL_COLUMNS]  [id=52, ALL_COLUMNS]  [id=102, ALL_COLUMNS]
-             ...                   ...                    ...
-```
+![Clustered index B+ tree on id: internal node  50, 100  over leaf pages that store id plus all columns of the row](../svg/dbms/d090-clustered-index-btree.svg)
 
 ### Secondary Index (Any Non-Primary Index)
 
@@ -6977,14 +6044,7 @@ Leaf pages:  [id=1, ALL_COLUMNS]  [id=51, ALL_COLUMNS]  [id=101, ALL_COLUMNS]
 - The leaf nodes store the **indexed columns + the primary key value** (NOT the full row)
 - To get columns not in the secondary index, InnoDB must do a **second lookup** on the clustered index using the primary key — this is called a **bookmark lookup** (or **"back to table"**, sometimes called **"double lookup"**)
 
-```
-Secondary Index B+ Tree (INDEX on email):
-
-       Internal: ['john@...', 'mary@...']
-                /         |          \
-Leaf pages:  [email='alice@...', PK=42]   [email='john@...', PK=7]
-             [email='bob@...',   PK=15]   [email='mary@...', PK=91]
-```
+![Secondary index B+ tree on email: leaf entries hold the email plus the primary key (PK=42, 15, 7, 91), not the full row](../svg/dbms/d091-secondary-index-btree.svg)
 
 **What happens when you query by email:**
 
@@ -7226,18 +6286,7 @@ Indexes can be classified by how many entries they maintain relative to the rows
 
 A dense index has an entry for **every single row** (every search key value) in the data file. Think of it as a complete phone book where every person has a listing.
 
-```
-Index                          Data File (sorted by ID)
-┌────────┬─────────┐          ┌────────────────────────────┐
-│ ID=1   │ → ptr   │────────→ │ ID=1, Alice, Engineering   │
-│ ID=2   │ → ptr   │────────→ │ ID=2, Bob, Sales           │
-│ ID=3   │ → ptr   │────────→ │ ID=3, Carol, Marketing     │
-│ ID=4   │ → ptr   │────────→ │ ID=4, Dave, Engineering    │
-│ ID=5   │ → ptr   │────────→ │ ID=5, Eve, Sales           │
-│ ID=6   │ → ptr   │────────→ │ ID=6, Frank, Marketing     │
-└────────┴─────────┘          └────────────────────────────┘
-  6 index entries               6 data rows
-```
+![Dense index: six index entries ID=1..6, one pointer per data row in the sorted data file](../svg/dbms/d095-dense-index.svg)
 
 ---
 
@@ -7245,21 +6294,7 @@ Index                          Data File (sorted by ID)
 
 A sparse index has entries for only **some** rows — typically one entry per **disk block/page**. It points to the **first record in each block**. The data **must be sorted** on the search key for this to work.
 
-```
-Index                          Data File (sorted by ID, 3 rows per block)
-┌────────┬─────────┐          ┌────────────────────────────┐
-│ ID=1   │ → ptr   │────────→ │ Block 1:                   │
-│        │         │          │   ID=1, Alice, Engineering  │
-│        │         │          │   ID=2, Bob, Sales          │
-│        │         │          │   ID=3, Carol, Marketing    │
-├────────┼─────────┤          ├────────────────────────────┤
-│ ID=4   │ → ptr   │────────→ │ Block 2:                   │
-│        │         │          │   ID=4, Dave, Engineering   │
-│        │         │          │   ID=5, Eve, Sales          │
-│        │         │          │   ID=6, Frank, Marketing    │
-└────────┴─────────┘          └────────────────────────────┘
-  2 index entries               6 data rows (2 blocks)
-```
+![Sparse index: two entries (ID=1, ID=4) pointing to the first record of each 3-row block in the sorted data file](../svg/dbms/d096-sparse-index.svg)
 
 To find **ID=5**: the index sees `ID=4 ≤ 5 < next entry`, so it jumps to Block 2 and does a **short linear scan** within that block.
 
@@ -7321,12 +6356,7 @@ Block 2: [1001, 1002, ..., 1500]
 
 ### Step 2: Pick the First Key from Each Block
 
-```
-Sparse index entries:
-  (1,    → pointer to Block 0)
-  (501,  → pointer to Block 1)
-  (1001, → pointer to Block 2)
-```
+![Sparse index entries: (1 → Block 0), (501 → Block 1), (1001 → Block 2), one entry per block](../svg/dbms/d097-sparse-index-entries.svg)
 
 ### Step 3: Store the Index as a Sorted Structure
 
@@ -7474,16 +6504,7 @@ A **cursor** is a database object that allows you to process query results **one
 
 > **Think of it this way:** A normal `SELECT` gives you the entire result at once (like getting a full report). A cursor is like reading that report **line by line** — processing each row individually before moving to the next.
 
-```
-  Normal SELECT:                     Using a Cursor:
-  ──────────────                     ───────────────
-  SELECT * FROM employees            DECLARE cursor
-  → Returns ALL rows at once         OPEN cursor
-  → Can't process row-by-row         FETCH row 1 → process
-                                     FETCH row 2 → process
-                                     FETCH row 3 → process
-                                     CLOSE cursor
-```
+![Normal SELECT returns all rows at once vs a cursor: DECLARE, OPEN, FETCH row 1/2/3 and process each, CLOSE](../svg/dbms/d098-select-vs-cursor.svg)
 
 ---
 
@@ -7502,15 +6523,7 @@ A **cursor** is a database object that allows you to process query results **one
 
 ## Cursor Lifecycle — 5 Steps
 
-```
-  ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌──────────┐     ┌────────────┐
-  │ DECLARE  │────▶│  OPEN    │────▶│  FETCH   │────▶│  CLOSE   │────▶│ DEALLOCATE │
-  │          │     │          │     │  (loop)  │     │          │     │            │
-  │ Define   │     │ Execute  │     │ Get one  │     │ Release  │     │ Free       │
-  │ the      │     │ the      │     │ row at   │     │ the      │     │ memory     │
-  │ cursor   │     │ query    │     │ a time   │     │ cursor   │     │            │
-  └──────────┘     └──────────┘     └──────────┘     └──────────┘     └────────────┘
-```
+![Cursor lifecycle: DECLARE (define) → OPEN (execute query) → FETCH loop (one row at a time) → CLOSE (release) → DEALLOCATE (free memory)](../svg/dbms/d099-cursor-lifecycle-5-steps.svg)
 
 | Step | What It Does | Syntax |
 |------|-------------|--------|
@@ -7614,20 +6627,7 @@ DEALLOCATE emp_cursor;
 
 ### How It Processes
 
-```
-  employees table:
-  ┌────────┬───────┬────────┐
-  │ emp_id │ name  │ salary │
-  ├────────┼───────┼────────┤
-  │ 1      │ Alice │ 45000  │ ── FETCH → bonus = 4500 (10%)  → UPDATE
-  │ 2      │ Bob   │ 60000  │ ── FETCH → bonus = 3000 (5%)   → UPDATE
-  │ 3      │ Carol │ 38000  │ ── FETCH → bonus = 3800 (10%)  → UPDATE
-  │ 4      │ Dave  │ 75000  │ ── FETCH → bonus = 3750 (5%)   → UPDATE
-  └────────┴───────┴────────┘        ▲
-                                     │
-                              @@FETCH_STATUS = -1
-                              (no more rows → exit loop)
-```
+![Cursor loop over employees: each row is fetched, bonus computed (10% or 5%) and updated; @@FETCH_STATUS = -1 exits the loop](../svg/dbms/d100-cursor-fetch-bonus-loop.svg)
 
 ---
 
@@ -7726,18 +6726,7 @@ DEALLOCATE scroll_cursor;
 
 ## Cursor vs Set-Based Operations
 
-```
-  ❌ Cursor Approach (slow):                    ✅ Set-Based Approach (fast):
-  ──────────────────────────                    ────────────────────────────
-  DECLARE cursor ...                            UPDATE employees
-  OPEN cursor                                   SET bonus = CASE
-  LOOP                                              WHEN salary < 50000
-      FETCH row                                     THEN salary * 0.10
-      UPDATE one row                                ELSE salary * 0.05
-  END LOOP                                      END;
-  CLOSE cursor
-                                                (One statement, all rows at once!)
-```
+![Cursor approach (slow): DECLARE/OPEN/LOOP FETCH + UPDATE one row/CLOSE vs set-based (fast): one UPDATE ... SET bonus = CASE statement for all rows](../svg/dbms/d101-cursor-vs-set-based.svg)
 
 | | Cursor | Set-Based |
 |--|:---:|:---:|
@@ -7751,19 +6740,7 @@ DEALLOCATE scroll_cursor;
 
 ## Quick Summary
 
-```
-  Cursor Lifecycle:  DECLARE → OPEN → FETCH (loop) → CLOSE → DEALLOCATE
-
-  When to USE:
-    ✅ Complex per-row logic that can't be expressed in SQL
-    ✅ Calling stored procedures for each row
-    ✅ Row-dependent calculations (running totals)
-
-  When to AVOID:
-    ❌ Simple updates/deletes (use WHERE clause)
-    ❌ Bulk inserts (use INSERT ... SELECT)
-    ❌ Anything that can be done with JOINs or CASE
-```
+![Cursor summary: lifecycle DECLARE → OPEN → FETCH (loop) → CLOSE → DEALLOCATE; when to use vs when to avoid cursors](../svg/dbms/d102-cursor-quick-summary.svg)
 
 > **Interview tip:** If asked "What is a cursor and when would you use one?" — A cursor processes query results row-by-row. Use it ONLY when set-based SQL can't handle the logic. Always mention that cursors are **slower than set-based operations** and should be a last resort.
 
@@ -7858,26 +6835,13 @@ A **functional dependency (FD)** describes a relationship between attributes in 
 
 ### Functional Dependencies in This Table
 
-```
-  roll_no → name, dept              (knowing roll_no gives you name and dept)
-  course_id → course_name, instructor   (knowing course_id gives course info)
-  {roll_no, course_id} → ALL columns   (full PK determines everything)
-```
+![FDs in student_course: roll_no → name, dept; course_id → course_name, instructor; {roll_no, course_id} → all columns](../svg/dbms/d103-student-course-fds.svg)
 
 ---
 
 ## Types of Functional Dependencies
 
-```
-                ┌──────────────────────────┐
-                │  Functional Dependencies │
-                └────────────┬─────────────┘
-        ┌────────────┬───────┼───────┬────────────┐
-        ▼            ▼       ▼       ▼            ▼
-   ┌─────────┐ ┌──────────┐ ┌───┐ ┌─────────┐ ┌──────────┐
-   │ Trivial │ │Non-Trivial│ │Full│ │ Partial │ │Transitive│
-   └─────────┘ └──────────┘ └───┘ └─────────┘ └──────────┘
-```
+![Functional dependency types: Trivial, Non-Trivial, Full, Partial, Transitive](../svg/dbms/d104-fd-types-tree.svg)
 
 ---
 
@@ -7898,13 +6862,7 @@ A dependency `X → Y` is **trivial** if Y is a **subset of X** (i.e., Y is alre
 | `{roll_no} → roll_no` | ✅ Trivial | Same attribute on both sides |
 | `{roll_no, course_id} → roll_no` | ✅ Trivial | `roll_no` is a subset of the left side |
 
-```
-  Trivial FD:
-  ┌─────────────────┐        ┌──────┐
-  │ roll_no, name   │───────▶│ name │    Y ⊆ X → Trivial!
-  └─────────────────┘        └──────┘
-       X contains Y
-```
+![Trivial FD: {roll_no, name} → name, where Y ⊆ X (X already contains Y)](../svg/dbms/d105-trivial-fd.svg)
 
 > **Key point:** Trivial FDs are useless for normalization — they tell you nothing new about the data relationships.
 
@@ -7935,13 +6893,7 @@ A special case — when there is **zero overlap** between X and Y:
 | `{roll_no, name} → dept` | ✅ `dept` has no overlap with `{roll_no, name}` |
 | `{roll_no, name} → name, dept` | ❌ `name` overlaps (partially non-trivial) |
 
-```
-  Non-Trivial FD:
-  ┌──────────┐        ┌──────────────┐
-  │ roll_no  │───────▶│ name, dept   │    Y ⊄ X → Non-Trivial!
-  └──────────┘        └──────────────┘
-       X                  Y (new info)
-```
+![Non-trivial FD: roll_no → name, dept, where Y ⊄ X so Y is new information](../svg/dbms/d106-non-trivial-fd.svg)
 
 ---
 
@@ -7960,24 +6912,9 @@ A dependency `X → Y` is **full** if Y depends on the **entire** X, and removin
 | `{roll_no, course_id} → grade` | ✅ **Full** | Need BOTH roll_no AND course_id to determine grade. Neither alone works. |
 | `{roll_no, course_id} → name` | ❌ **Not Full** (Partial) | `roll_no` alone determines `name`. Don't need `course_id`. |
 
-```
-  Full Dependency:
-  ┌──────────────────────────┐           ┌───────┐
-  │ {roll_no, course_id}     │──────────▶│ grade │
-  └──────────────────────────┘           └───────┘
-     Remove roll_no?  → Can't determine grade ❌
-     Remove course_id? → Can't determine grade ❌
-     Need BOTH → Full FD ✅
-```
+![Full FD: {roll_no, course_id} → grade; removing roll_no or course_id loses grade, so both are needed](../svg/dbms/d107-full-fd.svg)
 
-```
-  Partial (NOT Full):
-  ┌──────────────────────────┐           ┌──────┐
-  │ {roll_no, course_id}     │──────────▶│ name │
-  └──────────────────────────┘           └──────┘
-     Remove course_id? → roll_no → name still works ✅
-     Don't need full PK → Partial FD ❌ (not full)
-```
+![Partial (not full) FD: {roll_no, course_id} → name; without course_id, roll_no → name still works](../svg/dbms/d108-partial-fd-not-full.svg)
 
 > **Why it matters:** Full FDs are required for **2NF**. If a non-key attribute depends on only PART of the key, the table violates 2NF.
 
@@ -8002,18 +6939,7 @@ The PK is `{roll_no, course_id}`.
 | `{roll_no, course_id} → course_name` | ✅ **Partial** | `course_id → course_name` (don't need `roll_no`) |
 | `{roll_no, course_id} → grade` | ❌ **Full** | Need both — neither alone determines grade |
 
-```
-  Partial Dependency:
-  ┌──────────────────────────┐           ┌──────┐
-  │ {roll_no, course_id}     │──────────▶│ name │
-  └──────────────────────────┘           └──────┘
-                   ▲
-                   │
-      ┌────────────┘
-      │ roll_no alone → name  ✅
-      │ course_id is EXTRA, not needed
-      └──▶ This is a PARTIAL dependency
-```
+![Partial dependency: {roll_no, course_id} → name, but roll_no alone determines name and course_id is extra](../svg/dbms/d109-partial-dependency.svg)
 
 > **Why it matters:** Partial FDs cause **redundancy**. Alice's name is repeated for every course she takes. Removing partial FDs is the goal of **2NF (Second Normal Form)**.
 
@@ -8039,15 +6965,7 @@ A dependency `X → Z` is **transitive** if there exists an intermediate attribu
 
 ### Example from `student_course`
 
-```
-  roll_no → dept → dept_head
-
-  Step 1: roll_no → dept       (knowing roll_no gives you dept)
-  Step 2: dept → dept_head     (knowing dept gives you dept head)
-  BUT:    dept ↛ roll_no       (dept doesn't determine roll_no — many students per dept)
-
-  Therefore: roll_no → dept_head is a TRANSITIVE dependency
-```
+![Transitive dependency: roll_no → dept and dept → dept_head, but dept ↛ roll_no, so roll_no → dept_head is transitive](../svg/dbms/d110-transitive-dependency-chain.svg)
 
 | roll_no | name | dept | dept_head |
 |:---:|:---:|:---:|:---:|
@@ -8056,13 +6974,7 @@ A dependency `X → Z` is **transitive** if there exists an intermediate attribu
 | 3 | Carol | CSE | Dr. Smith |
 
 The chain:
-```
-  roll_no ──→ dept ──→ dept_head
-     │           │          │
-     1     →    CSE   →   Dr. Smith
-     2     →    ECE   →   Dr. Jones
-     3     →    CSE   →   Dr. Smith   (Dr. Smith repeated!)
-```
+![Transitive chain roll_no → dept → dept_head with data rows; Dr. Smith is repeated for every CSE student](../svg/dbms/d111-transitive-chain-data.svg)
 
 > **Why it matters:** Transitive FDs cause **redundancy** — `Dr. Smith` is stored for every CSE student. Removing transitive FDs is the goal of **3NF (Third Normal Form)**.
 
@@ -8103,20 +7015,7 @@ Now `dept_head` is stored only ONCE per department — no redundancy!
 
 ## Connection to Normalization
 
-```
-  1NF → Remove repeating groups (atomic values)
-            │
-            ▼
-  2NF → Remove PARTIAL dependencies
-        (every non-key attr must depend on the FULL primary key)
-            │
-            ▼
-  3NF → Remove TRANSITIVE dependencies
-        (non-key attr must depend ONLY on the key, not through another non-key attr)
-            │
-            ▼
-  BCNF → Every determinant must be a candidate key
-```
+![Normalization ladder: 1NF atomic values → 2NF remove partial dependencies → 3NF remove transitive dependencies → BCNF every determinant is a candidate key](../svg/dbms/d112-normalization-ladder-fds.svg)
 
 | Normal Form | Which FDs are Allowed? | Which FDs Must Be Removed? |
 |:---:|---|---|
@@ -8242,12 +7141,7 @@ Now the database says **two different things** — Bob's row says Dr. Gupta is t
 
 The solution is to **break the table into smaller, properly structured tables** where each fact is stored **exactly once**:
 
-```
-Students:        StudentID → StudentName
-Courses:         CourseID  → CourseName, Instructor, DepartmentID
-Departments:     DeptID    → Department, DeptHead
-Enrollments:     StudentID, CourseID  (junction/relationship table)
-```
+![Normalized schema: Students, Courses, Departments each keyed by their ID, plus an Enrollments junction table (StudentID, CourseID)](../svg/dbms/d113-normalized-tables-fds.svg)
 
 **Students:**
 
@@ -8337,11 +7231,7 @@ Notice `Alice`, `CSE`, and `Dr. Smith` repeated across rows. That redundancy cre
 | **Update anomaly** | The same fact lives in many rows, so a partial update makes the data inconsistent | Alice changes her name → you must update **every** row for `roll_no = 1`; miss one and Alice has two names |
 | **Deletion anomaly** | Deleting a row silently destroys an unrelated fact | Delete Bob's only enrolment row → you also lose the fact that `ECE`'s head is `Dr. Jones` |
 
-```
-  Redundancy  ──►  Anomalies  ──►  Inconsistent data
-       │
-       └──► Fix: decompose so every fact is stored EXACTLY ONCE
-```
+![Redundancy → anomalies → inconsistent data; fix: decompose so every fact is stored exactly once](../svg/dbms/d114-redundancy-anomalies-fix.svg)
 
 ### Benefits vs Costs
 
@@ -8362,20 +7252,7 @@ Notice `Alice`, `CSE`, and `Dr. Smith` repeated across rows. That redundancy cre
 
 ### The Root Cause — One Fact Stored in Many Places
 
-```
-  A non-key attribute depends on something that is NOT a key
-                      │
-                      ▼
-  The DBMS cannot stop that value from repeating across rows
-                      │
-                      ▼
-        REDUNDANCY  (the same fact stored N times)
-                      │
-        ┌─────────────┼─────────────┐
-        ▼             ▼             ▼
-   Insertion     Modification    Deletion
-    anomaly        anomaly        anomaly
-```
+![Root cause: non-key dependency on a non-key → values repeat → redundancy → insertion, modification and deletion anomalies](../svg/dbms/d115-anomaly-root-cause.svg)
 
 The key insight: **normalization does not "detect and repair" anomalies at runtime.** It restructures the schema so that each fact has exactly **one** home, which makes the anomaly *structurally impossible* — and turns the rule into a **key constraint the DBMS itself enforces**, instead of a convention your application code has to remember.
 
@@ -8521,21 +7398,7 @@ DELETE FROM enrollment WHERE roll_no = 2 AND course_id = 'C1';
 
 Each form **includes** the previous one — you cannot be in 3NF without already being in 2NF and 1NF.
 
-```
-  Unnormalized (UNF)
-        │  remove multi-valued / repeating groups → atomic values
-        ▼
-      1NF
-        │  remove PARTIAL dependencies (part of the composite key → non-key)
-        ▼
-      2NF
-        │  remove TRANSITIVE dependencies (non-key → non-key)
-        ▼
-      3NF
-        │  every determinant (LHS of an FD) must be a candidate key
-        ▼
-      BCNF
-```
+![Ladder of normal forms: UNF → 1NF (atomic values) → 2NF (no partial deps) → 3NF (no transitive deps) → BCNF (every determinant a candidate key)](../svg/dbms/d116-normal-forms-ladder.svg)
 
 | Normal Form | Rule in one line | Removes |
 |:---:|---|---|
@@ -8623,11 +7486,7 @@ CREATE TABLE student_phones (
 
 The functional dependencies:
 
-```
-  {roll_no, course_id} → marks         ✅ FULL dependency (needs both)
-   roll_no             → student_name  ❌ PARTIAL (only part of the key)
-   course_id           → course_name   ❌ PARTIAL (only part of the key)
-```
+![2NF violation: {roll_no, course_id} → marks is full; roll_no → student_name and course_id → course_name are partial](../svg/dbms/d117-2nf-violation-fds.svg)
 
 **Consequences:** `Alice` repeats for every course she takes; `DBMS` repeats for every student who takes it. Rename the course `DBMS` → `Database Systems` and you must touch every enrolment row.
 
@@ -8696,10 +7555,7 @@ Plain English: **every non-key column must depend on the key, the whole key, and
 
 The dependency chain:
 
-```
-  roll_no → dept → dept_head          (dept is NOT a candidate key)
-      └────────────────► transitive dependency
-```
+![3NF violation: roll_no → dept → dept_head, dept is not a candidate key, so the dependency is transitive](../svg/dbms/d118-3nf-violation-transitive.svg)
 
 `dept_head` doesn't really describe a *student* — it describes a *department*. So `Dr. Smith` is duplicated for every CSE student.
 
@@ -8761,13 +7617,7 @@ BCNF only differs from 3NF when a table has **multiple overlapping candidate key
 
 Functional dependencies and keys:
 
-```
-  {student, subject} → teacher        (candidate key → non-prime)
-   teacher           → subject        (teacher is NOT a super key!)
-
-  Candidate keys: {student, subject}  and  {student, teacher}
-  Prime attributes: student, subject, teacher   ← all of them!
-```
+![3NF but not BCNF: {student, subject} → teacher and teacher → subject, where teacher is not a super key; all attributes are prime](../svg/dbms/d119-3nf-not-bcnf-fds.svg)
 
 **Why it's in 3NF:** in `teacher → subject`, the right-hand side `subject` *is* a prime attribute, so 3NF's escape clause is satisfied.
 **Why it fails BCNF:** the determinant `teacher` is not a super key.
@@ -8867,24 +7717,7 @@ Every FD of `R` should be checkable inside **one** of the decomposed tables, wit
 
 Starting from the very first table on this page:
 
-```
-  UNF:  student_report(roll_no, student_name, phone(multi), course_id,
-                       course_name, marks, dept, dept_head)
-
-  Step 1 — 1NF: phone has multiple values in one cell
-     ➜ students(roll_no, student_name, dept, dept_head)
-       student_phones(roll_no, phone)
-       enrollment(roll_no, course_id, course_name, marks)
-
-  Step 2 — 2NF: in enrollment, PK = {roll_no, course_id},
-                but course_id → course_name is PARTIAL
-     ➜ courses(course_id, course_name)
-       enrollment(roll_no, course_id, marks)
-
-  Step 3 — 3NF: in students, roll_no → dept → dept_head is TRANSITIVE
-     ➜ departments(dept, dept_head)
-       students(roll_no, student_name, dept)
-```
+![UNF → 3NF walkthrough: 1NF splits phones and enrollment, 2NF extracts courses (partial dependency), 3NF extracts departments (transitive dependency)](../svg/dbms/d120-unf-to-3nf-walkthrough.svg)
 
 **Final schema (3NF)**
 
@@ -8923,13 +7756,7 @@ CREATE TABLE enrollment (
 );
 ```
 
-```
-  departments 1───N students 1───N student_phones
-                      │
-                      N
-                      │
-                  enrollment  N───1 courses
-```
+![Final 3NF schema: departments 1–N students 1–N student_phones; students 1–N enrollment; enrollment N–1 courses](../svg/dbms/d121-3nf-schema-er.svg)
 
 Every fact now lives in exactly one place: a student's name in `students`, a course's title in `courses`, a department's head in `departments`, and a grade in `enrollment`.
 
@@ -8983,17 +7810,7 @@ A **transaction** is a logical unit of work that consists of one or more SQL ope
 
 Transfer ₹500 from Account A to Account B:
 
-```
-  Transaction T:
-  ─────────────
-  Step 1:  Read(A)           → A = 1000
-  Step 2:  A = A - 500       → A = 500
-  Step 3:  Write(A)          → Save A = 500
-  Step 4:  Read(B)           → B = 2000
-  Step 5:  B = B + 500       → B = 2500
-  Step 6:  Write(B)          → Save B = 2500
-  Step 7:  COMMIT            → Make permanent
-```
+![Bank transfer transaction: Read(A)=1000, A-500, Write(A)=500, Read(B)=2000, B+500, Write(B)=2500, COMMIT](../svg/dbms/d122-bank-transfer-transaction-steps.svg)
 
 ```
   Before:  A = 1000,  B = 2000   (Total = 3000)
@@ -9011,37 +7828,13 @@ Transfer ₹500 from Account A to Account B:
 
 Every transaction must satisfy these four properties to ensure data integrity:
 
-```
-  ┌──────────────────────────────────────────────────┐
-  │                 A C I D                          │
-  ├──────────┬──────────┬──────────┬─────────────────┤
-  │ Atomicity│Consistency│Isolation │   Durability    │
-  │          │          │          │                 │
-  │ All or   │ Valid    │ Txns     │ Committed data  │
-  │ Nothing  │ state   │ don't    │ survives        │
-  │          │ always  │ interfere│ crashes         │
-  └──────────┴──────────┴──────────┴─────────────────┘
-```
+![ACID overview: Atomicity = all or nothing, Consistency = valid state always, Isolation = txns don't interfere, Durability = committed data survives crashes](../svg/dbms/d123-acid-overview.svg)
 
 ### 1. Atomicity — "All or Nothing"
 
 Either ALL operations of a transaction are executed, or NONE are. No partial execution.
 
-```
-  ✅ Success: All steps complete → COMMIT
-  ┌───────────────────────────────────────┐
-  │  Read(A) → A-500 → Write(A)          │
-  │  Read(B) → B+500 → Write(B)          │ → COMMIT ✅
-  │  All steps done                       │
-  └───────────────────────────────────────┘
-
-  ❌ Failure: Crash after step 3 → ROLLBACK everything
-  ┌───────────────────────────────────────┐
-  │  Read(A) → A-500 → Write(A)          │
-  │  💥 CRASH!                            │ → ROLLBACK ❌
-  │  Undo Write(A) → A back to 1000      │
-  └───────────────────────────────────────┘
-```
+![Atomicity: all steps done leads to COMMIT; a crash after Write(A) undoes it (A back to 1000) and rolls back everything](../svg/dbms/d124-atomicity-commit-vs-rollback.svg)
 
 > Managed by the **Transaction Management** component and **Undo Log**.
 
@@ -9049,12 +7842,7 @@ Either ALL operations of a transaction are executed, or NONE are. No partial exe
 
 The database must go from one **consistent state** to another. All integrity constraints (PK, FK, CHECK, etc.) must hold before and after the transaction.
 
-```
-  Before:  A + B = 3000  (consistent)
-  After:   A + B = 3000  (still consistent) ✅
-
-  If A + B ≠ 3000 after transaction → inconsistent → violation!
-```
+![Consistency: A + B = 3000 before and after the transaction; any other total after it is a violation](../svg/dbms/d125-consistency-invariant.svg)
 
 > The application/developer is responsible for writing correct transaction logic. The DBMS enforces constraints.
 
@@ -9062,22 +7850,7 @@ The database must go from one **consistent state** to another. All integrity con
 
 Even when multiple transactions run **concurrently**, each transaction must behave as if it's the **only one** running. One transaction's intermediate state must NOT be visible to another.
 
-```
-  Without Isolation (problem):
-  ─────────────────────────────
-  T1: Read(A) = 1000
-  T1: A = A - 500 = 500
-                              T2: Read(A) = 1000  ← reads OLD value!
-  T1: Write(A) = 500
-                              T2: A = A - 200 = 800
-                              T2: Write(A) = 800  ← overwrites T1's change!
-  Result: A = 800 (₹500 deducted by T1 is LOST!)
-
-  With Isolation (correct):
-  ──────────────────────────
-  T1 runs completely FIRST, then T2 runs
-  OR they run concurrently but produce the SAME result as serial execution
-```
+![Isolation: without it T2 reads the old A and overwrites T1's write (A = 800, T1's 500 lost); with it the result equals a serial run](../svg/dbms/d126-isolation-lost-update.svg)
 
 > Managed by **Concurrency Control** (locks, MVCC, timestamps).
 
@@ -9085,15 +7858,7 @@ Even when multiple transactions run **concurrently**, each transaction must beha
 
 Once a transaction is **committed**, its changes are **permanent** — even if the system crashes, loses power, or restarts.
 
-```
-  T1: Write(A) = 500
-  T1: Write(B) = 2500
-  T1: COMMIT ✅
-
-  💥 System crash!
-
-  After restart: A = 500, B = 2500  ← data is safe ✅
-```
+![Durability: T1 writes A=500, B=2500 and commits; after a crash and restart the values are still A=500, B=2500](../svg/dbms/d127-durability-crash-restart.svg)
 
 > Managed by **Write-Ahead Logging (WAL)** — changes are written to a log on disk BEFORE they're applied to the database.
 
@@ -9114,37 +7879,7 @@ Once a transaction is **committed**, its changes are **permanent** — even if t
 
 A transaction goes through the following states during its lifecycle:
 
-```
-                        ┌─────────────────────┐
-                        │      Active         │ ← Initial state
-                        │  (executing ops)    │
-                        └──────────┬──────────┘
-                                   │
-                          (last operation done)
-                                   │
-                        ┌──────────▼──────────┐
-                        │ Partially Committed │ ← All ops done,
-                        │  (awaiting commit)  │   not yet permanent
-                        └──────────┬──────────┘
-                         ┌─────────┴─────────┐
-                    (success)             (failure)
-                         │                   │
-              ┌──────────▼──────┐  ┌─────────▼─────────┐
-              │    Committed    │  │      Failed        │
-              │  (permanent)   │  │  (cannot proceed)  │
-              └─────────────────┘  └─────────┬─────────┘
-                                             │
-                                      (rollback all)
-                                             │
-                                   ┌─────────▼─────────┐
-                                   │     Aborted        │
-                                   │ (rolled back)      │
-                                   └─────────┬─────────┘
-                                      ┌──────┴──────┐
-                                      │             │
-                                  Restart        Kill
-                                  (retry)       (cancel)
-```
+![Transaction states: Active → Partially Committed → Committed on success, or → Failed → Aborted (rollback) → Restart or Kill](../svg/dbms/d128-transaction-state-diagram.svg)
 
 | State | Description |
 |:---:|-------------|
@@ -9159,16 +7894,7 @@ A transaction goes through the following states during its lifecycle:
 
 ### Example State Transitions
 
-```
-  Successful Transaction:
-  Active → Partially Committed → Committed ✅
-
-  Failed Transaction:
-  Active → Failed → Aborted (→ Restart or Kill) ❌
-
-  Failure during commit:
-  Active → Partially Committed → Failed → Aborted ❌
-```
+![Example state paths: success ends Committed; failure ends Aborted (restart or kill); failure during commit goes Partially Committed → Failed → Aborted](../svg/dbms/d129-transaction-state-examples.svg)
 
 ---
 
@@ -9180,20 +7906,7 @@ A **schedule** is the chronological order in which operations from multiple tran
 
 Transactions are executed **one after another** — no interleaving. Always **correct** but **slow**.
 
-```
-  Serial Schedule (T1 then T2):
-  ────────────────────────────
-  T1: Read(A)
-  T1: Write(A)
-  T1: Read(B)
-  T1: Write(B)
-  T1: COMMIT
-  ─────────────── T1 done
-  T2: Read(A)
-  T2: Write(A)
-  T2: COMMIT
-  ─────────────── T2 done
-```
+![Serial schedule: all of T1 (Read/Write A, Read/Write B, COMMIT) runs, then all of T2 (Read/Write A, COMMIT)](../svg/dbms/d130-serial-schedule.svg)
 
 > ✅ Always produces correct results
 > ❌ Very slow — no parallelism
@@ -9202,18 +7915,7 @@ Transactions are executed **one after another** — no interleaving. Always **co
 
 Operations from different transactions are **interleaved**. Fast, but could produce **incorrect results** if not managed properly.
 
-```
-  Concurrent Schedule (T1 and T2 interleaved):
-  ─────────────────────────────────────────────
-  T1: Read(A)
-  T2: Read(A)      ← interleaved!
-  T1: Write(A)
-  T2: Write(A)     ← might overwrite T1's change!
-  T1: Read(B)
-  T1: Write(B)
-  T1: COMMIT
-  T2: COMMIT
-```
+![Concurrent schedule: T1 and T2 operations interleave; T2's Write(A) right after T1's Write(A) might overwrite T1's change](../svg/dbms/d131-concurrent-schedule.svg)
 
 > The question is: **Is this concurrent schedule equivalent to some serial schedule?** If yes → it's **serializable** → safe to use.
 
@@ -9223,14 +7925,7 @@ Operations from different transactions are **interleaved**. Fast, but could prod
 
 A concurrent schedule is **serializable** if it produces the same result as some serial schedule. Serializability is the **gold standard** for correctness.
 
-```
-  Serial Schedule S1:         Serial Schedule S2:       Concurrent Schedule S3:
-  T1 then T2                  T2 then T1                T1 & T2 interleaved
-
-  If S3 produces same         If S3 produces same
-  result as S1 → ✅           result as S2 → ✅         S3 is serializable!
-  serializable                serializable
-```
+![Serializability: S3 (interleaved T1, T2) is serializable if it produces the same result as serial S1 (T1 then T2) or S2 (T2 then T1)](../svg/dbms/d132-serializability-concept.svg)
 
 ### Types of Serializability
 
@@ -9241,16 +7936,7 @@ A concurrent schedule is **serializable** if it produces the same result as some
 
 > All conflict-serializable schedules are view-serializable, but NOT vice versa.
 
-```
-  ┌───────────────────────────┐
-  │   View Serializable       │
-  │  ┌─────────────────────┐  │
-  │  │ Conflict Serializable│  │
-  │  │                     │  │
-  │  └─────────────────────┘  │
-  └───────────────────────────┘
-  Conflict ⊂ View (Conflict is stricter)
-```
+![Conflict serializable is a subset of view serializable (conflict is stricter)](../svg/dbms/d133-conflict-subset-of-view.svg)
 
 ---
 
@@ -9274,16 +7960,7 @@ Two operations **conflict** if ALL three conditions are met:
 
 If two adjacent operations are **non-conflicting**, you can swap their order without changing the result. By repeatedly swapping, you can try to convert a concurrent schedule into a serial one.
 
-```
-  Schedule S:                  After swapping non-conflicting ops:
-  T1: Read(A)                  T1: Read(A)
-  T2: Read(B)    ← swap       T1: Write(A)    ← T1 ops together
-  T1: Write(A)       ↑        T2: Read(B)
-  T2: Write(B)                T2: Write(B)
-
-  → Equivalent to serial schedule (T1 then T2) ✅
-  → S is CONFLICT SERIALIZABLE
-```
+![Swapping the non-conflicting T2 Read(B) and T1 Write(A) groups T1's ops first, giving serial T1 then T2, so S is conflict serializable](../svg/dbms/d134-swap-nonconflicting-ops.svg)
 
 ---
 
@@ -9300,35 +7977,11 @@ To test if a schedule is conflict-serializable, build a **precedence (dependency
 
 ### Example
 
-```
-  Schedule:
-  T1: Read(A)
-  T2: Read(A)
-  T1: Write(A)     ← T1 writes A, T2 read A before → T2 → T1? No...
-  T2: Write(A)     ← T1 writes A before T2 writes A → T1 → T2
-
-  Precedence Graph:
-  T1 ──────→ T2
-
-  No cycle → ✅ Conflict Serializable!
-  Equivalent to serial schedule: T1, T2
-```
+![Precedence graph example: interleaved schedule R1(A) W1(A) R2(A) R1(B) W2(A) W1(B) gives only edge T1 → T2, no cycle, so it is conflict serializable, equivalent to T1, T2](../svg/dbms/d135-precedence-graph-no-cycle.svg)
 
 ### Example with a Cycle (NOT Serializable)
 
-```
-  Schedule:
-  T1: Read(A)
-  T2: Write(A)    ← T1 read A, T2 writes A → T1 → T2
-  T2: Read(B)
-  T1: Write(B)    ← T2 read B, T1 writes B → T2 → T1
-
-  Precedence Graph:
-  T1 ──→ T2
-  T2 ──→ T1   (CYCLE!)
-
-  Cycle detected → ❌ NOT Conflict Serializable
-```
+![Precedence graph with a cycle: T1 → T2 (on A) and T2 → T1 (on B), so the schedule is NOT conflict serializable](../svg/dbms/d136-precedence-graph-cycle.svg)
 
 ---
 
@@ -9392,48 +8045,13 @@ UPDATE accounts SET balance = balance + 500 WHERE id = 'B';
 COMMIT;  -- make everything permanent
 ```
 
-```
-  BEGIN
-    │
-    ├── UPDATE A (debit)
-    │      │
-    │   SAVEPOINT ──────────────────┐
-    │      │                        │
-    │   UPDATE B (credit) — ERROR!  │
-    │      │                        │
-    │   ROLLBACK TO SAVEPOINT ◄─────┘  (undo only credit)
-    │      │
-    │   UPDATE B (retry credit)
-    │      │
-    └── COMMIT ✅
-```
+![Savepoint flow: BEGIN, debit A, SAVEPOINT, credit B errors, ROLLBACK TO SAVEPOINT undoes only the credit, retry credit, COMMIT](../svg/dbms/d137-savepoint-rollback-flow.svg)
 
 ---
 
 ## Quick Summary
 
-```
-  Transaction = Group of operations treated as ONE unit
-
-  ACID:
-    A = Atomicity     → All or Nothing
-    C = Consistency   → Valid state → Valid state
-    I = Isolation     → Concurrent txns don't interfere
-    D = Durability    → Committed data survives crashes
-
-  States:
-    Active → Partially Committed → Committed ✅
-    Active → Failed → Aborted (Restart/Kill) ❌
-
-  Schedules:
-    Serial        → One txn at a time (correct but slow)
-    Concurrent    → Interleaved (fast but risky)
-    Serializable  → Concurrent but equivalent to serial (best of both)
-
-  Serializability:
-    Conflict Serializable ⊂ View Serializable
-    Test: Precedence Graph — no cycle = conflict serializable
-```
+![Transactions quick summary: ACID meanings, success/failure state paths, serial vs concurrent vs serializable schedules, conflict ⊂ view serializability and the precedence-graph test](../svg/dbms/d138-transactions-quick-summary.svg)
 
 > **Interview tip:** The most-asked transaction question is: "Explain ACID properties with an example." Use the bank transfer example — ₹500 from A to B. Show how each property prevents a specific problem: Atomicity prevents partial transfers, Consistency preserves total balance, Isolation prevents dirty reads, Durability preserves data after crashes.
 
@@ -9476,21 +8094,7 @@ COMMIT;   -- Both changes are now PERMANENT
 | 2 | Credit Bob | 500 | **2500** | In memory only |
 | 3 | **COMMIT** | 500 | 2500 | ✅ **Saved to disk permanently** |
 
-```
-  Before COMMIT:
-  ┌──────────────────┐     ┌──────────────────┐
-  │   Memory (RAM)   │     │   Disk           │
-  │ Alice = 500      │     │ Alice = 1000     │ ← still old values!
-  │ Bob = 2500       │     │ Bob = 2000       │
-  └──────────────────┘     └──────────────────┘
-
-  After COMMIT:
-  ┌──────────────────┐     ┌──────────────────┐
-  │   Memory (RAM)   │     │   Disk           │
-  │ Alice = 500      │ ──► │ Alice = 500      │ ← updated!
-  │ Bob = 2500       │     │ Bob = 2500       │ ← updated!
-  └──────────────────┘     └──────────────────┘
-```
+![Before COMMIT RAM has Alice=500, Bob=2500 but disk still has 1000/2000; after COMMIT disk is updated to 500/2500](../svg/dbms/d139-commit-ram-vs-disk.svg)
 
 > **After COMMIT:** Changes are permanent. Even if the system crashes right after, the data is safe.
 
@@ -9525,15 +8129,7 @@ ROLLBACK;   -- Undo EVERYTHING — Alice gets her ₹500 back
 | 2 | Credit Bob | 500 | ❌ ERROR | Bob's account frozen |
 | 3 | **ROLLBACK** | **1000** | **2000** | ✅ **Reverted to original** |
 
-```
-  After ERROR:                       After ROLLBACK:
-  ┌──────────────────┐              ┌──────────────────┐
-  │   Memory (RAM)   │              │   Memory (RAM)   │
-  │ Alice = 500  ⚠️  │    ──────►  │ Alice = 1000 ✅  │
-  │ Bob = ERROR      │   ROLLBACK  │ Bob = 2000   ✅  │
-  └──────────────────┘              └──────────────────┘
-  Money seems lost!                  Money restored!
-```
+![After the error Alice=500 and Bob=ERROR (money seems lost); ROLLBACK restores Alice=1000, Bob=2000 (money restored)](../svg/dbms/d140-error-then-rollback.svg)
 
 > **Without ROLLBACK:** Alice loses ₹500 but Bob never receives it — money vanishes!
 > **With ROLLBACK:** Alice's debit is undone — everything goes back to the original state.
@@ -9583,17 +8179,7 @@ COMMIT;   -- Alice→Bob transfer is committed
 | 6 | **ROLLBACK TO** | 500 | **2500** | **500** | Reverted to savepoint |
 | 7 | **COMMIT** | 500 | 2500 | 500 | ✅ Permanent |
 
-```
-  Timeline:
-  ─────────
-  BEGIN ──── Step 1 ──── Step 2 ──── SAVEPOINT ──── Step 4 ──── Step 5 (ERROR!)
-                                         │                         │
-                                         │     ROLLBACK TO ◄───────┘
-                                         │     (undo steps 4-5 only)
-                                         │
-                                      COMMIT ✅
-                                      (steps 1-2 are permanent)
-```
+![Savepoint timeline: BEGIN, steps 1-2, SAVEPOINT, steps 4-5 (error); ROLLBACK TO undoes 4-5 only, then COMMIT keeps steps 1-2](../svg/dbms/d141-savepoint-timeline.svg)
 
 ### Multiple Savepoints
 
@@ -9620,16 +8206,7 @@ ROLLBACK TO sp1;   -- Undoes order #2 as well
 COMMIT;   -- Only order #1 (Laptop) is saved!
 ```
 
-```
-  sp1          sp2          sp3
-   │            │            │
-   ▼            ▼            ▼
-  Laptop ──── Mouse ──── Keyboard
-   ✅          ❌           ❌
-              ▲             ▲
-        ROLLBACK TO sp1  ROLLBACK TO sp2
-        (undoes #2 & #3) (undoes #3 only)
-```
+![Multiple savepoints: Laptop kept; ROLLBACK TO sp1 undoes Mouse and Keyboard, ROLLBACK TO sp2 undoes only Keyboard](../svg/dbms/d142-multiple-savepoints.svg)
 
 ---
 
@@ -9658,20 +8235,7 @@ Each ACID property requires specific **mechanisms** in the DBMS to enforce it. H
 
 The DBMS maintains an **undo log** (also called rollback log) that records the **old values** of every data item before it's modified. If the transaction fails, the undo log is used to restore everything.
 
-```
-  Transaction T: Transfer ₹500 from A to B
-
-  Undo Log:                              Database:
-  ┌────────────────────────────┐        ┌──────────┐
-  │ (T, A, old_value = 1000)  │   ←──  │ A = 500  │  (modified)
-  │ (T, B, old_value = 2000)  │   ←──  │ B = 2500 │  (modified)
-  └────────────────────────────┘        └──────────┘
-
-  If T fails:
-  → Read undo log in REVERSE
-  → Restore A = 1000, B = 2000
-  → Transaction "never happened"
-```
+![Undo log: old values (A=1000, B=2000) are logged before A=500, B=2500 are written; on failure the log is replayed in reverse to restore them](../svg/dbms/d143-undo-log-atomicity.svg)
 
 | Scenario | Action |
 |----------|--------|
@@ -9685,30 +8249,7 @@ The DBMS maintains an **undo log** (also called rollback log) that records the *
 
 For small databases, **shadow copy** provides atomicity + durability in one scheme:
 
-```
-  Before Transaction:
-  ┌────────────────┐
-  │  db-pointer    │────────────► Original DB (on disk)
-  └────────────────┘              (shadow copy)
-
-  During Transaction:
-  ┌────────────────┐
-  │  db-pointer    │────────────► Original DB (untouched)
-  └────────────────┘
-                                  New DB Copy (all updates go here)
-
-  After COMMIT:
-  ┌────────────────┐
-  │  db-pointer    │────────────► New DB Copy (now current)
-  └────────────────┘
-                                  Old DB (deleted)
-
-  After FAILURE:
-  ┌────────────────┐
-  │  db-pointer    │────────────► Original DB (still intact!)
-  └────────────────┘
-                                  New DB Copy (deleted)
-```
+![Shadow copy: db-pointer stays on the original during the transaction; COMMIT swings it to the new copy (old deleted), failure keeps the original (new copy deleted)](../svg/dbms/d144-shadow-copy-scheme.svg)
 
 **How it works:**
 
@@ -9756,19 +8297,7 @@ UPDATE accounts SET balance = -100 WHERE id = 1;
 -- ERROR: CHECK constraint violated (balance >= 0) ❌
 ```
 
-```
-  Consistency Check Flow:
-  ───────────────────────
-  Transaction starts
-       │
-  Execute operations
-       │
-  Check constraints ──── Violation? ──► ROLLBACK ❌
-       │
-  No violation
-       │
-  COMMIT ✅
-```
+![Consistency check flow: transaction starts, executes, checks constraints; violation → ROLLBACK, no violation → COMMIT](../svg/dbms/d145-consistency-check-flow.svg)
 
 ---
 
@@ -9787,15 +8316,7 @@ Transactions acquire **locks** on data items before accessing them:
 | **Shared Lock (S)** | Multiple readers | Writers |
 | **Exclusive Lock (X)** | One writer | Everyone else |
 
-```
-  T1 wants to READ A → Acquires Shared Lock(A)
-  T2 wants to READ A → Acquires Shared Lock(A) ✅ (multiple readers OK)
-  T3 wants to WRITE A → Blocked! ❌ (must wait for T1 & T2 to release)
-
-  T1 wants to WRITE A → Acquires Exclusive Lock(A)
-  T2 wants to READ A → Blocked! ❌ (must wait for T1)
-  T3 wants to WRITE A → Blocked! ❌ (must wait for T1)
-```
+![Locks: two readers share S-locks on A while a writer is blocked; once T1 holds an X-lock, both a reader and a writer are blocked until T1 releases](../svg/dbms/d146-shared-exclusive-lock-scenarios.svg)
 
 **Lock Compatibility Matrix:**
 
@@ -9808,17 +8329,7 @@ Transactions acquire **locks** on data items before accessing them:
 
 Instead of locking, the database keeps **multiple versions** of each row. Readers see a **snapshot** — they never block writers, and writers never block readers.
 
-```
-  MVCC Versions of Row A:
-  ┌──────────────────────────────────────────────┐
-  │ Version 1: A = 1000  (committed by T0)       │ ← T2 reads this
-  │ Version 2: A = 500   (being written by T1)   │ ← not yet committed
-  └──────────────────────────────────────────────┘
-
-  T1 is modifying A → creates Version 2
-  T2 wants to read A → reads Version 1 (last committed)
-  T2 is NOT blocked! Both run concurrently ✅
-```
+![MVCC: T1 writes uncommitted Version 2 (A=500) while T2 reads committed Version 1 (A=1000); T2 is not blocked](../svg/dbms/d147-mvcc-row-versions.svg)
 
 > Used by: PostgreSQL, MySQL (InnoDB), Oracle
 
@@ -9834,35 +8345,9 @@ Each transaction gets a **timestamp** when it starts. Operations are allowed/rej
 
 Before any change is applied to the database, a **log entry** is first written to a durable **log file on disk**. This ensures that even if the system crashes, the changes can be **replayed** from the log.
 
-```
-  WAL Rule: "Write the LOG before writing the DATA"
+![WAL rule: log first, data second; a crash after the log write is redone from the log (A=500), a crash before it leaves A=1000](../svg/dbms/d148-wal-rule-crash-cases.svg)
 
-  Step 1: Write to LOG (on disk) ──── "T1: A changed from 1000 to 500"
-  Step 2: Write to DATABASE         ──── A = 500
-
-  If crash after Step 1 but before Step 2:
-  → On restart, READ the log → REDO the change → A = 500 ✅
-
-  If crash before Step 1:
-  → No log entry → change was never applied → A remains 1000 ✅
-```
-
-```
-  Normal Operation:
-  ┌──────┐    ┌──────────┐    ┌───────────┐
-  │ App  │───▶│ WAL Log  │───▶│ Database  │
-  │      │    │ (disk)   │    │ (disk)    │
-  └──────┘    └──────────┘    └───────────┘
-               Write FIRST     Write SECOND
-
-  After Crash + Recovery:
-  ┌──────────┐    ┌───────────┐
-  │ WAL Log  │───▶│ Database  │
-  │ (disk)   │    │ (disk)    │
-  └──────────┘    └───────────┘
-  Read log         Replay (redo) committed changes
-                   Undo uncommitted changes
-```
+![WAL: normally the app writes the log first and the database second; after a crash recovery reads the log, redoes committed and undoes uncommitted changes](../svg/dbms/d149-wal-normal-vs-recovery.svg)
 
 ### Redo vs Undo During Recovery
 
@@ -9910,30 +8395,7 @@ In one line: **the log is the truth; the data files are just a cache of the log 
 
 ### The Happy Path — Step by Step
 
-```
- CLIENT                        DATABASE SERVER                          WHERE IT LIVES
-   │
-   │  BEGIN;
-   │  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
-   │ ─────────────────────────▶ [0] Apply the change IN MEMORY only
-   │                                 • modify data page in Buffer Pool    RAM
-   │                                 • add redo record to Log Buffer      RAM
-   │
-   │  COMMIT;
-   │ ─────────────────────────▶ [1] write() redo records + COMMIT mark
-   │                                 to the redo log file                 RAM (OS page cache!)
-   │                                          │
-   │                                          ▼
-   │                             [2] fsync() the redo log                 DISK ✔
-   │                          ═══════════ DURABILITY POINT ═══════════
-   │                                          │
-   │         "COMMIT OK"                      ▼
-   │ ◀───────────────────────── [3] Acknowledge the client
-   │
-   │                             [4] LATER (seconds to minutes):
-   │                                 background page cleaner writes the
-   │                                 dirty data page to the .ibd file     DISK
-```
+![WAL commit happy path: change in RAM, write() to OS cache, fsync() to disk (durability point), COMMIT OK, page flushed later](../svg/dbms/d150-wal-commit-happy-path.svg)
 
 What each step really means:
 
@@ -9954,27 +8416,14 @@ After [2], the redo log on disk says exactly *"page 42, offset 100: change 500 �
 
 **2. Writing the log is cheap; writing data pages is expensive.**
 
-```
- Commit with WAL (what DBs do)            Commit writing data pages directly
- ─────────────────────────────            ──────────────────────────────────
- append ~100 bytes to END of 1 file       write a full 16 KB page for the row
- → 1 sequential write                     + 16 KB for EVERY index page touched
-                                            (PK, idx_email, idx_city, ...)
-                                          → 3–5+ random writes all over the disk
-
- ~0.1–1 ms on SSD                         several ms; far slower on HDD
-```
+![Commit cost comparison: WAL appends ~100 bytes sequentially (~0.1–1 ms) vs direct commit writing 16 KB data and index pages randomly (several ms)](../svg/dbms/d151-wal-vs-direct-page-write-cost.svg)
 
 So you'd write ~16 KB per page just to change a few bytes, and seek to random places on the disk to do it.
 
 **3. Deferring lets the DB batch many changes into one write.**
 A hot page (a popular product's stock row, or the last page of an auto-increment index) may be modified 1,000 times in a minute.
 
-```
- Write page at every commit:   1,000 commits → 1,000 × 16 KB page writes
- Write page later (WAL):       1,000 commits → 1,000 tiny log appends
-                                              + 1 page write when it's flushed
-```
+![1,000 commits on a hot page: 1,000 × 16 KB page writes vs 1,000 tiny log appends + 1 page write with WAL](../svg/dbms/d152-hot-page-batching.svg)
 
 Many commits can also share a single `fsync()` of the log (**group commit**), so 50 concurrent commits may cost one disk flush instead of 50.
 
@@ -9993,16 +8442,7 @@ One transaction can change many pages (the row + every index, or two accounts in
 
 ### What If a Step Fails? — Crash at Every Point
 
-```
-                 NOT DURABLE YET                     ║            DURABLE
-  ◀─────────────────────────────────────────────────▶║◀───────────────────────────────▶
-                                                     ║
-  ──[0]──────────────[1]──────────────[2]────────────╫─────────[3]─────────[4]──────▶ time
-  change in RAM      write() to       fsync()        ║         "OK" sent   data page
-                     OS cache         in progress    ║         to client   written
-           ▲                  ▲                      ║    ▲              ▲       ▲
-           ✗A                 ✗B                     ║    ✗C             ✗D      ✗E
-```
+![Commit timeline split into NOT DURABLE YET ( 0  RAM,  1  write(),  2  fsync()) and DURABLE ( 3  OK sent,  4  page written), with crash points A–E](../svg/dbms/d153-wal-crash-points-timeline.svg)
 
 | Crash | What's on disk at the moment of crash | What recovery does on restart | What the client saw | Data lost? |
 |:---:|---|---|---|---|
@@ -10020,15 +8460,7 @@ One transaction can change many pages (the row + every index, or two accounts in
 
 The data is safe, but the client sees a network error and has **no idea** whether it committed.
 
-```
-Client                         DB
-  │── COMMIT (debit ₹100) ────▶│  fsync() ✔  → committed on disk
-  │                            │  💥 crash before sending OK
-  │◀──── connection reset ─────│
-  │
-  │  Client thinks: "failed, let me retry"
-  │── COMMIT (debit ₹100) ────▶│  committed AGAIN  → ₹200 debited ❌
-```
+![Crash C: commit fsynced but OK never sent; client retries blindly and the debit is applied twice (₹200)](../svg/dbms/d154-crash-c-blind-retry.svg)
 
 **Fix (application side):** make writes **idempotent** — send a unique `request_id` / idempotency key with a `UNIQUE` constraint, or check whether the change already exists before retrying. WAL protects durability; it cannot protect you from a blind retry.
 
@@ -10047,49 +8479,13 @@ So modern databases treat an `fsync()` failure as **fatal**: PostgreSQL `PANIC`s
 
 Every log record has a growing number, the **LSN** (Log Sequence Number), and every data page remembers the LSN of the last change applied to it. Before the page cleaner writes a page in step [4], it checks:
 
-```
-page_LSN ≤ flushed_log_LSN ?   yes → safe to write the page
-                               no  → flush the log first, then write the page
-```
+![Write-ahead check: page_LSN ≤ flushed_log_LSN? yes → safe to write the page; no → flush the log first, then write the page](../svg/dbms/d155-write-ahead-rule-check.svg)
 
 This is why the log is "ahead". It also covers **uncommitted** dirty pages that get flushed early (to free buffer-pool memory): their undo information is already logged, so recovery can always roll them back.
 
 ### Recovery on Restart — How the Log Is Replayed
 
-```
- Server restarts after a crash
-              │
-              ▼
- ┌─────────────────────────────────────────────┐
- │ 1. Find the last CHECKPOINT LSN             │  everything before it is already
- │                                             │  safely in the data files
- └─────────────────────────────────────────────┘
-              │
-              ▼
- ┌─────────────────────────────────────────────┐
- │ 2. Scan the redo log forward from there     │  a torn / half-written tail
- │    STOP at the first block with a bad       │  = never happened  (crash B)
- │    checksum                                 │
- └─────────────────────────────────────────────┘
-              │
-              ▼
- ┌─────────────────────────────────────────────┐
- │ 3. REDO: for each record                    │  brings every page up to date
- │      page_LSN < record_LSN → apply it       │  (crash C, D, E)
- │      otherwise             → skip (already  │
- │                              on disk)       │
- └─────────────────────────────────────────────┘
-              │
-              ▼
- ┌─────────────────────────────────────────────┐
- │ 4. UNDO: roll back every transaction that   │  removes half-done work
- │    has no COMMIT record                     │  (crash A, B)
- └─────────────────────────────────────────────┘
-              │
-              ▼
-   Accept connections — every transaction that
-   was ACKed with "OK" is present, nothing else is
-```
+![Crash recovery flow: find checkpoint LSN → scan redo log until bad checksum → REDO → UNDO uncommitted → accept connections](../svg/dbms/d156-crash-recovery-redo-undo.svg)
 
 (InnoDB actually opens for connections after step 3 and runs step 4 in a background thread; rows still being rolled back stay locked until it finishes.)
 
@@ -10137,11 +8533,7 @@ InnoDB writes data pages in **16 KB chunks**. But a crash could happen midway th
 
 InnoDB solves this with the **double write buffer**:
 
-```
-Step 1: Write dirty pages → doublewrite area (sequential, safe)
-Step 2: Confirm doublewrite area is on disk
-Step 3: Write dirty pages → actual data file locations
-```
+![Doublewrite buffer: write dirty pages to doublewrite area → confirm on disk → write pages to their real data file locations](../svg/dbms/d157-doublewrite-buffer-steps.svg)
 
 On crash recovery, if InnoDB finds a torn page in a data file, it copies the intact version from the doublewrite area and then applies the redo log on top of it. The page is repaired.
 
@@ -10165,25 +8557,7 @@ MySQL Group Replication and Galera Cluster offer synchronous replication. The tr
 
 ## How It All Fits Together
 
-```
-Client: COMMIT
-    │
-    ▼
-[1] Append to redo log (RAM buffer)
-    │
-    ▼
-[2] fsync() redo log → physical disk  ◄── Durability on single machine
-    │
-    ▼
-[3] (If sync replication) Wait for replica ACK  ◄── Durability across machines
-    │
-    ▼
-[4] Return "OK" to client  ←── This is the durability guarantee moment
-    │
-    ▼
-[5] Background: checkpoint dirty pages to .ibd data files
-    (Using double write buffer to prevent torn pages)
-```
+![Commit durability flow: redo append → fsync (single-machine durability) → replica ACK (cross-machine) → OK to client (guarantee moment) → background checkpoint via doublewrite](../svg/dbms/d158-durability-end-to-end-flow.svg)
 
 The moment the client receives `OK`, the transaction is durable at every configured level.
 
@@ -10222,18 +8596,7 @@ These two terms are constantly used interchangeably — but they mean different 
 
 **Analogy:** In chess, **integrity** is the rulebook (a bishop moves diagonally, a king can't move into check). **Consistency** is the promise that after *every* move, the board is still in a legal position.
 
-```
-      INTEGRITY (the rules)              CONSISTENCY (the guarantee)
-   ┌───────────────────────────┐      ┌───────────────────────────────┐
-   │ • PK must be unique/NOT   │      │  Valid State  ──[TXN]──▶  Valid State │
-   │   NULL                    │      │                                │
-   │ • FK must reference an    │ ───▶ │  Every transaction takes the   │
-   │   existing PK             │      │  DB from one rule-obeying      │
-   │ • age BETWEEN 0 AND 150   │      │  state to another — never      │
-   │ • balance >= 0            │      │  leaving it half-broken.       │
-   └───────────────────────────┘      └───────────────────────────────┘
-      Static — a property of DATA        Dynamic — a property of TRANSACTIONS
-```
+![Integrity (static rules on data) feeds Consistency (each transaction moves the DB from one valid state to another)](../svg/dbms/d159-integrity-vs-consistency.svg)
 
 ---
 
@@ -10273,21 +8636,7 @@ CREATE TABLE employees (
 
 The business rule (an integrity constraint): **the total money in the system must never change during a transfer.**
 
-```
-BEFORE:  Alice = ₹1000   Bob = ₹500   ──▶  TOTAL = ₹1500  ✅ valid state
-
-BEGIN TRANSACTION;
-    UPDATE accounts SET balance = balance - 200 WHERE name = 'Alice';
-    ─────────────────────────────────────────────────────────────────
-    ⚠️ INTERMEDIATE STATE:  Alice = ₹800   Bob = ₹500  →  TOTAL = ₹1300
-       Money vanished! This state is INVALID — but it's invisible to
-       everyone else (that's Isolation's job to hide it).
-    ─────────────────────────────────────────────────────────────────
-    UPDATE accounts SET balance = balance + 200 WHERE name = 'Bob';
-COMMIT;
-
-AFTER:   Alice = ₹800    Bob = ₹700   ──▶  TOTAL = ₹1500  ✅ valid state
-```
+![Bank transfer: total ₹1500 before and after; the ₹1300 intermediate state inside the transaction is invalid but hidden by isolation](../svg/dbms/d160-consistency-bank-transfer.svg)
 
 Consistency guarantees that **no observer ever sees the ₹1300 state as a committed reality** — the transaction either completes fully (₹1500 preserved) or rolls back entirely (₹1500 preserved).
 
@@ -10324,14 +8673,7 @@ This trips up almost everyone in system design interviews. Same word, completely
 | **Violated when** | A constraint is broken (orphan FK, negative balance) | A read hits a stale replica and returns old data |
 | **Also called** | Correctness | Linearizability / Strong consistency |
 
-```
-  ACID Consistency:                    CAP Consistency:
-  ─────────────────                    ────────────────
-  Is the data VALID?                   Is the data the SAME everywhere?
-
-  balance = -500  ❌                   Node A: balance = 800  ┐
-  (violates CHECK balance >= 0)        Node B: balance = 1000 ┘ ❌ mismatch
-```
+![ACID consistency (is the data valid? balance = -500 violates CHECK) vs CAP consistency (is it the same everywhere? Node A 800 vs Node B 1000)](../svg/dbms/d161-acid-vs-cap-consistency.svg)
 
 ---
 
@@ -10380,17 +8722,7 @@ When multiple transactions run concurrently WITHOUT proper isolation, these prob
 
 Transaction T2 reads a value that T1 has modified but **NOT YET COMMITTED**. If T1 later rolls back, T2 has read data that never existed.
 
-```
-  T1                              T2
-  ──                              ──
-  Read(A) = 1000
-  A = A - 500
-  Write(A) = 500
-                                  Read(A) = 500   ← DIRTY READ! (T1 not committed)
-  ROLLBACK ❌
-  (A goes back to 1000)
-                                  T2 uses A = 500  ← WRONG! A is actually 1000
-```
+![Dirty read: T2 reads T1's uncommitted A = 500, T1 rolls back to 1000, T2 keeps using the wrong value](../svg/dbms/d162-dirty-read-schedule.svg)
 
 | Time | T1 | T2 | A (actual) | Problem |
 |:---:|---|---|:---:|:---:|
@@ -10404,16 +8736,7 @@ Transaction T2 reads a value that T1 has modified but **NOT YET COMMITTED**. If 
 
 Two transactions read the same value and update it independently. The **second write overwrites the first**, losing T1's update.
 
-```
-  T1                              T2
-  ──                              ──
-  Read(A) = 1000
-                                  Read(A) = 1000
-  A = A - 500
-  Write(A) = 500
-                                  A = A - 200
-                                  Write(A) = 800  ← Overwrites T1's change!
-```
+![Lost update: T1 and T2 both read A = 1000; T2's Write(A) = 800 overwrites T1's Write(A) = 500](../svg/dbms/d163-lost-update-schedule.svg)
 
 | Time | T1 | T2 | A | Problem |
 |:---:|---|---|:---:|:---:|
@@ -10430,14 +8753,7 @@ Two transactions read the same value and update it independently. The **second w
 
 T1 reads the same data item **twice**, but gets **different values** because T2 modified it in between.
 
-```
-  T1                              T2
-  ──                              ──
-  Read(A) = 1000   ← First read
-                                  Write(A) = 500
-                                  COMMIT
-  Read(A) = 500    ← Second read — different value!
-```
+![Non-repeatable read: T1 reads A = 1000, T2 writes 500 and commits, T1's second read returns 500](../svg/dbms/d164-non-repeatable-read-schedule.svg)
 
 ---
 
@@ -10445,18 +8761,7 @@ T1 reads the same data item **twice**, but gets **different values** because T2 
 
 T1 reads a set of rows that satisfy a condition. T2 **inserts/deletes** rows. T1 re-reads and gets a **different number of rows**.
 
-```
-  T1                                    T2
-  ──                                    ──
-  SELECT COUNT(*) WHERE dept='CSE'
-  → Returns 3 students
-
-                                        INSERT ('Dave', 'CSE')
-                                        COMMIT
-
-  SELECT COUNT(*) WHERE dept='CSE'
-  → Returns 4 students   ← PHANTOM! A new row "appeared"
-```
+![Phantom read: T1's COUNT for dept CSE returns 3, T2 inserts Dave and commits, T1's re-count returns 4](../svg/dbms/d165-phantom-read-schedule.svg)
 
 ---
 
@@ -10471,16 +8776,7 @@ SQL defines **4 isolation levels** that control which concurrency problems are a
 | **REPEATABLE READ** | ✅ Prevented | ✅ Prevented | ✅ Prevented | ⚠️ Possible |
 | **SERIALIZABLE** | ✅ Prevented | ✅ Prevented | ✅ Prevented | ✅ Prevented |
 
-```
-  Isolation Level Spectrum:
-  ──────────────────────────────────────────────────────────────►
-  READ UNCOMMITTED    READ COMMITTED    REPEATABLE READ    SERIALIZABLE
-  (fastest,           (default in       (default in        (slowest,
-   least safe)         Oracle/SQL Srvr)  MySQL/PostgreSQL)   safest)
-
-  ◄── More performance                           More safety ──►
-  ◄── Less isolation                        More isolation ──►
-```
+![Isolation level spectrum: READ UNCOMMITTED → READ COMMITTED → REPEATABLE READ → SERIALIZABLE, trading performance for safety/isolation](../svg/dbms/d166-isolation-level-spectrum.svg)
 
 ### Setting Isolation Level
 
@@ -10527,31 +8823,13 @@ We covered Dirty Read, Lost Update, Non-Repeatable Read, and Phantom Read in the
 
 T2 reads a value that T1 modified but **hasn't committed yet**. If T1 rolls back, T2 has used a value that never actually existed.
 
-```
-  T1                              T2
-  ──                              ──
-  Read(X) = 100
-  X = X - 50
-  Write(X) = 50
-                                  Read(X) = 50  ← Dirty Read!
-  ROLLBACK ❌
-  X reverts to 100
-                                  Uses X = 50   ← WRONG! X is actually 100
-```
+![Dirty read: T2 reads T1's uncommitted X = 50, T1 rolls back to 100, T2 uses the wrong value](../svg/dbms/d167-dirty-read-x-schedule.svg)
 
 ### 2. Lost Update Problem
 
 Two transactions read the same value and update it. The **last write overwrites** the first, losing T1's change.
 
-```
-  T1                              T2
-  ──                              ──
-  Read(X) = 100
-                                  Read(X) = 100
-  X = X - 30
-  Write(X) = 70                   X = X + 50
-                                  Write(X) = 150  ← T1's deduction (70) is LOST!
-```
+![Lost update: T1 writes X = 70, then T2 writes X = 150 from its stale read, losing T1's deduction](../svg/dbms/d168-lost-update-x-schedule.svg)
 
 > Expected final X = 100 - 30 + 50 = **120**. Got X = **150**. T1's -30 vanished!
 
@@ -10559,22 +8837,7 @@ Two transactions read the same value and update it. The **last write overwrites*
 
 One transaction is computing an **aggregate** (SUM, COUNT, AVG) while another transaction is **modifying** the same records. The aggregate mixes old and new values.
 
-```
-  Accounts:  A = 100,  B = 200,  C = 300    (Total should be 600)
-
-  T1 (updating)                    T2 (summing)
-  ──                               ──
-                                   Sum = 0
-                                   Read(A) = 100    Sum = 100
-  Read(A) = 100
-  A = A - 50
-  Write(A) = 50
-  Read(B) = 200
-  B = B + 50
-  Write(B) = 250
-                                   Read(B) = 250    Sum = 350  ← new value!
-                                   Read(C) = 300    Sum = 650  ← WRONG!
-```
+![Incorrect summary: T2 reads old A (100) but new B (250) while T1 transfers 50, producing Sum = 650 instead of 600](../svg/dbms/d169-incorrect-summary-schedule.svg)
 
 | Account | Before T1 | After T1 | Read By T2 |
 |:---:|:---:|:---:|:---:|
@@ -10589,52 +8852,19 @@ One transaction is computing an **aggregate** (SUM, COUNT, AVG) while another tr
 
 T1 reads the same variable **twice** and gets **different values** because T2 modified it between the two reads.
 
-```
-  T1                              T2
-  ──                              ──
-  Read(X) = 100  ← First read
-                                  X = X + 50
-                                  Write(X) = 150
-                                  COMMIT
-  Read(X) = 150  ← Second read — different!
-```
+![Non-repeatable read: T1 reads X = 100, T2 writes 150 and commits, T1's second read returns 150](../svg/dbms/d170-non-repeatable-read-x-schedule.svg)
 
 ### 5. Phantom Read Problem
 
 T1 queries rows matching a condition. T2 **inserts or deletes** rows. T1 re-queries and gets a **different set of rows**.
 
-```
-  T1                                    T2
-  ──                                    ──
-  SELECT * WHERE salary > 50000
-  → Returns {Alice, Bob}
-                                        INSERT (Carol, 60000)
-                                        COMMIT
-  SELECT * WHERE salary > 50000
-  → Returns {Alice, Bob, Carol}  ← Phantom row appeared!
-```
+![Phantom read: T1's salary > 50000 query returns {Alice, Bob}, T2 inserts Carol, the re-run returns {Alice, Bob, Carol}](../svg/dbms/d171-phantom-read-salary-schedule.svg)
 
 ---
 
 ## Concurrency Control Protocols
 
-```
-                  ┌──────────────────────────┐
-                  │ Concurrency Control      │
-                  │ Protocols                │
-                  └────────────┬─────────────┘
-            ┌──────────────────┼──────────────────┐
-            ▼                  ▼                  ▼
-     ┌──────────────┐  ┌──────────────┐  ┌──────────────────┐
-     │  Lock-Based  │  │  Timestamp-  │  │    Optimistic    │
-     │  Protocols   │  │  Based       │  │    Concurrency   │
-     └──────┬───────┘  └──────────────┘  │    Control       │
-            │                            └──────────────────┘
-     ┌──────┴──────┐
-     │ Two-Phase   │
-     │ Locking(2PL)│
-     └─────────────┘
-```
+![Concurrency control protocols: lock-based (incl. Two-Phase Locking), timestamp-based, and optimistic concurrency control](../svg/dbms/d172-concurrency-control-protocols-tree.svg)
 
 ---
 
@@ -10674,10 +8904,7 @@ Transactions must acquire a **lock** on a data item before accessing it. The loc
 
 ### Lock Upgrading & Downgrading
 
-```
-  Upgrade:   S-Lock → X-Lock   (reader wants to write)
-  Downgrade: X-Lock → S-Lock   (writer done, allows readers)
-```
+![Lock upgrade (S-Lock → X-Lock, reader wants to write) and downgrade (X-Lock → S-Lock, writer done)](../svg/dbms/d173-lock-upgrade-downgrade.svg)
 
 ---
 
@@ -10688,44 +8915,11 @@ The most widely used protocol. A transaction has **two phases**:
 1. **Growing Phase** — can acquire locks, **cannot release** any
 2. **Shrinking Phase** — can release locks, **cannot acquire** any
 
-```
-  Number of Locks
-       │
-       │        ┌──── Lock Point (maximum locks)
-       │       ╱│╲
-       │      ╱ │ ╲
-       │     ╱  │  ╲
-       │    ╱   │   ╲
-       │   ╱    │    ╲
-       │  ╱     │     ╲
-       │ ╱      │      ╲
-       │╱       │       ╲
-  ─────┼────────┼────────╲──────► Time
-       │ Growing│Shrinking
-       │  Phase │  Phase
-       │(acquire│(release
-       │ locks) │ locks)
-```
+![2PL: lock count rises in the growing phase (acquire locks) to the lock point, then falls in the shrinking phase (release locks)](../svg/dbms/d174-two-phase-locking-graph.svg)
 
 ### Example
 
-```
-  T1 (Two-Phase Locking):
-  ────────────────────────
-  Growing Phase:
-    S-Lock(A)        ✅ acquire
-    S-Lock(B)        ✅ acquire
-    Upgrade to X-Lock(A)  ✅ acquire
-    ──── Lock Point ────
-  Shrinking Phase:
-    Unlock(B)        ✅ release
-    Unlock(A)        ✅ release
-
-  INVALID (violates 2PL):
-    S-Lock(A)        ✅ acquire
-    Unlock(A)        ✅ release
-    S-Lock(B)        ❌ CANNOT acquire after releasing!
-```
+![Valid 2PL (acquire S(A), S(B), X(A) → lock point → release B, A) vs invalid schedule that acquires S-Lock(B) after releasing A](../svg/dbms/d175-two-phase-locking-example.svg)
 
 ### Guarantees
 
@@ -10742,25 +8936,7 @@ The most widely used protocol. A transaction has **two phases**:
 
 > **Conservative 2PL is the only deadlock-free variant** — it breaks the *hold and wait* condition by claiming every lock up front. The cost is that locks are held for the entire transaction even if a row is only touched at the very end, and you must know all the locks in advance (often impossible). See [Pre-Claiming Lock Protocol](#2-pre-claiming-lock-protocol) for the same idea in the lock-protocol taxonomy.
 
-```
-  Basic 2PL:
-  ──────────
-  Acquire → → → Lock Point → → → Release → → → COMMIT
-                                    ↑
-                            (can release before commit)
-
-  Strict 2PL:
-  ────────────
-  Acquire → → → Lock Point → → → → → → → COMMIT → Release X-Locks
-                                            ↑
-                              (X-locks held until commit)
-
-  Rigorous 2PL:
-  ──────────────
-  Acquire → → → Lock Point → → → → → → → COMMIT → Release ALL Locks
-                                            ↑
-                              (ALL locks held until commit)
-```
+![2PL variants: Basic releases before COMMIT; Strict holds X-locks until COMMIT; Rigorous holds ALL locks until COMMIT](../svg/dbms/d176-two-phase-locking-variants.svg)
 
 ---
 
@@ -10778,45 +8954,14 @@ Each transaction gets a **unique timestamp** when it starts. The DBMS ensures tr
 ### Rules
 
 **Read Operation by Ti:**
-```
-  If TS(Ti) < W-TS(X):
-    → Ti is trying to read a value written by a LATER transaction
-    → REJECT (rollback Ti and restart with new timestamp)
-
-  If TS(Ti) >= W-TS(X):
-    → ALLOW the read
-    → Update R-TS(X) = max(R-TS(X), TS(Ti))
-```
+![Timestamp ordering read rule: TS(Ti) < W-TS(X) → reject and restart; TS(Ti) ≥ W-TS(X) → allow and update R-TS(X)](../svg/dbms/d177-timestamp-ordering-read-rule.svg)
 
 **Write Operation by Ti:**
-```
-  If TS(Ti) < R-TS(X):
-    → A LATER transaction already read the old value of X
-    → Ti's write would invalidate that read
-    → REJECT (rollback Ti)
-
-  If TS(Ti) < W-TS(X):
-    → A LATER transaction already wrote X
-    → Ti's write is outdated
-    → REJECT (rollback Ti)
-
-  Otherwise:
-    → ALLOW the write
-    → Update W-TS(X) = TS(Ti)
-```
+![Timestamp-ordering write rule: reject if TS(Ti) < R-TS(X) or TS(Ti) < W-TS(X), otherwise allow and set W-TS(X) = TS(Ti)](../svg/dbms/d178-timestamp-write-rule.svg)
 
 ### Example
 
-```
-  T1 (TS=1)    T2 (TS=2)         W-TS(X)   R-TS(X)
-  ──────────   ──────────         ───────   ───────
-                                    0         0
-  Read(X)                           0         1       ✅ (TS(T1)=1 >= W-TS=0)
-                Read(X)             0         2       ✅ (TS(T2)=2 >= W-TS=0)
-  Write(X)                          ?         ?       ❌ REJECT!
-                                                     (TS(T1)=1 < R-TS=2)
-                                                     T2 already read old X
-```
+![Timestamp ordering example: T1 and T2 read X (R-TS rises to 2), then T1's Write(X) is rejected since TS(T1)=1 < R-TS=2](../svg/dbms/d179-timestamp-ordering-example.svg)
 
 > **Advantage:** No locks → no deadlocks. **Disadvantage:** More rollbacks if conflicts are frequent.
 
@@ -10828,19 +8973,7 @@ Assumes conflicts are **rare**. Transactions execute freely without any locks or
 
 ### Three Phases
 
-```
-  ┌──────────────┐    ┌──────────────┐    ┌──────────────┐
-  │   Read       │───▶│   Validate   │───▶│   Write      │
-  │   Phase      │    │   Phase      │    │   Phase      │
-  │              │    │              │    │              │
-  │ Execute all  │    │ Check for    │    │ Apply changes│
-  │ operations   │    │ conflicts    │    │ to database  │
-  │ on local     │    │              │    │              │
-  │ copies       │    │ Conflict? ──►│    │              │
-  └──────────────┘    │ YES: Abort   │    └──────────────┘
-                      │ NO: Proceed  │
-                      └──────────────┘
-```
+![Optimistic concurrency control: Read phase (local copies) to Validate phase (conflict? yes abort, no proceed) to Write phase (apply to database)](../svg/dbms/d180-occ-three-phases.svg)
 
 | Phase | What Happens |
 |:---:|-------------|
@@ -10858,22 +8991,7 @@ Assumes conflicts are **rare**. Transactions execute freely without any locks or
 
 A **deadlock** occurs when two or more transactions are **waiting for each other** to release locks, creating a circular wait. None can proceed.
 
-```
-  T1: X-Lock(A) ✅
-  T2: X-Lock(B) ✅
-  T1: X-Lock(B) ❌ WAIT (T2 holds B)
-  T2: X-Lock(A) ❌ WAIT (T1 holds A)
-
-  T1 waits for T2 → T2 waits for T1 → DEADLOCK! 💀
-
-  ┌─────────────────────────────┐
-  │         DEADLOCK            │
-  │                             │
-  │   T1 ──(waiting for B)──►  │
-  │   ▲                     T2 │
-  │   └──(waiting for A)────┘  │
-  └─────────────────────────────┘
-```
+![Deadlock: T1 holds A and waits for B, T2 holds B and waits for A, forming a circular wait](../svg/dbms/d181-deadlock-t1-t2.svg)
 
 ### The 4 Necessary Conditions
 
@@ -10886,14 +9004,7 @@ A deadlock can occur **only if all four hold simultaneously**. Break any one and
 | **3. No Preemption** | A resource can't be forcibly taken; it must be released voluntarily | The DBMS won't yank T1's lock away mid-transaction |
 | **4. Circular Wait** | A closed chain of transactions each waiting on the next | T1 → T2 → T3 → T1 |
 
-```
-  Break the condition ──► deadlock prevented
-
-  Mutual Exclusion  → use shared (S) locks where possible / MVCC (readers don't block)
-  Hold and Wait     → Pre-Claiming / Conservative 2PL (grab ALL locks up front)
-  No Preemption     → Wound-Wait (the older transaction preempts the younger)
-  Circular Wait     → order resources; always lock A before B
-```
+![Breaking each deadlock condition: mutual exclusion via S locks/MVCC, hold-and-wait via pre-claiming, no-preemption via wound-wait, circular wait via lock ordering](../svg/dbms/d182-break-deadlock-conditions.svg)
 
 ---
 
@@ -10914,16 +9025,7 @@ A deadlock can occur **only if all four hold simultaneously**. Break any one and
 3. **A cycle in the graph = a deadlock.**
 4. Run the check periodically, or on every lock-wait event.
 
-```
-  T1 holds A, wants B          Wait-For Graph:
-  T2 holds B, wants C
-  T3 holds C, wants A               T1 ──► T2
-                                    ▲       │
-                                    │       ▼
-                                    └────── T3
-
-  Cycle T1 → T2 → T3 → T1  →  💀 DEADLOCK
-```
+![Wait-for graph: T1 waits for T2, T2 for T3, T3 for T1; the cycle T1 to T2 to T3 to T1 means deadlock](../svg/dbms/d183-wait-for-graph-cycle.svg)
 
 > **How often to check?** Too frequent = CPU overhead. Too rare = transactions sit blocked longer. Real databases (e.g. InnoDB) check on lock-wait, and also have an overall `innodb_lock_wait_timeout` as a backstop.
 
@@ -10939,17 +9041,7 @@ Each transaction gets a **timestamp** at start — a smaller timestamp means **o
 | **Wound-Wait** | Older **wounds**, younger **waits** | If Ti is older than Tj → Tj is rolled back (wounded). If Ti is younger → Ti waits | ✅ Preemptive |
 | **Timeout-Based** | Wait only up to a limit | If the wait exceeds the threshold → roll the waiter back. No timestamps or graph needed | ✅ Preemptive |
 
-```
-  Wait-Die (older waits, younger dies):
-  ──────────────────────────────────────
-  T1 (old) requests lock held by T2 (young)  → T1 WAITS (old can wait)
-  T2 (young) requests lock held by T1 (old)  → T2 DIES (young must rollback)
-
-  Wound-Wait (older wounds, younger waits):
-  ──────────────────────────────────────────
-  T1 (old) requests lock held by T2 (young)  → T2 is WOUNDED (rolled back)
-  T2 (young) requests lock held by T1 (old)  → T2 WAITS (young can wait)
-```
+![Wait-Die vs Wound-Wait: who waits and who rolls back when an old or young transaction requests a lock](../svg/dbms/d184-wait-die-vs-wound-wait.svg)
 
 | | Wait-Die | Wound-Wait |
 |---|---|---|
@@ -11018,67 +9110,23 @@ If victim selection always picks the same transaction, that transaction may **ne
 
 A schedule where a transaction commits **only after all transactions it has read from** have committed.
 
-```
-  ❌ Non-Recoverable (DANGEROUS):
-  T1: Write(X) = 50
-  T2: Read(X) = 50         ← T2 reads T1's uncommitted value
-  T2: COMMIT                ← T2 commits BEFORE T1!
-  T1: ROLLBACK              ← T1 rolls back... but T2 already committed with T1's value!
-                              Can't undo T2 → IRRECOVERABLE!
-
-  ✅ Recoverable:
-  T1: Write(X) = 50
-  T2: Read(X) = 50
-  T1: COMMIT ✅              ← T1 commits FIRST
-  T2: COMMIT ✅              ← T2 commits AFTER T1 → safe to depend on T1's value
-```
+![Non-recoverable schedule (T2 commits before T1 rolls back, irrecoverable) vs recoverable schedule (T1 commits first, then T2)](../svg/dbms/d185-non-recoverable-vs-recoverable.svg)
 
 ### Cascading Rollback
 
 If T1 rolls back, and T2 read T1's data, then T2 must also rollback. If T3 read T2's data, T3 also rolls back → **cascade**.
 
-```
-  Cascading Rollback:
-  T1: Write(X) = 50
-  T2: Read(X) = 50          T2 depends on T1
-  T3: Read from T2           T3 depends on T2
-  T1: ROLLBACK ❌
-     → T2 must ROLLBACK ❌   (read T1's data)
-        → T3 must ROLLBACK ❌ (read T2's data)
-           → ... cascade continues!
-```
+![Cascading rollback: T1 rolls back, so T2 (read T1's data) and then T3 (read T2's data) must roll back, and the cascade continues](../svg/dbms/d186-cascading-rollback.svg)
 
 ### Cascadeless Schedule
 
 A schedule where transactions **only read committed values**. This prevents cascading rollbacks entirely.
 
-```
-  ✅ Cascadeless:
-  T1: Write(X) = 50
-  T1: COMMIT ✅
-  T2: Read(X) = 50           ← reads only COMMITTED value → no cascade risk
-```
+![Cascadeless schedule: T1 writes X and commits, then T2 reads only the committed value, so no cascade risk](../svg/dbms/d187-cascadeless-schedule.svg)
 
 ### Schedule Hierarchy
 
-```
-  ┌─────────────────────────────────────────────┐
-  │              All Schedules                  │
-  │  ┌───────────────────────────────────────┐  │
-  │  │          Recoverable                  │  │
-  │  │  ┌─────────────────────────────────┐  │  │
-  │  │  │        Cascadeless              │  │  │
-  │  │  │  ┌───────────────────────────┐  │  │  │
-  │  │  │  │        Strict             │  │  │  │
-  │  │  │  │  ┌─────────────────────┐  │  │  │  │
-  │  │  │  │  │      Serial         │  │  │  │  │
-  │  │  │  │  └─────────────────────┘  │  │  │  │
-  │  │  │  └───────────────────────────┘  │  │  │
-  │  │  └─────────────────────────────────┘  │  │
-  │  └───────────────────────────────────────┘  │
-  └─────────────────────────────────────────────┘
-  Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules
-```
+![Schedule hierarchy: Serial within Strict within Cascadeless within Recoverable within All Schedules](../svg/dbms/d188-schedule-hierarchy-nested.svg)
 
 ---
 
@@ -11536,28 +9584,7 @@ A **schedule** is the chronological order in which operations (read/write) of mu
 
 ## Complete Schedule Taxonomy
 
-```
-                          ┌──────────────┐
-                          │   Schedule   │
-                          └──────┬───────┘
-                       ┌─────────┴─────────┐
-                       ▼                   ▼
-               ┌──────────────┐    ┌───────────────┐
-               │    Serial    │    │  Non-Serial   │
-               │ (no overlap) │    │ (interleaved) │
-               └──────────────┘    └───────┬───────┘
-                                    ┌──────┴──────┐
-                                    ▼             ▼
-                            ┌──────────────┐ ┌──────────────────┐
-                            │ Serializable │ │ Non-Serializable │
-                            └──────┬───────┘ └────────┬─────────┘
-                           ┌───────┴───────┐          │
-                           ▼               ▼          ▼
-                    ┌────────────┐  ┌────────────┐ ┌────────────────┐
-                    │  Conflict  │  │    View    │ │  Recoverable/  │
-                    │Serializable│  │Serializable│ │Non-Recoverable │
-                    └────────────┘  └────────────┘ └────────────────┘
-```
+![Schedule taxonomy tree: Serial vs Non-Serial; Non-Serial into Serializable (conflict, view) and Non-Serializable (recoverable or non-recoverable)](../svg/dbms/d189-schedule-taxonomy.svg)
 
 ---
 
@@ -11565,22 +9592,7 @@ A **schedule** is the chronological order in which operations (read/write) of mu
 
 Transactions execute **one after another** with NO interleaving. Transaction T2 starts only after T1 finishes completely.
 
-```
-  Serial Schedule: T1 → T2
-
-  Time    T1           T2
-  ────    ──           ──
-   1      R(A)
-   2      W(A)
-   3      R(B)
-   4      W(B)
-   5      COMMIT
-   6                   R(A)
-   7                   W(A)
-   8                   R(B)
-   9                   W(B)
-  10                   COMMIT
-```
+![Serial schedule: T1 runs all its operations and commits (times 1-5), then T2 runs (times 6-10)](../svg/dbms/d190-serial-schedule.svg)
 
 | ✅ Advantages | ❌ Disadvantages |
 |---|---|
@@ -11596,22 +9608,7 @@ Transactions execute **one after another** with NO interleaving. Transaction T2 
 
 Operations from different transactions are **interleaved**. Faster, but must be checked for correctness.
 
-```
-  Non-Serial Schedule: T1 and T2 interleaved
-
-  Time    T1           T2
-  ────    ──           ──
-   1      R(A)
-   2                   R(A)
-   3      W(A)
-   4                   W(A)
-   5      R(B)
-   6      W(B)
-   7      COMMIT
-   8                   R(B)
-   9                   W(B)
-  10                   COMMIT
-```
+![Non-serial schedule: T1 and T2 operations interleaved over times 1-10](../svg/dbms/d191-non-serial-schedule.svg)
 
 Non-serial schedules are divided into **serializable** and **non-serializable**.
 
@@ -11644,20 +9641,7 @@ A schedule is **conflict serializable** if it can be converted into a serial sch
 3. **No cycle** → Conflict Serializable ✅
 4. **Cycle** → NOT Conflict Serializable ❌
 
-```
-  Example Schedule S:
-  T1: R(A)  T2: R(A)  T1: W(A)  T2: W(A)  T1: R(B)  T2: R(B)  T1: W(B)  T2: W(B)
-
-  Conflicts:
-  T1:R(A) before T2:W(A) → T1 → T2
-  T1:W(A) before T2:R(A)? No, T2:R(A) is at time 2, T1:W(A) is at time 3 → T2 → T1
-  
-  Precedence Graph:
-  T1 ──→ T2
-  T2 ──→ T1   ← CYCLE! ❌
-
-  → NOT Conflict Serializable
-```
+![Precedence graph test: conflicts give edges T1 to T2 and T2 to T1, a cycle, so the schedule is not conflict serializable](../svg/dbms/d192-precedence-graph-cycle.svg)
 
 ### 3b. View Serializable
 
@@ -11669,18 +9653,7 @@ A schedule S is **view equivalent** to a serial schedule S' if:
 | **Updated Read** | If Ti reads a value written by Tj in S, Ti also reads the value written by Tj in S' |
 | **Final Write** | If Ti performs the last write on X in S, Ti also performs the last write on X in S' |
 
-```
-  Relationship:
-  ┌────────────────────────────┐
-  │    View Serializable       │
-  │  ┌──────────────────────┐  │
-  │  │ Conflict Serializable │  │
-  │  └──────────────────────┘  │
-  └────────────────────────────┘
-
-  Every Conflict Serializable ⊂ View Serializable
-  (but NOT vice versa)
-```
+![Conflict serializable schedules are a subset of view serializable schedules, but not vice versa](../svg/dbms/d193-conflict-in-view-serializable.svg)
 
 > **Key insight:** View serializability is harder to test (NP-complete) but allows more schedules than conflict serializability.
 
@@ -11694,18 +9667,7 @@ Schedules that are NOT equivalent to any serial schedule. They may or may not be
 
 T2 reads T1's uncommitted data and **commits before T1**. If T1 later aborts, T2 has committed with invalid data — **cannot be undone**.
 
-```
-  Time    T1           T2
-  ────    ──           ──
-   1      R(A)
-   2      W(A)
-   3                   R(A)     ← reads T1's uncommitted value
-   4                   W(A)
-   5                   COMMIT   ← T2 commits BEFORE T1!
-   6      ABORT ❌               ← T1 rolls back...
-                                   but T2 already committed!
-                                   IRRECOVERABLE! 💀
-```
+![Non-recoverable schedule: T2 reads T1's uncommitted value and commits before T1 aborts, which is irrecoverable](../svg/dbms/d194-non-recoverable-schedule.svg)
 
 > ⚠️ Non-recoverable schedules must ALWAYS be avoided. If T1 aborts, we can't undo T2's commit.
 
@@ -11713,15 +9675,7 @@ T2 reads T1's uncommitted data and **commits before T1**. If T1 later aborts, T2
 
 T2 commits **only after** T1 (the transaction it read from) has committed.
 
-```
-  Time    T1           T2
-  ────    ──           ──
-   1      R(A)
-   2      W(A)
-   3                   R(A)     ← reads T1's value
-   4      COMMIT ✅              ← T1 commits FIRST
-   5                   COMMIT ✅ ← T2 commits AFTER T1 → safe!
-```
+![Recoverable schedule: T2 reads T1's value, T1 commits first, T2 commits after T1](../svg/dbms/d195-recoverable-schedule.svg)
 
 > **Rule:** If T2 reads data written by T1, then T1 must commit **before** T2.
 
@@ -11729,20 +9683,7 @@ T2 commits **only after** T1 (the transaction it read from) has committed.
 
 Recoverable, but failure of one transaction causes a **chain of rollbacks** (cascade abort).
 
-```
-  Time    T1           T2           T3
-  ────    ──           ──           ──
-   1      R(A)
-   2      W(A) = 50
-   3                   R(A) = 50    ← reads T1's uncommitted data
-   4                   W(A) = 70
-   5                                R(A) = 70  ← reads T2's uncommitted data
-   6      ABORT ❌
-   7                   ABORT ❌      ← must abort (read from T1)
-   8                                ABORT ❌   ← must abort (read from T2)
-
-  Cascade: T1 fails → T2 fails → T3 fails → ... 💥
-```
+![Cascading schedule: T1 aborts, so T2 (read from T1) and T3 (read from T2) must also abort](../svg/dbms/d196-cascading-schedule.svg)
 
 > Cascading aborts are expensive — they waste all the work done by dependent transactions.
 
@@ -11750,16 +9691,7 @@ Recoverable, but failure of one transaction causes a **chain of rollbacks** (cas
 
 Transactions **only read committed values**. If T1 writes X, T2 can read X only **after T1 commits**.
 
-```
-  Time    T1           T2
-  ────    ──           ──
-   1      R(A)
-   2      W(A)
-   3      COMMIT ✅
-   4                   R(A)     ← reads ONLY committed value → safe!
-   5                   W(A)
-   6                   COMMIT ✅
-```
+![Cascadeless schedule: T2 reads A only after T1 commits, so it only sees committed data](../svg/dbms/d197-cascadeless-schedule-timeline.svg)
 
 > **Rule:** Dirty reads are completely eliminated → no cascading abort possible.
 
@@ -11767,15 +9699,7 @@ Transactions **only read committed values**. If T1 writes X, T2 can read X only 
 
 Neither **read NOR write** a data item until the transaction that last wrote it has committed or aborted.
 
-```
-  Time    T1           T2
-  ────    ──           ──
-   1      W(A)
-   2      COMMIT ✅
-   3                   R(A)     ← read after commit ✅
-   4                   W(A)     ← write after commit ✅
-   5                   COMMIT ✅
-```
+![Strict schedule: T2 reads and writes A only after T1 has committed](../svg/dbms/d198-strict-schedule.svg)
 
 **Difference from Cascadeless:**
 
@@ -11784,49 +9708,13 @@ Neither **read NOR write** a data item until the transaction that last wrote it 
 | Dirty **reads** prevented | ✅ | ✅ |
 | Dirty **writes** prevented | ❌ | ✅ |
 
-```
-  Cascadeless but NOT Strict:
-  T1: W(A)
-  T2: W(A)         ← writes BEFORE T1 commits (dirty write!) ❌ for strict
-  T1: COMMIT
-  T2: COMMIT
-
-  Strict:
-  T1: W(A)
-  T1: COMMIT ✅
-  T2: W(A)         ← writes AFTER T1 commits ✅
-  T2: COMMIT ✅
-```
+![Cascadeless but not strict (T2 writes A before T1 commits, a dirty write) vs strict (T2 writes only after T1 commits)](../svg/dbms/d199-cascadeless-vs-strict.svg)
 
 ---
 
 ## Schedule Hierarchy (Venn Diagram)
 
-```
-  ┌─────────────────────────────────────────────────────────┐
-  │                    All Schedules                        │
-  │                                                         │
-  │   ┌───────────────────────────────────────────────┐     │
-  │   │              Recoverable                      │     │
-  │   │                                               │     │
-  │   │   ┌───────────────────────────────────────┐   │     │
-  │   │   │           Cascadeless                 │   │     │
-  │   │   │                                       │   │     │
-  │   │   │   ┌───────────────────────────────┐   │   │     │
-  │   │   │   │           Strict              │   │   │     │
-  │   │   │   │                               │   │   │     │
-  │   │   │   │   ┌───────────────────────┐   │   │   │     │
-  │   │   │   │   │       Serial          │   │   │   │     │
-  │   │   │   │   └───────────────────────┘   │   │   │     │
-  │   │   │   └───────────────────────────────┘   │   │     │
-  │   │   └───────────────────────────────────────┘   │     │
-  │   └───────────────────────────────────────────────┘     │
-  │                                                         │
-  │   Non-Recoverable (outside Recoverable) ← AVOID!       │
-  └─────────────────────────────────────────────────────────┘
-
-  Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules
-```
+![Schedule hierarchy Venn: Serial within Strict within Cascadeless within Recoverable within All Schedules; Non-Recoverable lies outside Recoverable (avoid)](../svg/dbms/d200-schedule-hierarchy-venn.svg)
 
 ---
 
@@ -11846,22 +9734,13 @@ Neither **read NOR write** a data item until the transaction that last wrote it 
 
 ## Lock-Based Protocol Types
 
-```
-  ┌────────────────────────────────┐
-  │     Lock-Based Protocols       │
-  └───────────────┬────────────────┘
-    ┌─────────────┼─────────────┬──────────────┐
-    ▼             ▼             ▼              ▼
-  Simplistic   Pre-Claiming   2PL        Strict 2PL
-```
+![Lock-based protocol types: Simplistic, Pre-Claiming, 2PL and Strict 2PL](../svg/dbms/d201-lock-based-protocol-types.svg)
 
 ### 1. Simplistic Lock Protocol
 
 Acquire lock on an item **before writing** it. Unlock **after** the write is done.
 
-```
-  T1: Lock(A) → Write(A) → Unlock(A)
-```
+![Simplistic lock protocol: T1 does Lock(A), then Write(A), then Unlock(A)](../svg/dbms/d202-simplistic-lock-protocol.svg)
 
 > Very basic. Doesn't prevent all concurrency problems.
 
@@ -11871,34 +9750,13 @@ Before execution, the transaction requests **ALL locks it will need** at once.
 - If ALL locks are granted → execute the transaction → release all at end
 - If ANY lock is denied → **rollback** and wait → retry later
 
-```
-  T1 needs: Lock(A), Lock(B), Lock(C)
-
-  Request all three at once:
-    All granted? → Execute T1 → Release all locks ✅
-    Any denied?  → Rollback → Wait → Retry later ❌
-```
+![Pre-claiming: T1 requests Lock(A), Lock(B), Lock(C) at once; all granted means execute and release all, any denied means rollback, wait, retry later](../svg/dbms/d203-pre-claiming-lock-protocol.svg)
 
 > **Advantage:** No deadlocks (all-or-nothing). **Disadvantage:** Poor concurrency (holds locks for entire duration, even if some items are used only at the end).
 
 ### 3. Two-Phase Locking (2PL) — Recap
 
-```
-  Growing Phase:                    Shrinking Phase:
-  ─────────────                     ────────────────
-  Acquire locks                     Release locks
-  Cannot release any                Cannot acquire any
-
-    Locks held
-       │     ╱╲
-       │    ╱  ╲
-       │   ╱    ╲
-       │  ╱      ╲
-       │ ╱  Lock  ╲
-       │╱   Point  ╲
-  ─────┼─────┬──────╲────────► Time
-       │ Growing  Shrinking
-```
+![Two-phase locking: growing phase acquires locks up to the lock point, shrinking phase releases them; locks held rise then fall over time](../svg/dbms/d204-two-phase-locking.svg)
 
 > ✅ Guarantees **conflict serializability**. ⚠️ Can have cascading aborts. ⚠️ Deadlocks possible.
 
@@ -11906,18 +9764,7 @@ Before execution, the transaction requests **ALL locks it will need** at once.
 
 Same as 2PL, but **holds ALL locks until COMMIT or ABORT**. No early release.
 
-```
-  Strict 2PL:
-       Locks held
-       │          ┌────────────────┐
-       │          │                │
-       │          │ All locks held │
-       │          │ until COMMIT   │
-       │          │                │
-  ─────┼──────────┼────────────────┼───► Time
-       │  Growing │                │
-       │  Phase   │   COMMIT ──► Release ALL
-```
+![Strict 2PL: locks grow during the growing phase, all locks are held until COMMIT, then all are released at once](../svg/dbms/d205-strict-two-phase-locking.svg)
 
 > ✅ Conflict serializable. ✅ **No cascading aborts.** ⚠️ Deadlocks still possible.
 
@@ -11929,37 +9776,15 @@ An **optimization** for timestamp-based protocols that avoids unnecessary rollba
 
 ### Normal Timestamp Rule for Write:
 
-```
-  If TS(Ti) < W-TS(X):
-    → A later transaction already wrote X
-    → Ti's write is OUTDATED
-    → Normal rule: ROLLBACK Ti ❌
-```
+![Normal timestamp write rule: if TS(Ti) < W-TS(X) a later transaction already wrote X, Ti's write is outdated, roll back Ti](../svg/dbms/d206-normal-timestamp-write-rule.svg)
 
 ### Thomas' Write Rule:
 
-```
-  If TS(Ti) < W-TS(X):
-    → A later transaction already wrote X
-    → Ti's write is outdated
-    → Thomas' Rule: Just IGNORE Ti's write (skip it, don't rollback) ✅
-    → Ti continues executing
-```
+![Thomas' Write Rule: if TS(Ti) < W-TS(X), Ti's outdated write is ignored instead of rolled back and Ti continues](../svg/dbms/d207-thomas-write-rule.svg)
 
 **Why it works:** Ti's write would be overwritten anyway by the later transaction, so there's no point in rolling back — just skip it.
 
-```
-  Example:
-  T1 (TS=1)     T2 (TS=2)        W-TS(X)
-  ──────────     ──────────       ───────
-                 Write(X)           2        T2 writes X
-  Write(X)                          ?
-
-  Normal rule:  TS(T1)=1 < W-TS(X)=2 → ROLLBACK T1 ❌
-  Thomas' rule: TS(T1)=1 < W-TS(X)=2 → IGNORE T1's write, continue ✅
-
-  Result: X keeps T2's value (which would have overwritten T1 anyway)
-```
+![Thomas' Write Rule example: T2 writes X then T1's late write; normal rule rolls back T1, Thomas' rule ignores the write, X keeps T2's value](../svg/dbms/d208-thomas-write-rule-example.svg)
 
 > **Key point:** Thomas' Write Rule produces **view serializable** schedules (not necessarily conflict serializable).
 
@@ -12014,25 +9839,7 @@ Check for **view serializability**:
 
 ## Quick Summary
 
-```
-  Schedule Hierarchy:
-    Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules
-
-  Serializability Check:
-    Conflict: Precedence Graph → no cycle = ✅
-    View:     Check 3 conditions (initial read, updated read, final write)
-    Conflict ⊂ View
-
-  Lock Protocols:
-    Simplistic → lock before write, unlock after
-    Pre-Claiming → all locks upfront (no deadlock, low concurrency)
-    2PL → growing + shrinking phases (serializable, cascading aborts)
-    Strict 2PL → hold all locks until commit (no cascading aborts)
-
-  Thomas' Write Rule:
-    If older write is outdated → IGNORE it instead of rolling back
-    Produces view-serializable schedules
-```
+![Schedules quick summary: nested schedule hierarchy, conflict vs view serializability checks, lock protocols, Thomas' Write Rule](../svg/dbms/d209-schedules-quick-summary.svg)
 
 > **Interview tip:** "What is the difference between Cascadeless and Strict schedules?" — Cascadeless prevents dirty reads (transactions read only committed data). Strict prevents both dirty reads AND dirty writes (no transaction reads OR writes data written by an uncommitted transaction). Strict ⊂ Cascadeless.
 
@@ -12069,40 +9876,7 @@ Before MySQL returns a single row, your SQL text goes through a fixed pipeline. 
 
 ## The Whole Pipeline
 
-```
-   SQL text
-      │
-      ▼
-┌─────────────────────┐
-│ 1. Connection /     │  authenticate, assign a thread, check privileges
-│    Thread handling  │
-└──────────┬──────────┘
-           ▼
-┌─────────────────────┐
-│ 2. PARSER           │  tokenize → build a parse tree
-│    (lexer + syntax) │  ❌ dies here on: "You have an error in your SQL syntax"
-└──────────┬──────────┘
-           ▼
-┌─────────────────────┐
-│ 3. PREPROCESSOR     │  semantic validation ("the precompile step")
-│    (resolver)       │  ❌ dies here on: "Unknown column 'x' in 'field list'"
-└──────────┬──────────┘
-           ▼
-┌─────────────────────┐
-│ 4. OPTIMIZER        │  cost-based: pick indexes, join order, join algorithm
-│    (cost-based)     │  ⚠️ slow-but-correct queries are decided HERE
-└──────────┬──────────┘
-           ▼
-┌─────────────────────┐
-│ 5. EXECUTION ENGINE │  walk the chosen plan, call the storage engine
-└──────────┬──────────┘
-           ▼
-┌─────────────────────┐
-│ 6. STORAGE ENGINE   │  InnoDB: buffer pool → B+ tree lookups → disk
-└──────────┬──────────┘
-           ▼
-       Result set
-```
+![MySQL query pipeline: connection, parser, preprocessor, cost-based optimizer, execution engine, storage engine, with where each error class dies](../svg/dbms/d210-mysql-query-pipeline.svg)
 
 ---
 
@@ -12398,18 +10172,7 @@ Asking for one 200-byte row still loads the whole 16 KB page — which is *good*
 
 A **page** is the **fixed-size unit of I/O** — the smallest chunk the database will ever read from or write to disk. Your table file is simply a long array of these pages, and a page holds many rows plus some bookkeeping:
 
-```
-   One 16 KB InnoDB page
-   ┌────────────────────────────────────────────┐
-   │ Header (page id, type, checksum, LSN …)    │
-   ├────────────────────────────────────────────┤
-   │ Row 1 │ Row 2 │ Row 3 │ Row 4 │ …          │
-   ├────────────────────────────────────────────┤
-   │            free space                      │
-   ├────────────────────────────────────────────┤
-   │ Slot directory (offsets to each row)       │
-   └────────────────────────────────────────────┘
-```
+![Layout of one 16 KB InnoDB page: header, rows, free space, slot directory](../svg/dbms/d211-innodb-page-layout.svg)
 
 > There is **no such thing as reading one row from disk.** You read its page. Index nodes are pages too — a B+ tree is a tree *of pages*.
 
@@ -12428,24 +10191,7 @@ The distinction is simply: **does the in-memory copy still match the on-disk cop
 | Cost to evict | **Free** — just drop it, disk already has the truth | **Expensive** — must be written to disk first |
 | Lost on crash? | Doesn't matter — disk has the same bytes | ⚠️ Yes — recovered by **replaying the WAL** |
 
-```
-   Page lifecycle inside the buffer pool
-   ─────────────────────────────────────
-
-   (not in memory)
-        │  read from disk (page miss)
-        ▼
-   ┌──────────┐    UPDATE / INSERT / DELETE     ┌──────────┐
-   │  CLEAN   │ ──────────────────────────────► │  DIRTY   │
-   │ RAM=disk │                                 │ RAM≠disk │
-   └────┬─────┘ ◄────────────────────────────── └────┬─────┘
-        │           background flush /               │
-        │           checkpoint writes it out         │
-        │                                            │
-        │ evict: just drop it ✅          evict: MUST flush first ⏳
-        ▼                                            ▼
-   (frame reused)                              (frame reused)
-```
+![Buffer pool page lifecycle: read in as CLEAN, writes make it DIRTY, flush/checkpoint makes it clean; dirty pages must flush before eviction](../svg/dbms/d212-page-lifecycle-clean-dirty.svg)
 
 ### Pinned page
 
@@ -12466,39 +10212,7 @@ While a query is actively reading or writing a page, the page is **pinned** (its
 
 ### The Whole Picture
 
-```
-        Client
-          │  SELECT / UPDATE
-          ▼
-  ┌───────────────────────────────────────────────────────────┐
-  │  SQL layer:  parser → optimizer → executor                │
-  └────────────────────────┬──────────────────────────────────┘
-                           │  "give me page #4711"
-                           ▼
-  ┌───────────────────────────────────────────────────────────┐
-  │                    B U F F E R   P O O L   (RAM)          │
-  │                                                           │
-  │   ┌────────┐ ┌────────┐ ┌────────┐ ┌────────┐            │
-  │   │page 12 │ │page 4711│ │page 88 │ │page 301│  …         │
-  │   │ clean  │ │  DIRTY │ │ clean  │ │  DIRTY │            │
-  │   └────────┘ └────────┘ └────────┘ └────────┘            │
-  │        ▲          │                     │                 │
-  │        │ miss:    │ modified in memory  │                 │
-  │        │ load     ▼                     ▼                 │
-  │        │     ┌─────────────┐   ┌──────────────────┐       │
-  │        │     │  Log buffer │   │ Background flush │       │
-  │        │     └──────┬──────┘   │ (at checkpoint)  │       │
-  └────────┼────────────┼──────────┴────────┬─────────┘       │
-           │            │                   │
-           │      fsync │ at COMMIT         │ later, batched
-           │       (sequential)             │  (random)
-           ▼            ▼                   ▼
-  ┌─────────────┐ ┌──────────────┐ ┌──────────────────┐
-  │ Table/index │ │  WAL / redo  │ │   Table/index    │
-  │ files (read)│ │  log  (D!)   │ │  files  (write)  │
-  └─────────────┘ └──────────────┘ └──────────────────┘
-                        D I S K
-```
+![Whole buffer pool picture: SQL layer, clean/dirty pages in RAM, misses loaded from disk, log buffer fsynced to WAL at COMMIT, dirty pages flushed later](../svg/dbms/d213-buffer-pool-whole-picture.svg)
 
 Two things to notice: **reads** come *up* into the pool, and a **commit** goes down the *log* path — never straight to the table file.
 
@@ -12506,27 +10220,7 @@ Two things to notice: **reads** come *up* into the pool, and a **commit** goes d
 
 ## The Read Path — Page Hit vs Page Miss
 
-```
-  SELECT * FROM users WHERE id = 42;
-             │
-             ▼
-   ┌──────────────────────┐
-   │  Is the page already │
-   │  in the buffer pool? │
-   └──────┬────────┬──────┘
-      YES │        │ NO
-          │        │
-          ▼        ▼
-   ┌───────────┐  ┌────────────────────────────────────┐
-   │ PAGE HIT  │  │ PAGE MISS (or "hard fault")        │
-   │ ~100 ns   │  │ 1. Find a free frame in the pool   │
-   │ read from │  │    (evict a victim page if full)   │
-   │ RAM ✅    │  │ 2. Read the 16 KB page from disk   │
-   └───────────┘  │ 3. Place it in the buffer pool     │
-                  │ 4. Now serve the row from RAM      │
-                  │ ~100 µs on SSD / ~10 ms on HDD 🐢  │
-                  └────────────────────────────────────┘
-```
+![Read path: page hit served from RAM in ~100 ns vs page miss that evicts, reads the 16 KB page from disk (~100 µs SSD / ~10 ms HDD)](../svg/dbms/d214-read-path-hit-vs-miss.svg)
 
 A **page hit** is ~1,000× faster than a page miss on SSD. That ratio is the whole reason the buffer pool exists.
 
@@ -12536,25 +10230,7 @@ A **page hit** is ~1,000× faster than a page miss on SSD. That ratio is the who
 
 This is the part most people get wrong. `UPDATE` does **not** write to the table file on disk.
 
-```
-  UPDATE users SET city = 'Pune' WHERE id = 42;
-
-  Step 1  Load the page into the buffer pool (if not already there)
-             │
-  Step 2  Modify the row IN MEMORY
-             │  → the page is now a DIRTY PAGE
-             │    (memory version ≠ disk version)
-             ▼
-  Step 3  Append the change to the WAL / redo log  ──► fsync to disk ✅
-             │    THIS is what makes COMMIT durable
-             ▼
-  Step 4  COMMIT returns to the client  ← the data page is STILL only in RAM
-             │
-  Step 5  Later, a background thread flushes dirty pages to the table file
-             │    (at a checkpoint, or under memory pressure)
-             ▼
-  Step 6  Page is clean again — memory matches disk
-```
+![Write path in 6 steps: load page, modify in memory (dirty), append and fsync WAL, COMMIT returns while page is only in RAM, later flush, clean again](../svg/dbms/d215-write-path-steps.svg)
 
 | | Written at COMMIT? | Access pattern |
 |---|:---:|---|
@@ -12573,61 +10249,13 @@ Calling `write()` does **not** put your data on disk. It copies the bytes into a
 
 ### The Layers a Write Must Cross
 
-```
-   ┌──────────────────────────────────────────┐
-   │  Database process (buffer pool, log buf) │  ← volatile
-   └────────────────────┬─────────────────────┘
-                        │  write()   → returns in ~µs, NOT durable
-                        ▼
-   ┌──────────────────────────────────────────┐
-   │  OS Page Cache  (kernel RAM)             │  ← volatile
-   └────────────────────┬─────────────────────┘
-                        │  fsync()   → BLOCKS until done ⏳
-                        ▼
-   ┌──────────────────────────────────────────┐
-   │  Disk write-back cache (controller DRAM) │  ← volatile*
-   └────────────────────┬─────────────────────┘
-                        │  FLUSH CACHE / FUA command
-                        ▼
-   ┌──────────────────────────────────────────┐
-   │  Persistent media (NAND / platters)      │  ← ✅ SURVIVES POWER LOSS
-   └──────────────────────────────────────────┘
-
-   * unless the drive has battery- or capacitor-backed cache
-     (power-loss protection), in which case it is effectively durable
-```
+![Layers a write crosses: database process, OS page cache (write()), disk write-back cache (fsync()), persistent media (FLUSH/FUA) that survives power loss](../svg/dbms/d216-fsync-write-layers.svg)
 
 `COMMIT` cannot return until the WAL record has reached the **bottom** layer. That is the entire cost of the **D** in ACID.
 
 ### Without fsync vs With fsync
 
-```
-  ── WITHOUT fsync ──────────────────────────────────────────────
-
-  T1: write(log) ──► OS page cache ──► "COMMIT OK" returned to user ✅
-                            │
-                       💥 POWER LOSS (before the kernel flushed)
-                            │
-                            ▼
-                     Log record GONE.
-      The user was told "committed" but the change vanished.
-                  ❌ DURABILITY VIOLATED
-
-  ── WITH fsync ─────────────────────────────────────────────────
-
-  T1: write(log) ──► OS page cache
-      fsync(log)  ──────────────────► persistent media ✅
-                            │
-                  ◄─── returns (0.1–10 ms later)
-                            │
-                    "COMMIT OK" returned to user ✅
-                            │
-                       💥 POWER LOSS
-                            │
-                            ▼
-       On restart, recovery finds the log record and REPLAYS it.
-                  ✅ DURABILITY HELD
-```
+![Without fsync a power loss erases a commit already acknowledged; with fsync the log record is on media and is replayed on restart](../svg/dbms/d217-commit-without-vs-with-fsync.svg)
 
 ### Why fsync Is Expensive
 
@@ -12643,15 +10271,7 @@ It's a **synchronous stall** — the committing thread can do nothing while it w
 
 Since the WAL is a single sequential file, many transactions' records sit adjacent in the log buffer. So the engine batches them into **one** `fsync`:
 
-```
-  Without group commit:              With group commit:
-  ─────────────────────              ──────────────────
-  T1 ─ fsync ─┐                      T1 ┐
-  T2 ─ fsync ─┤  3 fsyncs            T2 ├─── one fsync ──► disk
-  T3 ─ fsync ─┘                      T3 ┘
-     3 × 1 ms = 3 ms                    1 × 1 ms = 1 ms
-                                     (all 3 commits durable together)
-```
+![Group commit: three separate fsyncs cost 3 ms vs one shared fsync for T1–T3 costing 1 ms, all durable together](../svg/dbms/d218-group-commit.svg)
 
 Each transaction still waits for a real `fsync`, so durability is intact — the *cost* is just shared. This is why database write throughput can far exceed "1 ÷ fsync latency".
 
@@ -12729,19 +10349,7 @@ The pool is finite, so when a new page must come in, an existing one must go. If
 
 **InnoDB's fix — a midpoint-insertion LRU** splits the list in two:
 
-```
-  ┌──────────── LRU List ─────────────┐
-  │  YOUNG (~5/8)      │  OLD (~3/8)  │
-  │  hot, frequently   │  newly read  │
-  │  accessed pages    │  pages       │
-  └────────────────────┴──────────────┘
-                       ▲            │
-        new page enters HERE        ▼ evicted from the tail
-        (the midpoint, not the head)
-
-  A page is promoted to YOUNG only if it is accessed AGAIN
-  while sitting in the OLD sublist.
-```
+![InnoDB midpoint-insertion LRU: young (~5/8) and old (~3/8) sublists, new pages enter at the midpoint, eviction from the tail, promotion on re-access](../svg/dbms/d219-midpoint-insertion-lru.svg)
 
 A one-off full scan's pages enter the old sublist, are never re-read, and get evicted from there — leaving the hot young pages untouched. PostgreSQL solves the same problem differently, with a clock-sweep algorithm and a small ring buffer for sequential scans.
 
@@ -12782,15 +10390,7 @@ Before DBMSs, applications stored data in **flat files** (`.txt`, `.csv`, binary
 
 Imagine a bank in the 1970s. Each department writes its own program and keeps its own file:
 
-```
-  📁 bank/
-     ├── savings_accounts.txt      ← owned by the Savings dept program
-     ├── loan_accounts.txt         ← owned by the Loans dept program
-     └── customer_mailing.csv      ← owned by the Marketing dept program
-
-  Alice's address is stored in ALL THREE files.
-  Each file has a different format, written by a different programmer.
-```
+![Pre-DBMS bank folder: three files each owned by a different department program, all storing Alice's address in different formats](../svg/dbms/d220-bank-flat-files.svg)
 
 Every one of the problems below falls out of this picture.
 
@@ -12802,13 +10402,7 @@ Every one of the problems below falls out of this picture.
 
 The same fact lives in multiple files, in different formats.
 
-```
-  savings_accounts.txt :  Alice | 12 MG Road, Pune
-  loan_accounts.txt    :  Alice | 12 M.G. Rd, Pune 411001
-  customer_mailing.csv  :  Alice | 45 FC Road, Pune     ← she moved; only this one updated
-
-  Which address is correct? The database cannot tell you.
-```
+![Alice's address stored differently in three files; only the mailing file was updated, so no one can tell which is correct](../svg/dbms/d221-redundancy-inconsistency.svg)
 
 Redundancy wastes space; worse, it guarantees **inconsistency** the moment one copy is updated and the others aren't. A DBMS solves this by **normalization** (store each fact once — see [Database Normalization](#database-normalization--1nf-2nf-3nf--bcnf)) and **foreign keys**.
 
@@ -12865,15 +10459,7 @@ A DBMS guarantees **all-or-nothing** via undo logs and `COMMIT`/`ROLLBACK` — s
 
 Multiple programs writing the same file at once corrupt each other's work. There's no locking, no isolation.
 
-```
-  Balance = 1000. Two withdrawals of ₹500 run at the same time:
-
-  P1: read 1000  ──────────► compute 500 ──► write 500
-  P2:      read 1000 ──────────► compute 500 ──► write 500
-
-  Two ₹500 withdrawals happened but the balance is 500, not 0.
-  → LOST UPDATE (see the Concurrency Problems section)
-```
+![Two concurrent ₹500 withdrawals on plain files both read 1000 and write 500: a lost update](../svg/dbms/d222-file-lost-update.svg)
 
 A DBMS provides **locks, MVCC, and isolation levels** — see [Concurrency Control in DBMS](#concurrency-control-in-dbms).
 
@@ -13026,27 +10612,7 @@ CREATE TABLE products_detail (
 
 **How it looks visually:**
 
-```
-BEFORE (one wide table):
-┌────┬──────────┬───────┬─────┬───────────────────────────┬──────────┬──────────┐
-│ id │   name   │ price │stock│       description          │specs_json│ warranty │
-├────┼──────────┼───────┼─────┼───────────────────────────┼──────────┼──────────┤
-│  1 │ iPhone   │ 999   │  50 │ The latest iPhone with... │ {...}    │ 1 year.. │
-│  2 │ MacBook  │ 1999  │  30 │ Powerful laptop for...    │ {...}    │ 2 year.. │
-│  3 │ AirPods  │ 249   │ 200 │ Wireless earbuds with...  │ {...}    │ 1 year.. │
-└────┴──────────┴───────┴─────┴───────────────────────────┴──────────┴──────────┘
-
-AFTER (two narrower tables):
-
-products_core (HOT — fits in buffer pool)     products_detail (COLD — loaded on demand)
-┌────┬──────────┬───────┬─────┐               ┌────────────┬───────────────────┬──────────┬──────────┐
-│ id │   name   │ price │stock│               │ product_id │    description    │specs_json│ warranty │
-├────┼──────────┼───────┼─────┤               ├────────────┼───────────────────┼──────────┼──────────┤
-│  1 │ iPhone   │ 999   │  50 │               │     1      │ The latest iPh... │ {...}    │ 1 year.. │
-│  2 │ MacBook  │ 1999  │  30 │               │     2      │ Powerful laptop.. │ {...}    │ 2 year.. │
-│  3 │ AirPods  │ 249   │ 200 │               │     3      │ Wireless earbu.. │ {...}    │ 1 year.. │
-└────┴──────────┴───────┴─────┘               └────────────┴───────────────────┴──────────┴──────────┘
-```
+![Vertical partitioning: wide products table split into hot products_core and cold products_detail](../svg/dbms/d223-vertical-partitioning-tables.svg)
 
 ### Query Patterns After Vertical Partitioning
 
@@ -13137,27 +10703,7 @@ CREATE TABLE orders (
 
 **How it looks visually:**
 
-```
-BEFORE (one huge table — 500M rows):
-┌───────────────────────────────────────────────────────────────────────┐
-│                          orders (500M rows)                          │
-│  id=1,  date=2021-01-15, ...                                        │
-│  id=2,  date=2023-07-22, ...                                        │
-│  id=3,  date=2021-11-03, ...                                        │
-│  ...                                (all 500 million rows together)  │
-└───────────────────────────────────────────────────────────────────────┘
-
-AFTER (same table, partitioned by year — MySQL manages the split internally):
-
-┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐ ┌─────────────────┐
-│   p2021 (~80M)  │ │   p2022 (~90M)  │ │   p2023 (~100M) │ │   p2024 (~110M) │ │   p2025 (~120M) │
-│ date < 2022     │ │ date < 2023     │ │ date < 2024     │ │ date < 2025     │ │ date < 2026     │
-│                 │ │                 │ │                 │ │                 │ │                 │
-│ id=1, 2021-01-15│ │ id=5, 2022-03-10│ │ id=2, 2023-07-22│ │ id=8, 2024-01-05│ │ id=9, 2025-02-14│
-│ id=3, 2021-11-03│ │ id=6, 2022-08-20│ │ id=7, 2023-12-01│ │ ...             │ │ ...             │
-│ ...             │ │ ...             │ │ ...             │ │                 │ │                 │
-└─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘ └─────────────────┘
-```
+![Horizontal partitioning: 500M-row orders table split by year into partitions p2021–p2025](../svg/dbms/d224-horizontal-partitioning-by-year.svg)
 
 ### Partition Pruning — The Magic That Makes It Fast
 
@@ -13261,20 +10807,7 @@ ALTER TABLE orders DROP PARTITION p2021;
 
 **Yes.** In large-scale systems, it's common to combine both strategies:
 
-```
-Original: one massive "orders" table (50 columns, 1 billion rows)
-
-Step 1 — Vertical Partition:
-  → orders_core    (id, customer_id, order_date, total, status)     — queried on every listing
-  → orders_detail  (order_id, shipping_address, notes, gift_msg)    — queried on detail page only
-
-Step 2 — Horizontal Partition (on orders_core):
-  → orders_core PARTITION BY RANGE (YEAR(order_date))
-  → p2023, p2024, p2025...
-
-Result: Fast listing queries hit only the narrow, pruned partition of orders_core.
-        Detail queries JOIN orders_detail only for a single order.
-```
+![Combining both: orders split vertically into orders_core/orders_detail, then orders_core range-partitioned by year](../svg/dbms/d225-vertical-plus-horizontal-partitioning.svg)
 
 > **Key takeaway:** Vertical partitioning solves the **"too many columns"** problem (wide rows waste memory). Horizontal partitioning solves the **"too many rows"** problem (massive tables overwhelm indexes and I/O). Use them based on your bottleneck — or combine both when the table is both wide and tall.
 
@@ -13294,21 +10827,7 @@ Instead of running expensive `DELETE` queries to remove old rows, you:
 
 The lifecycle looks like this:
 
-```
-Day 1: Create partitions for Day 1 through Day 8 (7-day window + 1 future)
-
-Day 1   Day 2   Day 3   Day 4   Day 5   Day 6   Day 7   Day 8 (future)
- [p1]    [p2]    [p3]    [p4]    [p5]    [p6]    [p7]    [p8]
-  ↑ oldest                                        ↑ today   ↑ pre-created
-
-Day 8: Drop p1 (it's now 7 days old), add p9 for tomorrow
-
-         Day 2   Day 3   Day 4   Day 5   Day 6   Day 7   Day 8   Day 9
-          [p2]    [p3]    [p4]    [p5]    [p6]    [p7]    [p8]    [p9]
-           ↑ oldest                                        ↑ today  ↑ new
-
-Day 9: Drop p2, add p10 ...and so on forever
-```
+![Sliding-window retention: daily partitions p1–p8, then drop the oldest and pre-create the next each day](../svg/dbms/d226-sliding-window-partitions.svg)
 
 This forms a **sliding window** — at any given time, the table holds exactly 7 days of data.
 
@@ -13398,34 +10917,11 @@ SET GLOBAL event_scheduler = ON;
 
 When you run `ALTER TABLE events DROP PARTITION p20250218`:
 
-```
-Step 1: MySQL identifies the data file for partition p20250218
-        → e.g., events#P#p20250218.ibd  (InnoDB tablespace file)
-
-Step 2: MySQL removes the partition metadata from the table definition
-        → The partition no longer exists in INFORMATION_SCHEMA.PARTITIONS
-
-Step 3: MySQL DELETES the .ibd file from disk
-        → This is a simple file system operation — instant regardless of row count
-
-Step 4: Done. No undo logs, no row locks, no cleanup needed.
-```
+![DROP PARTITION under the hood: locate .ibd file, remove metadata, delete the file instantly, no undo/locks/cleanup](../svg/dbms/d227-drop-partition-under-the-hood.svg)
 
 Compare this with a regular `DELETE`:
 
-```
-DELETE FROM events WHERE created_at < '2025-02-18';
-
-Step 1: MySQL scans the index to find ALL matching rows (millions)
-Step 2: For EACH row:
-        → Write the old row to the UNDO LOG (for rollback safety)
-        → Mark the row as deleted in the clustered index
-        → Mark the row as deleted in EVERY secondary index
-        → Write all changes to the REDO LOG (for crash recovery)
-Step 3: After commit, a background PURGE thread eventually removes the dead rows
-Step 4: The freed space is NOT returned to the OS — it becomes "free space within the tablespace"
-        → You need OPTIMIZE TABLE to reclaim it (which rebuilds the entire table)
-```
+![DELETE under the hood: scan millions of rows, per-row undo/index/redo work, background purge, space not returned to the OS](../svg/dbms/d228-delete-rows-under-the-hood.svg)
 
 ### DELETE vs DROP PARTITION — Side by Side
 

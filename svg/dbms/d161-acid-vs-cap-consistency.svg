@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="244" viewBox="0 0 820 244" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>ACID vs CAP consistency</title>
+  <desc>ACID consistency asks whether the data is valid: balance = -500 violates CHECK balance &gt;= 0. CAP consistency asks whether the data is the same everywhere: Node A balance 800 vs Node B balance 1000 is a mismatch.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="819" height="243" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="376" height="196" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,36 a12,12 0 0 1 12,-12 h352 a12,12 0 0 1 12,12 v28 h-376 z" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="42" y="49.0" fill="#79c0ff" font-size="14.5" font-weight="600"><tspan font-weight="700">ACID Consistency</tspan></text>
+  <text x="42" y="92" fill="#c9d1d9" font-size="14"><tspan fill="#c9d1d9">Is the data </tspan><tspan fill="#e6edf3" font-weight="700">VALID</tspan><tspan fill="#c9d1d9">?</tspan></text>
+  <rect x="42" y="112" width="340" height="82" rx="10" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="60" y="140" fill="#e6edf3" font-size="13.5"><tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">balance = -500</tspan><tspan fill="#ff7b72" font-weight="700">  ✗</tspan></text>
+  <text x="60" y="172" fill="#8b949e" font-size="13">(violates <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">CHECK balance &gt;= 0</tspan>)</text>
+  <rect x="420" y="24" width="376" height="196" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M420,36 a12,12 0 0 1 12,-12 h352 a12,12 0 0 1 12,12 v28 h-376 z" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="438" y="49.0" fill="#56d4dd" font-size="14.5" font-weight="600"><tspan font-weight="700">CAP Consistency</tspan></text>
+  <text x="438" y="92" fill="#c9d1d9" font-size="14"><tspan fill="#c9d1d9">Is the data the </tspan><tspan fill="#e6edf3" font-weight="700">SAME</tspan><tspan fill="#c9d1d9"> everywhere?</tspan></text>
+  <rect x="438" y="112" width="214" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="454" y="135" fill="#e6edf3" font-size="13"><tspan fill="#56d4dd" font-weight="600">Node A: </tspan><tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">balance = 800</tspan></text>
+  <rect x="438" y="156" width="214" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="454" y="179" fill="#e6edf3" font-size="13"><tspan fill="#56d4dd" font-weight="600">Node B: </tspan><tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">balance = 1000</tspan></text>
+  <path d="M660,130 H672 V174 H660" fill="none" stroke="#f85149" stroke-width="1.5"/>
+  <text x="682" y="158" fill="#ff7b72" font-size="13.5" font-weight="700">✗ mismatch</text>
+</svg>

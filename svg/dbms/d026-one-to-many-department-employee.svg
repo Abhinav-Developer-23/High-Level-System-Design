@@ -1,0 +1,80 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>One-to-Many (1:N): Department and Employee</title>
+  <desc>Department (dept_id PK, dept_name) relates 1:N to Employee (emp_id PK, emp_name, dept_id FK). Example: Engineering has Alice, Bob and Carol; Marketing has Dave and Eve.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="759" height="459" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SCHEMA</text>
+  <line x1="24" y1="48" x2="736" y2="48" stroke="#21262d"/>
+
+  <!-- Department entity -->
+  <rect x="60" y="66" width="230" height="98" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".7"/>
+  <path d="M60,100 V76 a10,10 0 0 1 10,-10 H280 a10,10 0 0 1 10,10 V100 z" fill="#58a6ff" fill-opacity=".14"/>
+  <line x1="60" y1="100" x2="290" y2="100" stroke="#30363d"/>
+  <text x="175" y="89" fill="#e6edf3" font-size="14.5" font-weight="600" text-anchor="middle">Department</text>
+  <text x="78" y="125" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">dept_id</text>
+  <rect x="234" y="111" width="40" height="20" rx="10" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="254" y="125" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">PK</text>
+  <text x="78" y="151" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">dept_name</text>
+
+  <!-- Employee entity -->
+  <rect x="470" y="66" width="230" height="124" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M470,100 V76 a10,10 0 0 1 10,-10 H690 a10,10 0 0 1 10,10 V100 z" fill="#8b949e" fill-opacity=".10"/>
+  <line x1="470" y1="100" x2="700" y2="100" stroke="#30363d"/>
+  <text x="585" y="89" fill="#e6edf3" font-size="14.5" font-weight="600" text-anchor="middle">Employee</text>
+  <text x="488" y="125" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">emp_id</text>
+  <rect x="644" y="111" width="40" height="20" rx="10" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="664" y="125" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">PK</text>
+  <text x="488" y="151" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">emp_name</text>
+  <text x="488" y="177" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">dept_id</text>
+  <rect x="644" y="163" width="40" height="20" rx="10" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="664" y="177" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle">FK</text>
+
+  <!-- relationship line PK -> FK -->
+  <path d="M290,121 H380 V173 H466" fill="none" stroke="#58a6ff" stroke-width="1.6"/>
+  <!-- crow's foot (many) at Employee side -->
+  <path d="M452,173 L470,165 M452,173 L470,181" stroke="#58a6ff" stroke-width="1.6" fill="none"/>
+  <text x="302" y="114" fill="#79c0ff" font-size="12" font-weight="700" data-nocheck="1">1</text>
+  <text x="446" y="166" fill="#79c0ff" font-size="12" font-weight="700" data-nocheck="1">N</text>
+  <rect x="356" y="136" width="48" height="22" rx="11" fill="#161b22" stroke="#58a6ff"/>
+  <text x="380" y="151" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">1:N</text>
+
+  <!-- Instances -->
+  <text x="24" y="228" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EXAMPLE ROWS</text>
+  <line x1="24" y1="240" x2="736" y2="240" stroke="#21262d"/>
+
+  <!-- Engineering -->
+  <rect x="160" y="290" width="150" height="30" rx="8" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="235" y="310" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Engineering</text>
+  <path d="M310,305 H390 M390,269 V341" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="390" y1="269" x2="496" y2="269" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="390" y1="305" x2="496" y2="305" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="390" y1="341" x2="496" y2="341" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="500" y="256" width="130" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="565" y="274" fill="#c9d1d9" font-size="13" text-anchor="middle">Alice</text>
+  <rect x="500" y="292" width="130" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="565" y="310" fill="#c9d1d9" font-size="13" text-anchor="middle">Bob</text>
+  <rect x="500" y="328" width="130" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="565" y="346" fill="#c9d1d9" font-size="13" text-anchor="middle">Carol</text>
+
+  <!-- Marketing -->
+  <rect x="160" y="390" width="150" height="30" rx="8" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="235" y="410" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Marketing</text>
+  <path d="M310,405 H390 M390,387 V423" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="390" y1="387" x2="496" y2="387" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="390" y1="423" x2="496" y2="423" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="500" y="374" width="130" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="565" y="392" fill="#c9d1d9" font-size="13" text-anchor="middle">Dave</text>
+  <rect x="500" y="410" width="130" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="565" y="428" fill="#c9d1d9" font-size="13" text-anchor="middle">Eve</text>
+</svg>

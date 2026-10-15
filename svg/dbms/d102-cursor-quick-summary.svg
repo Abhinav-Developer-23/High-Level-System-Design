@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="380" viewBox="0 0 820 380" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cursor quick summary</title>
+  <desc>Cursor lifecycle DECLARE, OPEN, FETCH (loop), CLOSE, DEALLOCATE; when to use cursors (complex per-row logic, calling procedures per row, running totals) and when to avoid them.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="819" height="379" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CURSOR LIFECYCLE</text>
+  <rect x="24.0" y="57.0" width="84" height="26" rx="13.0" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="66.0" y="74.32" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">DECLARE</text>
+  <line x1="112" y1="70" x2="134" y2="70" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="138.0" y="57.0" width="62" height="26" rx="13.0" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="169.0" y="74.32" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">OPEN</text>
+  <line x1="204" y1="70" x2="226" y2="70" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="230.0" y="57.0" width="120" height="26" rx="13.0" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="290.0" y="74.32" fill="#d2a8ff" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH (loop)</text>
+  <line x1="354" y1="70" x2="376" y2="70" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="380.0" y="57.0" width="70" height="26" rx="13.0" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="415.0" y="74.32" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">CLOSE</text>
+  <line x1="454" y1="70" x2="476" y2="70" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="480.0" y="57.0" width="108" height="26" rx="13.0" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="534.0" y="74.32" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">DEALLOCATE</text>
+  <rect x="24" y="102" width="772" height="124" rx="10" fill="#3fb950" fill-opacity="0.06" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="44" y="130" fill="#56d364" font-size="14.5" font-weight="700">When to USE:</text>
+  <text x="52" y="158" fill="#56d364" font-size="13.5" font-weight="700">✓</text>
+  <text x="74" y="158" fill="#c9d1d9" font-size="13">Complex per-row logic that can't be expressed in SQL</text>
+  <text x="52" y="182" fill="#56d364" font-size="13.5" font-weight="700">✓</text>
+  <text x="74" y="182" fill="#c9d1d9" font-size="13">Calling stored procedures for each row</text>
+  <text x="52" y="206" fill="#56d364" font-size="13.5" font-weight="700">✓</text>
+  <text x="74" y="206" fill="#c9d1d9" font-size="13">Row-dependent calculations (running totals)</text>
+  <rect x="24" y="238" width="772" height="124" rx="10" fill="#f85149" fill-opacity="0.06" stroke="#f85149" stroke-opacity="0.45"/>
+  <text x="44" y="266" fill="#ff7b72" font-size="14.5" font-weight="700">When to AVOID:</text>
+  <text x="52" y="294" fill="#ff7b72" font-size="13.5" font-weight="700">✗</text>
+  <text x="74" y="294" fill="#c9d1d9" font-size="13">Simple updates/deletes (use <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">WHERE</tspan> clause)</text>
+  <text x="52" y="318" fill="#ff7b72" font-size="13.5" font-weight="700">✗</text>
+  <text x="74" y="318" fill="#c9d1d9" font-size="13">Bulk inserts (use <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">INSERT ... SELECT</tspan>)</text>
+  <text x="52" y="342" fill="#ff7b72" font-size="13.5" font-weight="700">✗</text>
+  <text x="74" y="342" fill="#c9d1d9" font-size="13">Anything that can be done with <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">JOIN</tspan>s or <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">CASE</tspan></text>
+</svg>

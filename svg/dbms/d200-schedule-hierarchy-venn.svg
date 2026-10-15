@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="700" height="394" viewBox="0 0 700 394" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Schedule hierarchy with non-recoverable</title>
+  <desc>All Schedules contains Recoverable, which contains Cascadeless, then Strict, then Serial. Non-Recoverable schedules lie outside Recoverable and must be avoided.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="699" height="393" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="652" height="314" rx="14" fill="#1c2128" stroke="#30363d"/>
+  <text x="350.0" y="50" font-size="14.5" fill="#e6edf3" font-weight="600" text-anchor="middle">All Schedules</text>
+  <rect x="46" y="64" width="608" height="208" rx="12" fill="#58a6ff" fill-opacity="0.06" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <text x="350.0" y="90" font-size="14.5" fill="#79c0ff" font-weight="600" text-anchor="middle">Recoverable</text>
+  <rect x="68" y="96" width="564" height="154" rx="12" fill="#39c5cf" fill-opacity="0.09" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="350.0" y="122" font-size="14.5" fill="#56d4dd" font-weight="600" text-anchor="middle">Cascadeless</text>
+  <rect x="90" y="128" width="520" height="100" rx="12" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="350.0" y="154" font-size="14.5" fill="#56d364" font-weight="600" text-anchor="middle">Strict</text>
+  <rect x="112" y="160" width="476" height="46" rx="12" fill="#bc8cff" fill-opacity="0.15" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="350.0" y="188.0" font-size="14.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">Serial</text>
+  <rect x="46" y="286" width="608" height="42" rx="10" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6" stroke-dasharray="6 4"/>
+  <text x="350.0" y="312" font-size="14" fill="#c9d1d9" text-anchor="middle"><tspan fill="#ff7b72" font-weight="700">Non-Recoverable</tspan><tspan fill="#c9d1d9"> (outside Recoverable)</tspan><tspan fill="#ff7b72" font-weight="700">  ← AVOID!</tspan></text>
+  <text x="350.0" y="372" font-size="14" fill="#c9d1d9" text-anchor="middle"><tspan fill="#d2a8ff" font-weight="600">Serial</tspan><tspan fill="#8b949e">  ⊂  </tspan><tspan fill="#56d364" font-weight="600">Strict</tspan><tspan fill="#8b949e">  ⊂  </tspan><tspan fill="#56d4dd" font-weight="600">Cascadeless</tspan><tspan fill="#8b949e">  ⊂  </tspan><tspan fill="#79c0ff" font-weight="600">Recoverable</tspan><tspan fill="#8b949e">  ⊂  </tspan><tspan fill="#e6edf3" font-weight="600">All Schedules</tspan></text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="300" viewBox="0 0 860 300" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cursor vs set-based update</title>
+  <desc>Cursor approach (slow) loops FETCH + UPDATE one row at a time; set-based approach (fast) is one UPDATE with a CASE expression covering all rows at once.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="859" height="299" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="398" height="252" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,64 V34 a10,10 0 0 1 10,-10 H412 a10,10 0 0 1 10,10 V64 Z" fill="#f85149" fill-opacity=".14"/>
+  <line x1="24" y1="64" x2="422" y2="64" stroke="#f85149" stroke-width="1"/>
+  <text x="44" y="50" fill="#ff7b72" font-size="14.5" font-weight="700">✗  Cursor Approach (slow):</text>
+  <rect x="438" y="24" width="398" height="252" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M438,64 V34 a10,10 0 0 1 10,-10 H826 a10,10 0 0 1 10,10 V64 Z" fill="#3fb950" fill-opacity=".14"/>
+  <line x1="438" y1="64" x2="836" y2="64" stroke="#3fb950" stroke-width="1"/>
+  <text x="458" y="50" fill="#56d364" font-size="14.5" font-weight="700">✓  Set-Based Approach (fast):</text>
+  <rect x="40" y="127" width="366" height="96" rx="6" fill="#f85149" fill-opacity="0.07" stroke="#f85149" stroke-opacity="0"/>
+  <text x="52" y="96" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">DECLARE cursor ...</text>
+  <text x="52" y="120" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">OPEN cursor</text>
+  <text x="52" y="144" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">LOOP</text>
+  <text x="84" y="168" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH row</text>
+  <text x="84" y="192" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE one row</text>
+  <text x="52" y="216" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">END LOOP</text>
+  <text x="52" y="240" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">CLOSE cursor</text>
+  <text x="466" y="96" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE employees</text>
+  <text x="466" y="120" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">SET bonus = CASE</text>
+  <text x="498" y="144" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">WHEN salary &lt; 50000</text>
+  <text x="498" y="168" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">THEN salary * 0.10</text>
+  <text x="498" y="192" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ELSE salary * 0.05</text>
+  <text x="466" y="216" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">END;</text>
+  <text x="466" y="256" fill="#56d364" font-size="13" font-weight="600">(One statement, all rows at once!)</text>
+</svg>

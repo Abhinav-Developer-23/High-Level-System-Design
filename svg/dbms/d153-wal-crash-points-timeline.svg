@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="240" viewBox="0 0 900 240" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>WAL commit crash points</title>
+  <desc>Timeline [0] change in RAM, [1] write() to OS cache, [2] fsync() in progress, then the durability line, [3] "OK" sent to client, [4] data page written. Crash points A (after 0), B (after 1), C (after fsync, before OK), D (after OK), E (during the page write). A-B-C side is not durable yet; after fsync is durable.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="239" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="532" height="192" rx="12" fill="#d29922" fill-opacity="0.05" stroke="#d29922" stroke-opacity="0.35"/>
+  <rect x="576" y="24" width="300" height="192" rx="12" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.45"/>
+  <line x1="563" y1="24" x2="563" y2="216" stroke="#3fb950" stroke-width="2"/>
+  <line x1="569" y1="24" x2="569" y2="216" stroke="#3fb950" stroke-width="2"/>
+  <text x="290" y="46" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1.5">NOT DURABLE YET</text>
+  <line x1="40" y1="60" x2="540" y2="60" stroke="#d29922" stroke-width="1.5" marker-end="url(#a-amber)" marker-start="url(#a-amber)" stroke-opacity="0.7"/>
+  <text x="726" y="46" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1.5">DURABLE</text>
+  <line x1="592" y1="60" x2="860" y2="60" stroke="#3fb950" stroke-width="1.5" marker-end="url(#a-green)" marker-start="url(#a-green)" stroke-opacity="0.7"/>
+  <line x1="40" y1="140" x2="838" y2="140" stroke="#8b949e" stroke-width="2" marker-end="url(#a-gray)"/>
+  <text x="846" y="144" fill="#8b949e" font-size="12">time</text>
+  <rect x="60" y="129" width="40" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="60" y="129" width="40" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+  <text x="80" y="144" fill="#e6edf3" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">[0]</text>
+  <text x="80" y="114" fill="#c9d1d9" font-size="13" text-anchor="middle">change in RAM</text>
+  <rect x="220" y="129" width="40" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="220" y="129" width="40" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+  <text x="240" y="144" fill="#e6edf3" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">[1]</text>
+  <text x="240" y="96" fill="#c9d1d9" font-size="13" text-anchor="middle"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">write()</tspan> to</text>
+  <text x="240" y="114" fill="#c9d1d9" font-size="13" text-anchor="middle">OS cache</text>
+  <rect x="400" y="129" width="40" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="400" y="129" width="40" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+  <text x="420" y="144" fill="#e6edf3" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">[2]</text>
+  <text x="420" y="96" fill="#c9d1d9" font-size="13" text-anchor="middle"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">fsync()</tspan></text>
+  <text x="420" y="114" fill="#c9d1d9" font-size="13" text-anchor="middle">in progress</text>
+  <rect x="630" y="129" width="40" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="630" y="129" width="40" height="22" rx="11" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="650" y="144" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">[3]</text>
+  <text x="650" y="96" fill="#c9d1d9" font-size="13" text-anchor="middle">"OK" sent</text>
+  <text x="650" y="114" fill="#c9d1d9" font-size="13" text-anchor="middle">to client</text>
+  <rect x="780" y="129" width="40" height="22" rx="11" fill="#161b22" stroke="#161b22"/>
+  <rect x="780" y="129" width="40" height="22" rx="11" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="800" y="144" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">[4]</text>
+  <text x="800" y="96" fill="#c9d1d9" font-size="13" text-anchor="middle">data page</text>
+  <text x="800" y="114" fill="#c9d1d9" font-size="13" text-anchor="middle">written</text>
+  <line x1="160" y1="182" x2="160" y2="148" stroke="#f85149" stroke-width="1.5" marker-end="url(#a-red)"/>
+  <rect x="138" y="184" width="44" height="24" rx="12" fill="#f85149" fill-opacity="0.16" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="160" y="201" fill="#ff7b72" font-size="13" font-weight="700" text-anchor="middle">✗ A</text>
+  <line x1="330" y1="182" x2="330" y2="148" stroke="#f85149" stroke-width="1.5" marker-end="url(#a-red)"/>
+  <rect x="308" y="184" width="44" height="24" rx="12" fill="#f85149" fill-opacity="0.16" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="330" y="201" fill="#ff7b72" font-size="13" font-weight="700" text-anchor="middle">✗ B</text>
+  <line x1="610" y1="182" x2="610" y2="148" stroke="#f85149" stroke-width="1.5" marker-end="url(#a-red)"/>
+  <rect x="588" y="184" width="44" height="24" rx="12" fill="#f85149" fill-opacity="0.16" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="610" y="201" fill="#ff7b72" font-size="13" font-weight="700" text-anchor="middle">✗ C</text>
+  <line x1="725" y1="182" x2="725" y2="148" stroke="#f85149" stroke-width="1.5" marker-end="url(#a-red)"/>
+  <rect x="703" y="184" width="44" height="24" rx="12" fill="#f85149" fill-opacity="0.16" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="725" y="201" fill="#ff7b72" font-size="13" font-weight="700" text-anchor="middle">✗ D</text>
+  <line x1="822" y1="182" x2="822" y2="148" stroke="#f85149" stroke-width="1.5" marker-end="url(#a-red)"/>
+  <rect x="800" y="184" width="44" height="24" rx="12" fill="#f85149" fill-opacity="0.16" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="822" y="201" fill="#ff7b72" font-size="13" font-weight="700" text-anchor="middle">✗ E</text>
+</svg>

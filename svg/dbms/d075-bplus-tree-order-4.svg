@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="264" viewBox="0 0 760 264" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>B+ Tree with order 4</title>
+  <desc>B+ Tree of order 4 after inserting 10 through 90. Root internal node [40, 70] points to leaf nodes [10, 20, 30], [40, 50, 60] and [70, 80, 90]. Leaf nodes hold the data and are connected as a linked list.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="263" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">B+ TREE · ORDER 4</text>
+
+  <!-- edges -->
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="222" y1="100" x2="98" y2="152" marker-end="url(#arr)"/>
+    <line x1="262" y1="100" x2="262" y2="152" marker-end="url(#arr)"/>
+    <line x1="302" y1="100" x2="426" y2="152" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- root -->
+  <rect x="218" y="60" width="88" height="38" rx="8" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".8"/>
+  <line x1="262" y1="60" x2="262" y2="98" stroke="#58a6ff" stroke-opacity=".5"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="240" y="84">40</text><text x="284" y="84">70</text>
+  </g>
+
+  <!-- leaves -->
+  <g fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7">
+    <rect x="32" y="156" width="132" height="38" rx="8"/>
+    <rect x="196" y="156" width="132" height="38" rx="8"/>
+    <rect x="360" y="156" width="132" height="38" rx="8"/>
+  </g>
+  <g stroke="#39c5cf" stroke-opacity=".4">
+    <line x1="76" y1="156" x2="76" y2="194"/><line x1="120" y1="156" x2="120" y2="194"/>
+    <line x1="240" y1="156" x2="240" y2="194"/><line x1="284" y1="156" x2="284" y2="194"/>
+    <line x1="404" y1="156" x2="404" y2="194"/><line x1="448" y1="156" x2="448" y2="194"/>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="54" y="180">10</text><text x="98" y="180">20</text><text x="142" y="180">30</text>
+    <text x="218" y="180">40</text><text x="262" y="180">50</text><text x="306" y="180">60</text>
+    <text x="382" y="180">70</text><text x="426" y="180">80</text><text x="470" y="180">90</text>
+  </g>
+
+  <!-- linked list -->
+  <g stroke="#39c5cf" stroke-width="1.5" fill="none">
+    <path d="M128,198 Q180,232 232,198" marker-start="url(#arrT)" marker-end="url(#arrT)"/>
+    <path d="M292,198 Q344,232 396,198" marker-start="url(#arrT)" marker-end="url(#arrT)"/>
+  </g>
+
+  <!-- annotations -->
+  <g stroke="#484f58" stroke-dasharray="3 4">
+    <line x1="314" y1="79" x2="524" y2="79"/>
+    <line x1="500" y1="175" x2="524" y2="175"/>
+    <line x1="410" y1="220" x2="524" y2="220"/>
+  </g>
+  <text x="532" y="84" fill="#79c0ff" font-size="13" font-weight="600">Root <tspan fill="#8b949e" font-weight="400">(internal node)</tspan></text>
+  <text x="532" y="180" fill="#56d4dd" font-size="13" font-weight="600">Leaf nodes <tspan fill="#8b949e" font-weight="400">(hold data)</tspan></text>
+  <text x="532" y="225" fill="#56d4dd" font-size="13" font-weight="600">Linked list connections</text>
+</svg>

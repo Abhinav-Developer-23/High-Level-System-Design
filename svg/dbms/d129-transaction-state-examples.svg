@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="300" viewBox="0 0 720 300" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Example state transitions</title>
+  <desc>Successful transaction: Active, Partially Committed, Committed. Failed transaction: Active, Failed, Aborted, then Restart or Kill. Failure during commit: Active, Partially Committed, Failed, Aborted.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="719" height="299" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="672" height="76" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="34" width="4" height="56" rx="2" fill="#3fb950" fill-opacity="1" stroke="#3fb950" stroke-opacity="0"/>
+  <text x="44" y="48" font-size="12" fill="#56d364" font-weight="700" letter-spacing="1.5">SUCCESSFUL TRANSACTION</text>
+  <rect x="44" y="60" width="76" height="30" rx="8" fill="#58a6ff" fill-opacity="0.13" stroke="#58a6ff" stroke-opacity="0.7"/>
+  <text x="82.0" y="80" font-size="13" fill="#79c0ff" font-weight="600" text-anchor="middle">Active</text>
+  <line x1="124" y1="75" x2="148" y2="75" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="152" y="60" width="168" height="30" rx="8" fill="#d29922" fill-opacity="0.13" stroke="#d29922" stroke-opacity="0.7"/>
+  <text x="236.0" y="80" font-size="13" fill="#e3b341" font-weight="600" text-anchor="middle">Partially Committed</text>
+  <line x1="324" y1="75" x2="348" y2="75" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="352" y="60" width="120" height="30" rx="8" fill="#3fb950" fill-opacity="0.13" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="412.0" y="80" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle">Committed ✓</text>
+  <rect x="24" y="116" width="672" height="76" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="126" width="4" height="56" rx="2" fill="#f85149" fill-opacity="1" stroke="#f85149" stroke-opacity="0"/>
+  <text x="44" y="140" font-size="12" fill="#ff7b72" font-weight="700" letter-spacing="1.5">FAILED TRANSACTION</text>
+  <rect x="44" y="152" width="76" height="30" rx="8" fill="#58a6ff" fill-opacity="0.13" stroke="#58a6ff" stroke-opacity="0.7"/>
+  <text x="82.0" y="172" font-size="13" fill="#79c0ff" font-weight="600" text-anchor="middle">Active</text>
+  <line x1="124" y1="167" x2="148" y2="167" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="152" y="152" width="76" height="30" rx="8" fill="#f85149" fill-opacity="0.13" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="190.0" y="172" font-size="13" fill="#ff7b72" font-weight="600" text-anchor="middle">Failed</text>
+  <line x1="232" y1="167" x2="256" y2="167" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="260" y="152" width="88" height="30" rx="8" fill="#f0883e" fill-opacity="0.13" stroke="#f0883e" stroke-opacity="0.7"/>
+  <text x="304.0" y="172" font-size="13" fill="#ffa657" font-weight="600" text-anchor="middle">Aborted</text>
+  <text x="360" y="172" font-size="13" fill="#8b949e">(→ Restart or Kill)</text>
+  <text x="470.4" y="173" font-size="17" fill="#ff7b72" font-weight="700">✗</text>
+  <rect x="24" y="208" width="672" height="76" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="218" width="4" height="56" rx="2" fill="#f85149" fill-opacity="1" stroke="#f85149" stroke-opacity="0"/>
+  <text x="44" y="232" font-size="12" fill="#ff7b72" font-weight="700" letter-spacing="1.5">FAILURE DURING COMMIT</text>
+  <rect x="44" y="244" width="76" height="30" rx="8" fill="#58a6ff" fill-opacity="0.13" stroke="#58a6ff" stroke-opacity="0.7"/>
+  <text x="82.0" y="264" font-size="13" fill="#79c0ff" font-weight="600" text-anchor="middle">Active</text>
+  <line x1="124" y1="259" x2="148" y2="259" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="152" y="244" width="168" height="30" rx="8" fill="#d29922" fill-opacity="0.13" stroke="#d29922" stroke-opacity="0.7"/>
+  <text x="236.0" y="264" font-size="13" fill="#e3b341" font-weight="600" text-anchor="middle">Partially Committed</text>
+  <line x1="324" y1="259" x2="348" y2="259" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="352" y="244" width="76" height="30" rx="8" fill="#f85149" fill-opacity="0.13" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="390.0" y="264" font-size="13" fill="#ff7b72" font-weight="600" text-anchor="middle">Failed</text>
+  <line x1="432" y1="259" x2="456" y2="259" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="460" y="244" width="88" height="30" rx="8" fill="#f0883e" fill-opacity="0.13" stroke="#f0883e" stroke-opacity="0.7"/>
+  <text x="504.0" y="264" font-size="13" fill="#ffa657" font-weight="600" text-anchor="middle">Aborted</text>
+  <text x="562" y="265" font-size="17" fill="#ff7b72" font-weight="700">✗</text>
+</svg>

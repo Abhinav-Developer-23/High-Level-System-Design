@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="272" viewBox="0 0 760 272" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Range query using an index on order_date</title>
+  <desc>Step 1: B+ Tree seek to '2025-01-01' to find its leaf page. Step 2: walk the linked list forward, reading all entries sequentially. Step 3: stop on hitting '2025-02-01'; done. Only the pages containing matching rows are read and everything else is skipped.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="271" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">STEP</text>
+  <text x="440" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">RESULT</text>
+  <line x1="24" y1="54" x2="736" y2="54" stroke="#30363d"/>
+
+  <!-- rows -->
+  <rect x="24" y="64" width="712" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="85" r="11" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="48" y="89.5" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="70" y="90" fill="#e6edf3" font-size="13.5">B+ Tree seek to <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#a5d6ff">'2025-01-01'</tspan></text>
+  <line x1="388" y1="85" x2="428" y2="85" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="440" y="90" fill="#c9d1d9" font-size="13">Find its leaf page</text>
+
+  <rect x="24" y="114" width="712" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="135" r="11" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="48" y="139.5" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="70" y="140" fill="#e6edf3" font-size="13.5">Walk the linked list forward</text>
+  <line x1="388" y1="135" x2="428" y2="135" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="440" y="140" fill="#c9d1d9" font-size="13">Read all entries sequentially</text>
+
+  <rect x="24" y="164" width="712" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="185" r="11" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="48" y="189.5" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <text x="70" y="190" fill="#e6edf3" font-size="13.5">Stop when you hit <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#a5d6ff">'2025-02-01'</tspan></text>
+  <line x1="388" y1="185" x2="428" y2="185" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="440" y="190" fill="#56d364" font-size="13" font-weight="700">Done</text>
+
+  <rect x="24" y="218" width="712" height="30" rx="8" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="40" y="238" fill="#56d364" font-size="13" font-weight="600">Only reads the pages containing matching rows <tspan fill="#c9d1d9" font-weight="400">— skips everything else.</tspan></text>
+</svg>

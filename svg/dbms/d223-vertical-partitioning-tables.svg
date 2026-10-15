@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="458" viewBox="0 0 900 458" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Vertical partitioning of products</title>
+  <desc>Before: one wide products table with id, name, price, stock, description, specs_json and warranty. After: products_core (id, name, price, stock), hot and fitting in the buffer pool, and products_detail (product_id, description, specs_json, warranty), cold and loaded on demand.</desc>
+  <rect x="0.5" y="0.5" width="899" height="457" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="98" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">BEFORE <tspan letter-spacing="0.5" font-weight="400">(one wide table)</tspan></text>
+  <clipPath id="d223c1"><rect x="98" y="50" width="704" height="122" rx="8"/></clipPath>
+  <g clip-path="url(#d223c1)">
+  <rect x="98" y="50" width="704" height="122" fill="#1c2128"/>
+  <rect x="98" y="50" width="44" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="142" y="50" width="92" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="234" y="50" width="70" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="304" y="50" width="64" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="368" y="50" width="226" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="594" y="50" width="104" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="698" y="50" width="104" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="98" y="112" width="704" height="30" fill="#ffffff" fill-opacity=".025"/>
+  </g>
+  <line x1="142" y1="50" x2="142" y2="172" stroke="#30363d"/>
+  <line x1="234" y1="50" x2="234" y2="172" stroke="#30363d"/>
+  <line x1="304" y1="50" x2="304" y2="172" stroke="#30363d"/>
+  <line x1="368" y1="50" x2="368" y2="172" stroke="#30363d"/>
+  <line x1="594" y1="50" x2="594" y2="172" stroke="#30363d"/>
+  <line x1="698" y1="50" x2="698" y2="172" stroke="#30363d"/>
+  <line x1="98" y1="82" x2="802" y2="82" stroke="#484f58"/>
+  <line x1="98" y1="112" x2="802" y2="112" stroke="#21262d"/>
+  <line x1="98" y1="142" x2="802" y2="142" stroke="#21262d"/>
+  <rect x="98" y="50" width="704" height="122" rx="8" fill="none" stroke="#484f58"/>
+  <text x="120.0" y="71" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">id</text>
+  <text x="120.0" y="102" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <text x="120.0" y="132" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <text x="120.0" y="162" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+  <text x="188.0" y="71" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">name</text>
+  <text x="152" y="102" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">iPhone</text>
+  <text x="152" y="132" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">MacBook</text>
+  <text x="152" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">AirPods</text>
+  <text x="269.0" y="71" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">price</text>
+  <text x="269.0" y="102" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">999</text>
+  <text x="269.0" y="132" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1999</text>
+  <text x="269.0" y="162" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">249</text>
+  <text x="336.0" y="71" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">stock</text>
+  <text x="336.0" y="102" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">50</text>
+  <text x="336.0" y="132" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">30</text>
+  <text x="336.0" y="162" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">200</text>
+  <text x="481.0" y="71" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">description</text>
+  <text x="378" y="102" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">The latest iPhone with...</text>
+  <text x="378" y="132" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Powerful laptop for...</text>
+  <text x="378" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Wireless earbuds with...</text>
+  <text x="646.0" y="71" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">specs_json</text>
+  <text x="604" y="102" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{...}</text>
+  <text x="604" y="132" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{...}</text>
+  <text x="604" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{...}</text>
+  <text x="750.0" y="71" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">warranty</text>
+  <text x="708" y="102" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1 year..</text>
+  <text x="708" y="132" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2 year..</text>
+  <text x="708" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1 year..</text>
+  <rect x="98" y="184" width="14" height="14" rx="3" fill="#f0883e" fill-opacity=".3" stroke="#f0883e"/>
+  <text x="118" y="196" fill="#ffa657" font-size="12">hot columns → products_core</text>
+  <rect x="328" y="184" width="14" height="14" rx="3" fill="#58a6ff" fill-opacity=".3" stroke="#58a6ff"/>
+  <text x="348" y="196" fill="#79c0ff" font-size="12">cold columns → products_detail</text>
+  <line x1="24" y1="214" x2="876" y2="214" stroke="#21262d"/>
+  <text x="48" y="240" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">AFTER <tspan letter-spacing="0.5" font-weight="400">(two narrower tables)</tspan></text>
+  <text x="48" y="270" fill="#e6edf3" font-size="13.5" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">products_core</text>
+  <rect x="48" y="280" width="270" height="22" rx="11" fill="#f0883e" fill-opacity=".14" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="183.0" y="295" fill="#ffa657" font-size="12" font-weight="600" text-anchor="middle">HOT — fits in buffer pool</text>
+  <text x="370" y="270" fill="#e6edf3" font-size="13.5" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">products_detail</text>
+  <rect x="370" y="280" width="482" height="22" rx="11" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="611.0" y="295" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle">COLD — loaded on demand</text>
+  <clipPath id="d223c2"><rect x="48" y="312" width="270" height="122" rx="8"/></clipPath>
+  <g clip-path="url(#d223c2)">
+  <rect x="48" y="312" width="270" height="122" fill="#1c2128"/>
+  <rect x="48" y="312" width="44" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="92" y="312" width="92" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="184" y="312" width="70" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="254" y="312" width="64" height="32" fill="#f0883e" fill-opacity=".16"/>
+  <rect x="48" y="374" width="270" height="30" fill="#ffffff" fill-opacity=".025"/>
+  </g>
+  <line x1="92" y1="312" x2="92" y2="434" stroke="#30363d"/>
+  <line x1="184" y1="312" x2="184" y2="434" stroke="#30363d"/>
+  <line x1="254" y1="312" x2="254" y2="434" stroke="#30363d"/>
+  <line x1="48" y1="344" x2="318" y2="344" stroke="#484f58"/>
+  <line x1="48" y1="374" x2="318" y2="374" stroke="#21262d"/>
+  <line x1="48" y1="404" x2="318" y2="404" stroke="#21262d"/>
+  <rect x="48" y="312" width="270" height="122" rx="8" fill="none" stroke="#484f58"/>
+  <text x="70.0" y="333" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">id</text>
+  <text x="70.0" y="364" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <text x="70.0" y="394" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <text x="70.0" y="424" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+  <text x="138.0" y="333" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">name</text>
+  <text x="102" y="364" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">iPhone</text>
+  <text x="102" y="394" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">MacBook</text>
+  <text x="102" y="424" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">AirPods</text>
+  <text x="219.0" y="333" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">price</text>
+  <text x="219.0" y="364" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">999</text>
+  <text x="219.0" y="394" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1999</text>
+  <text x="219.0" y="424" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">249</text>
+  <text x="286.0" y="333" fill="#ffa657" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">stock</text>
+  <text x="286.0" y="364" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">50</text>
+  <text x="286.0" y="394" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">30</text>
+  <text x="286.0" y="424" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">200</text>
+  <clipPath id="d223c3"><rect x="370" y="312" width="482" height="122" rx="8"/></clipPath>
+  <g clip-path="url(#d223c3)">
+  <rect x="370" y="312" width="482" height="122" fill="#1c2128"/>
+  <rect x="370" y="312" width="104" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="474" y="312" width="170" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="644" y="312" width="104" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="748" y="312" width="104" height="32" fill="#58a6ff" fill-opacity=".16"/>
+  <rect x="370" y="374" width="482" height="30" fill="#ffffff" fill-opacity=".025"/>
+  </g>
+  <line x1="474" y1="312" x2="474" y2="434" stroke="#30363d"/>
+  <line x1="644" y1="312" x2="644" y2="434" stroke="#30363d"/>
+  <line x1="748" y1="312" x2="748" y2="434" stroke="#30363d"/>
+  <line x1="370" y1="344" x2="852" y2="344" stroke="#484f58"/>
+  <line x1="370" y1="374" x2="852" y2="374" stroke="#21262d"/>
+  <line x1="370" y1="404" x2="852" y2="404" stroke="#21262d"/>
+  <rect x="370" y="312" width="482" height="122" rx="8" fill="none" stroke="#484f58"/>
+  <text x="422.0" y="333" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">product_id</text>
+  <text x="422.0" y="364" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <text x="422.0" y="394" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <text x="422.0" y="424" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+  <text x="559.0" y="333" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">description</text>
+  <text x="484" y="364" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">The latest iPh...</text>
+  <text x="484" y="394" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Powerful laptop..</text>
+  <text x="484" y="424" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Wireless earbu..</text>
+  <text x="696.0" y="333" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">specs_json</text>
+  <text x="654" y="364" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{...}</text>
+  <text x="654" y="394" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{...}</text>
+  <text x="654" y="424" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{...}</text>
+  <text x="800.0" y="333" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">warranty</text>
+  <text x="758" y="364" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1 year..</text>
+  <text x="758" y="394" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2 year..</text>
+  <text x="758" y="424" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1 year..</text>
+</svg>

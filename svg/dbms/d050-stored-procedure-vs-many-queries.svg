@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="304" viewBox="0 0 840 304" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Without vs with a stored procedure</title>
+  <desc>Without a stored procedure the app sends 10 SQL queries over the network (slow, repetitive). With a stored procedure the app calls one procedure, CALL GetEmployeeReport(101) (fast, reusable, secure).</desc>
+  <defs>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="839" height="303" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="384" height="256" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".6"/>
+  <path d="M24,62 V34 a10,10 0 0 1 10,-10 H398 a10,10 0 0 1 10,10 V62 z" fill="#f85149" fill-opacity=".14"/>
+  <line x1="24" y1="62" x2="408" y2="62" stroke="#f85149" stroke-opacity=".5"/>
+  <text x="216" y="48" fill="#ff7b72" font-size="14" font-weight="700" text-anchor="middle">Without Stored Procedure</text>
+  <rect x="48" y="84" width="74" height="96" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="85" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">App</text>
+  <path d="M314,96 a35,10 0 0 1 70,0 V168 a35,10 0 0 1 -70,0 z" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7"/>
+  <path d="M314,96 a35,10 0 0 0 70,0" fill="none" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="349" y="141" fill="#56d4dd" font-size="14" font-weight="600" text-anchor="middle">DB</text>
+  <line x1="124" y1="90.0" x2="308" y2="90.0" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="99.4" x2="308" y2="99.4" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="108.8" x2="308" y2="108.8" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="118.2" x2="308" y2="118.2" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="127.6" x2="308" y2="127.6" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="137.0" x2="308" y2="137.0" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="146.4" x2="308" y2="146.4" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="155.8" x2="308" y2="155.8" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="165.2" x2="308" y2="165.2" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <line x1="124" y1="174.6" x2="308" y2="174.6" stroke="#f85149" stroke-opacity=".75" stroke-width="1.2" marker-end="url(#arrR)"/>
+  <text x="216" y="212" fill="#c9d1d9" font-size="13.5" text-anchor="middle">App sends <tspan font-weight="700" fill="#ff7b72">10 SQL queries</tspan></text>
+  <text x="216" y="231" fill="#c9d1d9" font-size="13.5" text-anchor="middle">over the network</text>
+  <rect x="146" y="244" width="140" height="22" rx="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="216" y="259" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">slow, repetitive</text>
+  <rect x="432" y="24" width="384" height="256" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".6"/>
+  <path d="M432,62 V34 a10,10 0 0 1 10,-10 H806 a10,10 0 0 1 10,10 V62 z" fill="#3fb950" fill-opacity=".14"/>
+  <line x1="432" y1="62" x2="816" y2="62" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="624" y="48" fill="#56d364" font-size="14" font-weight="700" text-anchor="middle">With Stored Procedure</text>
+  <rect x="456" y="84" width="74" height="96" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="493" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">App</text>
+  <path d="M722,96 a35,10 0 0 1 70,0 V168 a35,10 0 0 1 -70,0 z" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7"/>
+  <path d="M722,96 a35,10 0 0 0 70,0" fill="none" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="757" y="141" fill="#56d4dd" font-size="14" font-weight="600" text-anchor="middle">DB</text>
+  <line x1="532" y1="132" x2="718" y2="132" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <text x="624" y="212" fill="#c9d1d9" font-size="13.5" text-anchor="middle">App calls <tspan font-weight="700" fill="#56d364">one procedure</tspan></text>
+  <text x="624" y="231" fill="#79c0ff" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">CALL GetEmployeeReport(101)</text>
+  <rect x="534" y="244" width="180" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="624" y="259" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">fast, reusable, secure</text>
+</svg>

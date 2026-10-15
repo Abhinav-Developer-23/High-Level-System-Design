@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="196" viewBox="0 0 760 196" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Database instances over time</title>
+  <desc>Instance at T1 (initial): Alice HR, Bob Eng. Instance at T2 after INSERT Carol: adds Carol Mkt. Instance at T3 after UPDATE Alice: Alice moves to IT.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="195" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <g font-size="13.5" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="124" y="38">Instance at T1</text>
+    <text x="380" y="38">Instance at T2</text>
+    <text x="636" y="38">Instance at T3</text>
+  </g>
+
+  <!-- T1 -->
+  <rect x="24" y="50" width="200" height="90" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <line x1="128" y1="56" x2="128" y2="134" stroke="#30363d"/>
+  <line x1="24" y1="80" x2="224" y2="80" stroke="#21262d"/>
+  <line x1="24" y1="110" x2="224" y2="110" stroke="#21262d"/>
+  <!-- T2 -->
+  <rect x="280" y="50" width="200" height="90" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M281,111 H479 V132 A7,7 0 0 1 472,139 H288 A7,7 0 0 1 281,132 Z" fill="#3fb950" fill-opacity=".16"/>
+  <line x1="384" y1="56" x2="384" y2="134" stroke="#30363d"/>
+  <line x1="280" y1="80" x2="480" y2="80" stroke="#21262d"/>
+  <line x1="280" y1="110" x2="480" y2="110" stroke="#21262d"/>
+  <!-- T3 -->
+  <rect x="536" y="50" width="200" height="90" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M537,58 A7,7 0 0 1 544,51 H728 A7,7 0 0 1 735,58 V80 H537 Z" fill="#d29922" fill-opacity=".16"/>
+  <line x1="640" y1="56" x2="640" y2="134" stroke="#30363d"/>
+  <line x1="536" y1="80" x2="736" y2="80" stroke="#21262d"/>
+  <line x1="536" y1="110" x2="736" y2="110" stroke="#21262d"/>
+
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#c9d1d9">
+    <text x="40" y="70">Alice</text><text x="144" y="70">HR</text>
+    <text x="40" y="100">Bob</text><text x="144" y="100">Eng</text>
+
+    <text x="296" y="70">Alice</text><text x="400" y="70">HR</text>
+    <text x="296" y="100">Bob</text><text x="400" y="100">Eng</text>
+    <text x="296" y="130" fill="#56d364" font-weight="700">Carol</text><text x="400" y="130" fill="#56d364" font-weight="700">Mkt</text>
+
+    <text x="552" y="70" fill="#e3b341" font-weight="700">Alice</text><text x="656" y="70" fill="#e3b341" font-weight="700">IT</text>
+    <text x="552" y="100">Bob</text><text x="656" y="100">Eng</text>
+    <text x="552" y="130">Carol</text><text x="656" y="130">Mkt</text>
+  </g>
+
+  <line x1="226" y1="95" x2="276" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="482" y1="95" x2="532" y2="95" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <g font-size="13" text-anchor="middle">
+    <text x="124" y="168" fill="#8b949e">(initial)</text>
+    <text x="380" y="168" fill="#56d364" font-weight="600">(<tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">INSERT</tspan> Carol)</text>
+    <text x="636" y="168" fill="#e3b341" font-weight="600">(<tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE</tspan> Alice)</text>
+  </g>
+</svg>

@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="382" viewBox="0 0 880 382" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Sliding-window partition retention</title>
+  <desc>Day 1: partitions p1 to p8 are created for Day 1 through Day 8 (7-day window plus 1 future); p1 is oldest, p7 is today, p8 is pre-created. Day 8: p1 is dropped and p9 is added; p2 is oldest, p8 is today, p9 is new. Day 9: drop p2, add p10, and so on forever.</desc>
+  <rect x="0.5" y="0.5" width="879" height="381" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="18" width="832" height="32" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="39" fill="#c9d1d9" font-size="13.5"><tspan fill="#79c0ff" font-weight="700">Day 1:</tspan>  Create partitions for Day 1 through Day 8 <tspan fill="#8b949e">(7-day window + 1 future)</tspan></text>
+  <text x="88" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 1</text>
+  <rect x="52" y="82" width="72" height="34" rx="8" fill="#d29922" fill-opacity=".14" stroke="#d29922"/>
+  <text x="88" y="104" fill="#e3b341" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p1</text>
+  <text x="176" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 2</text>
+  <rect x="140" y="82" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="176" y="104" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p2</text>
+  <text x="264" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 3</text>
+  <rect x="228" y="82" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="264" y="104" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p3</text>
+  <text x="352" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 4</text>
+  <rect x="316" y="82" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="352" y="104" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p4</text>
+  <text x="440" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 5</text>
+  <rect x="404" y="82" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="440" y="104" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p5</text>
+  <text x="528" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 6</text>
+  <rect x="492" y="82" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="528" y="104" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p6</text>
+  <text x="616" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 7</text>
+  <rect x="580" y="82" width="72" height="34" rx="8" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="616" y="104" fill="#79c0ff" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p7</text>
+  <text x="704" y="74" fill="#8b949e" font-size="12" text-anchor="middle">Day 8 (future)</text>
+  <rect x="668" y="82" width="72" height="34" rx="8" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-dasharray="5 4"/>
+  <text x="704" y="104" fill="#56d4dd" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p8</text>
+  <text x="88" y="136" fill="#e3b341" font-size="12.5" font-weight="600" text-anchor="middle">↑ oldest</text>
+  <text x="616" y="136" fill="#79c0ff" font-size="12.5" font-weight="600" text-anchor="middle">↑ today</text>
+  <text x="704" y="136" fill="#56d4dd" font-size="12.5" font-weight="600" text-anchor="middle">↑ pre-created</text>
+  <line x1="24" y1="158" x2="856" y2="158" stroke="#21262d"/>
+  <rect x="24" y="172" width="832" height="32" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="193" fill="#c9d1d9" font-size="13.5"><tspan fill="#79c0ff" font-weight="700">Day 8:</tspan>  <tspan fill="#ff7b72" font-weight="600">Drop p1</tspan> (it's now 7 days old), <tspan fill="#56d364" font-weight="600">add p9</tspan> for tomorrow</text>
+  <rect x="52" y="236" width="72" height="34" rx="8" fill="#f85149" fill-opacity=".06" stroke="#f85149" stroke-opacity=".7" stroke-dasharray="4 4"/>
+  <text x="88" y="258" fill="#ff7b72" font-size="13.5" font-weight="700" text-anchor="middle" text-decoration="line-through" opacity=".8" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p1</text>
+  <text x="88" y="228" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">✗</text>
+  <text x="176" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 2</text>
+  <rect x="140" y="236" width="72" height="34" rx="8" fill="#d29922" fill-opacity=".14" stroke="#d29922"/>
+  <text x="176" y="258" fill="#e3b341" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p2</text>
+  <text x="264" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 3</text>
+  <rect x="228" y="236" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="264" y="258" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p3</text>
+  <text x="352" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 4</text>
+  <rect x="316" y="236" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="352" y="258" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p4</text>
+  <text x="440" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 5</text>
+  <rect x="404" y="236" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="440" y="258" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p5</text>
+  <text x="528" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 6</text>
+  <rect x="492" y="236" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="528" y="258" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p6</text>
+  <text x="616" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 7</text>
+  <rect x="580" y="236" width="72" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="616" y="258" fill="#e6edf3" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p7</text>
+  <text x="704" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 8</text>
+  <rect x="668" y="236" width="72" height="34" rx="8" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="704" y="258" fill="#79c0ff" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p8</text>
+  <text x="792" y="228" fill="#8b949e" font-size="12" text-anchor="middle">Day 9</text>
+  <rect x="756" y="236" width="72" height="34" rx="8" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-dasharray="5 4"/>
+  <text x="792" y="258" fill="#56d364" font-size="13.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">p9</text>
+  <text x="176" y="290" fill="#e3b341" font-size="12.5" font-weight="600" text-anchor="middle">↑ oldest</text>
+  <text x="704" y="290" fill="#79c0ff" font-size="12.5" font-weight="600" text-anchor="middle">↑ today</text>
+  <text x="792" y="290" fill="#56d364" font-size="12.5" font-weight="600" text-anchor="middle">↑ new</text>
+  <line x1="24" y1="312" x2="856" y2="312" stroke="#21262d"/>
+  <rect x="24" y="326" width="832" height="32" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="347" fill="#c9d1d9" font-size="13.5"><tspan fill="#79c0ff" font-weight="700">Day 9:</tspan>  <tspan fill="#ff7b72" font-weight="600">Drop p2</tspan>, <tspan fill="#56d364" font-weight="600">add p10</tspan>  <tspan fill="#8b949e">...and so on forever</tspan></text>
+</svg>

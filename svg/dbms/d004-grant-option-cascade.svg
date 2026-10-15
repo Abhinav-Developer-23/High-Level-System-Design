@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="360" viewBox="0 0 680 360" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>GRANT OPTION and CASCADE</title>
+  <desc>admin grants SELECT to team_lead WITH GRANT OPTION; team_lead grants SELECT to developer. If admin revokes from team_lead with CASCADE (REVOKE SELECT ON employees FROM team_lead CASCADE), both team_lead and developer lose SELECT access.</desc>
+  <defs>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="679" height="359" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- admin -->
+  <rect x="40" y="40" width="120" height="44" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="100" y="67" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">admin</text>
+
+  <!-- grant 1 -->
+  <line x1="160" y1="62" x2="330" y2="62" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="245" y="53" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">GRANT SELECT</text>
+
+  <!-- team_lead -->
+  <rect x="336" y="40" width="300" height="44" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="354" y="67" fill="#e6edf3" font-size="14" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">team_lead</text>
+  <rect x="468" y="51" width="152" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="544" y="66" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">WITH GRANT OPTION</text>
+
+  <!-- grant 2 -->
+  <line x1="400" y1="84" x2="400" y2="156" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="412" y="125" fill="#56d364" font-size="12" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">GRANT SELECT</text>
+
+  <!-- developer -->
+  <rect x="340" y="160" width="120" height="44" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="400" y="187" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">developer</text>
+
+  <!-- revoke panel -->
+  <rect x="24" y="232" width="632" height="104" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".7"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">
+    <text x="44" y="260" fill="#8b949e">-- If admin revokes from team_lead with CASCADE:</text>
+    <text x="44" y="288" fill="#e6edf3">REVOKE SELECT ON employees FROM team_lead <tspan fill="#ff7b72" font-weight="700">CASCADE</tspan>;</text>
+    <text x="44" y="316" fill="#ff7b72">-- ✗ Both team_lead AND developer lose SELECT access</text>
+  </g>
+</svg>

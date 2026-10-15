@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="324" viewBox="0 0 760 324" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Normal SELECT vs cursor</title>
+  <desc>A normal SELECT returns all rows at once and can't process row-by-row; a cursor is declared, opened, fetches rows one by one for processing, then closed.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="759" height="323" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="340" height="276" rx="10" fill="#58a6ff" fill-opacity="0.05" stroke="#58a6ff" stroke-opacity="0.4"/>
+  <text x="44" y="52" fill="#e6edf3" font-size="15" font-weight="600">Normal SELECT</text>
+  <line x1="44" y1="64" x2="344" y2="64" stroke="#30363d" stroke-width="1"/>
+  <rect x="44" y="82" width="300" height="36" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <text x="60" y="105" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">SELECT * FROM employees</text>
+  <text x="48" y="152" fill="#c9d1d9" font-size="13">→ Returns ALL rows at once</text>
+  <text x="48" y="180" fill="#ff7b72" font-size="13" font-weight="600">→ Can't process row-by-row</text>
+  <rect x="396" y="24" width="340" height="276" rx="10" fill="#bc8cff" fill-opacity="0.05" stroke="#bc8cff" stroke-opacity="0.4"/>
+  <text x="416" y="52" fill="#e6edf3" font-size="15" font-weight="600">Using a Cursor</text>
+  <line x1="416" y1="64" x2="716" y2="64" stroke="#30363d" stroke-width="1"/>
+  <rect x="416" y="78" width="300" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="432" y="97" fill="#e6edf3" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">DECLARE cursor</text>
+  <line x1="566" y1="106" x2="566" y2="114" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="416" y="114" width="300" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="432" y="133" fill="#e6edf3" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">OPEN cursor</text>
+  <line x1="566" y1="142" x2="566" y2="150" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="416" y="150" width="300" height="28" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="432" y="169" fill="#d2a8ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH row 1</text>
+  <text x="560" y="169" fill="#c9d1d9" font-size="13">→ process</text>
+  <line x1="566" y1="178" x2="566" y2="186" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="416" y="186" width="300" height="28" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="432" y="205" fill="#d2a8ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH row 2</text>
+  <text x="560" y="205" fill="#c9d1d9" font-size="13">→ process</text>
+  <line x1="566" y1="214" x2="566" y2="222" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="416" y="222" width="300" height="28" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="432" y="241" fill="#d2a8ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH row 3</text>
+  <text x="560" y="241" fill="#c9d1d9" font-size="13">→ process</text>
+  <line x1="566" y1="250" x2="566" y2="258" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="416" y="258" width="300" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="432" y="277" fill="#e6edf3" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">CLOSE cursor</text>
+</svg>

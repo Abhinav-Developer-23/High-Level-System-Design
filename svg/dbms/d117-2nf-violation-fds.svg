@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="176" viewBox="0 0 760 176" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>2NF violation: full vs partial dependencies</title>
+  <desc>{roll_no, course_id} → marks is a full dependency; roll_no → student_name and course_id → course_name are partial dependencies on only part of the key.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="759" height="175" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="190" height="36" rx="8" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.65"/>
+  <text x="119.0" y="46.68" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">{roll_no, course_id}</text>
+  <line x1="218" y1="42" x2="250" y2="42" stroke="#3fb950" stroke-width="1.6" marker-end="url(#a-green)"/>
+  <rect x="256" y="24" width="150" height="36" rx="8" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.65"/>
+  <text x="331.0" y="46.68" fill="#56d364" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">marks</text>
+  <text x="430" y="47" fill="#c9d1d9" font-size="13.5"><tspan font-weight="700" fill="#56d364">✓  FULL dependency</tspan>  <tspan fill="#8b949e">(needs both)</tspan></text>
+  <rect x="24" y="70" width="190" height="36" rx="8" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.65"/>
+  <text x="119.0" y="92.68" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">roll_no</text>
+  <line x1="218" y1="88" x2="250" y2="88" stroke="#f85149" stroke-width="1.6" marker-end="url(#a-red)"/>
+  <rect x="256" y="70" width="150" height="36" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.65"/>
+  <text x="331.0" y="92.68" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">student_name</text>
+  <text x="430" y="93" fill="#c9d1d9" font-size="13.5"><tspan font-weight="700" fill="#ff7b72">✗  PARTIAL</tspan>  <tspan fill="#8b949e">(only part of the key)</tspan></text>
+  <rect x="24" y="116" width="190" height="36" rx="8" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.65"/>
+  <text x="119.0" y="138.68" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">course_id</text>
+  <line x1="218" y1="134" x2="250" y2="134" stroke="#f85149" stroke-width="1.6" marker-end="url(#a-red)"/>
+  <rect x="256" y="116" width="150" height="36" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.65"/>
+  <text x="331.0" y="138.68" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">course_name</text>
+  <text x="430" y="139" fill="#c9d1d9" font-size="13.5"><tspan font-weight="700" fill="#ff7b72">✗  PARTIAL</tspan>  <tspan fill="#8b949e">(only part of the key)</tspan></text>
+</svg>

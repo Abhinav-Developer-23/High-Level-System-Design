@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="570" viewBox="0 0 860 570" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>UNF to 3NF walkthrough</title>
+  <desc>student_report is decomposed: 1NF splits out student_phones and enrollment; 2NF moves course_name into courses; 3NF moves dept_head into departments.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="859" height="569" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="812" height="66" rx="10" fill="#1c2128" stroke="#484f58" stroke-dasharray="6 5"/>
+  <rect x="42.0" y="34.0" width="56" height="24" rx="12.0" fill="#8b949e" fill-opacity=".14" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="70" y="50.5" fill="#8b949e" font-size="12.5" font-weight="600" text-anchor="middle">UNF</text>
+  <text x="120" y="51" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">student_report(roll_no, student_name, phone(multi), course_id,</text>
+  <text x="234.45" y="72" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">course_name, marks, dept, dept_head)</text>
+  <line x1="70" y1="92" x2="70" y2="114" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="24" y="118" width="812" height="134" rx="10" fill="#58a6ff" fill-opacity="0.05" stroke="#58a6ff" stroke-opacity="0.45"/>
+  <text x="44" y="145" fill="#79c0ff" font-size="14" font-weight="700">Step 1 — 1NF:</text>
+  <text x="160" y="145" fill="#c9d1d9" font-size="13">phone has multiple values in one cell</text>
+  <rect x="150" y="157" width="666" height="86" rx="8" fill="#0d1117" stroke="#21262d"/>
+  <text x="132" y="175" fill="#56d364" font-size="14" font-weight="700">➜</text>
+  <text x="166" y="175" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">students</tspan><tspan fill="#79c0ff">(roll_no, student_name, dept, dept_head)</tspan></text>
+  <text x="166" y="201" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">student_phones</tspan><tspan fill="#79c0ff">(roll_no, phone)</tspan></text>
+  <text x="166" y="227" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">enrollment</tspan><tspan fill="#79c0ff">(roll_no, course_id, course_name, marks)</tspan></text>
+  <line x1="70" y1="254" x2="70" y2="276" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="24" y="280" width="812" height="130" rx="10" fill="#bc8cff" fill-opacity="0.05" stroke="#bc8cff" stroke-opacity="0.45"/>
+  <text x="44" y="307" fill="#d2a8ff" font-size="14" font-weight="700">Step 2 — 2NF:</text>
+  <text x="160" y="307" fill="#c9d1d9" font-size="13">in enrollment, PK = <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">{roll_no, course_id}</tspan>,</text>
+  <text x="160" y="329" fill="#c9d1d9" font-size="13">but <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">course_id → course_name</tspan> is <tspan font-weight="700" fill="#ff7b72">PARTIAL</tspan></text>
+  <rect x="150" y="341" width="666" height="60" rx="8" fill="#0d1117" stroke="#21262d"/>
+  <text x="132" y="359" fill="#56d364" font-size="14" font-weight="700">➜</text>
+  <text x="166" y="359" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">courses</tspan><tspan fill="#79c0ff">(course_id, course_name)</tspan></text>
+  <text x="166" y="385" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">enrollment</tspan><tspan fill="#79c0ff">(roll_no, course_id, marks)</tspan></text>
+  <line x1="70" y1="412" x2="70" y2="434" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="24" y="438" width="812" height="108" rx="10" fill="#39c5cf" fill-opacity="0.05" stroke="#39c5cf" stroke-opacity="0.45"/>
+  <text x="44" y="465" fill="#56d4dd" font-size="14" font-weight="700">Step 3 — 3NF:</text>
+  <text x="160" y="465" fill="#c9d1d9" font-size="13">in students, <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">roll_no → dept → dept_head</tspan> is <tspan font-weight="700" fill="#ff7b72">TRANSITIVE</tspan></text>
+  <rect x="150" y="477" width="666" height="60" rx="8" fill="#0d1117" stroke="#21262d"/>
+  <text x="132" y="495" fill="#56d364" font-size="14" font-weight="700">➜</text>
+  <text x="166" y="495" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">departments</tspan><tspan fill="#79c0ff">(dept, dept_head)</tspan></text>
+  <text x="166" y="521" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none"><tspan fill="#e6edf3" font-weight="700">students</tspan><tspan fill="#79c0ff">(roll_no, student_name, dept)</tspan></text>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="536" viewBox="0 0 860 536" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Isolation: lost update</title>
+  <desc>Without isolation T1 reads A=1000 and computes 500; T2 reads the old value 1000; T1 writes 500; T2 computes 800 and writes 800, overwriting T1's change, so T1's 500 deduction is lost. With isolation T1 runs fully before T2, or they run concurrently but give the same result as serial execution.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="859" height="535" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" font-size="14.5" fill="#ff7b72" font-weight="600">✗  Without Isolation (problem)</text>
+  <rect x="24" y="56" width="812" height="34" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="60" y="78" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">T</text>
+  <text x="218" y="78" font-size="12" fill="#d2a8ff" font-weight="700" text-anchor="middle" letter-spacing="1.5">T1</text>
+  <text x="462" y="78" font-size="12" fill="#56d4dd" font-weight="700" text-anchor="middle" letter-spacing="1.5">T2</text>
+  <text x="720" y="78" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">NOTE</text>
+  <rect x="96" y="90" width="244" height="216" rx="0" fill="#bc8cff" fill-opacity="0.07" stroke="#bc8cff" stroke-opacity="0"/>
+  <rect x="340" y="90" width="244" height="216" rx="0" fill="#39c5cf" fill-opacity="0.07" stroke="#39c5cf" stroke-opacity="0"/>
+  <line x1="24" y1="90" x2="836" y2="90" stroke="#21262d" stroke-width="1"/>
+  <text x="60" y="113" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t1</text>
+  <text x="218" y="113" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A) = 1000</text>
+  <line x1="24" y1="126" x2="836" y2="126" stroke="#21262d" stroke-width="1"/>
+  <text x="60" y="149" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t2</text>
+  <text x="218" y="149" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A = A - 500 = 500</text>
+  <line x1="24" y1="162" x2="836" y2="162" stroke="#21262d" stroke-width="1"/>
+  <text x="60" y="185" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t3</text>
+  <text x="462" y="185" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A) = 1000</text>
+  <text x="600" y="185" font-size="13" fill="#e3b341" font-weight="600">← reads OLD value!</text>
+  <line x1="24" y1="198" x2="836" y2="198" stroke="#21262d" stroke-width="1"/>
+  <text x="60" y="221" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t4</text>
+  <text x="218" y="221" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A) = 500</text>
+  <line x1="24" y1="234" x2="836" y2="234" stroke="#21262d" stroke-width="1"/>
+  <text x="60" y="257" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t5</text>
+  <text x="462" y="257" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A = A - 200 = 800</text>
+  <rect x="24" y="270" width="812" height="36" rx="0" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0"/>
+  <line x1="24" y1="270" x2="836" y2="270" stroke="#21262d" stroke-width="1"/>
+  <text x="60" y="293" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t6</text>
+  <text x="462" y="293" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A) = 800</text>
+  <text x="600" y="293" font-size="13" fill="#ff7b72" font-weight="600">← overwrites T1's change!</text>
+  <rect x="24" y="56" width="812" height="250" rx="10" fill="none" stroke="#30363d"/>
+  <rect x="24" y="320" width="812" height="42" rx="10" fill="#f85149" fill-opacity="0.14" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="42" y="346" font-size="14" fill="#c9d1d9" font-weight="600">Result: <tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A = 800</tspan>  <tspan fill="#ff7b72" font-weight="700">(₹500 deducted by T1 is LOST!)</tspan></text>
+  <text x="24" y="394" font-size="14.5" fill="#56d364" font-weight="600">✓  With Isolation (correct)</text>
+  <rect x="24" y="410" width="812" height="126" rx="10" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.5"/>
+  <rect x="42.0" y="431.0" width="96" height="26" rx="13.0" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="90" y="448.68" font-size="13" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <line x1="142" y1="444" x2="170" y2="444" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="174.0" y="431.0" width="96" height="26" rx="13.0" fill="#39c5cf" fill-opacity=".16" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="222" y="448.68" font-size="13" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <text x="290" y="449" font-size="13.5" fill="#e6edf3">T1 runs completely FIRST, then T2 runs</text>
+  <text x="42" y="486" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">OR</text>
+  <rect x="42" y="498" width="44" height="20" rx="4" fill="#bc8cff" fill-opacity=".3"/>
+  <rect x="88" y="498" width="44" height="20" rx="4" fill="#39c5cf" fill-opacity=".3"/>
+  <rect x="134" y="498" width="44" height="20" rx="4" fill="#bc8cff" fill-opacity=".3"/>
+  <rect x="180" y="498" width="44" height="20" rx="4" fill="#39c5cf" fill-opacity=".3"/>
+  <text x="240" y="513" font-size="13.5" fill="#e6edf3">they run concurrently but produce the <tspan fill="#56d364" font-weight="700">SAME</tspan> result as serial execution</text>
+</svg>

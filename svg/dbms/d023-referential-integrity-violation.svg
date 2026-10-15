@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="294" viewBox="0 0 840 294" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Referential integrity violation</title>
+  <desc>employees (child) rows Alice, Bob and Carol reference dept_id 10, 20 and 30, which exist in departments (parent): valid. Eve references dept_id 50, which does not exist: referential integrity violation.</desc>
+  <defs>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="839" height="293" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="164" y="36" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">departments</tspan> <tspan fill="#8b949e" font-weight="400">(Parent)</tspan></text>
+  <text x="618" y="36" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">employees</tspan> <tspan fill="#8b949e" font-weight="400">(Child)</tspan></text>
+
+  <!-- parent table -->
+  <rect x="24" y="50" width="280" height="126" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,80 V58 A8,8 0 0 1 32,50 H296 A8,8 0 0 1 304,58 V80 Z" fill="#21262d"/>
+  <g stroke="#30363d">
+    <line x1="24" y1="80" x2="304" y2="80"/>
+    <line x1="24" y1="112" x2="304" y2="112"/>
+    <line x1="24" y1="144" x2="304" y2="144"/>
+    <line x1="124" y1="50" x2="124" y2="176"/>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">
+    <text x="74" y="70" fill="#8b949e" font-weight="700" text-anchor="middle">dept_id</text>
+    <text x="138" y="70" fill="#8b949e" font-weight="700">dept_name</text>
+    <text x="74" y="101" fill="#e6edf3" text-anchor="middle">10</text>
+    <text x="138" y="101" fill="#c9d1d9">Engineering</text>
+    <text x="74" y="133" fill="#e6edf3" text-anchor="middle">20</text>
+    <text x="138" y="133" fill="#c9d1d9">Marketing</text>
+    <text x="74" y="165" fill="#e6edf3" text-anchor="middle">30</text>
+    <text x="138" y="165" fill="#c9d1d9">HR</text>
+  </g>
+
+  <!-- child table -->
+  <rect x="420" y="50" width="396" height="158" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M420,80 V58 A8,8 0 0 1 428,50 H808 A8,8 0 0 1 816,58 V80 Z" fill="#21262d"/>
+  <path d="M421,176 H815 V200 A7,7 0 0 1 808,207 H428 A7,7 0 0 1 421,200 Z" fill="#f85149" fill-opacity=".16"/>
+  <g stroke="#30363d">
+    <line x1="420" y1="80" x2="816" y2="80"/>
+    <line x1="420" y1="112" x2="816" y2="112"/>
+    <line x1="420" y1="144" x2="816" y2="144"/>
+    <line x1="420" y1="176" x2="816" y2="176"/>
+    <line x1="520" y1="50" x2="520" y2="208"/>
+    <line x1="630" y1="50" x2="630" y2="208"/>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">
+    <text x="470" y="70" fill="#8b949e" font-weight="700" text-anchor="middle">emp_id</text>
+    <text x="544" y="70" fill="#8b949e" font-weight="700">name</text>
+    <text x="723" y="70" fill="#8b949e" font-weight="700" text-anchor="middle">dept_id</text>
+    <text x="470" y="101" fill="#e6edf3" text-anchor="middle">101</text>
+    <text x="544" y="101" fill="#c9d1d9">Alice</text>
+    <text x="470" y="133" fill="#e6edf3" text-anchor="middle">102</text>
+    <text x="544" y="133" fill="#c9d1d9">Bob</text>
+    <text x="470" y="165" fill="#e6edf3" text-anchor="middle">103</text>
+    <text x="544" y="165" fill="#c9d1d9">Carol</text>
+    <text x="470" y="197" fill="#ff7b72" text-anchor="middle">105</text>
+    <text x="544" y="197" fill="#ff7b72">Eve</text>
+  </g>
+  <g font-size="13" font-weight="700" text-anchor="middle">
+    <text x="723" y="101" fill="#56d364"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#e6edf3" font-weight="400">10</tspan>  ✓</text>
+    <text x="723" y="133" fill="#56d364"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#e6edf3" font-weight="400">20</tspan>  ✓</text>
+    <text x="723" y="165" fill="#56d364"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#e6edf3" font-weight="400">30</tspan>  ✓</text>
+    <text x="723" y="197" fill="#ff7b72"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="700">50</tspan>  ✗</text>
+  </g>
+
+  <!-- FK arrows -->
+  <line x1="420" y1="96" x2="308" y2="96" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <line x1="420" y1="128" x2="308" y2="128" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <line x1="420" y1="160" x2="308" y2="160" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <line x1="420" y1="192" x2="344" y2="192" stroke="#f85149" stroke-width="1.8" stroke-dasharray="6 4"/>
+  <path d="M326,184 L342,200 M342,184 L326,200" stroke="#f85149" stroke-width="2.4" stroke-linecap="round"/>
+
+  <!-- violation note -->
+  <line x1="164" y1="214" x2="164" y2="182" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <rect x="24" y="216" width="320" height="56" rx="10" fill="#f85149" fill-opacity=".12" stroke="#f85149"/>
+  <text x="40" y="239" fill="#e6edf3" font-size="13.5" font-weight="600">No <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">dept_id = 50</tspan> exists!</text>
+  <text x="40" y="260" fill="#ff7b72" font-size="12.5" font-weight="700" letter-spacing="0.8">REFERENTIAL INTEGRITY VIOLATION</text>
+</svg>

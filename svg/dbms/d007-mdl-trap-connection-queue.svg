@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="388" viewBox="0 0 820 388" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Metadata lock trap</title>
+  <desc>Connection 1 runs a 30-second SELECT on big_table; connection 2's ALTER TABLE waits for the metadata lock; connections 3 (SELECT) and 4 (INSERT) are blocked, queued behind the ALTER. All new queries pile up behind the waiting ALTER and the application appears to hang.</desc>
+  <defs>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="819" height="387" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CONNECTION</text>
+  <text x="150" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">QUERY ON big_table</text>
+  <text x="540" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">STATE</text>
+  <line x1="24" y1="50" x2="796" y2="50" stroke="#30363d"/>
+
+  <!-- row 1 -->
+  <text x="24" y="91" fill="#e6edf3" font-size="13" font-weight="600">Connection 1</text>
+  <rect x="150" y="64" width="370" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="164" y="90" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT * FROM big_table WHERE ...</text>
+  <rect x="540" y="73" width="196" height="26" rx="13" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="638" y="90" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle">running for 30 seconds</text>
+
+  <!-- row 2 -->
+  <text x="24" y="147" fill="#e6edf3" font-size="13" font-weight="600">Connection 2</text>
+  <rect x="150" y="120" width="370" height="44" rx="8" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="164" y="146" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ALTER TABLE big_table ADD COLUMN ...</text>
+  <rect x="540" y="129" width="214" height="26" rx="13" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="647" y="146" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">WAITING for metadata lock</text>
+
+  <!-- row 3 -->
+  <text x="24" y="203" fill="#e6edf3" font-size="13" font-weight="600">Connection 3</text>
+  <rect x="150" y="176" width="370" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="164" y="202" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT * FROM big_table ...</text>
+  <rect x="540" y="185" width="256" height="26" rx="13" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="668" y="202" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">BLOCKED — queued behind ALTER!</text>
+
+  <!-- row 4 -->
+  <text x="24" y="259" fill="#e6edf3" font-size="13" font-weight="600">Connection 4</text>
+  <rect x="150" y="232" width="370" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="164" y="258" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">INSERT INTO big_table ...</text>
+  <rect x="540" y="241" width="256" height="26" rx="13" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="668" y="258" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">BLOCKED — queued behind ALTER!</text>
+
+  <!-- note -->
+  <line x1="300" y1="306" x2="300" y2="282" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <rect x="150" y="308" width="646" height="60" rx="10" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="170" y="332" fill="#e6edf3" font-size="14" font-weight="600">ALL new queries pile up behind the waiting ALTER</text>
+  <text x="170" y="354" fill="#ff7b72" font-size="13" font-weight="700">→ Application appears to hang!  ⚠</text>
+</svg>

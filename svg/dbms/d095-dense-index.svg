@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Dense index</title>
+  <desc>A dense index has one entry per row: six index entries ID=1..6 each point to one of six data rows in the data file sorted by ID.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="759" height="299" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="40" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">INDEX</text>
+  <text x="380" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">DATA FILE (SORTED BY ID)</text>
+  <rect x="40" y="58" width="200" height="180" rx="8" fill="#58a6ff" fill-opacity="0.08" stroke="#58a6ff" stroke-opacity="0.5"/>
+  <rect x="380" y="58" width="340" height="180" rx="8" fill="#39c5cf" fill-opacity="0.08" stroke="#39c5cf" stroke-opacity="0.5"/>
+  <line x1="130" y1="58" x2="130" y2="238" stroke="#30363d" stroke-width="1"/>
+  <text x="56" y="77.5" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=1</text>
+  <text x="146" y="77.5" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">→ ptr</text>
+  <text x="396" y="77.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=1, Alice, Engineering</text>
+  <line x1="240" y1="73" x2="376" y2="73" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="41" y1="88" x2="239" y2="88" stroke="#30363d" stroke-width="1"/>
+  <line x1="381" y1="88" x2="719" y2="88" stroke="#30363d" stroke-width="1"/>
+  <text x="56" y="107.5" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=2</text>
+  <text x="146" y="107.5" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">→ ptr</text>
+  <text x="396" y="107.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=2, Bob, Sales</text>
+  <line x1="240" y1="103" x2="376" y2="103" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="41" y1="118" x2="239" y2="118" stroke="#30363d" stroke-width="1"/>
+  <line x1="381" y1="118" x2="719" y2="118" stroke="#30363d" stroke-width="1"/>
+  <text x="56" y="137.5" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=3</text>
+  <text x="146" y="137.5" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">→ ptr</text>
+  <text x="396" y="137.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=3, Carol, Marketing</text>
+  <line x1="240" y1="133" x2="376" y2="133" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="41" y1="148" x2="239" y2="148" stroke="#30363d" stroke-width="1"/>
+  <line x1="381" y1="148" x2="719" y2="148" stroke="#30363d" stroke-width="1"/>
+  <text x="56" y="167.5" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=4</text>
+  <text x="146" y="167.5" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">→ ptr</text>
+  <text x="396" y="167.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=4, Dave, Engineering</text>
+  <line x1="240" y1="163" x2="376" y2="163" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="41" y1="178" x2="239" y2="178" stroke="#30363d" stroke-width="1"/>
+  <line x1="381" y1="178" x2="719" y2="178" stroke="#30363d" stroke-width="1"/>
+  <text x="56" y="197.5" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=5</text>
+  <text x="146" y="197.5" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">→ ptr</text>
+  <text x="396" y="197.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=5, Eve, Sales</text>
+  <line x1="240" y1="193" x2="376" y2="193" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="41" y1="208" x2="239" y2="208" stroke="#30363d" stroke-width="1"/>
+  <line x1="381" y1="208" x2="719" y2="208" stroke="#30363d" stroke-width="1"/>
+  <text x="56" y="227.5" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=6</text>
+  <text x="146" y="227.5" fill="#c9d1d9" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">→ ptr</text>
+  <text x="396" y="227.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">ID=6, Frank, Marketing</text>
+  <line x1="240" y1="223" x2="376" y2="223" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <text x="140" y="266" fill="#8b949e" font-size="12.5" font-weight="600" text-anchor="middle">6 index entries</text>
+  <text x="550" y="266" fill="#8b949e" font-size="12.5" font-weight="600" text-anchor="middle">6 data rows</text>
+</svg>

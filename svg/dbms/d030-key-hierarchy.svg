@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="566" viewBox="0 0 760 566" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Key hierarchy</title>
+  <desc>Super keys are any column sets that uniquely identify a row. Removing redundant columns gives the minimal candidate keys {roll_no}, {email}, {phone}. One is picked as the primary key ({roll_no}); the remaining ones become alternate keys ({email}, {phone}).</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="759" height="565" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- SUPER KEY -->
+  <rect x="130" y="24" width="500" height="162" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="150" y="52" fill="#e6edf3" font-size="15" font-weight="700" letter-spacing="1">SUPER KEY</text>
+  <text x="150" y="74" fill="#c9d1d9" font-size="13">Any set of columns that can uniquely identify a row</text>
+  <text x="150" y="100" fill="#8b949e" font-size="12">Examples:</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#79c0ff" text-anchor="middle">
+    <rect x="150" y="112" width="88" height="24" rx="6" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+    <text x="194" y="128">{roll_no}</text>
+    <rect x="246" y="112" width="74" height="24" rx="6" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+    <text x="283" y="128">{email}</text>
+    <rect x="328" y="112" width="74" height="24" rx="6" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+    <text x="365" y="128">{phone}</text>
+    <rect x="410" y="112" width="134" height="24" rx="6" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+    <text x="477" y="128">{roll_no, name}</text>
+    <rect x="150" y="144" width="120" height="24" rx="6" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+    <text x="210" y="160">{email, dept}</text>
+    <rect x="278" y="144" width="240" height="24" rx="6" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+    <text x="398" y="160">{roll_no, name, email, phone}</text>
+  </g>
+
+  <!-- arrow 1 -->
+  <line x1="380" y1="186" x2="380" y2="244" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="394" y="210" fill="#c9d1d9" font-size="13">Remove redundant</text>
+  <text x="394" y="228" fill="#c9d1d9" font-size="13">columns (minimal)</text>
+
+  <!-- CANDIDATE KEY -->
+  <rect x="200" y="248" width="360" height="104" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="380" y="276" fill="#e6edf3" font-size="15" font-weight="700" letter-spacing="1" text-anchor="middle">CANDIDATE KEY</text>
+  <text x="380" y="298" fill="#c9d1d9" font-size="13" text-anchor="middle">Minimal super keys (no extras)</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#79c0ff" text-anchor="middle">
+    <rect x="254" y="312" width="88" height="24" rx="6" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".4"/>
+    <text x="298" y="328">{roll_no}</text>
+    <rect x="350" y="312" width="74" height="24" rx="6" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".4"/>
+    <text x="387" y="328">{email}</text>
+    <rect x="432" y="312" width="74" height="24" rx="6" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".4"/>
+    <text x="469" y="328">{phone}</text>
+  </g>
+
+  <!-- split -->
+  <path d="M380,352 V372 M230,372 H530" fill="none" stroke="#8b949e" stroke-width="1.6"/>
+  <line x1="230" y1="372" x2="230" y2="440" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <line x1="530" y1="372" x2="530" y2="440" stroke="#bc8cff" stroke-width="1.6" marker-end="url(#arrP)"/>
+  <text x="218" y="400" fill="#c9d1d9" font-size="13" text-anchor="end">Pick one as</text>
+  <text x="218" y="418" fill="#c9d1d9" font-size="13" text-anchor="end">the identifier</text>
+  <text x="542" y="400" fill="#c9d1d9" font-size="13">Remaining ones</text>
+  <text x="542" y="418" fill="#c9d1d9" font-size="13">become...</text>
+
+  <!-- PRIMARY KEY -->
+  <rect x="120" y="444" width="220" height="98" rx="10" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="230" y="472" fill="#56d364" font-size="15" font-weight="700" letter-spacing="1" text-anchor="middle">PRIMARY KEY</text>
+  <rect x="186" y="486" width="88" height="24" rx="6" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="230" y="502" fill="#e6edf3" font-size="12.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{roll_no}</text>
+  <text x="230" y="530" fill="#8b949e" font-size="12" text-anchor="middle">(chosen one)</text>
+
+  <!-- ALTERNATE KEY -->
+  <rect x="420" y="444" width="220" height="98" rx="10" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="530" y="472" fill="#d2a8ff" font-size="15" font-weight="700" letter-spacing="1" text-anchor="middle">ALTERNATE KEY</text>
+  <rect x="452" y="486" width="74" height="24" rx="6" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".5"/>
+  <text x="489" y="502" fill="#e6edf3" font-size="12.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{email}</text>
+  <rect x="534" y="486" width="74" height="24" rx="6" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".5"/>
+  <text x="571" y="502" fill="#e6edf3" font-size="12.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">{phone}</text>
+</svg>

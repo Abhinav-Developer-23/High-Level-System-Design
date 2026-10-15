@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="334" viewBox="0 0 640 334" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>String concatenation vs parameterized query</title>
+  <desc>Vulnerable: sql = "SELECT * FROM Users WHERE UserId = " + userInput; attacker input becomes part of the SQL structure. Safe: sql = "SELECT * FROM Users WHERE UserId = @id"; attacker input is treated as a literal value, so even "105 OR 1=1" is treated as the string "105 OR 1=1".</desc>
+  <rect x="0.5" y="0.5" width="639" height="333" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- Vulnerable -->
+  <rect x="24" y="24" width="592" height="122" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".6"/>
+  <path d="M24,58 V34 a10,10 0 0 1 10,-10 H606 a10,10 0 0 1 10,10 V58 z" fill="#f85149" fill-opacity=".14"/>
+  <text x="44" y="47" fill="#ff7b72" font-size="12" font-weight="700" letter-spacing="1.5">VULNERABLE <tspan font-weight="400" letter-spacing="0">(String Concatenation)</tspan></text>
+  <line x1="24" y1="58" x2="616" y2="58" stroke="#f85149" stroke-opacity=".4"/>
+  <rect x="40" y="70" width="560" height="32" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="54" y="91" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">sql = <tspan fill="#a5d6ff">"SELECT * FROM Users WHERE UserId = "</tspan> <tspan fill="#ff7b72" font-weight="700">+ userInput</tspan></text>
+  <text x="44" y="129" fill="#ff7b72" font-size="13" font-weight="600">✗  <tspan fill="#c9d1d9" font-weight="400">Attacker input becomes part of the SQL structure</tspan></text>
+
+  <!-- Safe -->
+  <rect x="24" y="162" width="592" height="148" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".6"/>
+  <path d="M24,196 V172 a10,10 0 0 1 10,-10 H606 a10,10 0 0 1 10,10 V196 z" fill="#3fb950" fill-opacity=".14"/>
+  <text x="44" y="185" fill="#56d364" font-size="12" font-weight="700" letter-spacing="1.5">SAFE <tspan font-weight="400" letter-spacing="0">(Parameterized Query)</tspan></text>
+  <line x1="24" y1="196" x2="616" y2="196" stroke="#3fb950" stroke-opacity=".4"/>
+  <rect x="40" y="208" width="560" height="32" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="54" y="229" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">sql = <tspan fill="#a5d6ff">"SELECT * FROM Users WHERE UserId = <tspan fill="#56d364" font-weight="700">@id</tspan>"</tspan></text>
+  <text x="44" y="267" fill="#56d364" font-size="13" font-weight="600">✓  <tspan fill="#c9d1d9" font-weight="400">Attacker input is treated as a literal value</tspan></text>
+  <text x="44" y="291" fill="#56d364" font-size="13" font-weight="600">✓  <tspan fill="#c9d1d9" font-weight="400">Even <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#ff7b72">"105 OR 1=1"</tspan> is treated as the string <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#a5d6ff">"105 OR 1=1"</tspan></tspan></text>
+</svg>

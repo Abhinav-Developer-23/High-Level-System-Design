@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="318" viewBox="0 0 820 318" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>DROP PARTITION under the hood</title>
+  <desc>Step 1: MySQL identifies the partition's data file, e.g. events#P#p20250218.ibd. Step 2: it removes the partition metadata so it no longer appears in INFORMATION_SCHEMA.PARTITIONS. Step 3: it deletes the .ibd file from disk, a simple file system operation that is instant regardless of row count. Step 4: done, with no undo logs, no row locks and no cleanup.</desc>
+  <defs>
+    <marker id="d227a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="819" height="317" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <line x1="58" y1="54" x2="58" y2="272" stroke="#30363d" stroke-width="2"/>
+
+  <!-- step 1 -->
+  <rect x="24" y="42" width="68" height="24" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="58" y="58.5" fill="#c9d1d9" font-size="12" font-weight="700" text-anchor="middle">Step 1</text>
+  <rect x="108" y="24" width="688" height="60" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="126" y="48" fill="#e6edf3" font-size="13.5">MySQL identifies the data file for partition <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">p20250218</tspan></text>
+  <text x="140" y="71" fill="#c9d1d9" font-size="13">→ e.g., <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">events#P#p20250218.ibd</tspan>  <tspan fill="#8b949e">(InnoDB tablespace file)</tspan></text>
+  <line x1="452" y1="84" x2="452" y2="98" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d227a)"/>
+
+  <!-- step 2 -->
+  <rect x="24" y="118" width="68" height="24" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="58" y="134.5" fill="#c9d1d9" font-size="12" font-weight="700" text-anchor="middle">Step 2</text>
+  <rect x="108" y="100" width="688" height="60" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="126" y="124" fill="#e6edf3" font-size="13.5">MySQL removes the partition <tspan font-weight="700">metadata</tspan> from the table definition</text>
+  <text x="140" y="147" fill="#c9d1d9" font-size="13">→ The partition no longer exists in <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">INFORMATION_SCHEMA.PARTITIONS</tspan></text>
+  <line x1="452" y1="160" x2="452" y2="174" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d227a)"/>
+
+  <!-- step 3 -->
+  <rect x="24" y="194" width="68" height="24" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="58" y="210.5" fill="#c9d1d9" font-size="12" font-weight="700" text-anchor="middle">Step 3</text>
+  <rect x="108" y="176" width="688" height="60" rx="10" fill="#39c5cf" fill-opacity=".07" stroke="#39c5cf" stroke-opacity=".55"/>
+  <text x="126" y="200" fill="#e6edf3" font-size="13.5">MySQL <tspan font-weight="700" fill="#56d4dd">DELETES</tspan> the <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">.ibd</tspan> file from disk</text>
+  <text x="140" y="223" fill="#c9d1d9" font-size="13">→ This is a simple file system operation — <tspan fill="#56d364" font-weight="700">instant regardless of row count</tspan></text>
+  <line x1="452" y1="236" x2="452" y2="250" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d227a)"/>
+
+  <!-- step 4 -->
+  <rect x="24" y="260" width="68" height="24" rx="12" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="58" y="276.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">Step 4</text>
+  <rect x="108" y="252" width="688" height="40" rx="10" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".75"/>
+  <text x="126" y="277" fill="#c9d1d9" font-size="13.5"><tspan fill="#56d364" font-weight="700">Done.</tspan>  No undo logs, no row locks, no cleanup needed.</text>
+</svg>

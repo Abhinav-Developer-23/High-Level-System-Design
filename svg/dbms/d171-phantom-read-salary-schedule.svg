@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="282" viewBox="0 0 900 282" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Phantom read schedule (salary)</title>
+  <desc>T1 runs SELECT * WHERE salary &gt; 50000 and gets {Alice, Bob}. T2 inserts (Carol, 60000) and commits. T1 re-runs and gets {Alice, Bob, Carol}: a phantom row appeared.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="281" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="71" y="24" width="284" height="234" rx="8" fill="#bc8cff" fill-opacity="0.05" stroke="#bc8cff" stroke-opacity="0.25"/>
+  <rect x="71" y="24" width="284" height="34" rx="8" fill="#bc8cff" fill-opacity="0.16" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="213.0" y="46" fill="#d2a8ff" font-size="13" font-weight="700" text-anchor="middle">T1</text>
+  <rect x="361" y="24" width="204" height="234" rx="8" fill="#39c5cf" fill-opacity="0.05" stroke="#39c5cf" stroke-opacity="0.25"/>
+  <rect x="361" y="24" width="204" height="34" rx="8" fill="#39c5cf" fill-opacity="0.16" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="463.0" y="46" fill="#56d4dd" font-size="13" font-weight="700" text-anchor="middle">T2</text>
+  <text x="46" y="46" fill="#8b949e" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1.2">t</text>
+  <text x="46" y="86" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">1</text>
+  <text x="84" y="86" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">SELECT * WHERE salary &gt; 50000</text>
+  <text x="84" y="106" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">→ Returns {Alice, Bob}</text>
+  <line x1="24" y1="120" x2="876" y2="120" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="144" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">2</text>
+  <text x="374" y="144" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">INSERT (Carol, 60000)</text>
+  <line x1="24" y1="158" x2="876" y2="158" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="182" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">3</text>
+  <text x="374" y="182" fill="#56d364" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">COMMIT</text>
+  <rect x="26" y="198" width="848" height="54" rx="6" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.55"/>
+  <line x1="24" y1="196" x2="876" y2="196" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="220" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">4</text>
+  <text x="84" y="220" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">SELECT * WHERE salary &gt; 50000</text>
+  <text x="84" y="240" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">→ Returns {Alice, Bob, Carol}</text>
+  <text x="578" y="220" fill="#ff7b72" font-size="13" font-weight="600">← Phantom row appeared!</text>
+</svg>

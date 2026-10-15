@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="384" viewBox="0 0 860 384" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Consistency: bank transfer</title>
+  <desc>Before: Alice 1000, Bob 500, total 1500 (valid). Inside the transaction after debiting Alice: Alice 800, Bob 500, total 1300 - money vanished, invalid, but invisible to everyone else (Isolation hides it). After crediting Bob and COMMIT: Alice 800, Bob 700, total 1500 (valid).</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="859" height="383" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="812" height="46" rx="10" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.5"/>
+  <text x="44" y="52" fill="#e6edf3" font-size="13" font-weight="700" letter-spacing="1">BEFORE:</text>
+  <rect x="130" y="33" width="124" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="192" y="52" fill="#e6edf3" font-size="13" text-anchor="middle">Alice = ₹1000</text>
+  <rect x="264" y="33" width="110" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="319" y="52" fill="#e6edf3" font-size="13" text-anchor="middle">Bob = ₹500</text>
+  <line x1="380" y1="47" x2="420" y2="47" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="426" y="33" width="140" height="28" rx="7" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.8"/>
+  <text x="496" y="52" fill="#56d364" font-size="13" font-weight="700" text-anchor="middle">TOTAL = ₹1500</text>
+  <rect x="590.0" y="36" width="120" height="22" rx="11.0" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="650" y="51.32" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">✓ valid state</text>
+  <rect x="24" y="86" width="812" height="216" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <text x="44" y="110" fill="#79c0ff" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">BEGIN TRANSACTION;</text>
+  <text x="68" y="134" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE accounts SET balance = balance - 200 WHERE name = 'Alice';</text>
+  <rect x="68" y="148" width="746" height="82" rx="8" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6" stroke-dasharray="6 5"/>
+  <text x="86" y="172" fill="#c9d1d9" font-size="13" xml:space="preserve"><tspan fill="#e3b341" font-weight="700">⚠ INTERMEDIATE STATE:</tspan><tspan fill="#e6edf3">   Alice = ₹800    Bob = ₹500   →   </tspan><tspan fill="#ff7b72" font-weight="700">TOTAL = ₹1300</tspan></text>
+  <text x="86" y="196" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72" font-weight="600">Money vanished!</tspan> This state is <tspan fill="#ff7b72" font-weight="700">INVALID</tspan> — but it's invisible to</text>
+  <text x="86" y="216" fill="#c9d1d9" font-size="13">everyone else (that's Isolation's job to hide it).</text>
+  <text x="68" y="256" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE accounts SET balance = balance + 200 WHERE name = 'Bob';</text>
+  <text x="44" y="284" fill="#56d364" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">COMMIT;</text>
+  <rect x="24" y="316" width="812" height="46" rx="10" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.5"/>
+  <text x="44" y="344" fill="#e6edf3" font-size="13" font-weight="700" letter-spacing="1">AFTER:</text>
+  <rect x="130" y="325" width="124" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="192" y="344" fill="#e6edf3" font-size="13" text-anchor="middle">Alice = ₹800</text>
+  <rect x="264" y="325" width="110" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="319" y="344" fill="#e6edf3" font-size="13" text-anchor="middle">Bob = ₹700</text>
+  <line x1="380" y1="339" x2="420" y2="339" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="426" y="325" width="140" height="28" rx="7" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.8"/>
+  <text x="496" y="344" fill="#56d364" font-size="13" font-weight="700" text-anchor="middle">TOTAL = ₹1500</text>
+  <rect x="590.0" y="328" width="120" height="22" rx="11.0" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="650" y="343.32" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">✓ valid state</text>
+</svg>

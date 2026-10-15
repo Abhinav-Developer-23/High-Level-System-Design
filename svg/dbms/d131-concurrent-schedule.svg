@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="378" viewBox="0 0 820 378" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Concurrent schedule</title>
+  <desc>Concurrent schedule with T1 and T2 interleaved: T1 Read(A), T2 Read(A) (interleaved), T1 Write(A), T2 Write(A) (might overwrite T1's change), T1 Read(B), T1 Write(B), T1 COMMIT, T2 COMMIT.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="819" height="377" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" font-size="14.5" fill="#e6edf3" font-weight="600">Concurrent Schedule <tspan fill="#8b949e" font-weight="400">(T1 and T2 interleaved)</tspan></text>
+  <rect x="24" y="56" width="772" height="34" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="52.0" y="78" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">T</text>
+  <text x="180.0" y="78" font-size="12" fill="#d2a8ff" font-weight="700" text-anchor="middle" letter-spacing="1.5">T1</text>
+  <text x="380.0" y="78" font-size="12" fill="#56d4dd" font-weight="700" text-anchor="middle" letter-spacing="1.5">T2</text>
+  <text x="496" y="78" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">NOTE</text>
+  <rect x="80" y="90" width="200" height="272" rx="0" fill="#bc8cff" fill-opacity="0.07" stroke="#bc8cff" stroke-opacity="0"/>
+  <rect x="280" y="90" width="200" height="272" rx="0" fill="#39c5cf" fill-opacity="0.07" stroke="#39c5cf" stroke-opacity="0"/>
+  <line x1="24" y1="90" x2="796" y2="90" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="111.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t1</text>
+  <text x="180.0" y="111.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <line x1="24" y1="124" x2="796" y2="124" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="145.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t2</text>
+  <text x="380.0" y="145.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <text x="496" y="145.5" font-size="13" fill="#e3b341" font-weight="600">← interleaved!</text>
+  <line x1="24" y1="158" x2="796" y2="158" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="179.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t3</text>
+  <text x="180.0" y="179.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <rect x="24" y="192" width="772" height="34" rx="0" fill="#f85149" fill-opacity="0.13" stroke="#f85149" stroke-opacity="0"/>
+  <line x1="24" y1="192" x2="796" y2="192" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="213.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t4</text>
+  <text x="380.0" y="213.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <text x="496" y="213.5" font-size="13" fill="#ff7b72" font-weight="600">← might overwrite T1's change!</text>
+  <line x1="24" y1="226" x2="796" y2="226" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="247.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t5</text>
+  <text x="180.0" y="247.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(B)</text>
+  <line x1="24" y1="260" x2="796" y2="260" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="281.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t6</text>
+  <text x="180.0" y="281.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(B)</text>
+  <line x1="24" y1="294" x2="796" y2="294" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="315.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t7</text>
+  <text x="180.0" y="315.5" font-size="12.5" fill="#56d364" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <line x1="24" y1="328" x2="796" y2="328" stroke="#21262d" stroke-width="1"/>
+  <text x="52.0" y="349.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t8</text>
+  <text x="380.0" y="349.5" font-size="12.5" fill="#56d364" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <rect x="24" y="56" width="772" height="306" rx="10" fill="none" stroke="#30363d"/>
+</svg>

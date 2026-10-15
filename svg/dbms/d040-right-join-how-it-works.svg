@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="266" viewBox="0 0 820 266" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>RIGHT JOIN: how it works</title>
+  <desc>Keep all rows from the right table (StudentCourse) and match from the left (Student): C101 and C103 match Alice via ROLL_NO=1, C102 matches Bob via ROLL_NO=2; C104 has ROLL_NO=5, so the student side is NULL.</desc>
+  <defs>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="819" height="265" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="40" y="40" fill="#8b949e" font-size="13" font-weight="700">Match from LEFT (Student)</text>
+  <line x1="40" y1="52" x2="290" y2="52" stroke="#30363d" stroke-width="1"/>
+  <text x="410" y="40" fill="#79c0ff" font-size="13" font-weight="700">Keep ALL from RIGHT (StudentCourse)</text>
+  <line x1="410" y1="52" x2="710" y2="52" stroke="#58a6ff" stroke-width="2"/>
+  <rect x="40" y="74" width="170" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="54" y="95.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Alice</text>
+  <rect x="410" y="74" width="150" height="34" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="424" y="95.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C101</text>
+  <line x1="410" y1="91.0" x2="214" y2="91.0" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <rect x="269.15" y="81.0" width="81.7" height="20" rx="6" fill="#161b22" stroke="#30363d"/>
+  <text x="310.0" y="95.0" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ROLL_NO=1</text>
+  <text x="580" y="95.5" fill="#56d364" font-size="13" font-weight="600">✓ matched</text>
+  <rect x="40" y="118" width="170" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="54" y="139.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Alice</text>
+  <rect x="410" y="118" width="150" height="34" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="424" y="139.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C103</text>
+  <line x1="410" y1="135.0" x2="214" y2="135.0" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <rect x="269.15" y="125.0" width="81.7" height="20" rx="6" fill="#161b22" stroke="#30363d"/>
+  <text x="310.0" y="139.0" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ROLL_NO=1</text>
+  <text x="580" y="139.5" fill="#56d364" font-size="13" font-weight="600">✓ matched</text>
+  <rect x="40" y="162" width="170" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="54" y="183.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Bob</text>
+  <rect x="410" y="162" width="150" height="34" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="424" y="183.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C102</text>
+  <line x1="410" y1="179.0" x2="214" y2="179.0" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <rect x="269.15" y="169.0" width="81.7" height="20" rx="6" fill="#161b22" stroke="#30363d"/>
+  <text x="310.0" y="183.0" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ROLL_NO=2</text>
+  <text x="580" y="183.5" fill="#56d364" font-size="13" font-weight="600">✓ matched</text>
+  <rect x="40" y="206" width="170" height="34" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".6" stroke-dasharray="5 4"/>
+  <text x="54" y="227.5" fill="#ff7b72" font-size="13" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">NULL</text>
+  <rect x="410" y="206" width="150" height="34" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="424" y="227.5" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C104</text>
+  <line x1="410" y1="223.0" x2="214" y2="223.0" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <rect x="269.15" y="213.0" width="81.7" height="20" rx="6" fill="#161b22" stroke="#30363d"/>
+  <text x="310.0" y="227.0" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ROLL_NO=5</text>
+  <text x="580" y="227.5" fill="#ff7b72" font-size="13" font-weight="600">✗ no student with ROLL_NO=5</text>
+</svg>

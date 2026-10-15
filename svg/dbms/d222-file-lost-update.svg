@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="292" viewBox="0 0 780 292" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Concurrent file writes: lost update</title>
+  <desc>Balance is 1000. Two ₹500 withdrawals run at the same time: P1 reads 1000, computes 500, writes 500; P2 reads 1000 slightly later, computes 500, writes 500. Two withdrawals happened but the balance is 500, not 0 — a lost update.</desc>
+  <defs>
+    <marker id="d222a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="779" height="291" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="38" fill="#c9d1d9" font-size="13.5"><tspan fill="#e6edf3" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Balance = 1000</tspan>.  Two withdrawals of <tspan font-weight="700" fill="#e6edf3">₹500</tspan> run at the same time:</text>
+
+  <!-- lanes -->
+  <rect x="24" y="58" width="732" height="54" rx="10" fill="#bc8cff" fill-opacity=".06" stroke="#bc8cff" stroke-opacity=".3"/>
+  <rect x="24" y="120" width="732" height="54" rx="10" fill="#39c5cf" fill-opacity=".06" stroke="#39c5cf" stroke-opacity=".3"/>
+  <text x="52" y="90" fill="#d2a8ff" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">P1</text>
+  <text x="52" y="152" fill="#56d4dd" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">P2</text>
+  <line x1="80" y1="64" x2="80" y2="168" stroke="#30363d"/>
+
+  <!-- P1 -->
+  <rect x="96" y="70" width="110" height="30" rx="7" fill="#1c2128" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="151" y="90" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">read 1000</text>
+  <line x1="206" y1="85" x2="326" y2="85" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d222a)"/>
+  <rect x="330" y="70" width="120" height="30" rx="7" fill="#1c2128" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="390" y="90" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">compute 500</text>
+  <line x1="450" y1="85" x2="552" y2="85" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d222a)"/>
+  <rect x="556" y="70" width="110" height="30" rx="7" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="611" y="90" fill="#ff7b72" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">write 500</text>
+
+  <!-- P2 -->
+  <rect x="146" y="132" width="110" height="30" rx="7" fill="#1c2128" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="201" y="152" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">read 1000</text>
+  <line x1="256" y1="147" x2="376" y2="147" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d222a)"/>
+  <rect x="380" y="132" width="120" height="30" rx="7" fill="#1c2128" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="440" y="152" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">compute 500</text>
+  <line x1="500" y1="147" x2="602" y2="147" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d222a)"/>
+  <rect x="606" y="132" width="110" height="30" rx="7" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="661" y="152" fill="#ff7b72" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">write 500</text>
+
+  <!-- time axis -->
+  <line x1="96" y1="190" x2="740" y2="190" stroke="#484f58" stroke-width="1.3" marker-end="url(#d222a)"/>
+  <text x="740" y="208" fill="#8b949e" font-size="12" text-anchor="end">time</text>
+
+  <!-- result -->
+  <rect x="24" y="218" width="732" height="56" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="42" y="241" fill="#c9d1d9" font-size="13">Two ₹500 withdrawals happened but the balance is <tspan fill="#ff7b72" font-weight="700">500</tspan>, not <tspan font-weight="700" fill="#e6edf3">0</tspan>.</text>
+  <text x="42" y="262" fill="#c9d1d9" font-size="13">→ <tspan fill="#ff7b72" font-weight="700">LOST UPDATE</tspan> <tspan fill="#8b949e">(see the Concurrency Problems section)</tspan></text>
+</svg>

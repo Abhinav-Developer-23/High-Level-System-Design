@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="204" viewBox="0 0 780 204" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Normal timestamp write rule</title>
+  <desc>If TS(Ti) &lt; W-TS(X), a later transaction already wrote X, so Ti's write is outdated and the normal rule rolls Ti back.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="779" height="203" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">NORMAL TIMESTAMP RULE FOR WRITE</text>
+  <line x1="24" y1="54" x2="756" y2="54" stroke="#30363d"/>
+  <rect x="24" y="74" width="250" height="106" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="149.0" y="132.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">If TS(Ti) &lt; W-TS(X)</text>
+  <line x1="274" y1="127.0" x2="310" y2="127.0" stroke="#f85149" stroke-width="1.8" marker-end="url(#m-red)"/>
+  <rect x="314" y="74" width="442" height="106" rx="10" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="332" y="102" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">→  </tspan>A later transaction already wrote X</text>
+  <text x="332" y="124" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">→  </tspan>Ti's write is <tspan fill="#e3b341" font-weight="700">OUTDATED</tspan></text>
+  <text x="332" y="148" font-size="14" fill="#ff7b72" font-weight="700">Normal rule: ROLLBACK Ti  ✗</text>
+</svg>

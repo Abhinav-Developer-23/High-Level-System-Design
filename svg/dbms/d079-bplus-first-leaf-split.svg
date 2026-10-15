@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="270" viewBox="0 0 860 270" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>B+ Tree leaf split on inserting 40</title>
+  <desc>Inserting 40 overflows the leaf, so [10, 20, 30, 40] is split into two halves: left leaf [10, 20] and right leaf [30, 40]. The middle key 30 is promoted up to a new root. Result: new root [30] (internal node) with leaf nodes [10, 20] and [30, 40] linked to each other.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="859" height="269" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ===== Split ===== -->
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SPLIT</text>
+  <text x="90" y="42" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#ff7b72">[10, 20, 30, 40]</tspan> into two halves:</text>
+
+  <rect x="132" y="60" width="176" height="38" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".8"/>
+  <rect x="223" y="63" width="38" height="32" rx="5" fill="#d29922" fill-opacity=".35"/>
+  <g stroke="#f85149" stroke-opacity=".4"><line x1="176" y1="60" x2="176" y2="98"/><line x1="220" y1="60" x2="220" y2="98"/><line x1="264" y1="60" x2="264" y2="98"/></g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="154" y="84">10</text><text x="198" y="84">20</text><text x="242" y="84">30</text><text x="286" y="84">40</text>
+  </g>
+
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="176" y1="102" x2="116" y2="146" marker-end="url(#arr)"/>
+    <line x1="264" y1="102" x2="324" y2="146" marker-end="url(#arr)"/>
+  </g>
+  <g fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8">
+    <rect x="66" y="150" width="88" height="38" rx="8"/>
+    <rect x="286" y="150" width="88" height="38" rx="8"/>
+  </g>
+  <g stroke="#39c5cf" stroke-opacity=".4"><line x1="110" y1="150" x2="110" y2="188"/><line x1="330" y1="150" x2="330" y2="188"/></g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="88" y="174">10</text><text x="132" y="174">20</text>
+    <text x="308" y="174">30</text><text x="352" y="174">40</text>
+  </g>
+  <text x="110" y="210" fill="#8b949e" font-size="12.5" text-anchor="middle">Left leaf</text>
+  <text x="330" y="210" fill="#8b949e" font-size="12.5" text-anchor="middle">Right leaf</text>
+  <text x="32" y="246" fill="#e3b341" font-size="13" font-weight="600">↑ Promote middle key <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(30)</tspan> up to a new root</text>
+
+  <line x1="440" y1="28" x2="440" y2="246" stroke="#21262d"/>
+
+  <!-- ===== Result ===== -->
+  <text x="472" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">RESULT</text>
+
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="630" y1="100" x2="568" y2="146" marker-end="url(#arr)"/>
+    <line x1="650" y1="100" x2="712" y2="146" marker-end="url(#arr)"/>
+  </g>
+  <rect x="616" y="60" width="48" height="38" rx="8" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".9"/>
+  <text x="640" y="84" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">30</text>
+  <text x="680" y="76" fill="#e3b341" font-size="13" font-weight="600">New root</text>
+  <text x="680" y="94" fill="#8b949e" font-size="12.5">(internal node)</text>
+
+  <g fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8">
+    <rect x="520" y="150" width="88" height="38" rx="8"/>
+    <rect x="672" y="150" width="88" height="38" rx="8"/>
+  </g>
+  <g stroke="#39c5cf" stroke-opacity=".4"><line x1="564" y1="150" x2="564" y2="188"/><line x1="716" y1="150" x2="716" y2="188"/></g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="542" y="174">10</text><text x="586" y="174">20</text>
+    <text x="694" y="174">30</text><text x="738" y="174">40</text>
+  </g>
+  <line x1="614" y1="169" x2="666" y2="169" stroke="#39c5cf" stroke-width="1.5" marker-start="url(#arrT)" marker-end="url(#arrT)"/>
+  <text x="640" y="214" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle">Leaf nodes</text>
+</svg>

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="132" viewBox="0 0 500 132" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>B+ Tree after inserting 10, 20, 30</title>
+  <desc>After inserting 10, 20 and 30 the tree is a single node [10, 20, 30]; the root is also a leaf at this point.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="499" height="131" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">INSERT <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" letter-spacing="0" font-weight="400" fill="#79c0ff">10, 20, 30</tspan></text>
+
+  <rect x="32" y="60" width="132" height="40" rx="8" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8"/>
+  <g stroke="#39c5cf" stroke-opacity=".4"><line x1="76" y1="60" x2="76" y2="100"/><line x1="120" y1="60" x2="120" y2="100"/></g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="54" y="85">10</text><text x="98" y="85">20</text><text x="142" y="85">30</text>
+  </g>
+  <line x1="214" y1="80" x2="172" y2="80" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="224" y="85" fill="#c9d1d9" font-size="13"><tspan fill="#e6edf3" font-weight="600">Root</tspan> is also a <tspan fill="#56d4dd" font-weight="600">leaf</tspan> at this point</text>
+</svg>

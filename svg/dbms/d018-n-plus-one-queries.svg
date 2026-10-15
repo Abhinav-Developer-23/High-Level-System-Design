@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="372" viewBox="0 0 760 372" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>N+1 query problem</title>
+  <desc>N+1 way: query 1 selects all 100 authors, then one books query per author (author_id 1 to 100). Total 1 + 100 = 101 queries, each a network round trip to the database.</desc>
+  <rect x="0.5" y="0.5" width="759" height="371" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <rect x="24" y="24" width="712" height="32" rx="8" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="40" y="45" fill="#ff7b72" font-size="13" font-weight="700" letter-spacing="1.2">✗  N+1 WAY <tspan font-weight="600" letter-spacing="0">(101 queries!)</tspan></text>
+
+  <!-- query 1 -->
+  <text x="24" y="86" fill="#e6edf3" font-size="13.5" font-weight="600">Query 1 <tspan fill="#8b949e" font-weight="400">(the "1"):</tspan></text>
+  <rect x="24" y="96" width="712" height="34" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">
+    <text x="40" y="118" fill="#58a6ff">⇄</text>
+    <text x="64" y="118" fill="#e6edf3">SELECT * FROM authors;</text>
+    <text x="440" y="118" fill="#8b949e">-- Returns 100 authors</text>
+  </g>
+
+  <!-- query 2..N -->
+  <text x="24" y="160" fill="#e6edf3" font-size="13.5" font-weight="600">Query 2 <tspan fill="#8b949e" font-weight="400">(the "N" — one per author):</tspan></text>
+  <rect x="24" y="170" width="712" height="116" rx="8" fill="#f85149" fill-opacity=".05" stroke="#f85149" stroke-opacity=".5"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">
+    <g fill="#f85149">
+      <text x="40" y="192">⇄</text>
+      <text x="40" y="212">⇄</text>
+      <text x="40" y="232">⇄</text>
+      <text x="40" y="272">⇄</text>
+    </g>
+    <g fill="#e6edf3">
+      <text x="64" y="192">SELECT * FROM books WHERE author_id = 1;</text>
+      <text x="64" y="212">SELECT * FROM books WHERE author_id = 2;</text>
+      <text x="64" y="232">SELECT * FROM books WHERE author_id = 3;</text>
+      <text x="64" y="252" fill="#8b949e">...</text>
+      <text x="64" y="272">SELECT * FROM books WHERE author_id = 100;</text>
+    </g>
+    <g fill="#8b949e">
+      <text x="440" y="192">-- Books for author 1</text>
+      <text x="440" y="212">-- Books for author 2</text>
+      <text x="440" y="232">-- Books for author 3</text>
+      <text x="440" y="272">-- Books for author 100</text>
+    </g>
+  </g>
+
+  <!-- total -->
+  <rect x="24" y="300" width="712" height="52" rx="10" fill="#f85149" fill-opacity=".12" stroke="#f85149"/>
+  <text x="40" y="322" fill="#ff7b72" font-size="15" font-weight="700">✗  Total: 1 + 100 = 101 queries</text>
+  <text x="40" y="342" fill="#c9d1d9" font-size="13">Each query = 1 network round trip to the database <tspan fill="#8b949e">(⇄)</tspan></text>
+</svg>

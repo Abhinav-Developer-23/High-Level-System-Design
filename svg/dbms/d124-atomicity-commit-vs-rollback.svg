@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="384" viewBox="0 0 820 384" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Atomicity: commit vs rollback</title>
+  <desc>Success: Read(A), A-500, Write(A), Read(B), B+500, Write(B), all steps done, COMMIT. Failure: crash after Write(A), so Write(A) is undone (A back to 1000) and everything is rolled back.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="819" height="383" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="772" height="160" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,58 V34 a10,10 0 0 1 10,-10 H786 a10,10 0 0 1 10,10 V58 z" fill="#3fb950" fill-opacity=".14"/>
+  <line x1="24" y1="58" x2="796" y2="58" stroke="#3fb950" stroke-width="1"/>
+  <text x="42" y="46" font-size="14" fill="#56d364" font-weight="600">✓  Success: All steps complete → COMMIT</text>
+  <rect x="42" y="72" width="500" height="98" rx="10" fill="#161b22" stroke="#30363d"/>
+  <rect x="58" y="82" width="82" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="99.0" y="101" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <line x1="142" y1="96" x2="162" y2="96" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="166" y="82" width="70" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="201.0" y="101" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A-500</text>
+  <line x1="238" y1="96" x2="258" y2="96" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="262" y="82" width="86" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="305.0" y="101" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <rect x="58" y="116" width="82" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="99.0" y="135" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(B)</text>
+  <line x1="142" y1="130" x2="162" y2="130" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="166" y="116" width="70" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="201.0" y="135" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B+500</text>
+  <line x1="238" y1="130" x2="258" y2="130" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="262" y="116" width="86" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="305.0" y="135" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(B)</text>
+  <text x="60" y="162" font-size="13" fill="#8b949e">All steps done</text>
+  <line x1="546" y1="121" x2="610" y2="121" stroke="#3fb950" stroke-width="1.8" marker-end="url(#a-green)"/>
+  <rect x="620.0" y="106.0" width="140" height="30" rx="15.0" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="690" y="126.04" font-size="14" fill="#56d364" font-weight="600" text-anchor="middle">COMMIT ✓</text>
+  <rect x="24" y="200" width="772" height="160" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,234 V210 a10,10 0 0 1 10,-10 H786 a10,10 0 0 1 10,10 V234 z" fill="#f85149" fill-opacity=".14"/>
+  <line x1="24" y1="234" x2="796" y2="234" stroke="#f85149" stroke-width="1"/>
+  <text x="42" y="222" font-size="14" fill="#ff7b72" font-weight="600">✗  Failure: Crash after step 3 → ROLLBACK everything</text>
+  <rect x="42" y="248" width="500" height="98" rx="10" fill="#161b22" stroke="#30363d"/>
+  <rect x="58" y="258" width="82" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="99.0" y="277" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <line x1="142" y1="272" x2="162" y2="272" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="166" y="258" width="70" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="201.0" y="277" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A-500</text>
+  <line x1="238" y1="272" x2="258" y2="272" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="262" y="258" width="86" height="28" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="305.0" y="277" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <rect x="58.0" y="293.0" width="104" height="26" rx="13.0" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="110" y="310.68" font-size="13" fill="#ff7b72" font-weight="600" text-anchor="middle">✱ CRASH!</text>
+  <text x="60" y="336" font-size="13" fill="#c9d1d9"><tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Undo Write(A)</tspan>  →  A back to <tspan fill="#56d364" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1000</tspan></text>
+  <line x1="546" y1="297" x2="610" y2="297" stroke="#f85149" stroke-width="1.8" marker-end="url(#a-red)"/>
+  <rect x="615.0" y="282.0" width="150" height="30" rx="15.0" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="690" y="302.04" font-size="14" fill="#ff7b72" font-weight="600" text-anchor="middle">ROLLBACK ✗</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="404" viewBox="0 0 760 404" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Participation: mandatory vs optional</title>
+  <desc>Employee must belong to a Department (mandatory/total, min 1 max 1). Department may have zero employees (optional/partial, min 0 max N). UML notation: Employee [1..1] to [0..*] Department.</desc>
+
+  <rect x="0.5" y="0.5" width="759" height="403" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EXAMPLE</text>
+  <line x1="24" y1="48" x2="736" y2="48" stroke="#21262d"/>
+
+  <circle cx="34" cy="73" r="4" fill="#3fb950"/>
+  <text x="48" y="78" fill="#c9d1d9" font-size="13.5">Employee <tspan font-weight="700" fill="#56d364">MUST</tspan> belong to a Department</text>
+  <rect x="312" y="62" width="96" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="360" y="77" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">mandatory</text>
+
+  <circle cx="34" cy="105" r="4" fill="#8b949e"/>
+  <text x="48" y="110" fill="#c9d1d9" font-size="13.5">Department <tspan font-weight="700" fill="#e6edf3">MAY</tspan> have zero employees</text>
+  <rect x="312" y="94" width="96" height="22" rx="11" fill="#8b949e" fill-opacity=".12" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="360" y="109" fill="#c9d1d9" font-size="12" font-weight="600" text-anchor="middle">optional</text>
+
+  <!-- ER diagram -->
+  <rect x="80" y="146" width="190" height="48" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="175" y="175" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Employee</text>
+  <rect x="490" y="146" width="190" height="48" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="585" y="175" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Department</text>
+  <!-- double line = total participation -->
+  <line x1="270" y1="166" x2="490" y2="166" stroke="#3fb950" stroke-width="2"/>
+  <line x1="270" y1="174" x2="490" y2="174" stroke="#3fb950" stroke-width="2"/>
+
+  <rect x="100" y="206" width="150" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="175" y="221" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">mandatory / total</text>
+  <text x="175" y="248" fill="#c9d1d9" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">min 1, max 1</text>
+
+  <rect x="510" y="206" width="150" height="22" rx="11" fill="#8b949e" fill-opacity=".12" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="585" y="221" fill="#c9d1d9" font-size="12" font-weight="600" text-anchor="middle">optional / partial</text>
+  <text x="585" y="248" fill="#c9d1d9" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">min 0, max N</text>
+
+  <!-- UML -->
+  <text x="24" y="292" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">IN UML NOTATION</text>
+  <line x1="24" y1="304" x2="736" y2="304" stroke="#21262d"/>
+
+  <rect x="80" y="330" width="150" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="155" y="357" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Employee</text>
+  <rect x="530" y="330" width="150" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="605" y="357" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Department</text>
+  <line x1="230" y1="352" x2="530" y2="352" stroke="#8b949e" stroke-width="1.6"/>
+  <rect x="244" y="341" width="60" height="22" rx="6" fill="#161b22" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="274" y="356" fill="#56d364" font-size="12.5" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">[1..1]</text>
+  <rect x="456" y="341" width="60" height="22" rx="6" fill="#161b22" stroke="#8b949e" stroke-opacity=".7"/>
+  <text x="486" y="356" fill="#c9d1d9" font-size="12.5" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">[0..*]</text>
+</svg>

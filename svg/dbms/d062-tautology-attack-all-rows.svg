@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="560" height="314" viewBox="0 0 560 314" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Tautology attack returns all rows</title>
+  <desc>Users table with UserId, Name, Password: 101 Alice pass123, 102 Bob secret, 103 Carol qwerty, 105 Dave mypass. Every row is returned. The attacker now has all usernames and passwords.</desc>
+  <defs>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="559" height="313" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">USERS TABLE</text>
+
+  <!-- table -->
+  <rect x="32" y="56" width="330" height="164" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <path d="M32,90 V64 a8,8 0 0 1 8,-8 H354 a8,8 0 0 1 8,8 V90 z" fill="#21262d"/>
+  <line x1="32" y1="90" x2="362" y2="90" stroke="#30363d"/>
+  <line x1="122" y1="56" x2="122" y2="220" stroke="#30363d"/>
+  <line x1="232" y1="56" x2="232" y2="220" stroke="#30363d"/>
+  <g font-size="13" font-weight="600" fill="#e6edf3">
+    <text x="46" y="78">UserId</text><text x="136" y="78">Name</text><text x="246" y="78">Password</text>
+  </g>
+  <!-- returned rows tinted red -->
+  <rect x="33" y="91" width="328" height="128" fill="#f85149" fill-opacity=".10"/>
+  <line x1="32" y1="122" x2="362" y2="122" stroke="#f85149" stroke-opacity=".25"/>
+  <line x1="32" y1="154" x2="362" y2="154" stroke="#f85149" stroke-opacity=".25"/>
+  <line x1="32" y1="186" x2="362" y2="186" stroke="#f85149" stroke-opacity=".25"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#c9d1d9">
+    <text x="46" y="111">101</text><text x="136" y="111">Alice</text><text x="246" y="111" fill="#ff7b72">pass123</text>
+    <text x="46" y="143">102</text><text x="136" y="143">Bob</text><text x="246" y="143" fill="#ff7b72">secret</text>
+    <text x="46" y="175">103</text><text x="136" y="175">Carol</text><text x="246" y="175" fill="#ff7b72">qwerty</text>
+    <text x="46" y="207">105</text><text x="136" y="207">Dave</text><text x="246" y="207" fill="#ff7b72">mypass</text>
+  </g>
+
+  <!-- annotations -->
+  <g stroke="#f85149" stroke-width="1.5">
+    <line x1="410" y1="106" x2="370" y2="106" marker-end="url(#arrR)"/>
+    <line x1="410" y1="138" x2="370" y2="138" marker-end="url(#arrR)"/>
+    <line x1="410" y1="170" x2="370" y2="170" marker-end="url(#arrR)"/>
+    <line x1="410" y1="202" x2="370" y2="202" marker-end="url(#arrR)"/>
+  </g>
+  <g fill="#ff7b72" font-size="13" font-weight="600">
+    <text x="418" y="111">All returned!</text>
+    <text x="418" y="143">All returned!</text>
+    <text x="418" y="175">All returned!</text>
+    <text x="418" y="207">All returned!</text>
+  </g>
+
+  <!-- verdict -->
+  <rect x="32" y="242" width="496" height="44" rx="10" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="50" y="269" fill="#ff7b72" font-size="14" font-weight="600">✗  Attacker now has ALL usernames and passwords!</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="730" height="330" viewBox="0 0 730 330" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Page split steps</title>
+  <desc>When the target 16 KB leaf page has no room: 1 allocate a new page; 2 move roughly half the records into it; 3 update the parent node's pointers; 4 if the parent is now full too, split the parent as well, which can cascade upward; 5 in the worst case the tree grows one level taller.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d29922"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="729" height="329" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="60" y1="66" x2="60" y2="80" marker-end="url(#arr)"/>
+    <line x1="60" y1="126" x2="60" y2="140" marker-end="url(#arr)"/>
+    <line x1="60" y1="186" x2="60" y2="200" marker-end="url(#arr)"/>
+    <line x1="60" y1="246" x2="60" y2="260" marker-end="url(#arr)"/>
+  </g>
+
+  <rect x="24" y="24" width="580" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="60" cy="45" r="12" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="60" y="49.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle">1</text>
+  <text x="86" y="50" fill="#e6edf3" font-size="13.5">Allocate a new page</text>
+
+  <rect x="24" y="84" width="580" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="60" cy="105" r="12" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="60" y="109.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle">2</text>
+  <text x="86" y="110" fill="#e6edf3" font-size="13.5">Move roughly half the records into it</text>
+
+  <rect x="24" y="144" width="580" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="60" cy="165" r="12" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="60" y="169.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle">3</text>
+  <text x="86" y="170" fill="#e6edf3" font-size="13.5">Update the parent node's pointers</text>
+
+  <rect x="24" y="204" width="580" height="42" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".7"/>
+  <circle cx="60" cy="225" r="12" fill="#d29922" fill-opacity=".18" stroke="#d29922"/>
+  <text x="60" y="229.5" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle">4</text>
+  <text x="86" y="230" fill="#e6edf3" font-size="13.5">If the parent is now full too <tspan fill="#8b949e">→</tspan> split the parent as well</text>
+  <!-- cascade loop -->
+  <path d="M604,225 H636 V45 H612" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="646" y="160" fill="#e3b341" font-size="12" font-weight="600" data-nocheck="1">
+    <tspan x="646" y="120">can</tspan><tspan x="646" y="136">cascade</tspan><tspan x="646" y="152">upward</tspan>
+  </text>
+
+  <rect x="24" y="264" width="580" height="42" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".7"/>
+  <circle cx="60" cy="285" r="12" fill="#f85149" fill-opacity=".18" stroke="#f85149"/>
+  <text x="60" y="289.5" fill="#ff7b72" font-size="12.5" font-weight="700" text-anchor="middle">5</text>
+  <text x="86" y="290" fill="#e6edf3" font-size="13.5">In the worst case the tree grows one level taller</text>
+</svg>

@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="388" viewBox="0 0 800 388" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Index insert cost by key pattern</title>
+  <desc>Sequential secondary index appends to the rightmost leaf (cheapest); random secondary index hits random leaves with splits (normal cost); random UUID primary key also drags the whole row and bloats every other index.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="799" height="387" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="44" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">INDEX</text>
+  <text x="222" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">INSERTED VALUES</text>
+  <text x="462" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WHERE INSERTS LAND</text>
+  <line x1="24" y1="52" x2="776" y2="52" stroke="#30363d" stroke-width="1.5"/>
+  <rect x="24" y="66" width="752" height="84" rx="10" fill="#3fb950" fill-opacity="0.06" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="44" y="98" fill="#e6edf3" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">idx_created_at</text>
+  <line x1="184" y1="93" x2="214" y2="93" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="222" y="78" width="200" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="236" y="97" fill="#c9d1d9" font-size="13">values always increase</text>
+  <line x1="426" y1="93" x2="456" y2="93" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="462" y="78" width="292" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="476" y="97" fill="#c9d1d9" font-size="13">appends to the rightmost leaf</text>
+  <text x="224" y="130" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="244" y="130" fill="#56d364" font-size="13" font-weight="600">cheapest possible secondary index — no splits at all</text>
+  <rect x="24" y="162" width="752" height="84" rx="10" fill="#d29922" fill-opacity="0.06" stroke="#d29922" stroke-opacity="0.45"/>
+  <text x="44" y="194" fill="#e6edf3" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">idx_email</text>
+  <line x1="184" y1="189" x2="214" y2="189" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="222" y="174" width="200" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="236" y="193" fill="#c9d1d9" font-size="13">values are random</text>
+  <line x1="426" y1="189" x2="456" y2="189" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="462" y="174" width="292" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="476" y="193" fill="#c9d1d9" font-size="13">random leaf, splits</text>
+  <text x="224" y="226" fill="#e3b341" font-size="14" font-weight="700">⚠</text>
+  <text x="244" y="226" fill="#e3b341" font-size="13" font-weight="600">normal cost, entirely acceptable</text>
+  <rect x="24" y="258" width="752" height="106" rx="10" fill="#f85149" fill-opacity="0.06" stroke="#f85149" stroke-opacity="0.45"/>
+  <text x="44" y="290" fill="#e6edf3" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">PRIMARY KEY uuid</text>
+  <line x1="184" y1="285" x2="214" y2="285" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="222" y="270" width="200" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="236" y="289" fill="#c9d1d9" font-size="13">values are random</text>
+  <line x1="426" y1="285" x2="456" y2="285" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="462" y="270" width="292" height="28" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="476" y="289" fill="#c9d1d9" font-size="13">random leaf, splits,</text>
+  <text x="224" y="322" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="244" y="322" fill="#ff7b72" font-size="13" font-weight="600">AND drags the entire row with it,</text>
+  <text x="244" y="342" fill="#ff7b72" font-size="13" font-weight="600">AND bloats every other index</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="680" height="206" viewBox="0 0 680 206" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Transitive chain with data</title>
+  <desc>roll_no → dept → dept_head with data: 1 → CSE → Dr. Smith, 2 → ECE → Dr. Jones, 3 → CSE → Dr. Smith (Dr. Smith repeated).</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="679" height="205" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="47.0" y="24" width="86" height="36" rx="8" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.65"/>
+  <text x="90.0" y="46.68" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">roll_no</text>
+  <rect x="219.0" y="24" width="62" height="36" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.65"/>
+  <text x="250.0" y="46.68" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">dept</text>
+  <rect x="379.5" y="24" width="101" height="36" rx="8" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf" stroke-opacity="0.65"/>
+  <text x="430.0" y="46.68" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">dept_head</text>
+  <line x1="137.0" y1="42" x2="215.0" y2="42" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="285.0" y1="42" x2="375.5" y2="42" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="90" y1="62" x2="90" y2="74" stroke="#484f58" stroke-width="1.5"/>
+  <line x1="250" y1="62" x2="250" y2="74" stroke="#484f58" stroke-width="1.5"/>
+  <line x1="430" y1="62" x2="430" y2="74" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="380" y="79" width="100" height="26" rx="13" fill="#d29922" fill-opacity="0.14" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="90" y="96" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">1</text>
+  <text x="250" y="96" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">CSE</text>
+  <text x="430" y="96" fill="#e3b341" font-size="13.5" font-weight="600" text-anchor="middle">Dr. Smith</text>
+  <line x1="114" y1="91" x2="220" y2="91" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="280" y1="91" x2="374" y2="91" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <text x="90" y="132" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">2</text>
+  <text x="250" y="132" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">ECE</text>
+  <text x="430" y="132" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Dr. Jones</text>
+  <line x1="114" y1="127" x2="220" y2="127" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="280" y1="127" x2="374" y2="127" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="380" y="151" width="100" height="26" rx="13" fill="#d29922" fill-opacity="0.14" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="90" y="168" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">3</text>
+  <text x="250" y="168" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">CSE</text>
+  <text x="430" y="168" fill="#e3b341" font-size="13.5" font-weight="600" text-anchor="middle">Dr. Smith</text>
+  <line x1="114" y1="163" x2="220" y2="163" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="280" y1="163" x2="374" y2="163" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <text x="496" y="168" fill="#e3b341" font-size="13" font-weight="600">(Dr. Smith repeated!)</text>
+</svg>

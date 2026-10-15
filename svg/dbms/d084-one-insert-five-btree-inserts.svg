@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="324" viewBox="0 0 860 324" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>One INSERT, five B+ Tree inserts</title>
+  <desc>INSERT INTO orders (id, user_id, status, created_at, total) VALUES (...) is one SQL statement, but it fans out into five B+ Tree inserts: PRIMARY (row data), idx_user (user_id, id), idx_status (status, id), idx_created (created_at, id) and idx_total (total, id).</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d29922"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="859" height="323" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- SQL -->
+  <rect x="140" y="24" width="580" height="34" rx="8" fill="#0d1117" stroke="#30363d"/>
+  <text x="430" y="46" fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" text-anchor="middle">INSERT INTO orders (id, user_id, status, created_at, total) VALUES (...);</text>
+  <line x1="430" y1="58" x2="430" y2="80" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="290" y="84" width="280" height="36" rx="18" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="430" y="107" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">ONE SQL statement</text>
+
+  <!-- fan out -->
+  <g stroke="#8b949e" stroke-width="1.5" fill="none">
+    <line x1="430" y1="120" x2="430" y2="142"/>
+    <line x1="102" y1="142" x2="758" y2="142"/>
+    <line x1="102" y1="142" x2="102" y2="164" marker-end="url(#arr)"/>
+    <line x1="266" y1="142" x2="266" y2="164" marker-end="url(#arr)"/>
+    <line x1="430" y1="142" x2="430" y2="164" marker-end="url(#arr)"/>
+    <line x1="594" y1="142" x2="594" y2="164" marker-end="url(#arr)"/>
+    <line x1="758" y1="142" x2="758" y2="164" marker-end="url(#arr)"/>
+  </g>
+
+  <!-- trees -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" text-anchor="middle">
+    <rect x="32" y="168" width="140" height="58" rx="10" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".7"/>
+    <text x="102" y="192" fill="#e6edf3" font-size="13" font-weight="700">PRIMARY</text>
+    <text x="102" y="212" fill="#56d364" font-size="12">(row data)</text>
+    <rect x="196" y="168" width="140" height="58" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+    <text x="266" y="192" fill="#e6edf3" font-size="13" font-weight="700">idx_user</text>
+    <text x="266" y="212" fill="#8b949e" font-size="12">(user_id, id)</text>
+    <rect x="360" y="168" width="140" height="58" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+    <text x="430" y="192" fill="#e6edf3" font-size="13" font-weight="700">idx_status</text>
+    <text x="430" y="212" fill="#8b949e" font-size="12">(status, id)</text>
+    <rect x="524" y="168" width="140" height="58" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+    <text x="594" y="192" fill="#e6edf3" font-size="13" font-weight="700">idx_created</text>
+    <text x="594" y="212" fill="#8b949e" font-size="12">(created_at, id)</text>
+    <rect x="688" y="168" width="140" height="58" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+    <text x="758" y="192" fill="#e6edf3" font-size="13" font-weight="700">idx_total</text>
+    <text x="758" y="212" fill="#8b949e" font-size="12">(total, id)</text>
+  </g>
+
+  <!-- converge -->
+  <g stroke="#d29922" stroke-width="1.5" fill="none" stroke-opacity=".8">
+    <line x1="102" y1="226" x2="102" y2="248"/>
+    <line x1="266" y1="226" x2="266" y2="248"/>
+    <line x1="430" y1="226" x2="430" y2="248"/>
+    <line x1="594" y1="226" x2="594" y2="248"/>
+    <line x1="758" y1="226" x2="758" y2="248"/>
+    <line x1="102" y1="248" x2="758" y2="248"/>
+    <line x1="430" y1="248" x2="430" y2="262" marker-end="url(#arrA)"/>
+  </g>
+  <rect x="320" y="266" width="220" height="34" rx="17" fill="#d29922" fill-opacity=".16" stroke="#d29922"/>
+  <text x="430" y="288" fill="#e3b341" font-size="14" font-weight="700" text-anchor="middle">5 B+ Tree inserts</text>
+</svg>

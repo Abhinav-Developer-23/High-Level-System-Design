@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="286" viewBox="0 0 740 286" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Transitive dependency roll_no → dept → dept_head</title>
+  <desc>roll_no determines dept and dept determines dept_head, but dept does not determine roll_no, so roll_no → dept_head is transitive.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="739" height="285" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="40" y="28" width="86" height="36" rx="8" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.65"/>
+  <text x="83.0" y="50.68" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">roll_no</text>
+  <line x1="129" y1="46.0" x2="162" y2="46.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="166" y="28" width="62" height="36" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.65"/>
+  <text x="197.0" y="50.68" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">dept</text>
+  <line x1="231" y1="46.0" x2="264" y2="46.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="268" y="28" width="101" height="36" rx="8" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf" stroke-opacity="0.65"/>
+  <text x="318.5" y="50.68" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">dept_head</text>
+  <path d="M83.0,64 C83.0,100 318.5,100 318.5,68" fill="none" stroke="#d29922" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#a-amber)"/>
+  <text x="40" y="134" fill="#e6edf3" font-size="13" font-weight="700">Step 1:</text>
+  <text x="124" y="134" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">roll_no → dept</text>
+  <text x="272" y="134" fill="#8b949e" font-size="13">(knowing roll_no gives you dept)</text>
+  <text x="40" y="164" fill="#e6edf3" font-size="13" font-weight="700">Step 2:</text>
+  <text x="124" y="164" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">dept → dept_head</text>
+  <text x="272" y="164" fill="#8b949e" font-size="13">(knowing dept gives you dept head)</text>
+  <text x="40" y="194" fill="#ff7b72" font-size="13" font-weight="700">BUT:</text>
+  <text x="124" y="194" fill="#ff7b72" font-size="13" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">dept <tspan font-family="Segoe UI Symbol, Cambria Math, Segoe UI, sans-serif" font-size="15">↛</tspan> roll_no</text>
+  <text x="272" y="194" fill="#8b949e" font-size="13">(dept doesn't determine roll_no — many students per dept)</text>
+  <rect x="32" y="216" width="676" height="44" rx="10" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="48" y="243" fill="#c9d1d9" font-size="13.5"><tspan font-weight="700" fill="#e3b341">Therefore:</tspan>  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">roll_no → dept_head</tspan> is a <tspan font-weight="700" fill="#e3b341">TRANSITIVE</tspan> dependency</text>
+</svg>

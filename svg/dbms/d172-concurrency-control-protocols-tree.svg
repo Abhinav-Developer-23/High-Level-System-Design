@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Concurrency control protocols</title>
+  <desc>Concurrency control protocols split into lock-based protocols (including two-phase locking, 2PL), timestamp-based protocols, and optimistic concurrency control.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="759" height="299" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="250" y="24" width="260" height="44" rx="10" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.7"/>
+  <text x="380" y="51" fill="#e6edf3" font-size="14.5" font-weight="600" text-anchor="middle">Concurrency Control Protocols</text>
+  <line x1="380" y1="68" x2="380" y2="92" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="140" y1="92" x2="620" y2="92" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="140" y1="92" x2="140" y2="118" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a-gray)"/>
+  <rect x="35" y="122" width="210" height="60" rx="10" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="140" y="147" fill="#d2a8ff" font-size="14" font-weight="600" text-anchor="middle">Lock-Based</text>
+  <text x="140" y="167" fill="#d2a8ff" font-size="14" font-weight="600" text-anchor="middle">Protocols</text>
+  <line x1="380" y1="92" x2="380" y2="118" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a-gray)"/>
+  <rect x="275" y="122" width="210" height="60" rx="10" fill="#39c5cf" fill-opacity="0.1" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="380" y="157" fill="#56d4dd" font-size="14" font-weight="600" text-anchor="middle">Timestamp-Based</text>
+  <line x1="620" y1="92" x2="620" y2="118" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a-gray)"/>
+  <rect x="515" y="122" width="210" height="60" rx="10" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <text x="620" y="147" fill="#ffa657" font-size="14" font-weight="600" text-anchor="middle">Optimistic</text>
+  <text x="620" y="167" fill="#ffa657" font-size="14" font-weight="600" text-anchor="middle">Concurrency Control</text>
+  <line x1="140" y1="182" x2="140" y2="214" stroke="#8b949e" stroke-width="1.5" marker-end="url(#a-gray)"/>
+  <rect x="35" y="218" width="210" height="52" rx="10" fill="#bc8cff" fill-opacity="0.16" stroke="#bc8cff" stroke-opacity="0.7"/>
+  <text x="140" y="249" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Two-Phase Locking (2PL)</text>
+</svg>

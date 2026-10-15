@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="372" viewBox="0 0 760 372" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Two-phase locking phases</title>
+  <desc>Number of locks over time: rises during the growing phase (acquire locks) to the lock point (maximum locks), then falls during the shrinking phase (release locks).</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="759" height="371" rx="14" fill="#161b22" stroke="#30363d"/>
+  <polygon points="120,290 370,84 370,290" fill="#3fb950" fill-opacity=".10"/>
+  <polygon points="370,84 620,290 370,290" fill="#d29922" fill-opacity=".10"/>
+  <line x1="120" y1="300" x2="120" y2="52" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <line x1="110" y1="290" x2="712" y2="290" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <text x="120" y="40" fill="#c9d1d9" font-size="13" font-weight="600" text-anchor="middle">Number of Locks</text>
+  <text x="704" y="316" fill="#c9d1d9" font-size="13" font-weight="600" text-anchor="middle">Time</text>
+  <line x1="120" y1="290" x2="370" y2="84" stroke="#3fb950" stroke-width="2.5"/>
+  <line x1="370" y1="84" x2="620" y2="290" stroke="#d29922" stroke-width="2.5"/>
+  <line x1="370" y1="84" x2="370" y2="290" stroke="#484f58" stroke-width="1.5" stroke-dasharray="5 5"/>
+  <circle cx="370" cy="84" r="6" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="386" y="82" fill="#c9d1d9" font-size="13"><tspan fill="#79c0ff" font-weight="700">Lock Point</tspan><tspan fill="#8b949e"> (maximum locks)</tspan></text>
+  <text x="245.0" y="318" fill="#56d364" font-size="14" font-weight="700" text-anchor="middle">Growing Phase</text>
+  <text x="245.0" y="338" fill="#8b949e" font-size="13" text-anchor="middle">(acquire locks)</text>
+  <text x="495.0" y="318" fill="#e3b341" font-size="14" font-weight="700" text-anchor="middle">Shrinking Phase</text>
+  <text x="495.0" y="338" fill="#8b949e" font-size="13" text-anchor="middle">(release locks)</text>
+</svg>

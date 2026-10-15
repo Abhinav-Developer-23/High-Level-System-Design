@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="460" viewBox="0 0 860 460" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Metadata lock trap timeline</title>
+  <desc>T=0 slow SELECT starts holding the metadata lock in shared mode; T=5 ALTER TABLE waits for the lock; T=5+ all new SELECTs and INSERTs queue behind the ALTER; T=30 the SELECT finishes, the ALTER gets the lock and completes, and everything unblocks. Result: 25 seconds of downtime even for an INSTANT ALTER.</desc>
+  <rect x="0.5" y="0.5" width="859" height="459" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TIMELINE</text>
+
+  <!-- lane labels -->
+  <g font-size="13" font-weight="600" fill="#e6edf3" text-anchor="end">
+    <text x="186" y="81">Slow SELECT</text>
+    <text x="186" y="125">ALTER TABLE</text>
+    <text x="186" y="169">New SELECTs / INSERTs</text>
+  </g>
+
+  <!-- grid -->
+  <g stroke="#21262d">
+    <line x1="290" y1="56" x2="290" y2="190"/>
+    <line x1="380" y1="56" x2="380" y2="190"/>
+    <line x1="470" y1="56" x2="470" y2="190"/>
+    <line x1="560" y1="56" x2="560" y2="190"/>
+    <line x1="650" y1="56" x2="650" y2="190"/>
+  </g>
+
+  <!-- lane 1 -->
+  <rect x="200" y="62" width="540" height="28" rx="6" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="214" y="81" fill="#79c0ff" font-size="13">holds metadata lock in shared mode</text>
+  <!-- lane 2 -->
+  <rect x="290" y="106" width="450" height="28" rx="6" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-dasharray="6 4"/>
+  <text x="304" y="125" fill="#e3b341" font-size="13">waits for metadata lock</text>
+  <!-- lane 3 -->
+  <rect x="296" y="150" width="444" height="28" rx="6" fill="#f85149" fill-opacity=".14" stroke="#f85149"/>
+  <text x="310" y="169" fill="#ff7b72" font-size="13">ALL wait (queue behind ALTER)</text>
+
+  <!-- T=30 release line -->
+  <line x1="740" y1="54" x2="740" y2="196" stroke="#3fb950" stroke-width="2" stroke-dasharray="5 4"/>
+  <g font-size="12" font-weight="600" text-anchor="middle">
+    <rect x="748" y="65" width="84" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+    <text x="790" y="80" fill="#56d364">finishes</text>
+    <rect x="748" y="109" width="84" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+    <text x="790" y="124" fill="#56d364">completes</text>
+    <rect x="748" y="153" width="84" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+    <text x="790" y="168" fill="#56d364">unblock</text>
+  </g>
+
+  <!-- axis -->
+  <line x1="200" y1="198" x2="740" y2="198" stroke="#8b949e" stroke-width="1.5"/>
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="200" y1="194" x2="200" y2="204"/>
+    <line x1="290" y1="194" x2="290" y2="204"/>
+    <line x1="380" y1="196" x2="380" y2="200"/>
+    <line x1="470" y1="196" x2="470" y2="200"/>
+    <line x1="560" y1="196" x2="560" y2="200"/>
+    <line x1="650" y1="196" x2="650" y2="200"/>
+    <line x1="740" y1="194" x2="740" y2="204"/>
+  </g>
+  <g font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">
+    <text x="200" y="220">T=0</text>
+    <text x="290" y="220">T=5</text>
+    <text x="740" y="220">T=30</text>
+  </g>
+
+  <!-- downtime bracket -->
+  <path d="M290,232 L290,240 L740,240 L740,232" fill="none" stroke="#f85149" stroke-width="1.5"/>
+  <text x="515" y="258" fill="#ff7b72" font-size="12.5" font-weight="700" text-anchor="middle">25 seconds of total downtime</text>
+
+  <line x1="24" y1="274" x2="836" y2="274" stroke="#21262d"/>
+
+  <!-- event list -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" font-weight="600" text-anchor="middle">
+    <rect x="24" y="284" width="56" height="22" rx="11" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+    <text x="52" y="299" fill="#79c0ff">T=0</text>
+    <rect x="24" y="312" width="56" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+    <text x="52" y="327" fill="#e3b341">T=5</text>
+    <rect x="24" y="340" width="56" height="22" rx="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+    <text x="52" y="355" fill="#ff7b72">T=5+</text>
+    <rect x="24" y="368" width="56" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+    <text x="52" y="383" fill="#56d364">T=30</text>
+  </g>
+  <g font-size="13" fill="#c9d1d9">
+    <text x="94" y="300">Slow SELECT starts <tspan fill="#8b949e">(holds metadata lock in shared mode)</tspan></text>
+    <text x="94" y="328">ALTER TABLE runs → waits for metadata lock</text>
+    <text x="94" y="356">ALL new SELECTs and INSERTs also wait <tspan fill="#8b949e">(queue behind ALTER)</tspan></text>
+    <text x="94" y="384">Slow SELECT finishes → ALTER gets lock → ALTER completes → everything unblocks</text>
+  </g>
+
+  <!-- result -->
+  <rect x="24" y="404" width="812" height="36" rx="10" fill="#f85149" fill-opacity=".12" stroke="#f85149"/>
+  <text x="430" y="427" fill="#ff7b72" font-size="14" font-weight="600" text-anchor="middle">Result: 25 seconds of total downtime, even for an INSTANT ALTER!</text>
+</svg>

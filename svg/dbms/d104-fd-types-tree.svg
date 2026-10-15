@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="176" viewBox="0 0 760 176" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Types of functional dependencies</title>
+  <desc>Functional dependencies branch into five types: trivial, non-trivial, full, partial and transitive.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="759" height="175" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="260" y="24" width="240" height="42" rx="10" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.7"/>
+  <text x="380" y="50" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Functional Dependencies</text>
+  <line x1="380" y1="66" x2="380" y2="88" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="100" y1="88" x2="660" y2="88" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="100" y1="88" x2="100" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="40" y="112" width="120" height="40" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="100" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Trivial</text>
+  <line x1="240" y1="88" x2="240" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="180" y="112" width="120" height="40" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="240" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Non-Trivial</text>
+  <line x1="380" y1="88" x2="380" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="320" y="112" width="120" height="40" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="380" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Full</text>
+  <line x1="520" y1="88" x2="520" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="460" y="112" width="120" height="40" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="520" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Partial</text>
+  <line x1="660" y1="88" x2="660" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="600" y="112" width="120" height="40" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="660" y="137" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Transitive</text>
+</svg>

@@ -1,0 +1,44 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="346" viewBox="0 0 760 346" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Signs of an N+1 problem</title>
+  <desc>Signs of N+1: the same query template repeats hundreds of times in logs; page load time grows linearly with records (10 authors 100ms, 100 authors 1s, 1000 authors 10s); the connection pool is exhausted under normal load; the ORM uses lazy loading by default.</desc>
+  <rect x="0.5" y="0.5" width="759" height="345" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SIGNS YOU HAVE AN N+1 PROBLEM</text>
+  <line x1="24" y1="50" x2="736" y2="50" stroke="#30363d"/>
+
+  <!-- 1 -->
+  <rect x="24" y="64" width="712" height="70" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="85" r="11" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="48" y="89" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="70" y="90" fill="#e6edf3" font-size="13.5" font-weight="600">Query logs show the SAME query template repeating hundreds of times</text>
+  <text x="70" y="121" fill="#8b949e" font-size="13">e.g.,</text>
+  <rect x="104" y="104" width="352" height="24" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="116" y="121" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"SELECT * FROM books WHERE author_id = ?"</text>
+  <text x="468" y="122" fill="#ff7b72" font-size="14" font-weight="700">× 500</text>
+
+  <!-- 2 -->
+  <rect x="24" y="146" width="712" height="70" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="167" r="11" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="48" y="171" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="70" y="172" fill="#e6edf3" font-size="13.5" font-weight="600">Page load time increases LINEARLY with the number of records</text>
+  <g font-size="12" font-weight="600" text-anchor="middle">
+    <rect x="70" y="186" width="150" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+    <text x="145" y="201" fill="#e3b341">10 authors → 100ms</text>
+    <rect x="232" y="186" width="140" height="22" rx="11" fill="#f0883e" fill-opacity=".14" stroke="#f0883e" stroke-opacity=".6"/>
+    <text x="302" y="201" fill="#ffa657">100 authors → 1s</text>
+    <rect x="384" y="186" width="150" height="22" rx="11" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".7"/>
+    <text x="459" y="201" fill="#ff7b72">1000 authors → 10s</text>
+  </g>
+
+  <!-- 3 -->
+  <rect x="24" y="228" width="712" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="249" r="11" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="48" y="253" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <text x="70" y="254" fill="#e6edf3" font-size="13.5" font-weight="600">Database connection pool is exhausted under normal load</text>
+
+  <!-- 4 -->
+  <rect x="24" y="282" width="712" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <circle cx="48" cy="303" r="11" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="48" y="307" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">4</text>
+  <text x="70" y="308" fill="#e6edf3" font-size="13.5" font-weight="600">Your ORM is configured with <tspan fill="#e3b341">"lazy loading"</tspan> as default</text>
+</svg>

@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="232" viewBox="0 0 760 232" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>SQL command categories</title>
+  <desc>SQL Commands split into five groups: DDL (structure, define), DQL (querying, fetch), DML (data, manipulate), DCL (access control) and TCL (transaction control).</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="231" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- root -->
+  <rect x="270" y="24" width="220" height="46" rx="10" fill="#1c2128" stroke="#8b949e"/>
+  <text x="380" y="52" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">SQL Commands</text>
+
+  <!-- connectors -->
+  <line x1="380" y1="70" x2="380" y2="94" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="104" y1="94" x2="656" y2="94" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="104" y1="94" x2="104" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="242" y1="94" x2="242" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="380" y1="94" x2="380" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="518" y1="94" x2="518" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="656" y1="94" x2="656" y2="122" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- children -->
+  <rect x="48" y="126" width="112" height="44" rx="10" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff"/>
+  <text x="104" y="154" fill="#79c0ff" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DDL</text>
+  <rect x="186" y="126" width="112" height="44" rx="10" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf"/>
+  <text x="242" y="154" fill="#56d4dd" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DQL</text>
+  <rect x="324" y="126" width="112" height="44" rx="10" fill="#3fb950" fill-opacity=".12" stroke="#3fb950"/>
+  <text x="380" y="154" fill="#56d364" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DML</text>
+  <rect x="462" y="126" width="112" height="44" rx="10" fill="#d29922" fill-opacity=".12" stroke="#d29922"/>
+  <text x="518" y="154" fill="#e3b341" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DCL</text>
+  <rect x="600" y="126" width="112" height="44" rx="10" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff"/>
+  <text x="656" y="154" fill="#d2a8ff" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">TCL</text>
+
+  <!-- captions -->
+  <g font-size="13" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="104" y="194">Structure</text>
+    <text x="242" y="194">Querying</text>
+    <text x="380" y="194">Data</text>
+    <text x="518" y="194">Access</text>
+    <text x="656" y="194">Transaction</text>
+  </g>
+  <g font-size="12" fill="#8b949e" text-anchor="middle">
+    <text x="104" y="212">Define</text>
+    <text x="242" y="212">Fetch</text>
+    <text x="380" y="212">Manipulate</text>
+    <text x="518" y="212">Control</text>
+    <text x="656" y="212">Control</text>
+  </g>
+</svg>

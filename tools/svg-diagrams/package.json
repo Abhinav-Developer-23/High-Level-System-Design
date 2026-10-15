@@ -1,0 +1,8 @@
+{
+  "name": "svg-diagrams-tools",
+  "private": true,
+  "description": "Preview markdown the way MarkView renders it (markdown-it + MarkView CSS)",
+  "dependencies": {
+    "markdown-it": "14.1.0"
+  }
+}

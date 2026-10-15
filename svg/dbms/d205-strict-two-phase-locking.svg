@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="372" viewBox="0 0 760 372" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Strict two-phase locking</title>
+  <desc>Strict 2PL: locks are acquired during the growing phase, all locks are held until COMMIT, then all are released at once.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="371" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="42" font-size="15" fill="#e6edf3" font-weight="600">Strict 2PL:</text>
+  <line x1="90" y1="306" x2="90" y2="90" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-gray)"/>
+  <line x1="84" y1="300" x2="720" y2="300" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-gray)"/>
+  <text x="78" y="82" font-size="12" fill="#8b949e" data-nocheck="1">Locks held</text>
+  <text x="720" y="290" font-size="12" fill="#8b949e" text-anchor="end">Time</text>
+  <path d="M90,300 V260 H138 V220 H186 V180 H234 V140 H282 V300 Z" fill="#3fb950" fill-opacity=".10" stroke="none"/>
+  <path d="M90,300 V260 H138 V220 H186 V180 H234 V140 H282" stroke="#3fb950" stroke-width="2" fill="none"/>
+  <rect x="282" y="140" width="258" height="160" rx="0" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.0"/>
+  <path d="M282,140 H540" stroke="#bc8cff" stroke-width="2" fill="none"/>
+  <text x="411.0" y="216.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">All locks held</text>
+  <text x="411.0" y="236.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">until COMMIT</text>
+  <line x1="540" y1="140" x2="540" y2="296" stroke="#f85149" stroke-width="2.2" marker-end="url(#m-red)"/>
+  <line x1="282" y1="140" x2="282" y2="300" stroke="#8b949e" stroke-width="1.2" stroke-dasharray="4 4"/>
+  <text x="186.0" y="324" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle">Growing</text>
+  <text x="186.0" y="342" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle">Phase</text>
+  <rect x="497.0" y="315.0" width="86" height="22" rx="11.0" fill="#3fb950" fill-opacity="0.15" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="540" y="330.3" font-size="12" fill="#56d364" font-weight="600" text-anchor="middle">COMMIT</text>
+  <line x1="586" y1="326" x2="614" y2="326" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+  <text x="620" y="331" font-size="13.5" fill="#ff7b72" font-weight="700">Release ALL</text>
+</svg>

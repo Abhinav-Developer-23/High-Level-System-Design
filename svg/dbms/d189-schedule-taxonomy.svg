@@ -1,0 +1,40 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="352" viewBox="0 0 860 352" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Schedule taxonomy</title>
+  <desc>Schedule splits into Serial (no overlap) and Non-Serial (interleaved). Non-Serial splits into Serializable (Conflict or View Serializable) and Non-Serializable (Recoverable or Non-Recoverable).</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="859" height="351" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="223.0" y="24" width="150" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="298" y="50.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Schedule</text>
+  <rect x="60.0" y="106" width="180" height="54" rx="10" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="150" y="130.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Serial</text>
+  <text x="150" y="148.0" font-size="12" fill="#8b949e" text-anchor="middle">(no overlap)</text>
+  <rect x="356.0" y="106" width="180" height="54" rx="10" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <text x="446" y="130.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Non-Serial</text>
+  <text x="446" y="148.0" font-size="12" fill="#8b949e" text-anchor="middle">(interleaved)</text>
+  <rect x="165.0" y="202" width="170" height="42" rx="10" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="250" y="228.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Serializable</text>
+  <rect x="555.0" y="202" width="190" height="42" rx="10" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="650" y="228.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Non-Serializable</text>
+  <rect x="40.0" y="288" width="200" height="42" rx="10" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="140" y="314.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Conflict Serializable</text>
+  <rect x="270.0" y="288" width="180" height="42" rx="10" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="360" y="314.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">View Serializable</text>
+  <rect x="515.0" y="288" width="270" height="42" rx="10" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="650" y="314.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Recoverable / Non-Recoverable</text>
+  <path d="M298,66 V86.0 H150 V103" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <path d="M298,66 V86.0 H446 V103" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <path d="M446,160 V181.0 H250 V199" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <path d="M446,160 V181.0 H650 V199" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <path d="M250,244 V266.0 H140 V285" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <path d="M250,244 V266.0 H360 V285" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <line x1="650" y1="244" x2="650" y2="285" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-gray)"/>
+</svg>

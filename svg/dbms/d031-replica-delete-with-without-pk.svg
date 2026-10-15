@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="204" viewBox="0 0 760 204" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Replica DELETE with vs without a PK</title>
+  <desc>A replica applying a row-based DELETE of 10,000 rows does 10,000 index lookups with a primary key (fast), but 10,000 full table scans without one (replica lag: hours).</desc>
+  <defs>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="759" height="203" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="40" fill="#e6edf3" font-size="14.5" font-weight="600">Replica applies a row-based <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">DELETE</tspan> affecting 10,000 rows:</text>
+
+  <!-- with PK -->
+  <rect x="24" y="62" width="712" height="54" rx="10" fill="#3fb950" fill-opacity=".08" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="44" y="94" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#56d364">WITH</tspan> a primary key</text>
+  <line x1="238" y1="89" x2="300" y2="89" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="314" y="94" fill="#c9d1d9" font-size="14">10,000 index lookups</text>
+  <rect x="580" y="78" width="138" height="22" rx="11" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="649" y="93" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">✓ fast</text>
+
+  <!-- without PK -->
+  <rect x="24" y="130" width="712" height="54" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="44" y="162" fill="#e6edf3" font-size="14" font-weight="600"><tspan fill="#ff7b72">WITHOUT</tspan> a primary key</text>
+  <line x1="238" y1="157" x2="300" y2="157" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <text x="314" y="162" fill="#ff7b72" font-size="14" font-weight="700">10,000 FULL TABLE SCANS</text>
+  <rect x="566" y="146" width="152" height="22" rx="11" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="642" y="161" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">✗ replica lag: hours</text>
+</svg>

@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="324" viewBox="0 0 620 324" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>SQL injection: normal flow vs injected</title>
+  <desc>Normal flow: user enters 105, SQL becomes SELECT * FROM Users WHERE UserId = 105, returns user #105 only. SQL injection: user enters 105 OR 1=1, SQL becomes SELECT * FROM Users WHERE UserId = 105 OR 1=1, returns all users because 1=1 is always true.</desc>
+  <rect x="0.5" y="0.5" width="619" height="323" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- Normal -->
+  <rect x="24" y="24" width="572" height="132" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".6"/>
+  <path d="M24,58 V34 a10,10 0 0 1 10,-10 H586 a10,10 0 0 1 10,10 V58 z" fill="#3fb950" fill-opacity=".14"/>
+  <text x="44" y="47" fill="#56d364" font-size="12" font-weight="700" letter-spacing="1.5">NORMAL FLOW</text>
+  <line x1="24" y1="58" x2="596" y2="58" stroke="#3fb950" stroke-opacity=".4"/>
+  <g font-size="13">
+    <text x="44" y="84" fill="#8b949e">User enters:</text>
+    <text x="150" y="84" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">105</text>
+    <text x="44" y="110" fill="#8b949e">SQL becomes:</text>
+    <text x="150" y="110" fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT * FROM Users WHERE UserId = <tspan fill="#e6edf3">105</tspan></text>
+    <text x="44" y="136" fill="#8b949e">Result:</text>
+    <text x="150" y="136" fill="#56d364" font-weight="600">✓ Returns user #105 only</text>
+  </g>
+
+  <!-- Injection -->
+  <rect x="24" y="172" width="572" height="128" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".6"/>
+  <path d="M24,206 V182 a10,10 0 0 1 10,-10 H586 a10,10 0 0 1 10,10 V206 z" fill="#f85149" fill-opacity=".14"/>
+  <text x="44" y="195" fill="#ff7b72" font-size="12" font-weight="700" letter-spacing="1.5">SQL INJECTION</text>
+  <line x1="24" y1="206" x2="596" y2="206" stroke="#f85149" stroke-opacity=".4"/>
+  <g font-size="13">
+    <text x="44" y="232" fill="#8b949e">User enters:</text>
+    <text x="150" y="232" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">105 <tspan fill="#ff7b72" font-weight="700">OR 1=1</tspan></text>
+    <text x="44" y="258" fill="#8b949e">SQL becomes:</text>
+    <text x="150" y="258" fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT * FROM Users WHERE UserId = <tspan fill="#e6edf3">105</tspan> <tspan fill="#ff7b72" font-weight="700">OR 1=1</tspan></text>
+    <text x="44" y="284" fill="#8b949e">Result:</text>
+    <text x="150" y="284" fill="#ff7b72" font-weight="600">✗ Returns ALL users <tspan fill="#8b949e" font-weight="400">(because <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1=1</tspan> is always TRUE)</tspan></text>
+  </g>
+</svg>

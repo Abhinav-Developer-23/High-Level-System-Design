@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="316" viewBox="0 0 900 316" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Library card catalog analogy</title>
+  <desc>Naive OFFSET is like carrying every book to the front desk 450,000 times and keeping the last 10. Deferred join is like flipping 450,000 thin sorted catalog cards (author name to shelf B-42) in one drawer, then fetching exactly 10 books.</desc>
+  <rect x="0.5" y="0.5" width="899" height="315" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- NAIVE -->
+  <rect x="24" y="24" width="414" height="268" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".7"/>
+  <path d="M34,24 H428 A10,10 0 0 1 438,34 V82 H24 V34 A10,10 0 0 1 34,24 Z" fill="#f85149" fill-opacity=".14"/>
+  <text x="44" y="50" fill="#ff7b72" font-size="13" font-weight="700" letter-spacing="1.2">✗  NAÏVE OFFSET</text>
+  <text x="44" y="72" fill="#c9d1d9" font-size="13" font-style="italic">"carry every book to the desk"</text>
+  <g font-size="13" fill="#c9d1d9">
+    <text x="44" y="108">Walk the stacks in order. For <tspan fill="#e6edf3" font-weight="700">EVERY</tspan> book,</text>
+    <text x="44" y="128">physically pull it off the shelf, carry it to the</text>
+    <text x="44" y="148">front desk, look at it, say "not yet", and walk it</text>
+    <text x="44" y="168">back to its shelf.</text>
+    <text x="44" y="192" fill="#ff7b72" font-weight="600">Do this 450,000 times. Then keep the last 10.</text>
+    <text x="44" y="236" fill="#8b949e">You are hauling encyclopedias across the building</text>
+    <text x="44" y="256" fill="#8b949e">just to count to 450,000.</text>
+  </g>
+
+  <!-- DEFERRED JOIN -->
+  <rect x="462" y="24" width="414" height="268" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".7"/>
+  <path d="M472,24 H866 A10,10 0 0 1 876,34 V82 H462 V34 A10,10 0 0 1 472,24 Z" fill="#3fb950" fill-opacity=".14"/>
+  <text x="482" y="50" fill="#56d364" font-size="13" font-weight="700" letter-spacing="1.2">✓  DEFERRED JOIN</text>
+  <text x="482" y="72" fill="#c9d1d9" font-size="13" font-style="italic">"flip the cards, then fetch 10 books"</text>
+  <g font-size="13" fill="#c9d1d9">
+    <text x="482" y="108">Go to the <tspan fill="#e6edf3" font-weight="700">CARD CATALOG</tspan>. One drawer. Thin cards,</text>
+    <text x="482" y="128">already sorted by author, each card says only:</text>
+  </g>
+  <rect x="520" y="140" width="256" height="30" rx="6" fill="#0d1117" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="648" y="160" fill="#56d4dd" font-size="12.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"author name  →  shelf B-42"</text>
+  <g font-size="13" fill="#c9d1d9">
+    <text x="482" y="196">Flip through 450,000 cards — fast, they're thin,</text>
+    <text x="482" y="216">ordered, and all in one drawer you never leave.</text>
+    <text x="482" y="236">Read the 10 shelf numbers you need. <tspan fill="#e6edf3" font-weight="700">THEN</tspan> walk</text>
+    <text x="482" y="256">into the stacks and pull <tspan fill="#56d364" font-weight="700">exactly 10 books</tspan>.</text>
+  </g>
+</svg>

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="526" viewBox="0 0 780 526" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Incorrect summary schedule</title>
+  <desc>Accounts A=100, B=200, C=300 (total should be 600). T2 sums: Sum=0, reads A=100 (Sum=100). T1 then moves 50 from A to B (writes A=50, B=250). T2 reads B=250 (Sum=350, new value) and C=300 (Sum=650, wrong).</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="779" height="525" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="732" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="49" fill="#c9d1d9" font-size="13" xml:space="preserve"><tspan fill="#e6edf3" font-weight="600">Accounts:</tspan>   <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">A = 100,  B = 200,  C = 300</tspan>     <tspan fill="#8b949e">(Total should be 600)</tspan></text>
+  <rect x="71" y="80" width="184" height="422" rx="8" fill="#bc8cff" fill-opacity="0.05" stroke="#bc8cff" stroke-opacity="0.25"/>
+  <rect x="71" y="80" width="184" height="34" rx="8" fill="#bc8cff" fill-opacity="0.16" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="163.0" y="102" fill="#d2a8ff" font-size="13" font-weight="700" text-anchor="middle">T1 <tspan font-weight="400">(updating)</tspan></text>
+  <rect x="261" y="80" width="184" height="422" rx="8" fill="#39c5cf" fill-opacity="0.05" stroke="#39c5cf" stroke-opacity="0.25"/>
+  <rect x="261" y="80" width="184" height="34" rx="8" fill="#39c5cf" fill-opacity="0.16" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="353.0" y="102" fill="#56d4dd" font-size="13" font-weight="700" text-anchor="middle">T2 <tspan font-weight="400">(summing)</tspan></text>
+  <text x="462" y="102" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.2">SUM</text>
+  <text x="46" y="102" fill="#8b949e" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1.2">t</text>
+  <text x="46" y="142" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">1</text>
+  <text x="274" y="142" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Sum = 0</text>
+  <line x1="24" y1="156" x2="756" y2="156" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="180" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">2</text>
+  <text x="274" y="180" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(A) = 100</text>
+  <text x="464" y="180" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Sum = 100</text>
+  <line x1="24" y1="194" x2="756" y2="194" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="218" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">3</text>
+  <text x="84" y="218" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(A) = 100</text>
+  <line x1="24" y1="232" x2="756" y2="232" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="256" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">4</text>
+  <text x="84" y="256" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">A = A - 50</text>
+  <line x1="24" y1="270" x2="756" y2="270" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="294" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">5</text>
+  <text x="84" y="294" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Write(A) = 50</text>
+  <line x1="24" y1="308" x2="756" y2="308" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="332" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">6</text>
+  <text x="84" y="332" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(B) = 200</text>
+  <line x1="24" y1="346" x2="756" y2="346" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="370" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">7</text>
+  <text x="84" y="370" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">B = B + 50</text>
+  <line x1="24" y1="384" x2="756" y2="384" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="408" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">8</text>
+  <text x="84" y="408" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Write(B) = 250</text>
+  <rect x="26" y="424" width="728" height="34" rx="6" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.55"/>
+  <line x1="24" y1="422" x2="756" y2="422" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="446" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">9</text>
+  <text x="274" y="446" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(B) = 250</text>
+  <text x="464" y="446" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Sum = 350</text>
+  <text x="578" y="446" fill="#e3b341" font-size="13" font-weight="600">← new value!</text>
+  <rect x="26" y="462" width="728" height="34" rx="6" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.55"/>
+  <line x1="24" y1="460" x2="756" y2="460" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="484" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">10</text>
+  <text x="274" y="484" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(C) = 300</text>
+  <text x="464" y="484" fill="#ff7b72" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Sum = 650</text>
+  <text x="578" y="484" fill="#ff7b72" font-size="13" font-weight="600">← WRONG!</text>
+</svg>

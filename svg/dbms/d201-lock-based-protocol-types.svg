@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="186" viewBox="0 0 760 186" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Lock-based protocol types</title>
+  <desc>Lock-Based Protocols branch into Simplistic, Pre-Claiming, 2PL and Strict 2PL.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="185" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="260.0" y="24" width="240" height="44" rx="10" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <text x="380.0" y="51.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Lock-Based Protocols</text>
+  <rect x="36.0" y="120" width="154" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="113" y="146.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Simplistic</text>
+  <path d="M380.0,68 V94.0 H113 V117" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <rect x="214.0" y="120" width="154" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="291" y="146.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Pre-Claiming</text>
+  <path d="M380.0,68 V94.0 H291 V117" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <rect x="392.0" y="120" width="154" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="469" y="146.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">2PL</text>
+  <path d="M380.0,68 V94.0 H469 V117" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+  <rect x="570.0" y="120" width="154" height="42" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="647" y="146.0" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Strict 2PL</text>
+  <path d="M380.0,68 V94.0 H647 V117" stroke="#8b949e" stroke-width="1.5" fill="none" marker-end="url(#m-gray)"/>
+</svg>

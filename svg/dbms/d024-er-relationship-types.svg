@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="276" viewBox="0 0 900 276" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Three ER relationship types</title>
+  <desc>1:1 one-to-one: one A relates to one B. 1:N one-to-many: one A relates to many B. M:N many-to-many: many A relate to many B.</desc>
+  <rect x="0.5" y="0.5" width="899" height="275" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- panels -->
+  <rect x="24" y="24" width="270" height="228" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="315" y="24" width="270" height="228" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="606" y="24" width="270" height="228" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <g font-size="14.5" font-weight="700" text-anchor="middle" fill="#e6edf3">
+    <text x="159" y="52">1:1 <tspan fill="#8b949e" font-weight="400" font-size="13">(One-to-One)</tspan></text>
+    <text x="450" y="52">1:N <tspan fill="#8b949e" font-weight="400" font-size="13">(One-to-Many)</tspan></text>
+    <text x="741" y="52">M:N <tspan fill="#8b949e" font-weight="400" font-size="13">(Many-to-Many)</tspan></text>
+  </g>
+  <g stroke="#30363d">
+    <line x1="40" y1="66" x2="278" y2="66"/>
+    <line x1="331" y1="66" x2="569" y2="66"/>
+    <line x1="622" y1="66" x2="860" y2="66"/>
+  </g>
+
+  <!-- connectors -->
+  <g fill="none" stroke="#8b949e" stroke-width="1.6">
+    <line x1="120" y1="146" x2="198" y2="146"/>
+    <path d="M411,146 H450 M450,104 V188 M450,104 H489 M450,146 H489 M450,188 H489"/>
+    <line x1="702" y1="116" x2="780" y2="116"/>
+    <line x1="702" y1="116" x2="780" y2="176"/>
+    <line x1="702" y1="176" x2="780" y2="116"/>
+    <line x1="702" y1="176" x2="780" y2="176"/>
+  </g>
+
+  <!-- A boxes (purple) -->
+  <g fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff">
+    <rect x="64" y="126" width="56" height="40" rx="8"/>
+    <rect x="355" y="126" width="56" height="40" rx="8"/>
+    <rect x="646" y="96" width="56" height="40" rx="8"/>
+    <rect x="646" y="156" width="56" height="40" rx="8"/>
+  </g>
+  <!-- B boxes (teal) -->
+  <g fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf">
+    <rect x="198" y="126" width="56" height="40" rx="8"/>
+    <rect x="489" y="84" width="56" height="40" rx="8"/>
+    <rect x="489" y="126" width="56" height="40" rx="8"/>
+    <rect x="489" y="168" width="56" height="40" rx="8"/>
+    <rect x="780" y="96" width="56" height="40" rx="8"/>
+    <rect x="780" y="156" width="56" height="40" rx="8"/>
+  </g>
+  <g font-size="15" font-weight="700" text-anchor="middle">
+    <text x="92" y="151" fill="#d2a8ff">A</text>
+    <text x="226" y="151" fill="#56d4dd">B</text>
+    <text x="383" y="151" fill="#d2a8ff">A</text>
+    <text x="517" y="109" fill="#56d4dd">B</text>
+    <text x="517" y="151" fill="#56d4dd">B</text>
+    <text x="517" y="193" fill="#56d4dd">B</text>
+    <text x="674" y="121" fill="#d2a8ff">A</text>
+    <text x="674" y="181" fill="#d2a8ff">A</text>
+    <text x="808" y="121" fill="#56d4dd">B</text>
+    <text x="808" y="181" fill="#56d4dd">B</text>
+  </g>
+
+  <!-- captions -->
+  <g font-size="13" fill="#c9d1d9" text-anchor="middle">
+    <text x="159" y="234">one A ↔ one B</text>
+    <text x="383" y="234">one A</text>
+    <text x="674" y="234">◀ many</text>
+    <text x="808" y="234">many ▶</text>
+  </g>
+</svg>

@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="536" viewBox="0 0 820 536" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>INPLACE ALTER timeline</title>
+  <desc>Timeline during ALTER TABLE (INPLACE): 1 brief exclusive metadata lock (blocks everything for milliseconds) while MySQL prepares; 2 DDL runs online with concurrent DML allowed, rebuilding in the background and capturing concurrent DML in a temporary online log; 3 apply online log onto the new structure; 4 brief exclusive metadata lock to swap structures and update metadata. Result: table altered without blocking the application.</desc>
+  <rect x="0.5" y="0.5" width="819" height="535" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TIMELINE DURING ALTER TABLE (INPLACE)</text>
+
+  <!-- phase bar -->
+  <rect x="24" y="52" width="46" height="26" rx="6" fill="#f85149" fill-opacity=".25" stroke="#f85149"/>
+  <rect x="74" y="52" width="522" height="26" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950"/>
+  <rect x="600" y="52" width="136" height="26" rx="6" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <rect x="740" y="52" width="56" height="26" rx="6" fill="#f85149" fill-opacity=".25" stroke="#f85149"/>
+  <g font-size="12" font-weight="700" text-anchor="middle">
+    <text x="47" y="70" fill="#ff7b72">1</text>
+    <text x="335" y="70" fill="#56d364">2</text>
+    <text x="668" y="70" fill="#79c0ff">3</text>
+    <text x="768" y="70" fill="#ff7b72">4</text>
+  </g>
+  <text x="796" y="96" fill="#8b949e" font-size="12" text-anchor="end">time →</text>
+
+  <!-- step 1 -->
+  <rect x="24" y="108" width="772" height="64" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".7"/>
+  <circle cx="50" cy="129" r="11" fill="#f85149" fill-opacity=".25" stroke="#f85149"/>
+  <text x="50" y="133" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="72" y="134" fill="#e6edf3" font-size="14.5" font-weight="600">BRIEF METADATA LOCK <tspan fill="#8b949e" font-weight="400">(exclusive)</tspan></text>
+  <rect x="514" y="117" width="268" height="24" rx="12" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="648" y="133" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">← blocks everything for milliseconds</text>
+  <text x="72" y="158" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">↳</tspan>  MySQL prepares the ALTER operation</text>
+
+  <!-- step 2 -->
+  <rect x="24" y="186" width="772" height="110" rx="10" fill="#3fb950" fill-opacity=".08" stroke="#3fb950" stroke-opacity=".7"/>
+  <circle cx="50" cy="207" r="11" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/>
+  <text x="50" y="211" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="72" y="212" fill="#e6edf3" font-size="14.5" font-weight="600">DDL RUNS <tspan fill="#56d364" font-weight="600">(online, concurrent DML allowed)</tspan></text>
+  <text x="72" y="238" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">↳</tspan>  InnoDB rebuilds the table/index in the background</text>
+  <text x="72" y="260" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">↳</tspan>  Meanwhile, INSERTs/UPDATEs/DELETEs from other connections continue normally</text>
+  <text x="72" y="282" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">↳</tspan>  All concurrent DML changes are captured in a temporary <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"online log"</tspan></text>
+
+  <!-- step 3 -->
+  <rect x="24" y="310" width="772" height="64" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <circle cx="50" cy="331" r="11" fill="#58a6ff" fill-opacity=".25" stroke="#58a6ff"/>
+  <text x="50" y="335" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <text x="72" y="336" fill="#e6edf3" font-size="14.5" font-weight="600">APPLY ONLINE LOG</text>
+  <text x="72" y="360" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">↳</tspan>  InnoDB replays all buffered DML changes onto the new structure</text>
+
+  <!-- step 4 -->
+  <rect x="24" y="388" width="772" height="64" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".7"/>
+  <circle cx="50" cy="409" r="11" fill="#f85149" fill-opacity=".25" stroke="#f85149"/>
+  <text x="50" y="413" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">4</text>
+  <text x="72" y="414" fill="#e6edf3" font-size="14.5" font-weight="600">BRIEF METADATA LOCK <tspan fill="#8b949e" font-weight="400">(exclusive)</tspan></text>
+  <rect x="514" y="397" width="268" height="24" rx="12" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="648" y="413" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">← blocks everything for milliseconds</text>
+  <text x="72" y="438" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e">↳</tspan>  Swap old structure with new, update metadata, done!</text>
+
+  <!-- result -->
+  <rect x="24" y="470" width="772" height="42" rx="10" fill="#3fb950" fill-opacity=".14" stroke="#3fb950"/>
+  <text x="410" y="496" fill="#56d364" font-size="14" font-weight="600" text-anchor="middle">✓  Result: Table was altered WITHOUT blocking your application</text>
+</svg>

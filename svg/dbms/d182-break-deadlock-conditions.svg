@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="300" viewBox="0 0 820 300" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Breaking deadlock conditions</title>
+  <desc>Each of the four necessary conditions and how breaking it prevents deadlock.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="819" height="299" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">BREAK THE CONDITION</text>
+  <line x1="196" y1="36" x2="262" y2="36" stroke="#3fb950" stroke-width="1.8" marker-end="url(#m-green)"/>
+  <text x="272" y="40" font-size="12" fill="#56d364" font-weight="700" letter-spacing="1.5">DEADLOCK PREVENTED</text>
+  <rect x="24" y="58" width="206" height="44" rx="10" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.5"/>
+  <text x="127" y="85" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Mutual Exclusion</text>
+  <line x1="230" y1="80" x2="264" y2="80" stroke="#3fb950" stroke-width="1.8" marker-end="url(#m-green)"/>
+  <rect x="268" y="58" width="528" height="44" rx="10" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="286" y="85" font-size="13" fill="#c9d1d9">use shared (S) locks where possible / MVCC (readers don't block)</text>
+  <rect x="24" y="114" width="206" height="44" rx="10" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.5"/>
+  <text x="127" y="141" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Hold and Wait</text>
+  <line x1="230" y1="136" x2="264" y2="136" stroke="#3fb950" stroke-width="1.8" marker-end="url(#m-green)"/>
+  <rect x="268" y="114" width="528" height="44" rx="10" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="286" y="141" font-size="13" fill="#c9d1d9">Pre-Claiming / Conservative 2PL (grab ALL locks up front)</text>
+  <rect x="24" y="170" width="206" height="44" rx="10" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.5"/>
+  <text x="127" y="197" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">No Preemption</text>
+  <line x1="230" y1="192" x2="264" y2="192" stroke="#3fb950" stroke-width="1.8" marker-end="url(#m-green)"/>
+  <rect x="268" y="170" width="528" height="44" rx="10" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="286" y="197" font-size="13" fill="#c9d1d9">Wound-Wait (the older transaction preempts the younger)</text>
+  <rect x="24" y="226" width="206" height="44" rx="10" fill="#d29922" fill-opacity="0.1" stroke="#d29922" stroke-opacity="0.5"/>
+  <text x="127" y="253" font-size="14" fill="#e6edf3" font-weight="600" text-anchor="middle">Circular Wait</text>
+  <line x1="230" y1="248" x2="264" y2="248" stroke="#3fb950" stroke-width="1.8" marker-end="url(#m-green)"/>
+  <rect x="268" y="226" width="528" height="44" rx="10" fill="#3fb950" fill-opacity="0.07" stroke="#3fb950" stroke-opacity="0.45"/>
+  <text x="286" y="253" font-size="13" fill="#c9d1d9">order resources; always lock A before B</text>
+</svg>

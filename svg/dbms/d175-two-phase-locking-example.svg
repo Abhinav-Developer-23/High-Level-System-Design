@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="330" viewBox="0 0 880 330" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Two-phase locking example</title>
+  <desc>Valid 2PL for T1: growing phase S-Lock(A), S-Lock(B), upgrade to X-Lock(A) (all acquire), lock point, shrinking phase Unlock(B), Unlock(A) (release). Invalid: S-Lock(A) acquire, Unlock(A) release, then S-Lock(B) cannot acquire after releasing.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="879" height="329" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="412" height="282" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,36 a12,12 0 0 1 12,-12 h388 a12,12 0 0 1 12,12 v28 h-412 z" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="42" y="49.0" fill="#56d364" font-size="14.5" font-weight="600"><tspan fill="#56d364">✓ </tspan>T1 <tspan fill="#c9d1d9" font-weight="400">(Two-Phase Locking)</tspan></text>
+  <text x="44" y="92" fill="#56d364" font-size="12" font-weight="700" letter-spacing="1.5">GROWING PHASE</text>
+  <text x="60" y="118" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">S-Lock(A)</text>
+  <text x="424" y="118" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">acquire</tspan></text>
+  <text x="60" y="144" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">S-Lock(B)</text>
+  <text x="424" y="144" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">acquire</tspan></text>
+  <text x="60" y="170" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Upgrade to X-Lock(A)</text>
+  <text x="424" y="170" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">acquire</tspan></text>
+  <line x1="44" y1="196" x2="416" y2="196" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <rect x="176" y="184" width="108" height="24" rx="12" fill="#161b22" stroke="#58a6ff"/>
+  <text x="230" y="200" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle">Lock Point</text>
+  <text x="44" y="236" fill="#e3b341" font-size="12" font-weight="700" letter-spacing="1.5">SHRINKING PHASE</text>
+  <text x="60" y="262" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Unlock(B)</text>
+  <text x="424" y="262" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">release</tspan></text>
+  <text x="60" y="288" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Unlock(A)</text>
+  <text x="424" y="288" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">release</tspan></text>
+  <rect x="444" y="24" width="412" height="282" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M444,36 a12,12 0 0 1 12,-12 h388 a12,12 0 0 1 12,12 v28 h-412 z" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="462" y="49.0" fill="#ff7b72" font-size="14.5" font-weight="600"><tspan fill="#ff7b72">✗ </tspan>INVALID <tspan fill="#c9d1d9" font-weight="400">(violates 2PL)</tspan></text>
+  <text x="480" y="92" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">S-Lock(A)</text>
+  <text x="844" y="92" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">acquire</tspan></text>
+  <text x="480" y="118" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Unlock(A)</text>
+  <text x="844" y="118" fill="#c9d1d9" font-size="13" text-anchor="end"><tspan fill="#56d364" font-weight="700">✓ </tspan><tspan fill="#c9d1d9">release</tspan></text>
+  <rect x="462" y="134" width="376" height="64" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.7"/>
+  <text x="480" y="158" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">S-Lock(B)</text>
+  <text x="480" y="184" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72" font-weight="700">✗ CANNOT</tspan><tspan fill="#ff7b72" font-weight="600"> acquire after releasing!</tspan></text>
+</svg>

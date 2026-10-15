@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="594" viewBox="0 0 900 594" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Buffer pool whole picture</title>
+  <desc>Client SELECT/UPDATE goes to the SQL layer (parser, optimizer, executor), which asks the buffer pool for page #4711. The pool holds clean and dirty pages. Misses load pages up from the table/index files. Modified pages produce log records in the log buffer, which is fsynced to the WAL/redo log at COMMIT (sequential). Dirty pages are written to the table/index files later, batched, by the background flush at checkpoint (random).</desc>
+  <defs>
+    <marker id="d213a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="d213b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="d213g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="d213y" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="593" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- client -->
+  <rect x="400" y="20" width="100" height="24" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="450" y="36.5" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Client</text>
+  <line x1="450" y1="44" x2="450" y2="76" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d213a)"/>
+  <text x="462" y="65" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT / UPDATE</text>
+
+  <!-- SQL layer -->
+  <rect x="24" y="80" width="852" height="42" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="450" y="106" fill="#c9d1d9" font-size="13.5" text-anchor="middle"><tspan fill="#79c0ff" font-weight="700">SQL layer:</tspan>   parser → optimizer → executor</text>
+  <line x1="450" y1="122" x2="450" y2="156" stroke="#8b949e" stroke-width="1.5" marker-end="url(#d213a)"/>
+  <text x="462" y="144" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"give me page #4711"</text>
+
+  <!-- buffer pool -->
+  <rect x="24" y="160" width="852" height="216" rx="12" fill="#bc8cff" fill-opacity=".06" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="450" y="183" fill="#d2a8ff" font-size="12.5" font-weight="700" letter-spacing="3" text-anchor="middle">BUFFER POOL <tspan fill="#8b949e" letter-spacing="1">(RAM)</tspan></text>
+
+  <rect x="70" y="198" width="120" height="56" rx="8" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="130" y="221" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">page 12</text>
+  <text x="130" y="242" fill="#56d364" font-size="12.5" text-anchor="middle">clean</text>
+
+  <rect x="270" y="198" width="120" height="56" rx="8" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".85"/>
+  <text x="330" y="221" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">page 4711</text>
+  <text x="330" y="242" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle">DIRTY</text>
+
+  <rect x="455" y="198" width="120" height="56" rx="8" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="515" y="221" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">page 88</text>
+  <text x="515" y="242" fill="#56d364" font-size="12.5" text-anchor="middle">clean</text>
+
+  <rect x="640" y="198" width="120" height="56" rx="8" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".85"/>
+  <text x="700" y="221" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">page 301</text>
+  <text x="700" y="242" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle">DIRTY</text>
+
+  <text x="812" y="232" fill="#8b949e" font-size="16" font-weight="700" text-anchor="middle">…</text>
+
+  <!-- in-pool arrows -->
+  <line x1="330" y1="254" x2="330" y2="296" stroke="#d29922" stroke-width="1.5" marker-end="url(#d213y)"/>
+  <text x="342" y="281" fill="#c9d1d9" font-size="12.5">modified in memory</text>
+  <line x1="700" y1="254" x2="700" y2="296" stroke="#d29922" stroke-width="1.5" marker-end="url(#d213y)"/>
+
+  <rect x="245" y="300" width="170" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="330" y="325" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Log buffer</text>
+
+  <rect x="600" y="300" width="200" height="56" rx="8" fill="#1c2128" stroke="#484f58" stroke-dasharray="6 4"/>
+  <text x="700" y="323" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Background flush</text>
+  <text x="700" y="342" fill="#8b949e" font-size="12.5" text-anchor="middle">(at checkpoint)</text>
+
+  <!-- read path (miss: load) -->
+  <line x1="130" y1="470" x2="130" y2="258" stroke="#58a6ff" stroke-width="1.7" marker-end="url(#d213b)"/>
+  <text x="118" y="300" fill="#79c0ff" font-size="12.5" text-anchor="end" font-weight="600">miss:</text>
+  <text x="118" y="318" fill="#79c0ff" font-size="12.5" text-anchor="end" font-weight="600">load</text>
+
+  <!-- commit path -->
+  <line x1="330" y1="340" x2="330" y2="468" stroke="#3fb950" stroke-width="1.8" marker-end="url(#d213g)"/>
+  <text x="342" y="414" fill="#56d364" font-size="12.5" font-weight="600"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">fsync</tspan> at COMMIT</text>
+  <text x="342" y="432" fill="#8b949e" font-size="12.5">(sequential)</text>
+
+  <!-- flush path -->
+  <line x1="700" y1="356" x2="700" y2="468" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#d213a)"/>
+  <text x="712" y="414" fill="#c9d1d9" font-size="12.5">later, batched</text>
+  <text x="712" y="432" fill="#8b949e" font-size="12.5">(random)</text>
+
+  <!-- disk -->
+  <rect x="24" y="456" width="852" height="118" rx="12" fill="#39c5cf" fill-opacity=".06" stroke="#39c5cf" stroke-opacity=".5"/>
+  <rect x="40" y="472" width="180" height="56" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="130" y="495" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Table/index</text>
+  <text x="130" y="514" fill="#c9d1d9" font-size="12.5" text-anchor="middle">files (read)</text>
+
+  <rect x="240" y="472" width="180" height="56" rx="8" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="330" y="495" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">WAL / redo</text>
+  <text x="330" y="514" fill="#c9d1d9" font-size="12.5" text-anchor="middle">log  <tspan fill="#56d364" font-weight="700">(D!)</tspan></text>
+
+  <rect x="600" y="472" width="200" height="56" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="700" y="495" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Table/index</text>
+  <text x="700" y="514" fill="#c9d1d9" font-size="12.5" text-anchor="middle">files  (write)</text>
+
+  <text x="450" y="557" fill="#56d4dd" font-size="12.5" font-weight="700" letter-spacing="4" text-anchor="middle">DISK</text>
+</svg>

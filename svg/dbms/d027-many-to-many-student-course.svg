@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="444" viewBox="0 0 800 444" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Many-to-Many (M:N): Student and Course</title>
+  <desc>Student (student_id PK, name) relates M:N to Course (course_id PK, course_name). Alice takes DBMS and OS; Bob takes DBMS and Networks. Seen from the course side, DBMS has Alice and Bob, OS has Alice, Networks has Bob.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="799" height="443" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SCHEMA</text>
+  <line x1="24" y1="48" x2="776" y2="48" stroke="#21262d"/>
+
+  <!-- Student entity -->
+  <rect x="60" y="66" width="220" height="98" rx="10" fill="#1c2128" stroke="#bc8cff" stroke-opacity=".6"/>
+  <path d="M60,100 V76 a10,10 0 0 1 10,-10 H270 a10,10 0 0 1 10,10 V100 z" fill="#bc8cff" fill-opacity=".13"/>
+  <line x1="60" y1="100" x2="280" y2="100" stroke="#30363d"/>
+  <text x="170" y="89" fill="#e6edf3" font-size="14.5" font-weight="600" text-anchor="middle">Student</text>
+  <text x="78" y="125" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">student_id</text>
+  <rect x="224" y="111" width="40" height="20" rx="10" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="244" y="125" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">PK</text>
+  <text x="78" y="151" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">name</text>
+
+  <!-- Course entity -->
+  <rect x="520" y="66" width="220" height="98" rx="10" fill="#1c2128" stroke="#39c5cf" stroke-opacity=".6"/>
+  <path d="M520,100 V76 a10,10 0 0 1 10,-10 H730 a10,10 0 0 1 10,10 V100 z" fill="#39c5cf" fill-opacity=".13"/>
+  <line x1="520" y1="100" x2="740" y2="100" stroke="#30363d"/>
+  <text x="630" y="89" fill="#e6edf3" font-size="14.5" font-weight="600" text-anchor="middle">Course</text>
+  <text x="538" y="125" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">course_id</text>
+  <rect x="684" y="111" width="40" height="20" rx="10" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="704" y="125" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">PK</text>
+  <text x="538" y="151" fill="#c9d1d9" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">course_name</text>
+
+  <!-- M:N line with crow's feet both ends -->
+  <line x1="280" y1="133" x2="520" y2="133" stroke="#8b949e" stroke-width="1.6"/>
+  <path d="M298,133 L280,125 M298,133 L280,141" stroke="#8b949e" stroke-width="1.6" fill="none"/>
+  <path d="M502,133 L520,125 M502,133 L520,141" stroke="#8b949e" stroke-width="1.6" fill="none"/>
+  <text x="304" y="125" fill="#8b949e" font-size="12" font-weight="700" data-nocheck="1">M</text>
+  <text x="486" y="125" fill="#8b949e" font-size="12" font-weight="700" data-nocheck="1">N</text>
+  <rect x="374" y="122" width="52" height="22" rx="11" fill="#161b22" stroke="#d29922"/>
+  <text x="400" y="137" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">M:N</text>
+
+  <!-- Example rows -->
+  <text x="24" y="214" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EXAMPLE ROWS</text>
+  <line x1="24" y1="226" x2="776" y2="226" stroke="#21262d"/>
+  <text x="205" y="252" fill="#8b949e" font-size="12" text-anchor="middle">from the student side</text>
+  <text x="595" y="252" fill="#8b949e" font-size="12" text-anchor="middle">from the course side</text>
+  <line x1="400" y1="240" x2="400" y2="420" stroke="#21262d"/>
+
+  <!-- left: student -> courses -->
+  <rect x="60" y="286" width="110" height="30" rx="8" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="115" y="306" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Alice</text>
+  <path d="M170,301 H210 M210,283 V319" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="210" y1="283" x2="246" y2="283" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="210" y1="319" x2="246" y2="319" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="250" y="270" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="305" y="288" fill="#c9d1d9" font-size="13" text-anchor="middle">DBMS</text>
+  <rect x="250" y="306" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="305" y="324" fill="#c9d1d9" font-size="13" text-anchor="middle">OS</text>
+
+  <rect x="60" y="366" width="110" height="30" rx="8" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="115" y="386" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Bob</text>
+  <path d="M170,381 H210 M210,363 V399" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="210" y1="363" x2="246" y2="363" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="210" y1="399" x2="246" y2="399" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="250" y="350" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="305" y="368" fill="#c9d1d9" font-size="13" text-anchor="middle">DBMS</text>
+  <rect x="250" y="386" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="305" y="404" fill="#c9d1d9" font-size="13" text-anchor="middle">Networks</text>
+
+  <!-- right: course <- students -->
+  <rect x="440" y="286" width="110" height="30" rx="8" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="495" y="306" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">DBMS</text>
+  <path d="M630,283 H590 M630,319 H590 M590,283 V319" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="590" y1="301" x2="554" y2="301" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="630" y="270" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="685" y="288" fill="#c9d1d9" font-size="13" text-anchor="middle">Alice</text>
+  <rect x="630" y="306" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="685" y="324" fill="#c9d1d9" font-size="13" text-anchor="middle">Bob</text>
+
+  <rect x="440" y="348" width="110" height="30" rx="8" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="495" y="368" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">OS</text>
+  <line x1="630" y1="363" x2="554" y2="363" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="630" y="350" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="685" y="368" fill="#c9d1d9" font-size="13" text-anchor="middle">Alice</text>
+
+  <rect x="440" y="384" width="110" height="30" rx="8" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="495" y="404" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Networks</text>
+  <line x1="630" y1="399" x2="554" y2="399" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="630" y="386" width="110" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="685" y="404" fill="#c9d1d9" font-size="13" text-anchor="middle">Bob</text>
+</svg>

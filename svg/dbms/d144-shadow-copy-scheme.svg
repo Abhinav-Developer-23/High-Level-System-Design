@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="404" viewBox="0 0 900 404" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Shadow copy scheme</title>
+  <desc>Before the transaction db-pointer points to the original DB on disk (the shadow copy). During it the pointer still points to the untouched original while all updates go to a new DB copy. After COMMIT the pointer points to the new copy (now current) and the old DB is deleted. After a failure the pointer still points to the intact original and the new copy is deleted.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="403" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="418" height="168" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="52" font-size="14" fill="#8b949e" font-weight="600">Before Transaction:</text>
+  <rect x="42" y="76" width="132" height="40" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="108" y="101" font-size="13" fill="#79c0ff" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-pointer</text>
+  <line x1="176" y1="96" x2="220" y2="96" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#a-blue)"/>
+  <rect x="224" y="72" width="200" height="48" rx="8" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf" stroke-opacity="0.7"/>
+  <text x="324" y="92" font-size="13" fill="#e6edf3" font-weight="600" text-anchor="middle">Original DB (on disk)</text>
+  <text x="324" y="110" font-size="12" fill="#56d4dd" text-anchor="middle">(shadow copy)</text>
+  <rect x="458" y="24" width="418" height="168" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="476" y="52" font-size="14" fill="#e3b341" font-weight="600">During Transaction:</text>
+  <rect x="476" y="76" width="132" height="40" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="542" y="101" font-size="13" fill="#79c0ff" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-pointer</text>
+  <line x1="610" y1="96" x2="654" y2="96" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#a-blue)"/>
+  <rect x="658" y="72" width="200" height="48" rx="8" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf" stroke-opacity="0.7"/>
+  <text x="758" y="92" font-size="13" fill="#e6edf3" font-weight="600" text-anchor="middle">Original DB</text>
+  <text x="758" y="110" font-size="12" fill="#56d4dd" text-anchor="middle">(untouched)</text>
+  <rect x="658" y="130" width="200" height="48" rx="8" fill="#d29922" fill-opacity="0.06" stroke="#d29922" stroke-opacity="0.7" stroke-dasharray="6 5"/>
+  <text x="758" y="150" font-size="13" fill="#e6edf3" font-weight="600" text-anchor="middle">New DB Copy</text>
+  <text x="758" y="168" font-size="12" fill="#e3b341" text-anchor="middle">(all updates go here)</text>
+  <rect x="24" y="212" width="418" height="168" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="240" font-size="14" fill="#56d364" font-weight="600">After COMMIT:</text>
+  <rect x="42" y="264" width="132" height="40" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="108" y="289" font-size="13" fill="#79c0ff" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-pointer</text>
+  <line x1="176" y1="284" x2="220" y2="284" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#a-blue)"/>
+  <rect x="224" y="260" width="200" height="48" rx="8" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="324" y="280" font-size="13" fill="#e6edf3" font-weight="600" text-anchor="middle">New DB Copy</text>
+  <text x="324" y="298" font-size="12" fill="#56d364" text-anchor="middle">(now current)</text>
+  <rect x="224" y="318" width="200" height="48" rx="8" fill="#8b949e" fill-opacity="0.06" stroke="#8b949e" stroke-opacity="0.7" stroke-dasharray="6 5"/>
+  <text x="324" y="338" font-size="13" fill="#8b949e" font-weight="600" text-anchor="middle">Old DB</text>
+  <text x="324" y="356" font-size="12" fill="#8b949e" text-anchor="middle">(deleted)</text>
+  <rect x="458" y="212" width="418" height="168" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="476" y="240" font-size="14" fill="#ff7b72" font-weight="600">After FAILURE:</text>
+  <rect x="476" y="264" width="132" height="40" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="542" y="289" font-size="13" fill="#79c0ff" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-pointer</text>
+  <line x1="610" y1="284" x2="654" y2="284" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#a-blue)"/>
+  <rect x="658" y="260" width="200" height="48" rx="8" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="758" y="280" font-size="13" fill="#e6edf3" font-weight="600" text-anchor="middle">Original DB</text>
+  <text x="758" y="298" font-size="12" fill="#56d364" text-anchor="middle">(still intact!)</text>
+  <rect x="658" y="318" width="200" height="48" rx="8" fill="#f85149" fill-opacity="0.06" stroke="#f85149" stroke-opacity="0.7" stroke-dasharray="6 5"/>
+  <text x="758" y="338" font-size="13" fill="#e6edf3" font-weight="600" text-anchor="middle">New DB Copy</text>
+  <text x="758" y="356" font-size="12" fill="#ff7b72" text-anchor="middle">(deleted)</text>
+</svg>

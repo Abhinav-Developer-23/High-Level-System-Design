@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="664" viewBox="0 0 820 664" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Prisma migrate under the hood</title>
+  <desc>Adding phone String? to the Prisma User model and running npx prisma migrate dev --name add_phone triggers five steps: diff schema.prisma against the database, generate ALTER TABLE SQL, save a timestamped migration file, execute it, and record a row with checksum in _prisma_migrations.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="819" height="663" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- schema change -->
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">YOU CHANGE schema.prisma</text>
+  <rect x="24" y="50" width="420" height="118" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <rect x="25" y="118" width="418" height="21" fill="#3fb950" fill-opacity=".14"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#e6edf3">
+    <text x="44" y="74"><tspan fill="#ff7b72">model</tspan> User {</text>
+    <text x="44" y="94">&#160;&#160;id&#160;&#160;&#160;&#160;Int&#160;&#160;&#160;&#160;<tspan fill="#d2a8ff">@id @default(autoincrement())</tspan></text>
+    <text x="44" y="114">&#160;&#160;name&#160;&#160;String</text>
+    <text x="31" y="133" fill="#56d364">+</text>
+    <text x="44" y="133" fill="#56d364">&#160;&#160;phone String?</text>
+    <text x="44" y="154">}</text>
+  </g>
+  <text x="236" y="133" fill="#56d364" font-size="12" font-weight="700">← NEW FIELD</text>
+
+  <!-- command -->
+  <line x1="446" y1="104" x2="470" y2="104" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="476" y="78" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">RUN:</text>
+  <rect x="474" y="88" width="322" height="32" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="488" y="109" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">npx prisma migrate dev --name add_phone</text>
+  <line x1="635" y1="120" x2="635" y2="190" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- under the hood -->
+  <text x="24" y="206" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">UNDER THE HOOD</text>
+  <line x1="24" y1="216" x2="620" y2="216" stroke="#30363d"/>
+  <line x1="44" y1="244" x2="44" y2="578" stroke="#30363d" stroke-width="2"/>
+
+  <!-- step 1 -->
+  <circle cx="44" cy="248" r="12" fill="#1c2128" stroke="#58a6ff"/>
+  <text x="44" y="252" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <rect x="68" y="228" width="728" height="56" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="84" y="252" fill="#e6edf3" font-size="14" font-weight="700">DIFF</text>
+  <text x="84" y="273" fill="#c9d1d9" font-size="13">Prisma compares your <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">schema.prisma</tspan> <tspan fill="#8b949e">(desired state)</tspan> vs the actual database <tspan fill="#8b949e">(current state)</tspan></text>
+
+  <!-- step 2 -->
+  <circle cx="44" cy="316" r="12" fill="#1c2128" stroke="#58a6ff"/>
+  <text x="44" y="320" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <rect x="68" y="296" width="728" height="74" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="84" y="320" fill="#e6edf3" font-size="14" font-weight="700">GENERATE SQL <tspan fill="#c9d1d9" font-size="13" font-weight="400">— It produces the required SQL:</tspan></text>
+  <rect x="84" y="332" width="424" height="26" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <text x="96" y="350" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ALTER TABLE users ADD COLUMN phone VARCHAR(191) NULL;</text>
+
+  <!-- step 3 -->
+  <circle cx="44" cy="402" r="12" fill="#1c2128" stroke="#58a6ff"/>
+  <text x="44" y="406" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <rect x="68" y="382" width="728" height="96" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="84" y="406" fill="#e6edf3" font-size="14" font-weight="700">SAVE MIGRATION FILE <tspan fill="#c9d1d9" font-size="13" font-weight="400">— Creates a timestamped file:</tspan></text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">
+    <text x="96" y="428">prisma/migrations/</text>
+    <text x="96" y="446"><tspan fill="#8b949e">└──</tspan> 20260822_add_phone/</text>
+    <text x="96" y="464"><tspan fill="#8b949e">&#160;&#160;&#160;&#160;└──</tspan> <tspan fill="#e6edf3">migration.sql</tspan></text>
+  </g>
+  <text x="290" y="464" fill="#8b949e" font-size="12">← contains the ALTER TABLE</text>
+
+  <!-- step 4 -->
+  <circle cx="44" cy="510" r="12" fill="#1c2128" stroke="#58a6ff"/>
+  <text x="44" y="514" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">4</text>
+  <rect x="68" y="490" width="728" height="40" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="84" y="515" fill="#e6edf3" font-size="14" font-weight="700">EXECUTE <tspan fill="#c9d1d9" font-size="13" font-weight="400">— Runs the SQL against your database</tspan></text>
+
+  <!-- step 5 -->
+  <circle cx="44" cy="562" r="12" fill="#1c2128" stroke="#3fb950"/>
+  <text x="44" y="566" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">5</text>
+  <rect x="68" y="542" width="728" height="102" rx="10" fill="#3fb950" fill-opacity=".06" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="84" y="566" fill="#e6edf3" font-size="14" font-weight="700">RECORD <tspan fill="#c9d1d9" font-size="13" font-weight="400">— Inserts a row into</tspan> <tspan fill="#79c0ff" font-size="13" font-weight="400" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">_prisma_migrations</tspan> <tspan fill="#c9d1d9" font-size="13" font-weight="400">table:</tspan></text>
+  <rect x="84" y="578" width="560" height="52" rx="6" fill="#0d1117" stroke="#30363d"/>
+  <rect x="85" y="579" width="558" height="25" fill="#21262d"/>
+  <line x1="84" y1="604" x2="644" y2="604" stroke="#30363d"/>
+  <line x1="284" y1="578" x2="284" y2="630" stroke="#30363d"/>
+  <line x1="454" y1="578" x2="454" y2="630" stroke="#30363d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">
+    <text x="96" y="596" fill="#e6edf3" font-weight="700">migration_name</text>
+    <text x="296" y="596" fill="#e6edf3" font-weight="700">checksum (SHA256)</text>
+    <text x="466" y="596" fill="#e6edf3" font-weight="700">applied_at</text>
+    <text x="96" y="622" fill="#79c0ff">20260822_add_phone</text>
+    <text x="296" y="622" fill="#c9d1d9">a3b8f1c2d9...</text>
+    <text x="466" y="622" fill="#c9d1d9">2026-08-22 19:30:00</text>
+  </g>
+</svg>

@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="460" viewBox="0 0 760 460" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Two-phase locking</title>
+  <desc>Growing phase acquires locks and cannot release any; shrinking phase releases locks and cannot acquire any. Locks held rise to the lock point, then fall over time.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="459" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="344" height="92" rx="10" fill="#3fb950" fill-opacity="0.08" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="42" y="52" font-size="15" fill="#56d364" font-weight="700">Growing Phase:</text>
+  <text x="42" y="78" font-size="13" fill="#c9d1d9">Acquire locks</text>
+  <text x="42" y="100" font-size="13" fill="#8b949e">Cannot release any</text>
+  <rect x="392" y="24" width="344" height="92" rx="10" fill="#d29922" fill-opacity="0.08" stroke="#d29922" stroke-opacity="0.55"/>
+  <text x="410" y="52" font-size="15" fill="#e3b341" font-weight="700">Shrinking Phase:</text>
+  <text x="410" y="78" font-size="13" fill="#c9d1d9">Release locks</text>
+  <text x="410" y="100" font-size="13" fill="#8b949e">Cannot acquire any</text>
+  <line x1="90" y1="406" x2="90" y2="144" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-gray)"/>
+  <line x1="84" y1="400" x2="720" y2="400" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-gray)"/>
+  <text x="78" y="136" font-size="12" fill="#8b949e" data-nocheck="1">Locks held</text>
+  <text x="720" y="422" font-size="12" fill="#8b949e" text-anchor="end">Time</text>
+  <path d="M90,400 V356 H136 V312 H182 V268 H228 V224 H274 V180 H320 V400 Z" fill="#3fb950" fill-opacity=".10" stroke="none"/>
+  <path d="M320,180 V224 H366 V268 H412 V312 H458 V356 H504 V400 H320 Z" fill="#d29922" fill-opacity=".10" stroke="none"/>
+  <path d="M90,400 V356 H136 V312 H182 V268 H228 V224 H274 V180 H320" stroke="#3fb950" stroke-width="2" fill="none"/>
+  <path d="M320,180 V224 H366 V268 H412 V312 H458 V356 H504 V400" stroke="#d29922" stroke-width="2" fill="none"/>
+  <line x1="320" y1="180" x2="320" y2="400" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <circle cx="320" cy="180" r="5" fill="#58a6ff"/>
+  <rect x="268.0" y="147.0" width="104" height="22" rx="11.0" fill="#58a6ff" fill-opacity="0.15" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <text x="320" y="162.3" font-size="12" fill="#79c0ff" font-weight="600" text-anchor="middle">Lock Point</text>
+  <text x="205.0" y="424" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle">Growing</text>
+  <text x="412.0" y="424" font-size="13" fill="#e3b341" font-weight="600" text-anchor="middle">Shrinking</text>
+</svg>

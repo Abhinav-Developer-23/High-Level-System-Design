@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="340" viewBox="0 0 820 340" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>MVCC row versions</title>
+  <desc>Row A has Version 1 (A = 1000, committed by T0), which T2 reads, and Version 2 (A = 500, being written by T1), not yet committed. T1 modifying A creates Version 2; T2 reading A reads Version 1, the last committed. T2 is not blocked; both run concurrently.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="819" height="339" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="38" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">MVCC VERSIONS OF ROW A</text>
+  <rect x="24" y="52" width="540" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <rect x="38" y="64" width="512" height="36" rx="7" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="54" y="87" font-size="13.5" fill="#c9d1d9"><tspan fill="#56d364" font-weight="600">Version 1:</tspan>  <tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A = 1000</tspan>   <tspan fill="#8b949e">(committed by T0)</tspan></text>
+  <rect x="38" y="108" width="512" height="36" rx="7" fill="#d29922" fill-opacity="0.08" stroke="#d29922" stroke-opacity="0.7" stroke-dasharray="6 5"/>
+  <text x="54" y="131" font-size="13.5" fill="#c9d1d9"><tspan fill="#e3b341" font-weight="600">Version 2:</tspan>  <tspan fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A = 500</tspan>    <tspan fill="#8b949e">(being written by T1)</tspan></text>
+  <text x="580" y="87" font-size="13" fill="#56d4dd" font-weight="600">← T2 reads this</text>
+  <text x="580" y="131" font-size="13" fill="#e3b341" font-weight="600">← not yet committed</text>
+  <rect x="26.0" y="179.0" width="44" height="22" rx="11.0" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="48" y="194.5" font-size="12.5" fill="#d2a8ff" font-weight="600" text-anchor="middle">T1</text>
+  <text x="82" y="195" font-size="13.5" fill="#c9d1d9">is modifying A  →  creates <tspan fill="#e3b341" font-weight="600">Version 2</tspan></text>
+  <rect x="26.0" y="219.0" width="44" height="22" rx="11.0" fill="#39c5cf" fill-opacity=".16" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="48" y="234.5" font-size="12.5" fill="#56d4dd" font-weight="600" text-anchor="middle">T2</text>
+  <text x="82" y="235" font-size="13.5" fill="#c9d1d9">wants to read A  →  reads <tspan fill="#56d364" font-weight="600">Version 1</tspan> <tspan fill="#8b949e">(last committed)</tspan></text>
+  <rect x="24" y="262" width="772" height="54" rx="10" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="44" y="294" font-size="14.5" fill="#e6edf3"><tspan fill="#56d364" font-weight="700">T2 is NOT blocked!</tspan>  Both run concurrently  <tspan fill="#56d364" font-weight="700">✓</tspan></text>
+</svg>

@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="258" viewBox="0 0 720 258" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Sub-schemas over one schema</title>
+  <desc>The full employees schema has emp_id, name, dept, salary, SSN and phone. Sub-schema 1 (HR app) sees emp_id, name, SSN and salary; sub-schema 2 (manager app) sees emp_id, name and dept.</desc>
+  <defs>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/>
+    </marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="719" height="257" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="360" y="36" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Full Schema <tspan fill="#8b949e" font-weight="400">(<tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">employees</tspan> table)</tspan></text>
+
+  <rect x="60" y="50" width="600" height="36" rx="8" fill="#1c2128" stroke="#8b949e" stroke-opacity=".7"/>
+  <g stroke="#30363d">
+    <line x1="160" y1="50" x2="160" y2="86"/>
+    <line x1="260" y1="50" x2="260" y2="86"/>
+    <line x1="360" y1="50" x2="360" y2="86"/>
+    <line x1="460" y1="50" x2="460" y2="86"/>
+    <line x1="560" y1="50" x2="560" y2="86"/>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#e6edf3" text-anchor="middle">
+    <text x="110" y="73">emp_id</text>
+    <text x="210" y="73">name</text>
+    <text x="310" y="73">dept</text>
+    <text x="410" y="73" fill="#e3b341">salary</text>
+    <text x="510" y="73" fill="#e3b341">SSN</text>
+    <text x="610" y="73">phone</text>
+  </g>
+
+  <line x1="200" y1="86" x2="200" y2="134" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <line x1="520" y1="86" x2="520" y2="134" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#arrT)"/>
+
+  <!-- sub-schema 1 -->
+  <rect x="60" y="138" width="280" height="98" rx="10" fill="#bc8cff" fill-opacity=".08" stroke="#bc8cff" stroke-opacity=".8"/>
+  <text x="76" y="164" fill="#d2a8ff" font-size="14.5" font-weight="700">Sub-Schema 1</text>
+  <text x="76" y="184" fill="#8b949e" font-size="13">(HR App)</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" text-anchor="middle">
+    <rect x="76" y="198" width="60" height="22" rx="6" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".5"/>
+    <text x="106" y="213" fill="#e6edf3">emp_id</text>
+    <rect x="144" y="198" width="46" height="22" rx="6" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".5"/>
+    <text x="167" y="213" fill="#e6edf3">name</text>
+    <rect x="198" y="198" width="40" height="22" rx="6" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".5"/>
+    <text x="218" y="213" fill="#e3b341">SSN</text>
+    <rect x="246" y="198" width="60" height="22" rx="6" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".5"/>
+    <text x="276" y="213" fill="#e3b341">salary</text>
+  </g>
+
+  <!-- sub-schema 2 -->
+  <rect x="380" y="138" width="280" height="98" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".8"/>
+  <text x="396" y="164" fill="#56d4dd" font-size="14.5" font-weight="700">Sub-Schema 2</text>
+  <text x="396" y="184" fill="#8b949e" font-size="13">(Manager App)</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" text-anchor="middle">
+    <rect x="396" y="198" width="60" height="22" rx="6" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".5"/>
+    <text x="426" y="213" fill="#e6edf3">emp_id</text>
+    <rect x="464" y="198" width="46" height="22" rx="6" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".5"/>
+    <text x="487" y="213" fill="#e6edf3">name</text>
+    <rect x="518" y="198" width="46" height="22" rx="6" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".5"/>
+    <text x="541" y="213" fill="#e6edf3">dept</text>
+  </g>
+</svg>

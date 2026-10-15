@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="552" viewBox="0 0 720 552" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cascadeless vs strict</title>
+  <desc>Cascadeless but not strict: T2 writes A before T1 commits (dirty write). Strict: T2 writes A only after T1 commits.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="719" height="551" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="672" height="244" rx="12" fill="#d29922" fill-opacity="0.05" stroke="#d29922" stroke-opacity="0.55"/>
+  <text x="44" y="54" font-size="15" fill="#e3b341" font-weight="700">Cascadeless but NOT Strict</text>
+  <rect x="42" y="68" width="146" height="184" rx="6" fill="#bc8cff" fill-opacity="0.05" stroke="none"/>
+  <rect x="192" y="68" width="146" height="184" rx="6" fill="#39c5cf" fill-opacity="0.05" stroke="none"/>
+  <text x="115.0" y="89" font-size="14" fill="#d2a8ff" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T1</text>
+  <text x="265.0" y="89" font-size="14" fill="#56d4dd" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T2</text>
+  <line x1="40" y1="100" x2="340" y2="100" stroke="#30363d"/>
+  <rect x="88.5" y="107.0" width="53" height="24" rx="6" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="115.0" y="123.5" font-size="13" fill="#d2a8ff" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">W(A)</text>
+  <line x1="40" y1="138" x2="340" y2="138" stroke="#21262d"/>
+  <rect x="40" y="140" width="300" height="34" rx="6" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.45"/>
+  <rect x="238.5" y="145.0" width="53" height="24" rx="6" fill="#39c5cf" fill-opacity="0.14" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="265.0" y="161.5" font-size="13" fill="#56d4dd" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">W(A)</text>
+  <text x="356" y="161.5" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">← </tspan>writes <tspan fill="#ff7b72" font-weight="700">BEFORE</tspan> T1 commits (dirty write!) <tspan fill="#ff7b72" font-weight="700">✗ for strict</tspan></text>
+  <line x1="40" y1="176" x2="340" y2="176" stroke="#21262d"/>
+  <rect x="80.5" y="183.0" width="69" height="24" rx="6" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="115.0" y="199.5" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <line x1="40" y1="214" x2="340" y2="214" stroke="#21262d"/>
+  <rect x="230.5" y="221.0" width="69" height="24" rx="6" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="265.0" y="237.5" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <rect x="24" y="284" width="672" height="244" rx="12" fill="#3fb950" fill-opacity="0.05" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="44" y="314" font-size="15" fill="#56d364" font-weight="700">Strict</text>
+  <rect x="42" y="328" width="146" height="184" rx="6" fill="#bc8cff" fill-opacity="0.05" stroke="none"/>
+  <rect x="192" y="328" width="146" height="184" rx="6" fill="#39c5cf" fill-opacity="0.05" stroke="none"/>
+  <text x="115.0" y="349" font-size="14" fill="#d2a8ff" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T1</text>
+  <text x="265.0" y="349" font-size="14" fill="#56d4dd" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T2</text>
+  <line x1="40" y1="360" x2="340" y2="360" stroke="#30363d"/>
+  <rect x="88.5" y="367.0" width="53" height="24" rx="6" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <text x="115.0" y="383.5" font-size="13" fill="#d2a8ff" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">W(A)</text>
+  <line x1="40" y1="398" x2="340" y2="398" stroke="#21262d"/>
+  <rect x="72.5" y="405.0" width="85" height="24" rx="6" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="115.0" y="421.5" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT ✓</text>
+  <line x1="40" y1="436" x2="340" y2="436" stroke="#21262d"/>
+  <rect x="238.5" y="443.0" width="53" height="24" rx="6" fill="#39c5cf" fill-opacity="0.14" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <text x="265.0" y="459.5" font-size="13" fill="#56d4dd" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">W(A)</text>
+  <text x="356" y="459.5" font-size="13" fill="#c9d1d9"><tspan fill="#8b949e">← </tspan>writes <tspan fill="#56d364" font-weight="700">AFTER</tspan> T1 commits <tspan fill="#56d364" font-weight="700">✓</tspan></text>
+  <line x1="40" y1="474" x2="340" y2="474" stroke="#21262d"/>
+  <rect x="222.5" y="481.0" width="85" height="24" rx="6" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.55"/>
+  <text x="265.0" y="497.5" font-size="13" fill="#56d364" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT ✓</text>
+</svg>

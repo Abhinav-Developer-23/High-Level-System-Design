@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="234" viewBox="0 0 760 234" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Triggers fire automatically</title>
+  <desc>When the user runs INSERT INTO users, a trigger logs the insertion to audit_log; UPDATE employees recalculates total salary; DELETE FROM orders archives the deleted order.</desc>
+  <defs><marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="759" height="233" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">USER RUNS</text>
+  <text x="400" y="38" fill="#ffa657" font-size="12" font-weight="700" letter-spacing="1.5">TRIGGER FIRES AUTOMATICALLY</text>
+  <rect x="24" y="60" width="260" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="85.5" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">INSERT INTO users ...</text>
+  <line x1="284" y1="81.0" x2="396" y2="81.0" stroke="#f0883e" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrO)"/>
+  <rect x="400" y="60" width="336" height="42" rx="8" fill="#f0883e" fill-opacity=".10" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="418" y="85.5" fill="#e6edf3" font-size="13.5">Log the insertion to <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#ffa657">audit_log</tspan></text>
+  <rect x="24" y="114" width="260" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="139.5" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE employees ...</text>
+  <line x1="284" y1="135.0" x2="396" y2="135.0" stroke="#f0883e" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrO)"/>
+  <rect x="400" y="114" width="336" height="42" rx="8" fill="#f0883e" fill-opacity=".10" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="418" y="139.5" fill="#e6edf3" font-size="13.5">Recalculate total salary</text>
+  <rect x="24" y="168" width="260" height="42" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="193.5" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DELETE FROM orders ...</text>
+  <line x1="284" y1="189.0" x2="396" y2="189.0" stroke="#f0883e" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrO)"/>
+  <rect x="400" y="168" width="336" height="42" rx="8" fill="#f0883e" fill-opacity=".10" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="418" y="193.5" fill="#e6edf3" font-size="13.5">Archive the deleted order</text>
+</svg>

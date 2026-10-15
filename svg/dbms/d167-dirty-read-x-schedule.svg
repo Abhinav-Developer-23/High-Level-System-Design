@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="356" viewBox="0 0 860 356" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Dirty read schedule (X)</title>
+  <desc>T1 reads X=100, computes X-50 and writes 50. T2 reads X=50 (dirty read). T1 rolls back and X reverts to 100, but T2 uses X=50, which is wrong.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="859" height="355" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="71" y="24" width="214" height="308" rx="8" fill="#bc8cff" fill-opacity="0.05" stroke="#bc8cff" stroke-opacity="0.25"/>
+  <rect x="71" y="24" width="214" height="34" rx="8" fill="#bc8cff" fill-opacity="0.16" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="178.0" y="46" fill="#d2a8ff" font-size="13" font-weight="700" text-anchor="middle">T1</text>
+  <rect x="291" y="24" width="214" height="308" rx="8" fill="#39c5cf" fill-opacity="0.05" stroke="#39c5cf" stroke-opacity="0.25"/>
+  <rect x="291" y="24" width="214" height="34" rx="8" fill="#39c5cf" fill-opacity="0.16" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="398.0" y="46" fill="#56d4dd" font-size="13" font-weight="700" text-anchor="middle">T2</text>
+  <text x="46" y="46" fill="#8b949e" font-size="12" font-weight="700" text-anchor="middle" letter-spacing="1.2">t</text>
+  <text x="46" y="86" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">1</text>
+  <text x="84" y="86" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(X) = 100</text>
+  <line x1="24" y1="100" x2="836" y2="100" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="124" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">2</text>
+  <text x="84" y="124" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">X = X - 50</text>
+  <line x1="24" y1="138" x2="836" y2="138" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="162" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">3</text>
+  <text x="84" y="162" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Write(X) = 50</text>
+  <rect x="26" y="178" width="808" height="34" rx="6" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.55"/>
+  <line x1="24" y1="176" x2="836" y2="176" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="200" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">4</text>
+  <text x="304" y="200" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Read(X) = 50</text>
+  <text x="518" y="200" fill="#ff7b72" font-size="13" font-weight="600">← Dirty Read!</text>
+  <line x1="24" y1="214" x2="836" y2="214" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="238" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">5</text>
+  <text x="84" y="238" fill="#ff7b72" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">ROLLBACK ✗</text>
+  <line x1="24" y1="252" x2="836" y2="252" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="276" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">6</text>
+  <text x="84" y="276" fill="#8b949e" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">X reverts to 100</text>
+  <rect x="26" y="292" width="808" height="34" rx="6" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.55"/>
+  <line x1="24" y1="290" x2="836" y2="290" stroke="#21262d" stroke-width="1"/>
+  <text x="46" y="314" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">7</text>
+  <text x="304" y="314" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" xml:space="preserve">Uses X = 50</text>
+  <text x="518" y="314" fill="#ff7b72" font-size="13" font-weight="600">← WRONG! X is actually 100</text>
+</svg>

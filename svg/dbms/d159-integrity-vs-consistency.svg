@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="292" viewBox="0 0 880 292" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Integrity vs consistency</title>
+  <desc>Integrity is the rules (PK unique/NOT NULL, FK references existing PK, age BETWEEN 0 AND 150, balance &gt;= 0): static, a property of data. Consistency is the guarantee: every transaction takes the DB from one valid state to another, never half-broken: dynamic, a property of transactions.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="879" height="291" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="360" height="214" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24,36 a12,12 0 0 1 12,-12 h336 a12,12 0 0 1 12,12 v28 h-360 z" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="42" y="49.0" fill="#79c0ff" font-size="14.5" font-weight="600"><tspan font-weight="700">INTEGRITY</tspan><tspan fill="#c9d1d9" font-weight="400"> (the rules)</tspan></text>
+  <circle cx="48" cy="94" r="3" fill="#58a6ff"/>
+  <text x="62" y="98" fill="#c9d1d9" font-size="13"><tspan>PK must be unique/NOT NULL</tspan></text>
+  <circle cx="48" cy="126" r="3" fill="#58a6ff"/>
+  <text x="62" y="130" fill="#c9d1d9" font-size="13"><tspan>FK must reference an existing PK</tspan></text>
+  <circle cx="48" cy="158" r="3" fill="#58a6ff"/>
+  <text x="62" y="162" fill="#c9d1d9" font-size="13"><tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">age BETWEEN 0 AND 150</tspan></text>
+  <circle cx="48" cy="190" r="3" fill="#58a6ff"/>
+  <text x="62" y="194" fill="#c9d1d9" font-size="13"><tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">balance &gt;= 0</tspan></text>
+  <line x1="388" y1="131" x2="442" y2="131" stroke="#8b949e" stroke-width="2" marker-end="url(#a-gray)"/>
+  <rect x="448" y="24" width="408" height="214" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <path d="M448,36 a12,12 0 0 1 12,-12 h384 a12,12 0 0 1 12,12 v28 h-408 z" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="466" y="49.0" fill="#56d364" font-size="14.5" font-weight="600"><tspan font-weight="700">CONSISTENCY</tspan><tspan fill="#c9d1d9" font-weight="400"> (the guarantee)</tspan></text>
+  <rect x="468" y="84" width="104" height="30" rx="15" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="520" y="104" fill="#56d364" font-size="13" font-weight="600" text-anchor="middle">Valid State</text>
+  <rect x="732" y="84" width="104" height="30" rx="15" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="784" y="104" fill="#56d364" font-size="13" font-weight="600" text-anchor="middle">Valid State</text>
+  <line x1="574" y1="99" x2="726" y2="99" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="626" y="88" width="48" height="22" rx="6" fill="#161b22" stroke="#58a6ff"/>
+  <text x="650" y="103" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">TXN</text>
+  <text x="468" y="152" fill="#c9d1d9" font-size="13.5">Every transaction takes the DB from one</text>
+  <text x="468" y="173" fill="#c9d1d9" font-size="13.5">rule-obeying state to another — never</text>
+  <text x="468" y="194" fill="#c9d1d9" font-size="13.5">leaving it half-broken.</text>
+  <text x="204" y="264" fill="#8b949e" font-size="13" text-anchor="middle"><tspan fill="#e6edf3" font-weight="600">Static</tspan> — a property of <tspan fill="#79c0ff" font-weight="700">DATA</tspan></text>
+  <text x="652" y="264" fill="#8b949e" font-size="13" text-anchor="middle"><tspan fill="#e6edf3" font-weight="600">Dynamic</tspan> — a property of <tspan fill="#56d364" font-weight="700">TRANSACTIONS</tspan></text>
+</svg>

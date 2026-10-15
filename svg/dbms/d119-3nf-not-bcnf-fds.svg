@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="212" viewBox="0 0 740 212" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>3NF but not BCNF</title>
+  <desc>{student, subject} → teacher and teacher → subject; teacher is not a super key. Candidate keys {student, subject} and {student, teacher}; all attributes are prime.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="739" height="211" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="180" height="36" rx="8" fill="#58a6ff" fill-opacity="0.12" stroke="#58a6ff" stroke-opacity="0.65"/>
+  <text x="114.0" y="46.68" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">{student, subject}</text>
+  <line x1="208" y1="42" x2="240" y2="42" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="246" y="24" width="120" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="306.0" y="46.68" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">teacher</text>
+  <text x="390" y="47" fill="#8b949e" font-size="13">(LHS is a candidate key ✓)</text>
+  <rect x="24" y="70" width="180" height="36" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.65"/>
+  <text x="114.0" y="92.68" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">teacher</text>
+  <line x1="208" y1="88" x2="240" y2="88" stroke="#f85149" stroke-width="1.6" marker-end="url(#a-red)"/>
+  <rect x="246" y="70" width="120" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="306.0" y="92.68" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">subject</text>
+  <text x="390" y="93" fill="#ff7b72" font-size="13" font-weight="700">(teacher is NOT a super key!)</text>
+  <rect x="24" y="124" width="692" height="64" rx="10" fill="#161b22" stroke="#30363d"/>
+  <text x="44" y="150" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e" font-weight="700">Candidate keys:</tspan>  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">{student, subject}</tspan>  and  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">{student, teacher}</tspan></text>
+  <text x="44" y="176" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e" font-weight="700">Prime attributes:</tspan>  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none" fill="#79c0ff">student, subject, teacher</tspan>   <tspan fill="#e3b341" font-weight="700">← all of them!</tspan></text>
+</svg>

@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="174" viewBox="0 0 840 174" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Migrate then seed workflow</title>
+  <desc>Typical workflow: 1 prisma migrate dev creates tables (structure); 2 prisma db seed fills tables with initial data; 3 start coding, the app has data to work with.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="839" height="173" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TYPICAL WORKFLOW</text>
+  <line x1="24" y1="50" x2="816" y2="50" stroke="#30363d"/>
+
+  <!-- step 1 -->
+  <rect x="24" y="66" width="228" height="84" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <circle cx="48" cy="92" r="11" fill="#58a6ff" fill-opacity=".25" stroke="#58a6ff"/>
+  <text x="48" y="96" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="68" y="97" fill="#79c0ff" font-size="13" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">prisma migrate dev</text>
+  <text x="40" y="130" fill="#c9d1d9" font-size="13">Creates tables <tspan fill="#8b949e">(structure)</tspan></text>
+
+  <line x1="252" y1="108" x2="302" y2="108" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- step 2 -->
+  <rect x="306" y="66" width="228" height="84" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".7"/>
+  <circle cx="330" cy="92" r="11" fill="#39c5cf" fill-opacity=".25" stroke="#39c5cf"/>
+  <text x="330" y="96" fill="#56d4dd" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="350" y="97" fill="#56d4dd" font-size="13" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">prisma db seed</text>
+  <text x="322" y="130" fill="#c9d1d9" font-size="13">Fills tables with initial data</text>
+
+  <line x1="534" y1="108" x2="584" y2="108" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- step 3 -->
+  <rect x="588" y="66" width="228" height="84" rx="10" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".8"/>
+  <circle cx="612" cy="92" r="11" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/>
+  <text x="612" y="96" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <text x="632" y="97" fill="#56d364" font-size="14" font-weight="700">Start coding!</text>
+  <text x="604" y="130" fill="#c9d1d9" font-size="13">App has data to work with</text>
+</svg>

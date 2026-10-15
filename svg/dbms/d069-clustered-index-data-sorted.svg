@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="564" height="214" viewBox="0 0 564 214" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Clustered index on emp_id</title>
+  <desc>Clustered index on emp_id: data pages are physically sorted by the primary key (1, 2, 3, 4, 5, ...). The data is the index: the leaf nodes are the data pages.</desc>
+  <defs>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="563" height="213" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CLUSTERED INDEX ON <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" letter-spacing="0" font-weight="400" fill="#79c0ff">emp_id</tspan></text>
+
+  <rect x="32" y="58" width="500" height="82" rx="8" fill="#1c2128" stroke="#3fb950" stroke-opacity=".7"/>
+  <path d="M32,94 V66 a8,8 0 0 1 8,-8 H524 a8,8 0 0 1 8,8 V94 z" fill="#3fb950" fill-opacity=".12"/>
+  <text x="282" y="81" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Data pages are physically sorted by PK</text>
+  <line x1="32" y1="94" x2="532" y2="94" stroke="#3fb950" stroke-opacity=".5"/>
+  <g stroke="#30363d">
+    <line x1="108" y1="94" x2="108" y2="140"/>
+    <line x1="184" y1="94" x2="184" y2="140"/>
+    <line x1="260" y1="94" x2="260" y2="140"/>
+    <line x1="336" y1="94" x2="336" y2="140"/>
+    <line x1="412" y1="94" x2="412" y2="140"/>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="15" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <text x="70" y="123">1</text><text x="146" y="123">2</text><text x="222" y="123">3</text><text x="298" y="123">4</text><text x="374" y="123">5</text>
+    <text x="472" y="123" fill="#8b949e" font-weight="400">...</text>
+  </g>
+
+  <line x1="70" y1="180" x2="70" y2="146" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="86" y="186" fill="#56d364" font-size="13.5" font-weight="600">The data IS the index</text>
+  <text x="236" y="186" fill="#8b949e" font-size="13">(leaf nodes = data pages)</text>
+</svg>

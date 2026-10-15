@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="470" height="262" viewBox="0 0 470 262" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Duplicates in an INDEX(name) leaf page</title>
+  <desc>INDEX(name) leaf pages hold entries ("John Smith", 41), ("John Smith", 892), ("John Smith", 1503), ("Priya Nair", 77), ("Priya Nair", 2201). The duplicate names are stored fine because each entry is made unique by the primary key.</desc>
+  <rect x="0.5" y="0.5" width="469" height="261" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="42" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" letter-spacing="0" font-weight="400" fill="#79c0ff">INDEX(name)</tspan>  LEAF PAGES</text>
+
+  <rect x="32" y="58" width="264" height="180" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="40" y="66" width="248" height="96" rx="6" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".5"/>
+  <g stroke="#21262d"><line x1="40" y1="166" x2="288" y2="166"/></g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#c9d1d9">
+    <text x="54" y="91">(<tspan fill="#56d364">"John Smith"</tspan>, <tspan fill="#e6edf3">41</tspan>)</text>
+    <text x="54" y="119">(<tspan fill="#56d364">"John Smith"</tspan>, <tspan fill="#e6edf3">892</tspan>)</text>
+    <text x="54" y="147">(<tspan fill="#56d364">"John Smith"</tspan>, <tspan fill="#e6edf3">1503</tspan>)</text>
+    <text x="54" y="191">(<tspan fill="#a5d6ff">"Priya Nair"</tspan>, <tspan fill="#e6edf3">77</tspan>)</text>
+    <text x="54" y="219">(<tspan fill="#a5d6ff">"Priya Nair"</tspan>, <tspan fill="#e6edf3">2201</tspan>)</text>
+  </g>
+
+  <!-- bracket -->
+  <path d="M304,70 H314 V158 H304" fill="none" stroke="#3fb950" stroke-width="1.5"/>
+  <line x1="314" y1="114" x2="326" y2="114" stroke="#3fb950" stroke-width="1.5"/>
+  <text x="336" y="110" fill="#56d364" font-size="13.5" font-weight="600">duplicates</text>
+  <text x="336" y="130" fill="#56d364" font-size="13.5" font-weight="600">stored fine</text>
+</svg>

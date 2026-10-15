@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="640" viewBox="0 0 900 640" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Schedules quick summary</title>
+  <desc>Schedule hierarchy Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules; serializability checks (conflict via precedence graph, view via 3 conditions, Conflict ⊂ View); lock protocols (Simplistic, Pre-Claiming, 2PL, Strict 2PL); Thomas' Write Rule.</desc>
+  <rect x="0.5" y="0.5" width="899" height="639" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ===== Schedule hierarchy ===== -->
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SCHEDULE HIERARCHY</text>
+  <rect x="24" y="52" width="430" height="232" rx="12" fill="#1c2128" stroke="#484f58"/>
+  <text x="40" y="73" fill="#c9d1d9" font-size="13" font-weight="600">All Schedules</text>
+  <rect x="42" y="82" width="394" height="184" rx="11" fill="#d29922" fill-opacity=".06" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="58" y="103" fill="#e3b341" font-size="13" font-weight="600">Recoverable</text>
+  <rect x="60" y="112" width="358" height="136" rx="10" fill="#58a6ff" fill-opacity=".07" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="76" y="133" fill="#79c0ff" font-size="13" font-weight="600">Cascadeless</text>
+  <rect x="78" y="142" width="322" height="88" rx="9" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="94" y="163" fill="#56d4dd" font-size="13" font-weight="600">Strict</text>
+  <rect x="96" y="172" width="286" height="40" rx="8" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".75"/>
+  <text x="239" y="197" fill="#56d364" font-size="13.5" font-weight="700" text-anchor="middle">Serial</text>
+  <text x="239" y="310" fill="#c9d1d9" font-size="13" text-anchor="middle">Serial ⊂ Strict ⊂ Cascadeless ⊂ Recoverable ⊂ All Schedules</text>
+
+  <!-- ===== Serializability check ===== -->
+  <text x="478" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SERIALIZABILITY CHECK</text>
+  <rect x="478" y="52" width="398" height="66" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="496" y="77" fill="#e6edf3" font-size="14" font-weight="600">Conflict:</text>
+  <text x="496" y="101" fill="#c9d1d9" font-size="13">Precedence Graph → no cycle = <tspan fill="#56d364" font-weight="700">✓</tspan></text>
+
+  <rect x="478" y="128" width="398" height="86" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="496" y="153" fill="#e6edf3" font-size="14" font-weight="600">View:</text>
+  <text x="496" y="177" fill="#c9d1d9" font-size="13">Check 3 conditions</text>
+  <text x="496" y="197" fill="#8b949e" font-size="13">(initial read, updated read, final write)</text>
+
+  <rect x="478" y="224" width="398" height="60" rx="10" fill="#bc8cff" fill-opacity=".06" stroke="#bc8cff" stroke-opacity=".55"/>
+  <text x="496" y="259" fill="#d2a8ff" font-size="13" font-weight="600">View</text>
+  <rect x="546" y="236" width="120" height="36" rx="8" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".75"/>
+  <text x="606" y="259" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Conflict</text>
+  <text x="856" y="259" fill="#e6edf3" font-size="14" font-weight="700" text-anchor="end">Conflict ⊂ View</text>
+
+  <!-- ===== Lock protocols ===== -->
+  <text x="24" y="344" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">LOCK PROTOCOLS</text>
+
+  <rect x="24" y="356" width="852" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="356" width="150" height="34" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".5"/>
+  <text x="99" y="378" fill="#79c0ff" font-size="13.5" font-weight="600" text-anchor="middle">Simplistic</text>
+  <text x="192" y="378" fill="#c9d1d9" font-size="13">→  lock before write, unlock after</text>
+
+  <rect x="24" y="398" width="852" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="398" width="150" height="34" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".5"/>
+  <text x="99" y="420" fill="#79c0ff" font-size="13.5" font-weight="600" text-anchor="middle">Pre-Claiming</text>
+  <text x="192" y="420" fill="#c9d1d9" font-size="13">→  all locks upfront  <tspan fill="#56d364">(no deadlock,</tspan> <tspan fill="#e3b341">low concurrency)</tspan></text>
+
+  <rect x="24" y="440" width="852" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="440" width="150" height="34" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".55"/>
+  <text x="99" y="462" fill="#e3b341" font-size="13.5" font-weight="600" text-anchor="middle">2PL</text>
+  <text x="192" y="462" fill="#c9d1d9" font-size="13">→  growing + shrinking phases  <tspan fill="#56d364">(serializable,</tspan> <tspan fill="#e3b341">cascading aborts)</tspan></text>
+
+  <rect x="24" y="482" width="852" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="482" width="150" height="34" rx="8" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="99" y="504" fill="#56d364" font-size="13.5" font-weight="600" text-anchor="middle">Strict 2PL</text>
+  <text x="192" y="504" fill="#c9d1d9" font-size="13">→  hold all locks until commit  <tspan fill="#56d364">(no cascading aborts)</tspan></text>
+
+  <!-- ===== Thomas ===== -->
+  <text x="24" y="550" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">THOMAS' WRITE RULE</text>
+  <rect x="24" y="562" width="852" height="58" rx="10" fill="#3fb950" fill-opacity=".07" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="42" y="585" fill="#c9d1d9" font-size="13">If older write is outdated  →  <tspan fill="#56d364" font-weight="700">IGNORE</tspan> it instead of rolling back</text>
+  <text x="42" y="607" fill="#c9d1d9" font-size="13">Produces <tspan fill="#e6edf3" font-weight="600">view-serializable</tspan> schedules</text>
+</svg>

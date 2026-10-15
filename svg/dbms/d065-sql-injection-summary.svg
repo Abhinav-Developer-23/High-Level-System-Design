@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="268" viewBox="0 0 840 268" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>SQL injection quick summary</title>
+  <desc>Attack types: 1 tautology (OR 1=1) returns all rows; 2 login bypass (" OR ""=") bypasses authentication; 3 batched statements (;DROP) destroys tables; 4 UNION-based extracts data from other tables. Prevention: parameterized queries (best), input validation, stored procedures, least privilege are good; string concatenation must never be used.</desc>
+  <rect x="0.5" y="0.5" width="839" height="267" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- Attack types -->
+  <rect x="24" y="24" width="472" height="220" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".5"/>
+  <path d="M24,58 V34 a10,10 0 0 1 10,-10 H486 a10,10 0 0 1 10,10 V58 z" fill="#f85149" fill-opacity=".14"/>
+  <text x="42" y="46" fill="#ff7b72" font-size="12" font-weight="700" letter-spacing="1.5">SQL INJECTION ATTACK TYPES</text>
+  <line x1="24" y1="58" x2="496" y2="58" stroke="#f85149" stroke-opacity=".4"/>
+  <g font-size="13">
+    <text x="42" y="92" fill="#e6edf3"><tspan fill="#8b949e">1.</tspan> Tautology <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">(OR 1=1)</tspan></text>
+    <text x="278" y="92" fill="#c9d1d9"><tspan fill="#8b949e">→</tspan> Returns all rows</text>
+    <text x="42" y="132" fill="#e6edf3"><tspan fill="#8b949e">2.</tspan> Login Bypass <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">(" OR ""=")</tspan></text>
+    <text x="278" y="132" fill="#c9d1d9"><tspan fill="#8b949e">→</tspan> Bypasses authentication</text>
+    <text x="42" y="172" fill="#e6edf3"><tspan fill="#8b949e">3.</tspan> Batched Statements <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">(;DROP)</tspan></text>
+    <text x="278" y="172" fill="#ff7b72" font-weight="600"><tspan fill="#8b949e" font-weight="400">→</tspan> Destroys tables</text>
+    <text x="42" y="212" fill="#e6edf3"><tspan fill="#8b949e">4.</tspan> UNION-Based</text>
+    <text x="278" y="212" fill="#c9d1d9"><tspan fill="#8b949e">→</tspan> Extracts data from other tables</text>
+  </g>
+  <line x1="40" y1="110" x2="480" y2="110" stroke="#21262d"/>
+  <line x1="40" y1="150" x2="480" y2="150" stroke="#21262d"/>
+  <line x1="40" y1="190" x2="480" y2="190" stroke="#21262d"/>
+
+  <!-- Prevention -->
+  <rect x="516" y="24" width="300" height="220" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".5"/>
+  <path d="M516,58 V34 a10,10 0 0 1 10,-10 H806 a10,10 0 0 1 10,10 V58 z" fill="#3fb950" fill-opacity=".14"/>
+  <text x="534" y="46" fill="#56d364" font-size="12" font-weight="700" letter-spacing="1.5">PREVENTION</text>
+  <line x1="516" y1="58" x2="816" y2="58" stroke="#3fb950" stroke-opacity=".4"/>
+  <g font-size="13">
+    <text x="534" y="88" fill="#56d364" font-weight="700">✓  <tspan fill="#e6edf3" font-weight="600">Parameterized queries</tspan> <tspan fill="#56d364">(BEST)</tspan></text>
+    <text x="534" y="118" fill="#56d364" font-weight="700">✓  <tspan fill="#c9d1d9" font-weight="400">Input validation</tspan></text>
+    <text x="534" y="148" fill="#56d364" font-weight="700">✓  <tspan fill="#c9d1d9" font-weight="400">Stored procedures</tspan></text>
+    <text x="534" y="178" fill="#56d364" font-weight="700">✓  <tspan fill="#c9d1d9" font-weight="400">Least privilege</tspan></text>
+  </g>
+  <rect x="530" y="194" width="272" height="34" rx="8" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="544" y="216" fill="#ff7b72" font-size="13" font-weight="700">✗  <tspan fill="#e6edf3" font-weight="600">String concatenation</tspan> (NEVER)</text>
+</svg>

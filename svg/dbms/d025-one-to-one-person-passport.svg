@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="300" viewBox="0 0 760 300" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>One-to-one: Person and Passport</title>
+  <desc>Person (person_id PK, name, dob) relates 1:1 to Passport (passport_id PK, passport_no, person_id FK and unique). Alice maps to P12345, Bob to P67890, Carol to P11111.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="759" height="299" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="150" y="38" fill="#d2a8ff" font-size="14.5" font-weight="700" text-anchor="middle">Person</text>
+  <text x="610" y="38" fill="#56d4dd" font-size="14.5" font-weight="700" text-anchor="middle">Passport</text>
+
+  <!-- Person entity -->
+  <rect x="40" y="50" width="220" height="98" rx="10" fill="#bc8cff" fill-opacity=".08" stroke="#bc8cff" stroke-opacity=".8"/>
+  <line x1="40" y1="84" x2="260" y2="84" stroke="#bc8cff" stroke-opacity=".3"/>
+  <line x1="40" y1="116" x2="260" y2="116" stroke="#bc8cff" stroke-opacity=".3"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#e6edf3">
+    <text x="56" y="72">person_id <tspan fill="#e3b341" font-size="12">(PK)</tspan></text>
+    <text x="56" y="105">name</text>
+    <text x="56" y="137">dob</text>
+  </g>
+
+  <!-- Passport entity -->
+  <rect x="500" y="50" width="220" height="98" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".8"/>
+  <line x1="500" y1="84" x2="720" y2="84" stroke="#39c5cf" stroke-opacity=".3"/>
+  <line x1="500" y1="116" x2="720" y2="116" stroke="#39c5cf" stroke-opacity=".3"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#e6edf3">
+    <text x="516" y="72">passport_id <tspan fill="#e3b341" font-size="12">(PK)</tspan></text>
+    <text x="516" y="105">passport_no</text>
+    <text x="516" y="137">person_id <tspan fill="#79c0ff" font-size="12">(FK,UQ)</tspan></text>
+  </g>
+
+  <!-- relationship -->
+  <line x1="260" y1="100" x2="500" y2="100" stroke="#8b949e" stroke-width="1.6"/>
+  <rect x="352" y="88" width="56" height="24" rx="12" fill="#161b22" stroke="#8b949e"/>
+  <text x="380" y="105" fill="#e6edf3" font-size="13" font-weight="700" text-anchor="middle">1:1</text>
+
+  <line x1="24" y1="172" x2="736" y2="172" stroke="#21262d"/>
+
+  <!-- instances -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" text-anchor="middle">
+    <rect x="100" y="187" width="100" height="26" rx="13" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".6"/>
+    <text x="150" y="205" fill="#d2a8ff">Alice</text>
+    <rect x="100" y="221" width="100" height="26" rx="13" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".6"/>
+    <text x="150" y="239" fill="#d2a8ff">Bob</text>
+    <rect x="100" y="255" width="100" height="26" rx="13" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".6"/>
+    <text x="150" y="273" fill="#d2a8ff">Carol</text>
+    <rect x="560" y="187" width="100" height="26" rx="13" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".6"/>
+    <text x="610" y="205" fill="#56d4dd">P12345</text>
+    <rect x="560" y="221" width="100" height="26" rx="13" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".6"/>
+    <text x="610" y="239" fill="#56d4dd">P67890</text>
+    <rect x="560" y="255" width="100" height="26" rx="13" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".6"/>
+    <text x="610" y="273" fill="#56d4dd">P11111</text>
+  </g>
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="206" y1="200" x2="554" y2="200" marker-start="url(#arr)" marker-end="url(#arr)"/>
+    <line x1="206" y1="234" x2="554" y2="234" marker-start="url(#arr)" marker-end="url(#arr)"/>
+    <line x1="206" y1="268" x2="554" y2="268" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  </g>
+</svg>

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="384" viewBox="0 0 900 384" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Swapping non-conflicting operations</title>
+  <desc>Schedule S: T1 Read(A), T2 Read(B), T1 Write(A), T2 Write(B). Swapping the non-conflicting T2 Read(B) and T1 Write(A) gives T1 Read(A), T1 Write(A), T2 Read(B), T2 Write(B), with T1 ops together. This is equivalent to the serial schedule T1 then T2, so S is conflict serializable.</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="383" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" font-size="14.5" fill="#e6edf3" font-weight="600">Schedule S:</text>
+  <rect x="24" y="56" width="292" height="34" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="46.0" y="78" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">T</text>
+  <text x="130.0" y="78" font-size="12" fill="#d2a8ff" font-weight="700" text-anchor="middle" letter-spacing="1.5">T1</text>
+  <text x="254.0" y="78" font-size="12" fill="#56d4dd" font-weight="700" text-anchor="middle" letter-spacing="1.5">T2</text>
+  <rect x="68" y="90" width="124" height="144" rx="0" fill="#bc8cff" fill-opacity="0.07" stroke="#bc8cff" stroke-opacity="0"/>
+  <rect x="192" y="90" width="124" height="144" rx="0" fill="#39c5cf" fill-opacity="0.07" stroke="#39c5cf" stroke-opacity="0"/>
+  <line x1="24" y1="90" x2="316" y2="90" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="112.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t1</text>
+  <text x="130.0" y="112.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <rect x="24" y="126" width="292" height="36" rx="0" fill="#d29922" fill-opacity="0.13" stroke="#d29922" stroke-opacity="0"/>
+  <line x1="24" y1="126" x2="316" y2="126" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="148.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t2</text>
+  <text x="254.0" y="148.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(B)</text>
+  <rect x="24" y="162" width="292" height="36" rx="0" fill="#d29922" fill-opacity="0.13" stroke="#d29922" stroke-opacity="0"/>
+  <line x1="24" y1="162" x2="316" y2="162" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="184.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t3</text>
+  <text x="130.0" y="184.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <line x1="24" y1="198" x2="316" y2="198" stroke="#21262d" stroke-width="1"/>
+  <text x="46.0" y="220.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t4</text>
+  <text x="254.0" y="220.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(B)</text>
+  <rect x="24" y="56" width="292" height="178" rx="10" fill="none" stroke="#30363d"/>
+  <path d="M318,144 C350,144 350,180 318,180" fill="none" stroke="#d29922" stroke-width="1.8" marker-end="url(#a-amber)"/>
+  <path d="M318,144 l9,-4 l0,8 z" fill="#d29922"/>
+  <text x="352" y="167" font-size="13" fill="#e3b341" font-weight="600">↕ swap</text>
+  <line x1="424" y1="144" x2="462" y2="144" stroke="#8b949e" stroke-width="2" marker-end="url(#a-gray)"/>
+  <text x="476" y="40" font-size="14.5" fill="#e6edf3" font-weight="600">After swapping non-conflicting ops:</text>
+  <rect x="476" y="56" width="292" height="34" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="498.0" y="78" font-size="12" fill="#8b949e" font-weight="700" text-anchor="middle" letter-spacing="1.5">T</text>
+  <text x="582.0" y="78" font-size="12" fill="#d2a8ff" font-weight="700" text-anchor="middle" letter-spacing="1.5">T1</text>
+  <text x="706.0" y="78" font-size="12" fill="#56d4dd" font-weight="700" text-anchor="middle" letter-spacing="1.5">T2</text>
+  <rect x="520" y="90" width="124" height="144" rx="0" fill="#bc8cff" fill-opacity="0.07" stroke="#bc8cff" stroke-opacity="0"/>
+  <rect x="644" y="90" width="124" height="144" rx="0" fill="#39c5cf" fill-opacity="0.07" stroke="#39c5cf" stroke-opacity="0"/>
+  <rect x="476" y="90" width="292" height="36" rx="0" fill="#bc8cff" fill-opacity="0.13" stroke="#bc8cff" stroke-opacity="0"/>
+  <line x1="476" y1="90" x2="768" y2="90" stroke="#21262d" stroke-width="1"/>
+  <text x="498.0" y="112.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t1</text>
+  <text x="582.0" y="112.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(A)</text>
+  <rect x="476" y="126" width="292" height="36" rx="0" fill="#bc8cff" fill-opacity="0.13" stroke="#bc8cff" stroke-opacity="0"/>
+  <line x1="476" y1="126" x2="768" y2="126" stroke="#21262d" stroke-width="1"/>
+  <text x="498.0" y="148.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t2</text>
+  <text x="582.0" y="148.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(A)</text>
+  <line x1="476" y1="162" x2="768" y2="162" stroke="#21262d" stroke-width="1"/>
+  <text x="498.0" y="184.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t3</text>
+  <text x="706.0" y="184.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Read(B)</text>
+  <line x1="476" y1="198" x2="768" y2="198" stroke="#21262d" stroke-width="1"/>
+  <text x="498.0" y="220.5" font-size="12" fill="#8b949e" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">t4</text>
+  <text x="706.0" y="220.5" font-size="12.5" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Write(B)</text>
+  <rect x="476" y="56" width="292" height="178" rx="10" fill="none" stroke="#30363d"/>
+  <path d="M774,94 h8 v64 h-8" fill="none" stroke="#bc8cff" stroke-width="1.8"/>
+  <text x="792" y="121" font-size="13" fill="#d2a8ff" font-weight="600">← T1 ops</text>
+  <text x="806" y="139" font-size="13" fill="#d2a8ff" font-weight="600">together</text>
+  <rect x="24" y="254" width="852" height="106" rx="10" fill="#3fb950" fill-opacity="0.1" stroke="#3fb950" stroke-opacity="0.7"/>
+  <text x="44" y="288" font-size="14" fill="#e6edf3">→  Equivalent to serial schedule <tspan fill="#8b949e">(T1 then T2)</tspan>  <tspan fill="#56d364" font-weight="700" font-size="16">✓</tspan></text>
+  <text x="44" y="322" font-size="14" fill="#e6edf3">→  S is <tspan fill="#56d364" font-weight="700">CONFLICT SERIALIZABLE</tspan></text>
+</svg>

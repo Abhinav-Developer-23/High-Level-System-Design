@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="330" viewBox="0 0 760 330" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>RAM vs disk around COMMIT</title>
+  <desc>Before COMMIT memory holds Alice = 500, Bob = 2500 while disk still has the old values Alice = 1000, Bob = 2000. After COMMIT the values are written to disk: Alice = 500, Bob = 2500 (updated).</desc>
+  <defs><marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="759" height="329" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="38" font-size="12" fill="#8b949e" font-weight="700" letter-spacing="1.5">BEFORE COMMIT</text>
+  <rect x="24" y="52" width="220" height="92" rx="10" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="40" y="78" font-size="14" fill="#d2a8ff" font-weight="600">Memory (RAM)</text>
+  <line x1="25" y1="90" x2="243" y2="90" stroke="#bc8cff" stroke-width="1"/>
+  <text x="40" y="112" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Alice = 500</text>
+  <text x="40" y="132" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Bob = 2500</text>
+  <rect x="370" y="52" width="220" height="92" rx="10" fill="#39c5cf" fill-opacity="0.1" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="386" y="78" font-size="14" fill="#56d4dd" font-weight="600">Disk</text>
+  <line x1="371" y1="90" x2="589" y2="90" stroke="#39c5cf" stroke-width="1"/>
+  <text x="386" y="112" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Alice = 1000</text>
+  <text x="386" y="132" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Bob = 2000</text>
+  <text x="604" y="112" font-size="13" fill="#e3b341" font-weight="600">← still old values!</text>
+  <text x="24" y="190" font-size="12" fill="#56d364" font-weight="700" letter-spacing="1.5">AFTER COMMIT</text>
+  <rect x="24" y="204" width="220" height="92" rx="10" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="40" y="230" font-size="14" fill="#d2a8ff" font-weight="600">Memory (RAM)</text>
+  <line x1="25" y1="242" x2="243" y2="242" stroke="#bc8cff" stroke-width="1"/>
+  <text x="40" y="264" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Alice = 500</text>
+  <text x="40" y="284" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Bob = 2500</text>
+  <line x1="250" y1="264" x2="360" y2="264" stroke="#3fb950" stroke-width="2" marker-end="url(#a-green)"/>
+  <rect x="370" y="204" width="220" height="92" rx="10" fill="#39c5cf" fill-opacity="0.1" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <text x="386" y="230" font-size="14" fill="#56d4dd" font-weight="600">Disk</text>
+  <line x1="371" y1="242" x2="589" y2="242" stroke="#39c5cf" stroke-width="1"/>
+  <text x="386" y="264" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Alice = 500</text>
+  <text x="386" y="284" font-size="13" fill="#e6edf3" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Bob = 2500</text>
+  <text x="604" y="264" font-size="13" fill="#56d364" font-weight="600">← updated!</text>
+  <text x="604" y="284" font-size="13" fill="#56d364" font-weight="600">← updated!</text>
+</svg>

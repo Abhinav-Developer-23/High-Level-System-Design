@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="340" viewBox="0 0 760 340" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cursor processing the employees table</title>
+  <desc>The cursor fetches each employee row, computes a 10% or 5% bonus and updates; when @@FETCH_STATUS = -1 there are no more rows and the loop exits.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="759" height="339" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="32" y="38" fill="#e6edf3" font-size="15" font-weight="600">employees table:</text>
+  <rect x="32" y="56" width="240" height="166" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="32.5" y="56.5" width="239" height="30" rx="8" fill="#21262d" stroke="none"/>
+  <text x="44" y="76" fill="#8b949e" font-size="12.5" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">emp_id</text>
+  <line x1="108" y1="56" x2="108" y2="222" stroke="#30363d" stroke-width="1"/>
+  <text x="120" y="76" fill="#8b949e" font-size="12.5" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">name</text>
+  <line x1="188" y1="56" x2="188" y2="222" stroke="#30363d" stroke-width="1"/>
+  <text x="200" y="76" fill="#8b949e" font-size="12.5" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">salary</text>
+  <line x1="32" y1="86" x2="272" y2="86" stroke="#30363d" stroke-width="1"/>
+  <text x="44" y="108" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">1</text>
+  <text x="120" y="108" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Alice</text>
+  <text x="200" y="108" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">45000</text>
+  <line x1="272" y1="103.0" x2="300" y2="103.0" stroke="#8b949e" stroke-width="1.5"/>
+  <rect x="300" y="90.0" width="72" height="26" rx="13" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="336" y="107.5" fill="#d2a8ff" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH</text>
+  <line x1="372" y1="103.0" x2="400" y2="103.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="404" y="90.0" width="210" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="418" y="107.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">bonus = 4500 <tspan fill="#8b949e">(10%)</tspan></text>
+  <line x1="614" y1="103.0" x2="642" y2="103.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="646" y="90.0" width="86" height="26" rx="13" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="689" y="107.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE</text>
+  <line x1="32" y1="120" x2="272" y2="120" stroke="#30363d" stroke-width="1"/>
+  <text x="44" y="142" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">2</text>
+  <text x="120" y="142" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Bob</text>
+  <text x="200" y="142" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">60000</text>
+  <line x1="272" y1="137.0" x2="300" y2="137.0" stroke="#8b949e" stroke-width="1.5"/>
+  <rect x="300" y="124.0" width="72" height="26" rx="13" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="336" y="141.5" fill="#d2a8ff" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH</text>
+  <line x1="372" y1="137.0" x2="400" y2="137.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="404" y="124.0" width="210" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="418" y="141.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">bonus = 3000 <tspan fill="#8b949e">(5%)</tspan></text>
+  <line x1="614" y1="137.0" x2="642" y2="137.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="646" y="124.0" width="86" height="26" rx="13" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="689" y="141.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE</text>
+  <line x1="32" y1="154" x2="272" y2="154" stroke="#30363d" stroke-width="1"/>
+  <text x="44" y="176" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">3</text>
+  <text x="120" y="176" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Carol</text>
+  <text x="200" y="176" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">38000</text>
+  <line x1="272" y1="171.0" x2="300" y2="171.0" stroke="#8b949e" stroke-width="1.5"/>
+  <rect x="300" y="158.0" width="72" height="26" rx="13" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="336" y="175.5" fill="#d2a8ff" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH</text>
+  <line x1="372" y1="171.0" x2="400" y2="171.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="404" y="158.0" width="210" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="418" y="175.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">bonus = 3800 <tspan fill="#8b949e">(10%)</tspan></text>
+  <line x1="614" y1="171.0" x2="642" y2="171.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="646" y="158.0" width="86" height="26" rx="13" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="689" y="175.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE</text>
+  <line x1="32" y1="188" x2="272" y2="188" stroke="#30363d" stroke-width="1"/>
+  <text x="44" y="210" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">4</text>
+  <text x="120" y="210" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">Dave</text>
+  <text x="200" y="210" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">75000</text>
+  <line x1="272" y1="205.0" x2="300" y2="205.0" stroke="#8b949e" stroke-width="1.5"/>
+  <rect x="300" y="192.0" width="72" height="26" rx="13" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="336" y="209.5" fill="#d2a8ff" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH</text>
+  <line x1="372" y1="205.0" x2="400" y2="205.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="404" y="192.0" width="210" height="26" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="418" y="209.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">bonus = 3750 <tspan fill="#8b949e">(5%)</tspan></text>
+  <line x1="614" y1="205.0" x2="642" y2="205.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="646" y="192.0" width="86" height="26" rx="13" fill="#3fb950" fill-opacity="0.14" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="689" y="209.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">UPDATE</text>
+  <line x1="336" y1="268" x2="336" y2="228" stroke="#d29922" stroke-width="1.6" marker-end="url(#a-amber)"/>
+  <rect x="214" y="268" width="244" height="50" rx="10" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="336" y="288" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">@@FETCH_STATUS = -1</text>
+  <text x="336" y="307" fill="#c9d1d9" font-size="12.5" text-anchor="middle">(no more rows → exit loop)</text>
+</svg>

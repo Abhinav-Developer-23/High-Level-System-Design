@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="316" viewBox="0 0 860 316" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Testing app logic vs triggers</title>
+  <desc>Testing application logic: plain unit test with no DB, mocked dependencies, runs in milliseconds, runs in CI out of the box, rich assertion libraries, debugger with breakpoints and stack traces. Testing a trigger or procedure: needs a running database, real tables and data, slow integration tests, a DB container in CI, assertions by querying tables afterwards, very limited debugging tools.</desc>
+  <rect x="0.5" y="0.5" width="859" height="315" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24.0" y="24" width="396.0" height="268" rx="10" fill="#1c2128" stroke="#3fb950" stroke-opacity=".55"/>
+  <path d="M24.0,66 V34 a10,10 0 0 1 10,-10 H410.0 a10,10 0 0 1 10,10 V66 z" fill="#3fb950" fill-opacity=".14"/>
+  <line x1="24.0" y1="66" x2="420.0" y2="66" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="42.0" y="51" fill="#56d364" font-size="14" font-weight="700">Testing application logic</text>
+  <text x="44.0" y="97.5" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="66.0" y="97.5" fill="#c9d1d9" font-size="13.5">Plain unit test, no DB needed</text>
+  <line x1="38.0" y1="110" x2="406.0" y2="110" stroke="#21262d"/>
+  <text x="44.0" y="131.5" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="66.0" y="131.5" fill="#c9d1d9" font-size="13.5">Mock the dependencies</text>
+  <line x1="38.0" y1="144" x2="406.0" y2="144" stroke="#21262d"/>
+  <text x="44.0" y="165.5" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="66.0" y="165.5" fill="#c9d1d9" font-size="13.5">Runs in milliseconds</text>
+  <line x1="38.0" y1="178" x2="406.0" y2="178" stroke="#21262d"/>
+  <text x="44.0" y="199.5" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="66.0" y="199.5" fill="#c9d1d9" font-size="13.5">Runs in CI out of the box</text>
+  <line x1="38.0" y1="212" x2="406.0" y2="212" stroke="#21262d"/>
+  <text x="44.0" y="233.5" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="66.0" y="233.5" fill="#c9d1d9" font-size="13.5">Rich assertion libraries</text>
+  <line x1="38.0" y1="246" x2="406.0" y2="246" stroke="#21262d"/>
+  <text x="44.0" y="267.5" fill="#56d364" font-size="14" font-weight="700">✓</text>
+  <text x="66.0" y="267.5" fill="#c9d1d9" font-size="13.5">Debugger, breakpoints, stack traces</text>
+  <rect x="440.0" y="24" width="396.0" height="268" rx="10" fill="#1c2128" stroke="#f85149" stroke-opacity=".55"/>
+  <path d="M440.0,66 V34 a10,10 0 0 1 10,-10 H826.0 a10,10 0 0 1 10,10 V66 z" fill="#f85149" fill-opacity=".14"/>
+  <line x1="440.0" y1="66" x2="836.0" y2="66" stroke="#f85149" stroke-opacity=".5"/>
+  <text x="458.0" y="51" fill="#ff7b72" font-size="14" font-weight="700">Testing a trigger/procedure</text>
+  <text x="460.0" y="97.5" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="482.0" y="97.5" fill="#c9d1d9" font-size="13.5">Needs a running database</text>
+  <line x1="454.0" y1="110" x2="822.0" y2="110" stroke="#21262d"/>
+  <text x="460.0" y="131.5" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="482.0" y="131.5" fill="#c9d1d9" font-size="13.5">Must set up real tables + data</text>
+  <line x1="454.0" y1="144" x2="822.0" y2="144" stroke="#21262d"/>
+  <text x="460.0" y="165.5" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="482.0" y="165.5" fill="#c9d1d9" font-size="13.5">Slow integration test</text>
+  <line x1="454.0" y1="178" x2="822.0" y2="178" stroke="#21262d"/>
+  <text x="460.0" y="199.5" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="482.0" y="199.5" fill="#c9d1d9" font-size="13.5">Needs DB container in CI</text>
+  <line x1="454.0" y1="212" x2="822.0" y2="212" stroke="#21262d"/>
+  <text x="460.0" y="233.5" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="482.0" y="233.5" fill="#c9d1d9" font-size="13.5">Assert by querying tables afterwards</text>
+  <line x1="454.0" y1="246" x2="822.0" y2="246" stroke="#21262d"/>
+  <text x="460.0" y="267.5" fill="#ff7b72" font-size="14" font-weight="700">✗</text>
+  <text x="482.0" y="267.5" fill="#c9d1d9" font-size="13.5">Very limited debugging tools</text>
+</svg>

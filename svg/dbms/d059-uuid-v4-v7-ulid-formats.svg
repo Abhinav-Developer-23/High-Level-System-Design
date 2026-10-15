@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="214" viewBox="0 0 760 214" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>UUID v4 vs UUID v7 vs ULID</title>
+  <desc>UUID v4 550e8400-e29b-41d4-a716-446655440000 is fully random. UUID v7 018e4f6c-5a00-7000-8000-1234567890ab and ULID 01ARZ3NDEKTSV4RRFFQ69G5FAV are timestamp-prefixed and sortable.</desc>
+  <rect x="0.5" y="0.5" width="759" height="213" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="32" y="44" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">FORMAT</text>
+  <text x="130" y="44" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EXAMPLE</text>
+  <text x="532" y="44" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ORDERING</text>
+  <line x1="24" y1="56" x2="736" y2="56" stroke="#30363d"/>
+
+  <!-- v4 -->
+  <rect x="24" y="66" width="712" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="89" fill="#e6edf3" font-size="14" font-weight="600">UUID v4</text>
+  <text x="130" y="89" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#ff7b72">550e8400-e29b-41d4-a716-446655440000</text>
+  <rect x="532" y="73" width="110" height="22" rx="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="587" y="88" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">fully random</text>
+
+  <!-- v7 -->
+  <rect x="24" y="110" width="712" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="133" fill="#e6edf3" font-size="14" font-weight="600">UUID v7</text>
+  <text x="130" y="133" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13"><tspan fill="#56d364" font-weight="700">018e4f6c-5a00</tspan><tspan fill="#c9d1d9">-7000-8000-1234567890ab</tspan></text>
+  <rect x="532" y="117" width="196" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="630" y="132" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">timestamp-prefixed (sortable!)</text>
+
+  <!-- ULID -->
+  <rect x="24" y="154" width="712" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="177" fill="#e6edf3" font-size="14" font-weight="600">ULID</text>
+  <text x="130" y="177" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13"><tspan fill="#56d364" font-weight="700">01ARZ3NDEK</tspan><tspan fill="#c9d1d9">TSV4RRFFQ69G5FAV</tspan></text>
+  <rect x="532" y="161" width="196" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="630" y="176" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">timestamp-prefixed (sortable!)</text>
+</svg>

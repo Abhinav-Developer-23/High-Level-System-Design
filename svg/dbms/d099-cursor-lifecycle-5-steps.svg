@@ -1,0 +1,45 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="176" viewBox="0 0 880 176" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cursor lifecycle - 5 steps</title>
+  <desc>Cursor lifecycle: DECLARE defines the cursor, OPEN executes the query, FETCH gets one row at a time in a loop, CLOSE releases the cursor, DEALLOCATE frees memory.</desc>
+  <defs>
+    <marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    </defs>
+  <rect x="0.5" y="0.5" width="879" height="175" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="26" y="48" width="140" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="96.0" y="76" fill="#79c0ff" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">DECLARE</text>
+  <line x1="42" y1="104" x2="150" y2="104" stroke="#30363d" stroke-width="1"/>
+  <text x="96.0" y="124" fill="#c9d1d9" font-size="13" text-anchor="middle">Define the</text>
+  <text x="96.0" y="143" fill="#c9d1d9" font-size="13" text-anchor="middle">cursor</text>
+  <line x1="166" y1="100.0" x2="195" y2="100.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="198" y="48" width="140" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="268.0" y="76" fill="#79c0ff" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">OPEN</text>
+  <line x1="214" y1="104" x2="322" y2="104" stroke="#30363d" stroke-width="1"/>
+  <text x="268.0" y="124" fill="#c9d1d9" font-size="13" text-anchor="middle">Execute the</text>
+  <text x="268.0" y="143" fill="#c9d1d9" font-size="13" text-anchor="middle">query</text>
+  <line x1="338" y1="100.0" x2="367" y2="100.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="370" y="48" width="140" height="104" rx="10" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.7"/>
+  <text x="440.0" y="76" fill="#d2a8ff" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">FETCH</text>
+  <text x="440.0" y="94" fill="#d2a8ff" font-size="12" text-anchor="middle">(loop)</text>
+  <line x1="386" y1="104" x2="494" y2="104" stroke="#30363d" stroke-width="1"/>
+  <text x="440.0" y="124" fill="#c9d1d9" font-size="13" text-anchor="middle">Get one row</text>
+  <text x="440.0" y="143" fill="#c9d1d9" font-size="13" text-anchor="middle">at a time</text>
+  <path d="M470,48 C470,18 410,18 410,45" fill="none" stroke="#bc8cff" stroke-width="1.6" marker-end="url(#a-purple)"/>
+  <line x1="510" y1="100.0" x2="539" y2="100.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="542" y="48" width="140" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="612.0" y="76" fill="#79c0ff" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">CLOSE</text>
+  <line x1="558" y1="104" x2="666" y2="104" stroke="#30363d" stroke-width="1"/>
+  <text x="612.0" y="124" fill="#c9d1d9" font-size="13" text-anchor="middle">Release the</text>
+  <text x="612.0" y="143" fill="#c9d1d9" font-size="13" text-anchor="middle">cursor</text>
+  <line x1="682" y1="100.0" x2="711" y2="100.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#a-gray)"/>
+  <rect x="714" y="48" width="140" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="784.0" y="76" fill="#79c0ff" font-size="14" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" style="font-variant-ligatures:none">DEALLOCATE</text>
+  <line x1="730" y1="104" x2="838" y2="104" stroke="#30363d" stroke-width="1"/>
+  <text x="784.0" y="124" fill="#c9d1d9" font-size="13" text-anchor="middle">Free memory</text>
+</svg>

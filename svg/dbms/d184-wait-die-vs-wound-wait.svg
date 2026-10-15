@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="372" viewBox="0 0 780 372" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Wait-Die vs Wound-Wait</title>
+  <desc>Wait-Die: old requester waits, young requester dies. Wound-Wait: old requester wounds the young holder, young requester waits.</desc>
+  <defs>
+    <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="779" height="371" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="732" height="156" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="44" y="54" font-size="13" fill="#c9d1d9"><tspan fill="#e6edf3" font-weight="700" font-size="15">Wait-Die</tspan><tspan fill="#8b949e">   (older waits, younger dies)</tspan></text>
+  <line x1="44" y1="68" x2="736" y2="68" stroke="#21262d"/>
+  <rect x="44" y="82" width="340" height="36" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="60" y="105" font-size="13" fill="#c9d1d9"><tspan fill="#d2a8ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T1</tspan> (old) requests lock held by <tspan fill="#56d4dd" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T2</tspan> (young)</text>
+  <line x1="384" y1="100" x2="422" y2="100" stroke="#d29922" stroke-width="1.8" marker-end="url(#m-amber)"/>
+  <rect x="426" y="82" width="310" height="36" rx="8" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="442" y="105" font-size="13.5" fill="#e3b341" font-weight="700">T1 WAITS<tspan fill="#8b949e">  (old can wait)</tspan></text>
+  <rect x="44" y="128" width="340" height="36" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="60" y="151" font-size="13" fill="#c9d1d9"><tspan fill="#56d4dd" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T2</tspan> (young) requests lock held by <tspan fill="#d2a8ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T1</tspan> (old)</text>
+  <line x1="384" y1="146" x2="422" y2="146" stroke="#f85149" stroke-width="1.8" marker-end="url(#m-red)"/>
+  <rect x="426" y="128" width="310" height="36" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="442" y="151" font-size="13.5" fill="#ff7b72" font-weight="700">T2 DIES<tspan fill="#8b949e">  (young must rollback)</tspan></text>
+  <rect x="24" y="192" width="732" height="156" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="44" y="222" font-size="13" fill="#c9d1d9"><tspan fill="#e6edf3" font-weight="700" font-size="15">Wound-Wait</tspan><tspan fill="#8b949e">   (older wounds, younger waits)</tspan></text>
+  <line x1="44" y1="236" x2="736" y2="236" stroke="#21262d"/>
+  <rect x="44" y="250" width="340" height="36" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="60" y="273" font-size="13" fill="#c9d1d9"><tspan fill="#d2a8ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T1</tspan> (old) requests lock held by <tspan fill="#56d4dd" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T2</tspan> (young)</text>
+  <line x1="384" y1="268" x2="422" y2="268" stroke="#f85149" stroke-width="1.8" marker-end="url(#m-red)"/>
+  <rect x="426" y="250" width="310" height="36" rx="8" fill="#f85149" fill-opacity="0.12" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="442" y="273" font-size="13.5" fill="#ff7b72" font-weight="700">T2 is WOUNDED<tspan fill="#8b949e">  (rolled back)</tspan></text>
+  <rect x="44" y="296" width="340" height="36" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="60" y="319" font-size="13" fill="#c9d1d9"><tspan fill="#56d4dd" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T2</tspan> (young) requests lock held by <tspan fill="#d2a8ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T1</tspan> (old)</text>
+  <line x1="384" y1="314" x2="422" y2="314" stroke="#d29922" stroke-width="1.8" marker-end="url(#m-amber)"/>
+  <rect x="426" y="296" width="310" height="36" rx="8" fill="#d29922" fill-opacity="0.12" stroke="#d29922" stroke-opacity="0.6"/>
+  <text x="442" y="319" font-size="13.5" fill="#e3b341" font-weight="700">T2 WAITS<tspan fill="#8b949e">  (young can wait)</tspan></text>
+</svg>
