@@ -315,6 +315,7 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
     - [How MySQL Replication Works](#how-mysql-replication-works)
     - [Async vs Semi-Sync vs Group Replication](#async-vs-semi-sync-vs-group-replication)
     - [Read Replicas & Read/Write Splitting](#read-replicas--readwrite-splitting)
+    - [ProxySQL — The MySQL-Aware Proxy](#proxysql--the-mysql-aware-proxy)
     - [Replication Lag](#replication-lag)
     - [The Read-Your-Own-Writes Problem](#the-read-your-own-writes-problem)
     - [Failover — When the Source Dies](#failover--when-the-source-dies)
@@ -337,6 +338,14 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
     - [Example Schema on One Shard (same SQL shape everywhere)](#example-schema-on-one-shard-same-sql-shape-everywhere)
     - [SQL Patterns After Sharding](#sql-patterns-after-sharding)
     - [Practical Takeaways](#practical-takeaways)
+44. [InnoDB Configuration Flags — Cheat Sheet](#innodb-configuration-flags--cheat-sheet)
+    - [Memory & Buffer Pool](#memory--buffer-pool)
+    - [Durability & Logging](#durability--logging)
+    - [Flushing & I/O (Checkpointing)](#flushing--io-checkpointing)
+    - [Locking & Transactions](#locking--transactions)
+    - [Undo & Purge](#undo--purge)
+    - [Tables, Statistics & DDL](#tables-statistics--ddl)
+    - [Example — A Dedicated 32 GB MySQL Server](#example--a-dedicated-32-gb-mysql-server)
 
 ---
 
@@ -10663,7 +10672,26 @@ An honest answer here scores well in interviews — "always use a database" is n
 | `STATEMENT` | The **SQL text** | Small, but unsafe for non-deterministic SQL (`NOW()`, `UUID()`, `LIMIT` without `ORDER BY`) |
 | `MIXED` | Statement, switching to row when unsafe | Compromise; rarely chosen today |
 
-**GTIDs (Global Transaction IDs):** each transaction gets a unique ID `source_uuid:sequence` (e.g. `3e11fa47-…:1-1000`). A replica tracks *which* transactions it has applied instead of a binlog file + offset, which makes failover and re-pointing replicas much simpler (`SOURCE_AUTO_POSITION = 1`).
+### GTID — Global Transaction Identifier
+
+A **GTID** is a unique ID that MySQL gives to **every committed transaction**. It's assigned on the source and **stays the same on every replica**.
+
+```
+3e11fa47-71ca-11e1-9e33-c80aa9429562:23
+└──────────── server_uuid ───────────┘ └┘ 23rd transaction committed on that server
+```
+
+Each server records what it has applied as a compact set of ranges: `SELECT @@GLOBAL.gtid_executed;` → `3e11fa47-…:1-1000`.
+
+| | **Without GTID** (binlog file + position) | **With GTID** |
+|---|---|---|
+| Replica's progress | `mysql-bin.000042 : 8571`, only valid on **one** server | `uuid:1-1000`, valid on **every** server |
+| Re-pointing after failover | Work out the matching file and offset on the new source by hand | `CHANGE REPLICATION SOURCE TO … SOURCE_AUTO_POSITION = 1` |
+| Same transaction applied twice? | Possible if the position is wrong | **Never**: a server skips any GTID it already has |
+
+**Used for:** picking the most up-to-date replica at [failover](#failover--when-the-source-dies), [read-your-own-writes](#the-read-your-own-writes-problem) (`WAIT_FOR_EXECUTED_GTID_SET`), and spotting **errant transactions** (a GTID carrying a replica's own UUID means someone wrote to that replica).
+
+**Enable:** `gtid_mode = ON` and `enforce_gtid_consistency = ON` in `my.cnf`.
 
 ---
 
@@ -10697,13 +10725,87 @@ Most apps read far more than they write, so add replicas and **route reads to th
 | Where the routing happens | How |
 |---|---|
 | **Application** | Two connection pools / datasources: `writeDb` → source, `readDb` → replicas |
-| **Proxy** | ProxySQL / MySQL Router split by query type (`SELECT` → replicas) and health-check the nodes |
+| **Proxy** | ProxySQL / MySQL Router split by query type (`SELECT` → replicas) and health-check the nodes ([ProxySQL below](#proxysql--the-mysql-aware-proxy)) |
 | **Driver** | Some drivers support "read-only" connections that go to replicas |
 
 Mark replicas `super_read_only = ON` so nothing writes to them by accident.
 
 > [!IMPORTANT]
 > Replicas scale **reads only**. Every replica still applies **every write**, so adding replicas does nothing for write throughput. For that you need [sharding](#sharding--splitting-one-database-across-many-servers).
+
+---
+
+## ProxySQL — The MySQL-Aware Proxy
+
+**ProxySQL** is an open-source proxy that sits **between your application and your MySQL servers**. It speaks the MySQL protocol, so the app connects to ProxySQL (default port **6033**) exactly as if it were a MySQL server. ProxySQL then decides **which real server** each query goes to.
+
+Unlike a plain TCP load balancer, it **understands SQL**: it looks at every query, so it can route by query type.
+
+![ProxySQL: application connections arrive at ProxySQL on port 6033; query rules send writes and SELECT ... FOR UPDATE to the writer hostgroup (the source) and plain SELECTs to the reader hostgroup (replicas); a monitor module checks read_only and replication lag and moves servers between hostgroups; a connection pool multiplexes many app connections onto few backend connections](../svg/dbms/d239-proxysql-architecture.svg)
+
+### What It Does
+
+| Feature | What it means |
+|---|---|
+| **Hostgroups** | Servers are grouped, e.g. **hostgroup 10 = writer** (the source), **hostgroup 20 = readers** (replicas). Queries are routed to a hostgroup, not to a single server |
+| **Query rules (read/write split)** | Regex rules on each query: `SELECT … FOR UPDATE` → writer, other `SELECT` → readers, everything else → writer. **No application code change** |
+| **Connection pooling & multiplexing** | Thousands of app connections share a small pool of backend connections, which protects MySQL from connection storms |
+| **Health & lag checks** | Pings every server; a replica lagging more than `max_replication_lag` seconds is temporarily **shunned** (no reads sent to it) |
+| **Failover awareness** | Watches each server's `read_only` flag. When a replica is promoted (read_only → OFF), ProxySQL **automatically moves it into the writer hostgroup**, so the app follows the new source with no config change |
+| **Query control** | Cache results of chosen queries, rewrite queries, block dangerous ones (firewall) |
+| **Observability** | Per-query-pattern stats (count, total/avg time) in `stats_mysql_query_digest`: a free "top slow queries" view |
+
+**Configuration** is done through an SQL-like admin interface (port 6032) and applied live, without a restart:
+
+```sql
+-- servers: source in writer hostgroup 10, replicas in reader hostgroup 20
+INSERT INTO mysql_servers (hostgroup_id, hostname, port, max_replication_lag) VALUES
+  (10, 'db-source',  3306, 0),
+  (20, 'db-replica1', 3306, 5),     -- shun this replica if it lags > 5 s
+  (20, 'db-replica2', 3306, 5);
+
+-- let ProxySQL move servers between 10 and 20 based on their read_only flag
+INSERT INTO mysql_replication_hostgroups (writer_hostgroup, reader_hostgroup) VALUES (10, 20);
+
+-- read/write split rules (checked in rule_id order)
+INSERT INTO mysql_query_rules (rule_id, active, match_digest, destination_hostgroup, apply) VALUES
+  (1, 1, '^SELECT.*FOR UPDATE', 10, 1),   -- locking reads → writer
+  (2, 1, '^SELECT',             20, 1);   -- other reads   → readers
+                                          -- no match       → default (writer)
+
+LOAD MYSQL SERVERS TO RUNTIME;      SAVE MYSQL SERVERS TO DISK;
+LOAD MYSQL QUERY RULES TO RUNTIME;  SAVE MYSQL QUERY RULES TO DISK;
+```
+
+### Benefits vs Drawbacks
+
+| ✅ Benefits | ❌ Drawbacks |
+|---|---|
+| Read/write split **without changing app code** | **One more hop** (small extra latency) and one more component to run and monitor |
+| **Connection multiplexing**: fewer MySQL connections, less memory and CPU on the database | It can become a **single point of failure**: run 2+ ProxySQL nodes (ProxySQL Cluster), or one on each app server |
+| **Lag-aware**: stops reading from replicas that fall behind | Regex rules can route wrongly, e.g. a `SELECT` inside a transaction that must see its own writes. Rules need care and testing |
+| **Follows failover automatically** via the `read_only` flag | **Doesn't do the promotion itself**: it only re-routes. You still need Orchestrator, MHA or Group Replication to promote a replica |
+| Query caching, rewriting, firewall, per-query stats | Multiplexing is switched off for some sessions (open transactions, temp tables, session variables, `LAST_INSERT_ID()`) |
+| Changes apply live through the admin interface | Read-your-own-writes is still your problem unless you enable GTID causal reads |
+
+### ProxySQL vs HAProxy
+
+**HAProxy** is a general-purpose, very fast load balancer for TCP and HTTP. In front of MySQL it works at the **TCP level (layer 4)**: it forwards connections without understanding the SQL inside them.
+
+| | **ProxySQL** | **HAProxy** (for MySQL) |
+|---|---|---|
+| **Understands SQL?** | ✅ Yes (layer 7, MySQL protocol) | ❌ No: just forwards TCP connections (layer 4) |
+| **Read/write split** | ✅ Automatic, per query (query rules) | ⚠️ Only by **port**: e.g. `:3307` → source, `:3308` → replicas. The **app must choose** which port to use |
+| **Connection pooling** | ✅ Multiplexes many app connections onto few DB connections | ❌ Each app connection = one DB connection |
+| **Health checks** | ✅ MySQL-aware: `read_only`, replication lag | ⚠️ Basic (`option mysql-check` = can I connect?); lag checks need an external script |
+| **Follows failover** | ✅ Automatically, via the `read_only` flag | ⚠️ Via health checks or scripts; it can't tell which server is the writer |
+| **Query caching / rewrite / firewall / stats** | ✅ Yes | ❌ No |
+| **Speed / overhead** | Fast, but parses every query | ⚡ Extremely fast and lightweight |
+| **Protocols** | MySQL (and compatible) | Any TCP or HTTP service |
+| **Best for** | MySQL replication setups that need smart routing and pooling | Simple TCP balancing, e.g. in front of Galera / InnoDB Cluster or replicas when the app already splits reads and writes |
+
+> [!TIP]
+> **Interview line:** "HAProxy balances **connections**; ProxySQL routes **queries**. For a MySQL source with replicas I'd use ProxySQL for automatic read/write splitting, connection pooling and lag-aware routing. HAProxy is great when I only need fast TCP load balancing and the app already knows where to send writes. MySQL Router is the third option, the official choice with InnoDB Cluster."
 
 ---
 
@@ -10757,23 +10859,82 @@ Lag turns into a **visible bug** when a user writes and then immediately reads:
 
 ## Failover — When the Source Dies
 
-**Failover** = promoting a replica to be the new source and pointing everyone at it.
+**Failover** = promoting a replica to be the new source and pointing everyone at it. It can be **manual** (a DBA runs the steps) or **automatic** (a tool detects the failure and does it in seconds).
 
-1. **Detect** the failure. Use several observers, so a network blip isn't mistaken for a dead server.
-2. **Pick the best replica**: the one with the most complete GTID set (fewest missing transactions).
-3. **Let it apply** everything in its relay log.
-4. **Promote** it: `SET GLOBAL super_read_only = OFF; SET GLOBAL read_only = OFF;`
-5. **Re-point the other replicas** to it: `CHANGE REPLICATION SOURCE TO SOURCE_HOST='new', SOURCE_AUTO_POSITION=1; START REPLICA;`
-6. **Redirect the application**: proxy config, virtual IP or DNS.
-7. **Fence the old source**, so that if it comes back it can't accept writes.
+### Candidate Master (Designated Failover Replica)
+
+A **candidate master** is a replica **chosen in advance** to become the new source if the current one dies. The term comes from the failover tool MHA (`candidate_master=1`); other tools call it a *promotion rule* or *member weight*.
+
+**Why choose in advance?** Not every replica should ever become the source:
+
+| Replica | Should it be promoted? | Why |
+|---|---|---|
+| Same hardware, same region, up to date | ✅ **Candidate master** | Can take the full write load immediately |
+| Reporting / analytics replica | ❌ | Weaker hardware or heavy queries running on it |
+| Delayed replica (e.g. 1 hour behind on purpose, for recovery) | ❌ Never | It's missing an hour of data by design |
+| Cross-region replica | ⚠️ Only for disaster recovery | Writes from the main region would suddenly be slow |
+| Replica with replication filters | ❌ | It doesn't hold all the data |
+
+**What makes a good candidate master:**
+
+1. **Same hardware and MySQL version** as the source, so it can carry the full write load.
+2. **Binary log enabled** (`log_bin`, and `log_replica_updates` so it also logs the changes it applies). After promotion, the other replicas replicate **from it**.
+3. **GTIDs on**, so the other replicas can re-point automatically.
+4. **It's the semi-sync acknowledger**: if it ACKs the source's commits, it's guaranteed to have every acknowledged transaction, so promoting it loses no data.
+5. **Low lag, no heavy queries, no filters**, and in a **different availability zone** from the source, so one zone outage can't take both.
+
+**How tools mark it:**
+
+| Tool | Setting |
+|---|---|
+| **MHA** | `candidate_master=1` on the preferred replica, `no_master=1` on replicas that must never be promoted |
+| **Orchestrator** | Promotion rules per host: `prefer`, `neutral`, `prefer_not`, `must_not` |
+| **Group Replication** | `group_replication_member_weight` (0–100): the highest-weight healthy member wins the election |
+
+### How Failover Is Done — Step by Step
+
+![Failover: before, the app goes through ProxySQL to the source, with replica A (candidate master) and replica B replicating from it; the source crashes; after failover, replica A is promoted to source, replica B now replicates from A, ProxySQL routes writes to A, and the old source is fenced off](../svg/dbms/d240-failover-candidate-master.svg)
+
+1. **Detect.** The tool notices the source is unreachable. To avoid a false alarm from a network blip, it checks from **several places**. Orchestrator, for example, also asks the replicas whether *they* lost the source too. Typical detection time: 5–10 s.
+2. **Choose the new source.** The **candidate master**, if it's healthy and up to date. Otherwise the replica with the **most complete GTID set** (fewest missing transactions).
+3. **Catch up.** The chosen replica applies everything still in its relay log. If other replicas received transactions it doesn't have, those are copied to it first (tools like MHA do this), so nothing that reached any replica is lost.
+4. **Promote.** Make it writable:
+   ```sql
+   STOP REPLICA;
+   RESET REPLICA ALL;                 -- it no longer replicates from anyone
+   SET GLOBAL super_read_only = OFF;
+   SET GLOBAL read_only = OFF;
+   ```
+5. **Re-point the other replicas** to the new source (GTIDs make this one command each):
+   ```sql
+   CHANGE REPLICATION SOURCE TO SOURCE_HOST = 'replica-a', SOURCE_AUTO_POSITION = 1;
+   START REPLICA;
+   ```
+6. **Redirect the application** to the new source, using one of:
+   - **ProxySQL:** automatic, because it sees `read_only = OFF` and moves the server into the writer hostgroup.
+   - **Virtual IP (VIP):** move the floating IP to the new source.
+   - **DNS / service discovery** (e.g. Consul): update the record. Watch DNS TTLs and client caching.
+7. **Fence the old source.** Make sure it can never accept writes again if it comes back: power it off, cut its network, or force `super_read_only = ON` at startup. Later, rebuild it as a replica of the new source.
+
+**Typical timeline (automatic):** crash at **t = 0** → detected **~5–10 s** → promoted and replicas re-pointed **~15 s** → traffic switched **~20–30 s**. Applications should **retry** failed writes during that window.
+
+### Manual vs Automatic Failover
+
+| | **Manual** | **Automatic** |
+|---|---|---|
+| **Who decides** | A DBA, after investigating | A tool, by rules |
+| **Downtime** | Minutes to hours (someone has to be paged and respond) | Seconds to about a minute |
+| **Risk** | Slow, but a human can spot false alarms | A false detection can trigger a needless failover, or split brain if fencing fails |
+| **Tools** | Runbook + the SQL above | Orchestrator, MHA (older), MySQL InnoDB Cluster (Group Replication + MySQL Router), managed cloud (Amazon RDS Multi-AZ, Aurora) |
+
+### What Can Go Wrong
 
 | Risk | What happens | Prevention |
 |---|---|---|
-| **Data loss (async)** | Transactions the old source committed but never shipped are gone after promotion | Semi-sync or Group Replication |
+| **Data loss (async)** | Transactions the old source committed but never shipped are gone after promotion | Semi-sync with the candidate master as acknowledger, or Group Replication |
 | **Split brain** | Old source wakes up and both nodes accept writes → divergent data | Fencing (power off / revoke its network), `super_read_only` on start, majority-based tools |
 | **Errant transactions** | A replica has a GTID the new source doesn't (someone wrote to a replica) | `super_read_only` on every replica |
-
-**Tools:** Orchestrator (async/semi-sync topologies), MySQL InnoDB Cluster (Group Replication + MySQL Router: automatic), and managed cloud services (Amazon RDS Multi-AZ, Aurora) that do it for you. Typical failover time is seconds to about a minute. Plan for clients to retry.
+| **Flapping** | A server that keeps going up and down triggers repeated failovers | Tools block a second automatic failover for a cool-down period |
 
 ---
 
@@ -10781,7 +10942,7 @@ Lag turns into a **visible bug** when a user writes and then immediately reads:
 
 > [!TIP]
 > **"How does MySQL replication work, and what problems does it bring?"**
-> "The source writes every committed transaction to its binlog. Each replica's receiver thread copies those events into a relay log, and applier threads replay them. By default it's asynchronous, so replicas lag and a source crash can lose the last transactions. Semi-sync waits for one replica to acknowledge receipt, and Group Replication waits for a majority. Read replicas scale reads but not writes, and lag causes read-your-own-writes bugs, which I'd fix by reading from the source right after a write or waiting for the write's GTID on the replica. On failover you promote the most up-to-date replica using GTIDs and fence the old source to avoid split brain."
+> "The source writes every committed transaction to its binlog. Each replica's receiver thread copies those events into a relay log, and applier threads replay them. By default it's asynchronous, so replicas lag and a source crash can lose the last transactions. Semi-sync waits for one replica to acknowledge receipt, and Group Replication waits for a majority. Read replicas scale reads but not writes, and lag causes read-your-own-writes bugs, which I'd fix by reading from the source right after a write or waiting for the write's GTID on the replica. On failover a tool like Orchestrator promotes the pre-chosen candidate master (or the most up-to-date replica by GTID), re-points the other replicas, and ProxySQL follows the new writer automatically. The old source is fenced to avoid split brain."
 
 ---
 ---
@@ -11571,3 +11732,132 @@ CREATE TABLE orders (
 2. **`user_id` + `order_id` as a composite primary key** is normal; it does **not** mean both must participate in the **shard** function.
 3. **Multikey sharding** that hashes both dimensions often optimizes **even spread** or **point reads** at the cost of **range/list queries** — document that trade-off in design reviews.
 4. **Scatter-gather** for "last N per user" is correct but costly; cap shard count impact with caching, a **per-user recent orders** cache, or a **CQRS** read model fed by events.
+
+---
+---
+
+# InnoDB Configuration Flags — Cheat Sheet
+
+🔗 **Reference:** [MySQL Docs — InnoDB Startup Options and System Variables](https://dev.mysql.com/doc/refman/8.0/en/innodb-parameters.html)
+
+InnoDB's behaviour is controlled by **system variables** ("flags"), set in `my.cnf` or at runtime. This is a quick reference for the ones that matter most: what each **controls**, its **default**, and **when to change it**. The 🔗 links go to the section of these notes that explains the mechanism behind it.
+
+**How to see and change them:**
+
+```sql
+SHOW VARIABLES LIKE 'innodb_buffer_pool%';              -- current values
+SET GLOBAL innodb_lock_wait_timeout = 10;               -- dynamic flags: change at runtime
+SET PERSIST innodb_io_capacity = 2000;                  -- 8.0+: change AND survive a restart
+```
+
+```ini
+# my.cnf: static flags (marked 🔒 below) can only be set here, then restart MySQL
+[mysqld]
+innodb_buffer_pool_size = 24G
+```
+
+> [!NOTE]
+> Defaults below are **MySQL 8.0**. **MySQL 8.4 LTS changed several of them**: e.g. `innodb_adaptive_hash_index` is OFF, `innodb_change_buffering` is `none`, `innodb_io_capacity` is 10000, and `innodb_flush_method` is `O_DIRECT` on Linux. Always check `SHOW VARIABLES` on your own server. 🔒 = needs a restart.
+
+---
+
+## Memory & Buffer Pool
+
+| Flag | Default | What it controls | When to change |
+|---|---|---|---|
+| `innodb_buffer_pool_size` | 128 MB | Size of the [buffer pool](#the-buffer-pool--how-data-actually-flows-between-disk-and-memory), the RAM cache of data and index pages. **The single most important flag** | Dedicated DB server: **50–75% of RAM**. Too small → constant disk reads ([sizing](#sizing--monitoring)) |
+| `innodb_buffer_pool_instances` | 8 (1 if pool < 1 GB) | Splits the pool into independent parts to reduce mutex contention | Rarely; keep about 1 instance per GB, max 64 |
+| `innodb_buffer_pool_dump_at_shutdown` / `_load_at_startup` | ON / ON | Saves the list of cached pages at shutdown and reloads them at startup | Keep ON: avoids a slow "cold cache" after restarts |
+| `innodb_old_blocks_pct` / `innodb_old_blocks_time` | 37 / 1000 ms | The LRU "old" sublist where new pages land first, and how long before they can be promoted, so one big scan can't flush the hot pages ([eviction](#eviction--which-page-gets-thrown-out)) | Rarely; raise the time if big scans keep evicting hot data |
+| `innodb_change_buffering` | `all` | Buffers secondary-index changes for pages not in memory ([change buffer](#the-change-buffer--and-when-it-cant-save-you)) | `none` on fast SSDs, or when the pool holds the whole data set |
+| `innodb_adaptive_hash_index` | ON | Builds an in-memory hash index on hot B+ tree pages for faster lookups | Turn OFF if `SHOW ENGINE INNODB STATUS` shows contention on it under heavy writes |
+| `innodb_log_buffer_size` | 16 MB | RAM buffer for redo records before they're written to the redo log | Raise (64–256 MB) for big transactions or very high write rates |
+| `innodb_dedicated_server` 🔒 | OFF | Auto-sizes the buffer pool, redo log and flush method from the server's RAM | ON when MySQL is the only thing on the machine |
+
+---
+
+## Durability & Logging
+
+| Flag | Default | What it controls | When to change |
+|---|---|---|---|
+| `innodb_flush_log_at_trx_commit` | **1** | When the redo log is written and `fsync`ed. **1** = every commit (fully durable) · **2** = write every commit, fsync every second · **0** = both once a second ([details](#the-tuning-knobs-and-what-you-trade-away)) | Keep **1** for real data. 2 or 0 only where losing ~1 s of commits is acceptable |
+| `sync_binlog` (server flag) | **1** | How often the **binary log** is fsynced. 1 = every commit. Pair with the flag above (the "double-1" setting) | Keep **1** on any server used for replication or point-in-time recovery |
+| `innodb_redo_log_capacity` | 100 MB | Total redo log size (8.0.30+; replaces `innodb_log_file_size` × `innodb_log_files_in_group`) | Too small → frequent forced [checkpoints](#mechanism-3-checkpointing) and write stalls. Size it to hold about 1 hour of peak writes (often 2–8 GB+) |
+| `innodb_doublewrite` 🔒 | ON | Writes pages to the [doublewrite buffer](#mechanism-4-double-write-buffer--no-torn-pages) first, protecting against torn pages | Keep ON, unless the storage guarantees atomic 16 KB writes |
+| `innodb_flush_method` 🔒 | `fsync` (Linux) | How data files are written. `O_DIRECT` bypasses the OS page cache, so data isn't cached twice | Usually `O_DIRECT` on Linux with a large buffer pool |
+| `innodb_page_size` 🔒 | 16 KB | Size of every page | Only at instance creation; can't change later. Almost always leave it |
+
+---
+
+## Flushing & I/O (Checkpointing)
+
+| Flag | Default | What it controls | When to change |
+|---|---|---|---|
+| `innodb_io_capacity` | 200 | IOPS InnoDB assumes for **background** work: flushing dirty pages, merging the change buffer | SSD/NVMe: 1,000–10,000. Too low → dirty pages pile up and checkpoints stall |
+| `innodb_io_capacity_max` | 2000 | Upper IOPS limit when InnoDB has to flush harder | About 2× `innodb_io_capacity` |
+| `innodb_max_dirty_pages_pct` | 90 | Max % of the buffer pool allowed to be [dirty](#key-terms--page-frame-dirty-clean-pinned) before flushing gets aggressive | Rarely |
+| `innodb_max_dirty_pages_pct_lwm` | 10 | Dirty % at which pre-flushing starts gently | Rarely |
+| `innodb_adaptive_flushing` | ON | Adjusts flush speed based on how fast redo is being generated | Keep ON |
+| `innodb_page_cleaners` | 4 | Number of background threads flushing dirty pages | Raise with many buffer pool instances and fast disks |
+| `innodb_flush_neighbors` | 0 | Also flushes neighbouring dirty pages, which helps on HDDs | 0 for SSD; 1 only for spinning disks |
+| `innodb_read_io_threads` / `innodb_write_io_threads` 🔒 | 4 / 4 | Background threads for async reads and writes | Raise on fast storage with many cores |
+
+---
+
+## Locking & Transactions
+
+| Flag | Default | What it controls | When to change |
+|---|---|---|---|
+| `transaction_isolation` (server flag) | `REPEATABLE-READ` | Default [isolation level](#sql-isolation-levels) for new transactions | Many apps use `READ-COMMITTED` (fewer gap locks, fewer deadlocks) |
+| `innodb_lock_wait_timeout` | 50 s | How long a statement waits for a row lock before failing with "Lock wait timeout exceeded" | Lower (e.g. 5–10 s) for web apps, so requests fail fast instead of piling up |
+| `innodb_rollback_on_timeout` 🔒 | OFF | On a lock-wait timeout, roll back only the **last statement** (OFF) or the **whole transaction** (ON) | ⚠️ With OFF, the transaction stays open half-done. Your code must `ROLLBACK` |
+| `innodb_deadlock_detect` | ON | Actively checks for [deadlocks](#deadlock-detection--the-wait-for-graph-wfg) and rolls back a victim immediately | Some very high-concurrency systems turn it OFF and rely on the lock-wait timeout |
+| `innodb_print_all_deadlocks` | OFF | Writes **every** deadlock to the error log (normally only the last one is kept, in `SHOW ENGINE INNODB STATUS`) | Turn ON to investigate recurring deadlocks |
+| `innodb_autoinc_lock_mode` 🔒 | 2 | How `AUTO_INCREMENT` values are handed out. 2 ("interleaved") is fastest, but IDs from concurrent bulk inserts may interleave or have gaps | Keep 2 (needs row-based binlog, which is the default) |
+
+---
+
+## Undo & Purge
+
+| Flag | Default | What it controls | When to change |
+|---|---|---|---|
+| `innodb_purge_threads` 🔒 | 4 | Background threads that remove old row versions and delete-marked rows | Raise if `History list length` keeps growing ([purge lag](#️-purge-lag--when-delete-backfires)) |
+| `innodb_max_purge_lag` | 0 (off) | Delays DML when purge falls too far behind, to let it catch up | Set only if history length grows out of control |
+| `innodb_undo_log_truncate` | ON | Shrinks undo tablespaces once they grow too large | Keep ON |
+| `innodb_max_undo_log_size` | 1 GB | Size at which an undo tablespace gets truncated | Rarely |
+
+---
+
+## Tables, Statistics & DDL
+
+| Flag | Default | What it controls | When to change |
+|---|---|---|---|
+| `innodb_file_per_table` | ON | Each table in its own `.ibd` file (instead of one shared system tablespace) | Keep ON: `DROP` / `TRUNCATE` actually free disk space |
+| `innodb_default_row_format` | `DYNAMIC` | How rows (and long `TEXT`/`BLOB` values) are stored on pages | Keep `DYNAMIC` |
+| `innodb_strict_mode` | ON | Turns some `CREATE`/`ALTER` warnings into errors (e.g. impossible row sizes) | Keep ON |
+| `innodb_stats_persistent` | ON | Index statistics (used by the optimizer) are stored on disk and survive restarts | Keep ON |
+| `innodb_stats_persistent_sample_pages` | 20 | Pages sampled per index when computing statistics ([why it matters](#cardinality--selectivity--how-duplicate-values-affect-an-index)) | Raise for big or skewed tables when `EXPLAIN` row estimates are badly off |
+| `innodb_stats_auto_recalc` | ON | Recalculates statistics automatically after about 10% of a table's rows change | Keep ON; run `ANALYZE TABLE` after big loads |
+| `innodb_online_alter_log_max_size` | 128 MB | Buffer for concurrent writes during an online `ALTER TABLE` ([online DDL](#-what-happens-internally-when-we-run-an-alter-query-does-it-lock-the-table)); if it fills, the `ALTER` fails | Raise for long `ALTER`s on busy tables |
+
+---
+
+## Example — A Dedicated 32 GB MySQL Server
+
+```ini
+[mysqld]
+innodb_buffer_pool_size        = 24G         # ~75% of RAM
+innodb_redo_log_capacity       = 4G          # room for peak write bursts
+innodb_flush_log_at_trx_commit = 1           # full durability
+sync_binlog                    = 1           # "double-1" with the line above
+innodb_flush_method            = O_DIRECT    # don't cache data twice (InnoDB + OS)
+innodb_io_capacity             = 2000        # SSD
+innodb_io_capacity_max         = 4000
+innodb_lock_wait_timeout       = 10          # fail fast instead of queueing
+innodb_print_all_deadlocks     = ON          # keep a record of every deadlock
+transaction_isolation          = READ-COMMITTED   # only if the app doesn't rely on REPEATABLE READ
+```
+
+> [!TIP]
+> **Interview line:** "The flags I'd check first are `innodb_buffer_pool_size` (about 70% of RAM on a dedicated server, so the working set is cached), `innodb_flush_log_at_trx_commit = 1` with `sync_binlog = 1` for full durability, `innodb_redo_log_capacity` big enough to avoid checkpoint stalls, and `innodb_io_capacity` matched to the SSD. Then `innodb_lock_wait_timeout` and the isolation level to match how the app handles contention."
+

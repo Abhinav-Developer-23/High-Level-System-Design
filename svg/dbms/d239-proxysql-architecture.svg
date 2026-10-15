@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="496" viewBox="0 0 900 496" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>ProxySQL architecture</title>
+  <desc>About 1,000 app connections arrive at ProxySQL on port 6033 (admin interface on port 6032). Inside ProxySQL, query rules send SELECT ... FOR UPDATE to hostgroup 10, other SELECTs to hostgroup 20 and everything else to hostgroup 10; a connection pool multiplexes the app connections onto about 20 backend connections; a monitor checks read_only and replication lag. Writer hostgroup 10 holds db-source; reader hostgroup 20 holds db-replica1 and db-replica2, which is shunned because its lag is over 5 seconds.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrOt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/>
+    </marker>
+    <marker id="arrBt" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="12" markerHeight="12" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d29922"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="899" height="495" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- App servers -->
+  <rect x="24" y="170" width="140" height="160" rx="10" fill="#1c2128" stroke="#8b949e"/>
+  <text x="94" y="196" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">App servers</text>
+  <rect x="42" y="212" width="104" height="24" rx="5" fill="#161b22" stroke="#30363d"/>
+  <circle cx="56" cy="224" r="3" fill="#3fb950"/>
+  <line x1="68" y1="224" x2="130" y2="224" stroke="#30363d" stroke-width="2"/>
+  <rect x="42" y="244" width="104" height="24" rx="5" fill="#161b22" stroke="#30363d"/>
+  <circle cx="56" cy="256" r="3" fill="#3fb950"/>
+  <line x1="68" y1="256" x2="130" y2="256" stroke="#30363d" stroke-width="2"/>
+  <rect x="42" y="276" width="104" height="24" rx="5" fill="#161b22" stroke="#30363d"/>
+  <circle cx="56" cy="288" r="3" fill="#3fb950"/>
+  <line x1="68" y1="288" x2="130" y2="288" stroke="#30363d" stroke-width="2"/>
+  <text x="94" y="318" fill="#8b949e" font-size="12" text-anchor="middle">many app instances</text>
+
+  <!-- many thin app connections -->
+  <g stroke="#8b949e" stroke-width="0.9" stroke-opacity=".75" fill="none">
+    <line x1="164" y1="182" x2="270" y2="214"/>
+    <line x1="164" y1="192" x2="270" y2="219"/>
+    <line x1="164" y1="202" x2="270" y2="224"/>
+    <line x1="164" y1="212" x2="270" y2="229"/>
+    <line x1="164" y1="222" x2="270" y2="234"/>
+    <line x1="164" y1="232" x2="270" y2="239"/>
+    <line x1="164" y1="242" x2="270" y2="244"/>
+    <line x1="164" y1="252" x2="270" y2="249"/>
+    <line x1="164" y1="262" x2="270" y2="254"/>
+    <line x1="164" y1="272" x2="270" y2="259"/>
+    <line x1="164" y1="282" x2="270" y2="264"/>
+    <line x1="164" y1="292" x2="270" y2="269"/>
+    <line x1="164" y1="302" x2="270" y2="274"/>
+    <line x1="164" y1="312" x2="270" y2="279"/>
+    <line x1="164" y1="322" x2="270" y2="284"/>
+  </g>
+  <text x="217" y="150" fill="#c9d1d9" font-size="12" font-weight="600" text-anchor="middle">1,000 app</text>
+  <text x="217" y="166" fill="#c9d1d9" font-size="12" font-weight="600" text-anchor="middle">connections</text>
+
+  <!-- Admin tab -->
+  <rect x="440" y="46" width="112" height="28" rx="6" fill="#1c2128" stroke="#484f58"/>
+  <text x="496" y="64" fill="#8b949e" font-size="12" text-anchor="middle">Admin <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">:6032</tspan></text>
+
+  <!-- ProxySQL -->
+  <rect x="270" y="70" width="290" height="356" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="286" y="98" fill="#e6edf3" font-size="15" font-weight="600">ProxySQL <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" font-weight="400" fill="#79c0ff">:6033</tspan></text>
+  <text x="286" y="116" fill="#8b949e" font-size="12">speaks the MySQL protocol</text>
+
+  <!-- Query rules -->
+  <rect x="286" y="130" width="258" height="114" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="300" y="152" fill="#e6edf3" font-size="14" font-weight="600">Query rules</text>
+  <text x="300" y="176" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">^SELECT.*FOR UPDATE</text>
+  <text x="530" y="176" fill="#ffa657" font-size="12" font-weight="600" text-anchor="end">→ HG 10</text>
+  <line x1="300" y1="186" x2="530" y2="186" stroke="#21262d"/>
+  <text x="300" y="203" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">^SELECT</text>
+  <text x="530" y="203" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="end">→ HG 20</text>
+  <line x1="300" y1="213" x2="530" y2="213" stroke="#21262d"/>
+  <text x="300" y="230" fill="#8b949e" font-size="12">else</text>
+  <text x="530" y="230" fill="#ffa657" font-size="12" font-weight="600" text-anchor="end">→ HG 10</text>
+
+  <!-- Connection pool -->
+  <rect x="286" y="256" width="258" height="72" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="300" y="278" fill="#e6edf3" font-size="14" font-weight="600">Connection pool</text>
+  <text x="300" y="296" fill="#8b949e" font-size="12">(multiplexing)</text>
+  <text x="300" y="316" fill="#c9d1d9" font-size="12">1,000 app → ~20 backend</text>
+
+  <!-- Monitor -->
+  <rect x="286" y="340" width="258" height="70" rx="8" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="300" y="362" fill="#e6edf3" font-size="14" font-weight="600">Monitor <tspan font-size="12" font-weight="400" fill="#8b949e">(<tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">read_only</tspan>, lag)</tspan></text>
+  <text x="300" y="382" fill="#c9d1d9" font-size="12">shuns lagging replicas</text>
+  <text x="300" y="400" fill="#c9d1d9" font-size="12">moves servers between HGs</text>
+
+  <!-- backend connections label -->
+  <text x="610" y="104" fill="#c9d1d9" font-size="12" font-weight="600" text-anchor="middle">~20 backend</text>
+  <text x="610" y="120" fill="#c9d1d9" font-size="12" font-weight="600" text-anchor="middle">connections</text>
+
+  <!-- Writer hostgroup 10 -->
+  <rect x="660" y="84" width="216" height="104" rx="10" fill="#f0883e" fill-opacity=".07" stroke="#f0883e" stroke-opacity=".7"/>
+  <text x="676" y="106" fill="#ffa657" font-size="12" font-weight="700" letter-spacing="1.5">WRITER HOSTGROUP 10</text>
+  <rect x="680" y="118" width="176" height="52" rx="8" fill="#1c2128" stroke="#f0883e"/>
+  <text x="768" y="140" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-source</text>
+  <text x="768" y="159" fill="#8b949e" font-size="12" text-anchor="middle">takes all writes</text>
+
+  <!-- Reader hostgroup 20 -->
+  <rect x="660" y="206" width="216" height="220" rx="10" fill="#58a6ff" fill-opacity=".07" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="676" y="228" fill="#79c0ff" font-size="12" font-weight="700" letter-spacing="1.5">READER HOSTGROUP 20</text>
+  <rect x="680" y="242" width="176" height="52" rx="8" fill="#1c2128" stroke="#58a6ff"/>
+  <text x="768" y="264" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-replica1</text>
+  <text x="768" y="283" fill="#8b949e" font-size="12" text-anchor="middle">serves reads</text>
+  <rect x="680" y="310" width="176" height="98" rx="8" fill="#1c2128" fill-opacity=".5" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="768" y="334" fill="#8b949e" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">db-replica2</text>
+  <rect x="694" y="346" width="148" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="768" y="361" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">SHUNNED: lag &gt; 5 s</text>
+  <text x="768" y="392" fill="#8b949e" font-size="12" text-anchor="middle">no reads sent to it</text>
+
+  <!-- few thick backend connections: writes -->
+  <line x1="560" y1="138" x2="678" y2="138" stroke="#f0883e" stroke-width="3.5" marker-end="url(#arrOt)"/>
+  <line x1="560" y1="150" x2="678" y2="150" stroke="#f0883e" stroke-width="3.5" marker-end="url(#arrOt)"/>
+  <!-- reads -->
+  <line x1="560" y1="262" x2="678" y2="262" stroke="#58a6ff" stroke-width="3.5" marker-end="url(#arrBt)"/>
+  <line x1="560" y1="274" x2="678" y2="274" stroke="#58a6ff" stroke-width="3.5" marker-end="url(#arrBt)"/>
+
+  <!-- monitor lag check -->
+  <path d="M544,372 L678,352" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="4 4" marker-end="url(#arrA)"/>
+  <text x="612" y="384" fill="#e3b341" font-size="12" text-anchor="middle" data-nocheck="1">lag check</text>
+
+  <!-- legend -->
+  <line x1="24" y1="448" x2="876" y2="448" stroke="#21262d"/>
+  <line x1="24" y1="472" x2="52" y2="472" stroke="#f0883e" stroke-width="3"/>
+  <text x="60" y="476" fill="#c9d1d9" font-size="12">writes → HG 10</text>
+  <line x1="168" y1="472" x2="196" y2="472" stroke="#58a6ff" stroke-width="3"/>
+  <text x="204" y="476" fill="#c9d1d9" font-size="12">reads → HG 20</text>
+  <line x1="306" y1="472" x2="334" y2="472" stroke="#d29922" stroke-width="1.5" stroke-dasharray="4 4"/>
+  <text x="342" y="476" fill="#c9d1d9" font-size="12">health / lag checks</text>
+  <text x="876" y="476" fill="#8b949e" font-size="12" text-anchor="end">Many app connections in, few backend connections out.</text>
+</svg>

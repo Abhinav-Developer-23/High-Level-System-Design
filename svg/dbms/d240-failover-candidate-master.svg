@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="530" viewBox="0 0 960 530" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Failover to the candidate master</title>
+  <desc>Before: the app goes through ProxySQL to the source (writer); replica A, the candidate master, and replica B both replicate from the source. The source crashes. After: the old source is fenced and can't accept writes; replica A is the new source, and ProxySQL sees read_only = OFF and moves it to the writer hostgroup, so writes go to A; replica B is re-pointed to replicate from A using GTID auto-position. Steps: detect, choose, catch up, promote, re-point, redirect, fence.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="959" height="529" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ================= BEFORE panel (x0 = 24) ================= -->
+  <rect x="24" y="24" width="420" height="428" rx="10" fill="#1c2128" fill-opacity=".45" stroke="#30363d"/>
+  <path d="M24,56 V34 Q24,24 34,24 H434 Q444,24 444,34 V56 Z" fill="#8b949e" fill-opacity=".12"/>
+  <line x1="24" y1="56" x2="444" y2="56" stroke="#30363d"/>
+  <text x="40" y="45" fill="#c9d1d9" font-size="12" font-weight="700" letter-spacing="1.5">BEFORE</text>
+
+  <!-- App -->
+  <rect x="44" y="74" width="170" height="36" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="129" y="97" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">App</text>
+  <line x1="129" y1="110" x2="129" y2="132" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- ProxySQL -->
+  <rect x="44" y="136" width="170" height="36" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="129" y="159" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">ProxySQL</text>
+
+  <!-- writes to source -->
+  <path d="M214,154 H339 V198" fill="none" stroke="#f0883e" stroke-width="2" marker-end="url(#arrO)"/>
+  <text x="276" y="146" fill="#ffa657" font-size="12" font-weight="600" text-anchor="middle">writes</text>
+
+  <!-- Source -->
+  <rect x="254" y="202" width="170" height="60" rx="8" fill="#f0883e" fill-opacity=".10" stroke="#f0883e"/>
+  <text x="339" y="227" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Source</text>
+  <text x="339" y="247" fill="#ffa657" font-size="12" text-anchor="middle">(writer)</text>
+
+  <!-- replication Source -> A, Source -> B -->
+  <path d="M254,242 H129 V318" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="191" y="234" fill="#8b949e" font-size="12" text-anchor="middle">replicates</text>
+  <line x1="339" y1="262" x2="339" y2="318" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="347" y="294" fill="#8b949e" font-size="12">replicates</text>
+
+  <!-- Replica A (candidate) -->
+  <rect x="44" y="322" width="170" height="72" rx="8" fill="#1c2128" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="129" y="346" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Replica A</text>
+  <rect x="61" y="358" width="136" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="129" y="373" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">candidate master</text>
+
+  <!-- Replica B -->
+  <rect x="254" y="322" width="170" height="72" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="339" y="352" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Replica B</text>
+  <text x="339" y="372" fill="#8b949e" font-size="12" text-anchor="middle">replica</text>
+
+  <!-- ================= crash marker ================= -->
+  <circle cx="480" cy="214" r="20" fill="#f85149" fill-opacity=".14" stroke="#f85149"/>
+  <text x="480" y="221" fill="#ff7b72" font-size="20" font-weight="700" text-anchor="middle">✗</text>
+  <text x="480" y="256" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">source</text>
+  <text x="480" y="272" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">crashes</text>
+  <line x1="452" y1="294" x2="508" y2="294" stroke="#f85149" stroke-width="2" marker-end="url(#arrR)"/>
+
+  <!-- ================= AFTER panel (x0 = 516) ================= -->
+  <rect x="516" y="24" width="420" height="428" rx="10" fill="#1c2128" fill-opacity=".45" stroke="#3fb950" stroke-opacity=".5"/>
+  <path d="M516,56 V34 Q516,24 526,24 H926 Q936,24 936,34 V56 Z" fill="#3fb950" fill-opacity=".12"/>
+  <line x1="516" y1="56" x2="936" y2="56" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="532" y="45" fill="#56d364" font-size="12" font-weight="700" letter-spacing="1.5">AFTER FAILOVER</text>
+
+  <!-- App -->
+  <rect x="536" y="74" width="170" height="36" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="621" y="97" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">App</text>
+  <line x1="621" y1="110" x2="621" y2="132" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- ProxySQL -->
+  <rect x="536" y="136" width="170" height="36" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="621" y="159" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">ProxySQL</text>
+
+  <!-- writes now go to A -->
+  <line x1="566" y1="172" x2="566" y2="318" stroke="#f0883e" stroke-width="2" marker-end="url(#arrO)"/>
+  <text x="576" y="208" fill="#ffa657" font-size="12" font-weight="600">writes</text>
+  <text x="576" y="230" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">read_only = OFF</text>
+  <text x="576" y="248" fill="#c9d1d9" font-size="12">→ moved to writer HG</text>
+
+  <!-- Old source, fenced -->
+  <rect x="746" y="202" width="170" height="80" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-dasharray="5 4"/>
+  <text x="831" y="226" fill="#ff7b72" font-size="14" font-weight="600" text-anchor="middle">✗ old Source</text>
+  <line x1="789" y1="221" x2="873" y2="221" stroke="#f85149" stroke-width="1.5"/>
+  <text x="831" y="248" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">fenced</text>
+  <text x="831" y="266" fill="#c9d1d9" font-size="12" text-anchor="middle">(can't accept writes)</text>
+
+  <!-- New source A -->
+  <rect x="536" y="322" width="170" height="72" rx="8" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-width="1.8"/>
+  <text x="621" y="346" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Replica A</text>
+  <rect x="571" y="358" width="100" height="22" rx="11" fill="#3fb950" fill-opacity=".22" stroke="#3fb950"/>
+  <text x="621" y="373" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">NEW SOURCE</text>
+
+  <!-- Replica B -->
+  <rect x="746" y="322" width="170" height="72" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="831" y="352" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Replica B</text>
+  <text x="831" y="372" fill="#8b949e" font-size="12" text-anchor="middle">replicates from A</text>
+
+  <!-- re-point A -> B -->
+  <path d="M621,394 V414 H831 V398" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="726" y="434" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">re-pointed <tspan fill="#8b949e" font-weight="400">(GTID auto-position)</tspan></text>
+
+  <!-- ================= steps strip ================= -->
+  <line x1="24" y1="470" x2="936" y2="470" stroke="#21262d"/>
+  <g font-size="12" text-anchor="middle">
+    <rect x="70" y="486" width="80" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+    <text x="110" y="501" fill="#c9d1d9"><tspan fill="#8b949e">1</tspan> detect</text>
+    <line x1="154" y1="497" x2="182" y2="497" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="186" y="486" width="80" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+    <text x="226" y="501" fill="#c9d1d9"><tspan fill="#8b949e">2</tspan> choose</text>
+    <line x1="270" y1="497" x2="298" y2="497" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="302" y="486" width="94" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+    <text x="349" y="501" fill="#c9d1d9"><tspan fill="#8b949e">3</tspan> catch up</text>
+    <line x1="400" y1="497" x2="428" y2="497" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="432" y="486" width="88" height="22" rx="11" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".7"/>
+    <text x="476" y="501" fill="#56d364"><tspan fill="#8b949e">4</tspan> promote</text>
+    <line x1="524" y1="497" x2="552" y2="497" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="556" y="486" width="94" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+    <text x="603" y="501" fill="#c9d1d9"><tspan fill="#8b949e">5</tspan> re-point</text>
+    <line x1="654" y1="497" x2="682" y2="497" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="686" y="486" width="94" height="22" rx="11" fill="#1c2128" stroke="#30363d"/>
+    <text x="733" y="501" fill="#c9d1d9"><tspan fill="#8b949e">6</tspan> redirect</text>
+    <line x1="784" y1="497" x2="812" y2="497" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+    <rect x="816" y="486" width="74" height="22" rx="11" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".7"/>
+    <text x="853" y="501" fill="#ff7b72"><tspan fill="#8b949e">7</tspan> fence</text>
+  </g>
+</svg>
