@@ -1,6 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="860" height="288" viewBox="0 0 860 288" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="336" viewBox="0 0 860 336" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
   <title>Timestamp ordering example</title>
-  <desc>T1 (TS=1) reads X, T2 (TS=2) reads X raising R-TS(X) to 2, then T1's write of X is rejected because TS(T1)=1 &lt; R-TS=2: T2 already read the old X.</desc>
+  <desc>T1 (TS=1) reads X, T2 (TS=2) reads X raising R-TS(X) to 2, then T1's write of X is rejected because TS(T1)=1 &lt; R-TS=2: T2 already read the old X. Abbreviations: TS(Ti) = Timestamp of transaction Ti (when Ti started; smaller = older); W-TS(X) = Write Timestamp of data item X (TS of the youngest transaction that has written X); R-TS(X) = Read Timestamp of data item X (TS of the youngest transaction that has read X).</desc>
   <defs>
     <marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
     <marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
@@ -11,7 +11,7 @@
     <marker id="m-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
     <marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
   </defs>
-  <rect x="0.5" y="0.5" width="859" height="287" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="0.5" y="0.5" width="859" height="335" rx="14" fill="#161b22" stroke="#30363d"/>
   <rect x="26" y="24" width="136" height="240" rx="6" fill="#bc8cff" fill-opacity="0.05" stroke="none"/>
   <rect x="166" y="24" width="136" height="240" rx="6" fill="#39c5cf" fill-opacity="0.05" stroke="none"/>
   <text x="94" y="46" font-size="14" fill="#d2a8ff" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T1 (TS=1)</text>
@@ -42,4 +42,6 @@
   <text x="522" y="196" font-size="14" fill="#ff7b72" font-weight="700">✗  REJECT!</text>
   <text x="542" y="221" font-size="12.5" fill="#c9d1d9" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(TS(T1)=1 &lt; R-TS=2)</text>
   <text x="542" y="243" font-size="13" fill="#c9d1d9"><tspan fill="#56d4dd" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="600">T2</tspan> already read old X</text>
+  <rect x="24" y="280" width="812" height="32" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="300.5" font-size="12" fill="#8b949e"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">TS(Ti)</tspan> = Timestamp of transaction Ti<tspan fill="#484f58">&#160;&#160;&#160;·&#160;&#160;&#160;</tspan><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">W-TS(X)</tspan> = Write Timestamp of X<tspan fill="#484f58">&#160;&#160;&#160;·&#160;&#160;&#160;</tspan><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">R-TS(X)</tspan> = Read Timestamp of X</text>
 </svg>

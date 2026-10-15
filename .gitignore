@@ -8,3 +8,4 @@
 tools/svg-diagrams/node_modules/
 tools/svg-diagrams/out/
 tools/svg-diagrams/work/
+__pycache__/

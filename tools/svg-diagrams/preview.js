@@ -4,6 +4,7 @@
 // Needs: npm install (in this folder), Windows Chrome, and MarkView installed in Chrome (its content.css is reused).
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const MarkdownIt = require('markdown-it');
+const alerts = require('markdown-it-github-alerts').default || require('markdown-it-github-alerts');
 const [, , mdPath, a, b] = process.argv;
 if (!mdPath) { console.log('usage: node preview.js <doc.md> [startLine endLine]'); process.exit(1); }
 const OUT = path.join(__dirname, 'out'); fs.mkdirSync(OUT, { recursive: true });
@@ -28,12 +29,12 @@ if (!css) console.warn('MarkView CSS not found; preview will be unstyled');
 
 let src = fs.readFileSync(mdPath, 'utf8');
 if (a) { const L = src.split('\n'); const st = src.match(/<style>[\s\S]*?<\/style>/); src = (st ? st[0] + '\n\n' : '') + L.slice(+a - 1, +b).join('\n'); }
-const html = new MarkdownIt({ html: true, linkify: true, typographer: true }).render(src);
+const html = new MarkdownIt({ html: true, linkify: true, typographer: true }).use(alerts).render(src);
 const page = path.join(OUT, 'preview.html');
 fs.writeFileSync(page, `<!doctype html><html class="markview-active markview-dark"><head><meta charset="utf-8">
 <base href="${toUrl(path.dirname(mdPath))}/">${css ? `<link rel="stylesheet" href="${toUrl(css)}">` : ''}</head>
 <body><div id="markview-container" class="markview-dark">${html}</div></body></html>`);
-const lines = src.split('\n').length, height = Math.min(16000, Math.max(800, lines * 40));
+const lines = src.split('\n').length, height = Math.min(16000, Math.max(800, lines * 26));
 execFileSync(CHROME, ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--allow-file-access-from-files',
   '--virtual-time-budget=5000', `--window-size=1000,${height}`, `--screenshot=${toWin(path.join(OUT, 'preview.png'))}`, toUrl(page)], { stdio: 'ignore' });
 console.log('wrote', path.join(OUT, 'preview.png'));

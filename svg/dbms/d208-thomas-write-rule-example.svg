@@ -1,7 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="760" height="402" viewBox="0 0 760 402" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+<svg xmlns="http://www.w3.org/2000/svg" width="760" height="450" viewBox="0 0 760 450" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
   <title>Thomas' Write Rule example</title>
-  <desc>T2 (TS=2) writes X, setting W-TS(X)=2. Then T1 (TS=1) tries to write X. The normal rule rolls back T1; Thomas' rule ignores T1's write and continues. X keeps T2's value, which would have overwritten T1 anyway.</desc>
-  <rect x="0.5" y="0.5" width="759" height="401" rx="14" fill="#161b22" stroke="#30363d"/>
+  <desc>T2 (TS=2) writes X, setting W-TS(X)=2. Then T1 (TS=1) tries to write X. The normal rule rolls back T1; Thomas' rule ignores T1's write and continues. X keeps T2's value, which would have overwritten T1 anyway. Abbreviations: TS(Ti) = Timestamp of transaction Ti (when Ti started; smaller = older); W-TS(X) = Write Timestamp of data item X (TS of the youngest transaction that has written X).</desc>
+  <rect x="0.5" y="0.5" width="759" height="449" rx="14" fill="#161b22" stroke="#30363d"/>
 
   <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EXAMPLE</text>
 
@@ -45,4 +45,6 @@
   <!-- result -->
   <rect x="24" y="330" width="712" height="48" rx="10" fill="#1c2128" stroke="#30363d"/>
   <text x="44" y="359" fill="#c9d1d9" font-size="13.5"><tspan fill="#e6edf3" font-weight="700">Result:</tspan>  X keeps <tspan fill="#56d4dd" font-weight="600">T2's value</tspan>  (which would have overwritten T1 anyway)</text>
+  <rect x="24" y="394" width="712" height="32" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="414.5" font-size="12" fill="#8b949e"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">TS(Ti)</tspan> = Timestamp of transaction Ti<tspan fill="#484f58">&#160;&#160;&#160;·&#160;&#160;&#160;</tspan><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">W-TS(X)</tspan> = Write Timestamp of X</text>
 </svg>

@@ -14,9 +14,17 @@ Diagrams are dark-theme SVGs in `svg/<topic>/`, embedded with relative links (e.
 
 Keep MySQL console output / EXPLAIN result sets as code blocks. They're not diagrams.
 
-## Table styling
+### New diagrams: Mermaid or SVG?
 
-`tools/svg-diagrams/markview-style.html` is a `<style>` block that styles tables and diagram images for MarkView's dark theme (it targets `html.markview-dark #markview-container`). Paste it at the top of a doc only when the user asks for it. `DBMS/DBMS1.md` already has it. MarkView renders raw HTML without sanitizing, so `<style>` works there; GitHub strips it.
+- **Mermaid** (a ```` ```mermaid ```` block, which MarkView renders and themes dark automatically) for simple diagrams that will change: flowcharts, sequence diagrams, ER diagrams, state machines. They stay editable as text. Don't add a theme `%%{init}%%`; MarkView picks the theme itself.
+- **Hand-made SVG** (via the steps above) when layout carries the meaning, e.g. T1/T2 schedule lanes, timelines with crash points, B+ trees, before/after panels.
+
+## Dark styling and callouts
+
+- `tools/svg-diagrams/markview-style.html` is a `<style>` block for MarkView's dark theme: headings, tables, code, blockquotes, callouts and diagram images. It targets `html.markview-dark #markview-container`. Paste it at the top of a doc only when the user asks for it. `DBMS/DBMS1.md` has it; when the file changes, update that copy too. MarkView renders raw HTML without sanitizing, so `<style>` works there; GitHub strips it.
+- `python3 tools/md-polish/callouts.py <doc.md> [--write]` turns `>` blockquotes into alerts (`> [!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`, `[!NOTE]`) from their leading label (e.g. "Interview tip:" → TIP, "Key takeaway:" → IMPORTANT, "⚠️" → WARNING). Navigation and link blockquotes stay plain. Dry-run first and review the list.
+- `python3 tools/md-polish/anchors.py <doc.md>` lists broken in-page `(#anchor)` links. It uses github-slugger rules, the same as MarkView. Run it after renaming or merging headings.
+- `python3 tools/md-polish/toc.py <doc.md> --before <old copy> --write` rebuilds the numbered TOC. Sections whose H2s didn't change keep their hand-picked bullets, and changed sections list all their H2s.
 
 ## Repo notes
 
