@@ -4,6 +4,7 @@
 // Needs: npm install (in this folder), Windows Chrome, and MarkView installed in Chrome (its content.css is reused).
 const fs = require('fs'), path = require('path'), { execFileSync } = require('child_process');
 const MarkdownIt = require('markdown-it');
+const hljs = require('highlight.js');
 const alerts = require('markdown-it-github-alerts').default || require('markdown-it-github-alerts');
 const [, , mdPath, a, b] = process.argv;
 if (!mdPath) { console.log('usage: node preview.js <doc.md> [startLine endLine]'); process.exit(1); }
@@ -29,7 +30,7 @@ if (!css) console.warn('MarkView CSS not found; preview will be unstyled');
 
 let src = fs.readFileSync(mdPath, 'utf8');
 if (a) { const L = src.split('\n'); const st = src.match(/<style>[\s\S]*?<\/style>/); src = (st ? st[0] + '\n\n' : '') + L.slice(+a - 1, +b).join('\n'); }
-const html = new MarkdownIt({ html: true, linkify: true, typographer: true }).use(alerts).render(src);
+const html = new MarkdownIt({ html: true, linkify: true, typographer: true, highlight: (code, lang) => (lang && hljs.getLanguage(lang)) ? `<pre><code class="hljs language-${lang}">${hljs.highlight(code, { language: lang }).value}</code></pre>` : '' }).use(alerts).render(src);
 const page = path.join(OUT, 'preview.html');
 fs.writeFileSync(page, `<!doctype html><html class="markview-active markview-dark"><head><meta charset="utf-8">
 <base href="${toUrl(path.dirname(mdPath))}/">${css ? `<link rel="stylesheet" href="${toUrl(css)}">` : ''}</head>

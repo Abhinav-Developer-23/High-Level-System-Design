@@ -25,6 +25,7 @@ Keep MySQL console output / EXPLAIN result sets as code blocks. They're not diag
 - `python3 tools/md-polish/callouts.py <doc.md> [--write]` turns `>` blockquotes into alerts (`> [!TIP]`, `[!IMPORTANT]`, `[!WARNING]`, `[!CAUTION]`, `[!NOTE]`) from their leading label (e.g. "Interview tip:" → TIP, "Key takeaway:" → IMPORTANT, "⚠️" → WARNING). Navigation and link blockquotes stay plain. Dry-run first and review the list.
 - `python3 tools/md-polish/anchors.py <doc.md>` lists broken in-page `(#anchor)` links. It uses github-slugger rules, the same as MarkView. Run it after renaming or merging headings.
 - `python3 tools/md-polish/toc.py <doc.md> --before <old copy> --write` rebuilds the numbered TOC. Sections whose H2s didn't change keep their hand-picked bullets, and changed sections list all their H2s.
+- `python3 tools/md-polish/toggles.py <doc.md> [--flat] [--remove] --write` gives quiz mode: content under each heading goes into collapsed `<details>` toggles. The default is nested: a heading's toggle also holds its sub-headings ("Open section"), and the innermost ones say "Show answer". `--flat` wraps only the text directly under each heading. Headings stay real, so the TOC and anchors keep working. `DBMS/DBMS1.md` uses nested mode: to add a section, run `--remove`, edit, then run it again. Obsidian doesn't render markdown inside `<details>`; MarkView and GitHub do.
 
 ## Repo notes
 

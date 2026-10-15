@@ -77,6 +77,16 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
   display: block; margin: 22px auto; max-width: 100%; height: auto;
   border-radius: 14px; opacity: 1; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
 }
+/* Code comments in yellow so they stand out on the dark background */
+html.markview-dark #markview-container pre code .hljs-comment,
+html.markview-dark #markview-container pre code .hljs-quote { color: #e3b341 !important; font-style: italic; }
+/* Quiz toggles (<details>): a "Show answer" button under each heading; MarkView draws the arrow */
+html.markview-dark #markview-container details {
+  margin: 8px 0 18px; border: 1px solid var(--line); border-radius: 10px; background: #0f141b;
+}
+html.markview-dark #markview-container details > summary { color: #58a6ff; font-weight: 600; font-size: 13.5px; }
+html.markview-dark #markview-container details[open] > summary { color: #8b949e; }
+html.markview-dark #markview-container details:hover { border-color: #3d444d; }
 </style>
 
 # 📚 Table of Contents
@@ -351,6 +361,9 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
 
 # SQL Commands — DDL, DQL, DML, DCL & TCL
 
+<details>
+<summary>Open section</summary>
+
 SQL (Structured Query Language) is the standard language for interacting with relational databases. Every operation you perform on a database — querying data, creating tables, inserting rows, managing permissions, or handling transactions — is done through SQL commands.
 
 These commands are categorized into **five distinct groups** based on what they do:
@@ -369,12 +382,18 @@ These commands are categorized into **five distinct groups** based on what they 
 
 ## 1. DDL — Data Definition Language
 
+<details>
+<summary>Open section</summary>
+
 **Purpose:** Define and modify the *structure* (schema) of the database — tables, columns, indexes, constraints, etc.
 
 > [!IMPORTANT]
 > **Key idea:** DDL doesn't touch the actual data rows. It deals with the *blueprint* — what tables exist, what columns they have, what types those columns are, etc.
 
 ### Commands
+
+<details>
+<summary>Show answer</summary>
 
 | Command    | What It Does                                                        | Syntax                                                 |
 | ---------- | ------------------------------------------------------------------- | ------------------------------------------------------ |
@@ -385,7 +404,12 @@ These commands are categorized into **five distinct groups** based on what they 
 | `RENAME`   | Renames an existing object                                          | `RENAME TABLE old_name TO new_name;`                   |
 | `COMMENT`  | Adds a descriptive comment to a table/column in the data dictionary | `COMMENT ON TABLE table_name IS 'text';`               |
 
+</details>
+
 ### Example — Creating a Table
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE employees (
@@ -399,7 +423,12 @@ CREATE TABLE employees (
 
 This tells the database: *"Create a container called `employees` with these five columns and their data types."*
 
+</details>
+
 ### TRUNCATE vs DROP vs DELETE — A Common Confusion
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | `TRUNCATE` | `DROP` | `DELETE` (DML) |
 |--------|-----------|--------|----------------|
@@ -412,7 +441,12 @@ This tells the database: *"Create a container called `employees` with these five
 > [!TIP]
 > **Interview tip:** `TRUNCATE` is a DDL command, not DML, because it operates at the *structure level* (deallocates data pages) rather than deleting rows one-by-one. That's why it's faster and can't be rolled back.
 
+</details>
+
 ### ALTER Examples
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Add a new column
@@ -434,9 +468,16 @@ ALTER TABLE employees ADD CONSTRAINT unique_email UNIQUE (email);
 > - [❓ What is Schema Migration? (Prisma, Django, Rails, etc.)](#-what-is-schema-migration-prisma-django-rails-etc) — version control for your database schema
 > - [❓ What Does "Seed a Database" Mean?](#-what-does-seed-a-database-mean) — populating a fresh database with initial/sample data
 
+</details>
+
+</details>
+
 ---
 
 ## 2. DQL — Data Query Language
+
+<details>
+<summary>Open section</summary>
 
 **Purpose:** Retrieve/fetch data from the database. DQL is **read-only** — it never modifies any data.
 
@@ -444,6 +485,9 @@ ALTER TABLE employees ADD CONSTRAINT unique_email UNIQUE (email);
 > **Key idea:** DQL has only ONE command: `SELECT`. Everything else (`FROM`, `WHERE`, `GROUP BY`, etc.) are **clauses** of the `SELECT` statement, not separate commands.
 
 ### The SELECT Statement & Its Clauses
+
+<details>
+<summary>Show answer</summary>
 
 | Clause | Purpose | Example |
 |--------|---------|---------|
@@ -456,7 +500,12 @@ ALTER TABLE employees ADD CONSTRAINT unique_email UNIQUE (email);
 | `DISTINCT` | Removes duplicate rows from the result | `SELECT DISTINCT department` |
 | `LIMIT` | Caps the number of rows returned | `LIMIT 10` |
 
+</details>
+
 ### Logical Order of Execution
+
+<details>
+<summary>Show answer</summary>
 
 This is crucial to understand — SQL does NOT execute in the order you write it:
 
@@ -468,7 +517,12 @@ This is crucial to understand — SQL does NOT execute in the order you write it
 > - You **can** use it in `ORDER BY` — because `ORDER BY` runs *after* `SELECT`.
 > - `WHERE` filters individual rows *before* grouping. `HAVING` filters groups *after* grouping.
 
+</details>
+
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SELECT department, COUNT(*) AS emp_count
@@ -489,7 +543,12 @@ LIMIT 3;
 6. **ORDER BY** → sort by count descending
 7. **LIMIT** → return only the top 3 departments
 
+</details>
+
 ### WHERE vs HAVING
+
+<details>
+<summary>Open section</summary>
 
 | | `WHERE` | `HAVING` |
 |--|---------|----------|
@@ -499,6 +558,9 @@ LIMIT 3;
 | Example | `WHERE salary > 50000` | `HAVING AVG(salary) > 50000` |
 
 #### 🎯 Query showing the difference
+
+<details>
+<summary>Open section</summary>
 
 Sample `employees` data (assume the `salary` column added in the `ALTER` example above). The coloured squares are just a legend so you can follow each department through the examples: 🟦 Engineering · 🟩 Sales · 🟨 HR
 
@@ -518,6 +580,9 @@ Sample `employees` data (assume the `salary` column added in the `ALTER` example
 ---
 
 ##### 🟢 1. `WHERE` — filters **rows**, *before* grouping
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SELECT department, COUNT(*) AS emp_count
@@ -548,9 +613,14 @@ What `WHERE` does to each row:
 
 💡 HR vanishes completely — none of its *rows* passed the filter.
 
+</details>
+
 ---
 
 ##### 🔵 2. `HAVING` — filters **groups**, *after* grouping
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SELECT department, AVG(salary) AS avg_salary
@@ -575,9 +645,14 @@ All 8 rows are grouped first, *then* `HAVING` judges each group as a whole:
 
 💡 No individual row was removed — Chen's 40,000 still counted towards Engineering's average. Whole groups were dropped instead.
 
+</details>
+
 ---
 
 ##### 🟣 3. Both together — the usual real-world pattern
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SELECT department, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
@@ -600,9 +675,14 @@ How the data shrinks at each step:
 
 💡 `WHERE` removed Chen, Eli and Fay **row by row**. After grouping, `HAVING` removed Sales **as a group** (only Dia was left, so count = 1).
 
+</details>
+
 ---
 
 ##### 🔴 4. The classic mistake — aggregate inside `WHERE`
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SELECT department, AVG(salary)
@@ -614,9 +694,14 @@ GROUP BY department;
 > [!CAUTION]
 > `WHERE` runs *before* `GROUP BY`, so no group (and therefore no `AVG`) exists yet. **Fix:** move the aggregate condition to `HAVING`.
 
+</details>
+
 ---
 
 ##### 📊 At a glance
+
+<details>
+<summary>Show answer</summary>
 
 | | 🟢 `WHERE` | 🔵 `HAVING` |
 |:--|:--|:--|
@@ -634,9 +719,20 @@ GROUP BY department;
 > - [❓ MySQL Pagination — OFFSET/LIMIT vs Cursor-Based (Keyset) Pagination](#-mysql-pagination--offsetlimit-vs-cursor-based-keyset-pagination) — deferred joins, keyset pagination, and the API cursor contract
 > - [❓ What is the N+1 Query Problem and How to Solve It?](#-what-is-the-n1-query-problem-and-how-to-solve-it) — JOINs, `IN` batching, and ORM eager loading
 
+</details>
+
+</details>
+
+</details>
+
+</details>
+
 ---
 
 ## 3. DML — Data Manipulation Language
+
+<details>
+<summary>Open section</summary>
 
 **Purpose:** Insert, update, and delete the *actual data* inside the tables.
 
@@ -645,13 +741,21 @@ GROUP BY department;
 
 ### Commands
 
+<details>
+<summary>Show answer</summary>
+
 | Command | What It Does | Syntax |
 |---------|-------------|--------|
 | `INSERT` | Adds new row(s) into a table | `INSERT INTO table (col1, col2) VALUES (v1, v2);` |
 | `UPDATE` | Modifies existing row(s) | `UPDATE table SET col1 = v1 WHERE condition;` |
 | `DELETE` | Removes row(s) from a table | `DELETE FROM table WHERE condition;` |
 
+</details>
+
 ### INSERT Examples
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Insert a single row
@@ -670,7 +774,12 @@ INSERT INTO employees_archive
 SELECT * FROM employees WHERE hire_date < '2020-01-01';
 ```
 
+</details>
+
 ### UPDATE Examples
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Update specific rows
@@ -687,7 +796,12 @@ WHERE department = 'Engineering' AND hire_date < '2022-01-01';
 > [!WARNING]
 > **Danger:** Running `UPDATE` or `DELETE` **without a `WHERE` clause** affects ALL rows in the table. Always double-check your `WHERE` conditions.
 
+</details>
+
 ### DELETE Examples
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Delete specific rows
@@ -698,9 +812,16 @@ WHERE department = 'Sales' AND hire_date < '2020-01-01';
 DELETE FROM employees;  -- Can be rolled back, unlike TRUNCATE
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## 4. DCL — Data Control Language
+
+<details>
+<summary>Open section</summary>
 
 **Purpose:** Manage **permissions and access control** — who can do what on which database objects.
 
@@ -708,6 +829,9 @@ DELETE FROM employees;  -- Can be rolled back, unlike TRUNCATE
 > **Key idea:** In a production database, you don't want every user to have full access. DCL commands let you grant specific privileges (SELECT, INSERT, UPDATE, etc.) to specific users and revoke them when no longer needed.
 
 ### Commands
+
+<details>
+<summary>Show answer</summary>
 
 | Command | What It Does | Syntax |
 |---------|-------------|--------|
@@ -717,9 +841,16 @@ DELETE FROM employees;  -- Can be rolled back, unlike TRUNCATE
 > **📌 Deeper DCL topic — it has its own top-level section further down in this file:**
 > - [MySQL GRANT / REVOKE Privileges (Detailed)](#mysql-grant--revoke-privileges-detailed) — privilege types, GRANT/REVOKE examples, `WITH GRANT OPTION` & `CASCADE`, `SHOW GRANTS`, and the privilege scope hierarchy (global → database → table → column)
 
+</details>
+
+</details>
+
 ---
 
 ## 5. TCL — Transaction Control Language
+
+<details>
+<summary>Open section</summary>
 
 **Purpose:** Manage **transactions** — groups of SQL statements that must either ALL succeed or ALL fail (atomicity).
 
@@ -727,6 +858,9 @@ DELETE FROM employees;  -- Can be rolled back, unlike TRUNCATE
 > **Key idea:** A transaction is a logical unit of work. Think of transferring money: you debit Account A and credit Account B. If the credit fails, the debit must also be undone. TCL gives you this control.
 
 ### Commands
+
+<details>
+<summary>Show answer</summary>
 
 | Command | What It Does | Syntax |
 |---------|-------------|--------|
@@ -742,9 +876,16 @@ DELETE FROM employees;  -- Can be rolled back, unlike TRUNCATE
 > - [How Each ACID Property Is Achieved — Deep Dive](#how-each-acid-property-is-achieved--deep-dive) — the undo log and shadow copy behind `ROLLBACK`
 > - [Durability in Databases](#durability-in-databases) — what actually happens on disk when you `COMMIT`
 
+</details>
+
+</details>
+
 ---
 
 ## Quick Reference — All 5 Categories at a Glance
+
+<details>
+<summary>Show answer</summary>
 
 | Category | Full Form | Purpose | Key Commands | Affects |
 |----------|-----------|---------|-------------|---------|
@@ -757,10 +898,17 @@ DELETE FROM employees;  -- Can be rolled back, unlike TRUNCATE
 > [!NOTE]
 > **Auto-commit note:** DDL commands (`CREATE`, `DROP`, `TRUNCATE`) are **auto-committed** — they take effect immediately and cannot be rolled back. DML commands (`INSERT`, `UPDATE`, `DELETE`) can be wrapped in transactions and rolled back if needed.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # MySQL Data Types
+
+<details>
+<summary>Open section</summary>
 
 MySQL provides a wide range of data types grouped into three main categories: **Numeric**, **String (Text)**, and **Date/Time**. Choosing the right data type is critical for storage efficiency, query performance, and data integrity.
 
@@ -768,7 +916,13 @@ MySQL provides a wide range of data types grouped into three main categories: **
 
 ## **Numeric Data Types**
 
+<details>
+<summary>Open section</summary>
+
 ### **Integer Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type                 | Storage | Range (Signed)                                          | Range (Unsigned)                |
 | -------------------- | ------- | ------------------------------------------------------- | ------------------------------- |
@@ -783,7 +937,12 @@ MySQL provides a wide range of data types grouped into three main categories: **
 
 **Signed vs Unsigned:** By default, integer columns are **signed** (allow negative values). Adding `UNSIGNED` after the type doubles the positive range by removing the negative half. Use `UNSIGNED` when a column can never be negative, like `age`, `quantity`, or auto-increment IDs. Example: `INT UNSIGNED` gives you 0 to ~4.3 billion instead of -2.1 billion to +2.1 billion.
 
+</details>
+
 ### **Decimal / Floating-Point Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Storage | Range / Precision |
 | --- | --- | --- |
@@ -806,9 +965,14 @@ MySQL provides a wide range of data types grouped into three main categories: **
 
 **When to use:** Use `DECIMAL` (also known as `NUMERIC`) whenever you need exact precision, especially for financial data like prices, salaries, and account balances — it stores numbers as exact values and avoids rounding errors. Use `FLOAT` or `DOUBLE` for scientific calculations, measurements, or any scenario where a small degree of approximation is acceptable and performance matters more than pinpoint accuracy. `DOUBLE` gives you more precision than `FLOAT` at the cost of double the storage.
 
+</details>
+
 ---
 
 ### **Handling Prices in Production — The Recurring Decimal Problem**
+
+<details>
+<summary>Open section</summary>
 
 Storing prices seems simple until you run into cases like:
 
@@ -820,6 +984,9 @@ Storing prices seems simple until you run into cases like:
 These aren't edge cases — they happen in every e-commerce system, every day. Let's look at how production systems actually handle this.
 
 #### The Core Problem: Why Do Recurring Decimals Exist?
+
+<details>
+<summary>Show answer</summary>
 
 Not every fraction can be represented exactly in decimal. `1/3 = 0.333...` goes on forever. When you store this in a `DECIMAL(10,2)` column, MySQL **truncates or rounds** to `0.33`. That missing `$0.003333...` per person, over millions of transactions, adds up.
 
@@ -834,7 +1001,12 @@ SELECT CAST(100 / 3 AS DECIMAL(10,2));
 -- But 33.33 × 3 = 99.99 — where did the missing $0.01 go?
 ```
 
+</details>
+
 #### Never Use FLOAT or DOUBLE for Money
+
+<details>
+<summary>Show answer</summary>
 
 Before we solve recurring decimals, let's understand why `FLOAT`/`DOUBLE` are completely unacceptable for financial data:
 
@@ -859,7 +1031,12 @@ SELECT SUM(price) FROM good_prices;
 
 **Rule: Always use `DECIMAL` for money. No exceptions.**
 
+</details>
+
 #### Production Strategy 1: Store Prices in Smallest Currency Unit as INT (Most Common)
+
+<details>
+<summary>Show answer</summary>
 
 The most widely used approach in production (Stripe, Shopify, Amazon) is to **avoid decimals entirely** by storing amounts in the **smallest currency unit** (cents, paise, etc.) as an integer.
 
@@ -922,7 +1099,12 @@ String display = String.format("$%.2f", priceCents / 100.0);  // "$49.99"
 // { "price": 4999, "currency": "USD", "display": "$49.99" }
 ```
 
+</details>
+
 #### Production Strategy 2: DECIMAL with Controlled Rounding
+
+<details>
+<summary>Show answer</summary>
 
 If you need to store fractional amounts (e.g., crypto prices, unit rates), use `DECIMAL` with **more precision than you display** and round explicitly.
 
@@ -951,7 +1133,12 @@ SET @tax = @subtotal * 0.0725;                     -- 2.41666...
 SET @total = ROUND(@subtotal + @tax, 2);           -- 35.75
 ```
 
+</details>
+
 #### Production Strategy 3: Banker's Rounding (For Financial Systems)
+
+<details>
+<summary>Show answer</summary>
 
 Standard rounding (`ROUND_HALF_UP`) always rounds `0.5` up: `2.5 becomes 3`, `3.5 becomes 4`. Over millions of transactions, this introduces a systematic upward bias.
 
@@ -983,7 +1170,12 @@ BigDecimal rounded = price.setScale(2, RoundingMode.HALF_EVEN);  // 33.33
 BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
 ```
 
+</details>
+
 #### What Real Companies Do
+
+<details>
+<summary>Show answer</summary>
 
 | Company / Domain | Strategy | How They Store Price |
 |---|---|---|
@@ -994,7 +1186,12 @@ BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
 | **Crypto exchanges** | DECIMAL with high precision | `DECIMAL(18,8)` for satoshi-level precision |
 | **Accounting software** | DECIMAL + remainder allocation | `DECIMAL(12,4)` internally, round at invoice level |
 
+</details>
+
 #### Quick Decision Guide for Prices
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Recommended Approach |
 |---|---|
@@ -1007,9 +1204,16 @@ BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
 > [!IMPORTANT]
 > **The golden rule:** Never store money as `FLOAT` or `DOUBLE`. Prefer `INT` (cents) for most applications. Use `DECIMAL` with extra precision when you genuinely need fractional amounts. Always round at the **last possible step**, never during intermediate calculations.
 
+</details>
+
+</details>
+
 ---
 
 ### **Bit Type**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Storage |
 | --- | --- |
@@ -1017,11 +1221,21 @@ BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
 
 **When to use:** Use `BIT` when you need to store binary bit-field values, such as a set of on/off flags packed into a single column.
 
+</details>
+
+</details>
+
 ---
 
 ## **String (Text) Data Types**
 
+<details>
+<summary>Open section</summary>
+
 ### **Character Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Max Length | Storage |
 | --- | --- | --- |
@@ -1032,7 +1246,12 @@ BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
 
 **When to use:** Use `CHAR` for fixed-length strings where every row has the same length, such as country codes (`CHAR(2)`), state abbreviations, or MD5 hashes (`CHAR(32)`) — it is slightly faster for lookups because of its predictable size. Use `VARCHAR` for variable-length strings like names, email addresses, and URLs where the length differs from row to row. `VARCHAR` saves storage by only using as much space as the actual data requires plus a small length prefix.
 
+</details>
+
 ### **Text Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Max Length |
 | --- | --- |
@@ -1043,13 +1262,23 @@ BigDecimal roundedUp = price.setScale(2, RoundingMode.HALF_UP);  // 33.33
 
 **When to use:** Use `TEXT` types when you need to store large blocks of text that exceed `VARCHAR`'s practical limits, such as blog post bodies, comments, descriptions, or articles. Use `TINYTEXT` for short notes, `TEXT` for typical content fields, `MEDIUMTEXT` for large documents, and `LONGTEXT` for extremely large data like book manuscripts or serialized JSON blobs. Keep in mind that `TEXT` columns cannot have default values and are stored off-page, which can impact query performance — so prefer `VARCHAR` when the data fits within its limits.
 
+</details>
+
 ---
 
 ### **VARCHAR vs TEXT — Deep Comparison**
 
+<details>
+<summary>Show answer</summary>
+
 This is one of the most common decisions developers face. Both store variable-length strings, but they behave very differently under the hood.
 
+</details>
+
 ### **Storage Mechanism**
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | `VARCHAR(M)` | `TEXT` |
 | --- | --- | --- |
@@ -1059,7 +1288,12 @@ This is one of the most common decisions developers face. Both store variable-le
 | **Memory for temp tables** | When MySQL needs an in-memory temporary table (e.g., for `ORDER BY`, `GROUP BY`, `DISTINCT`), `VARCHAR` columns are allocated at their **declared max length** in the MEMORY engine. A `VARCHAR(10000)` allocates 10 KB per row even if most values are 50 bytes. | `TEXT` columns **force the temporary table to disk** (MyISAM-based temp table), because the MEMORY engine does not support `TEXT`/`BLOB` types at all. |
 | **Row size contribution** | Directly counted toward the InnoDB 8 KB page row-size limit. | Only the pointer (~20 bytes) counts toward the row size, so you can have many `TEXT` columns without hitting the row limit. |
 
+</details>
+
 ### **When to Use VARCHAR**
+
+<details>
+<summary>Show answer</summary>
 
 - The data length is **predictable and bounded** — names (max ~100 chars), emails (max ~320 chars), URLs (max ~2,000 chars), short descriptions.
 - You need to set a **DEFAULT value** — `TEXT` columns cannot have a `DEFAULT` in most MySQL versions.
@@ -1068,29 +1302,49 @@ This is one of the most common decisions developers face. Both store variable-le
 - You want to create a **full-length index** on the column — `VARCHAR` columns can be indexed on their entire length (up to the index size limit), whereas `TEXT` requires a **prefix index** (e.g., `INDEX(col(255))`), which limits index effectiveness.
 - You want to use the column in a **`MEMORY` table** or the **`MEMORY` storage engine** — `TEXT` is not supported there.
 
+</details>
+
 ### **When to Use TEXT**
+
+<details>
+<summary>Show answer</summary>
 
 - The data length is **unpredictable or very large** — blog posts, user comments, article bodies, HTML content, log messages.
 - You have **many variable-length columns** in a single table and are hitting the row-size limit (~65,535 bytes). Switching some to `TEXT` offloads them off-page and keeps the row compact.
 - You **rarely query, sort, or filter** by this column — it is mostly written and then read back as-is (e.g., a `body` column you display on a page).
 - The content can realistically be **larger than a few KB per row**.
 
+</details>
+
 ### **Pros and Cons Summary**
+
+<details>
+<summary>Show answer</summary>
 
 |  | VARCHAR | TEXT |
 | --- | --- | --- |
 | **Pros** | Inline storage = faster reads. Supports `DEFAULT` values. Full-length indexing. Keeps temp tables in memory. Better for `WHERE`, `ORDER BY`, `GROUP BY`. | No impact on row-size limit. Can store very large strings. Good for write-heavy "dump and retrieve" columns. |
 | **Cons** | Eats into the shared row-size budget. Declared max length wastes memory in temp tables if set too high. | Forces temp tables to disk. Requires prefix indexes only. No `DEFAULT` value. Off-page storage adds an extra I/O hop. |
 
+</details>
+
 ### **Practical Rule of Thumb**
+
+<details>
+<summary>Show answer</summary>
 
 > [!NOTE]
 > If the maximum realistic length is **under ~1,000 characters** and you will query/sort/filter on it, use **`VARCHAR`**. If the content is free-form, unbounded, or regularly **over a few KB**, and you mostly just store and retrieve it, use **`TEXT`**. Never use `VARCHAR(65535)` "just in case" — you get the worst of both worlds (huge memory allocation for temp tables, yet still constrained by row size). Switch to `TEXT` at that point.
 > 
 
+</details>
+
 ---
 
 ### **Binary Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Max Length |
 | --- | --- |
@@ -1103,7 +1357,12 @@ This is one of the most common decisions developers face. Both store variable-le
 
 **When to use:** Use `BINARY` and `VARBINARY` for small fixed or variable-length binary data like UUIDs stored in raw form or hashed passwords. Use `BLOB` types to store binary large objects such as images, audio files, PDFs, or serialized objects directly in the database. In practice, it is often better to store large files on the filesystem or an object store and keep only a reference path in the database, but `BLOB` types are there when direct storage is necessary.
 
+</details>
+
 ### **Enum and Set**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Description |
 | --- | --- |
@@ -1112,9 +1371,16 @@ This is one of the most common decisions developers face. Both store variable-le
 
 **When to use:** Use `ENUM` when a column should only ever contain one value from a small, fixed list — such as status (`'active'`, `'inactive'`, `'pending'`), gender, or t-shirt size. It is stored internally as an integer, making it space-efficient and fast. Use `SET` when a column can hold multiple values simultaneously from a list, like user permissions (`'read'`, `'write'`, `'delete'`). Be cautious with both: changing the allowed values requires an `ALTER TABLE`, which can be expensive on large tables. If the list of values changes frequently, a separate lookup table with a foreign key is often a better design.
 
+</details>
+
+</details>
+
 ---
 
 ## **Date and Time Data Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Format | Range |
 | --- | --- | --- |
@@ -1126,9 +1392,14 @@ This is one of the most common decisions developers face. Both store variable-le
 
 **When to use:** Use `DATE` when you only care about the calendar date — birthdays, hire dates, or due dates. Use `TIME` for storing durations or time-of-day values independent of a specific date. Use `DATETIME` for general-purpose date-and-time storage such as appointment scheduling, event dates, or log entries where you want to record an absolute point in time as entered by the user. Use `TIMESTAMP` for audit columns like `created_at` and `updated_at` — it automatically converts to and from UTC, making it ideal for applications serving users across multiple time zones, and it supports auto-initialization and auto-update. Note that `TIMESTAMP` has a limited range ending in 2038, so use `DATETIME` for dates beyond that. Use `YEAR` when you only need to store a four-digit year, such as a graduation year or model year.
 
+</details>
+
 ---
 
 ## **JSON Data Type**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Max Size |
 | --- | --- |
@@ -1136,9 +1407,14 @@ This is one of the most common decisions developers face. Both store variable-le
 
 **When to use:** Use the `JSON` type when you need to store semi-structured or schema-less data — such as API payloads, configuration objects, user preferences, or metadata that varies between rows. MySQL validates the JSON on insert, and provides functions like `JSON_EXTRACT()`, `->`, and `->>` for querying nested values directly. It is a great fit when the data structure is flexible, but avoid it as a replacement for properly normalized relational columns when the fields are consistent across rows, since querying and indexing JSON is less efficient than querying regular columns.
 
+</details>
+
 ---
 
 ## **Spatial Data Types**
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Description |
 | --- | --- |
@@ -1150,9 +1426,14 @@ This is one of the most common decisions developers face. Both store variable-le
 
 **When to use:** Use spatial data types when you are building location-aware applications — store coordinates, map boundaries, delivery zones, or geographic regions. Combined with spatial indexes and functions like `ST_Distance()` and `ST_Contains()`, they enable efficient geospatial queries such as "find all restaurants within 5 km." If you only need to store a simple latitude/longitude pair without spatial queries, two `DECIMAL` columns may be simpler.
 
+</details>
+
 ---
 
 ## **Quick Decision Guide**
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Recommended Type |
 | --- | --- |
@@ -1169,10 +1450,17 @@ This is one of the most common decisions developers face. Both store variable-le
 | Flexible metadata | `JSON` |
 | GPS coordinates with spatial queries | `POINT` |
 
+</details>
+
+</details>
+
 ---
 ---
 
 # ALTER TABLE in MySQL — Online DDL, Locking & Internals
+
+<details>
+<summary>Open section</summary>
 
 `ALTER TABLE` is the DDL (Data Definition Language) command used to modify an existing table's structure — adding or dropping columns, changing data types, adding indexes, renaming columns, and more. It's one of the most common operations in production databases, and one of the most dangerous if you don't understand its locking behavior.
 
@@ -1180,9 +1468,15 @@ This is one of the most common decisions developers face. Both store variable-le
 
 ## ❓ What Happens Internally When We Run an ALTER Query? Does It Lock the Table?
 
+<details>
+<summary>Open section</summary>
+
 **Short answer: it depends on the *algorithm* MySQL picks.** Modern MySQL (5.6+) supports **Online DDL**, which means most `ALTER TABLE` operations **do NOT fully lock** the table — reads and writes can continue while the schema change is happening.
 
 ### Before MySQL 5.6 — Full Table Lock (The Old Way)
+
+<details>
+<summary>Show answer</summary>
 
 In older MySQL versions, **every** `ALTER TABLE` operation worked like this:
 
@@ -1197,7 +1491,12 @@ In older MySQL versions, **every** `ALTER TABLE` operation worked like this:
 
 For a table with 500 million rows, this could take **hours** — and during that entire time, **no queries could read or write to the table**. Your application would effectively be down.
 
+</details>
+
 ### MySQL 5.6+ — Online DDL (The Modern Way)
+
+<details>
+<summary>Show answer</summary>
 
 MySQL 5.6 introduced **Online DDL**, which allows many `ALTER TABLE` operations to proceed **without blocking reads or writes**. MySQL 8.0 expanded this further with `INSTANT` operations.
 
@@ -1226,13 +1525,23 @@ ALTER TABLE users MODIFY COLUMN name VARCHAR(500), ALGORITHM=COPY;
 > **Best practice:** Always specify `ALGORITHM` and `LOCK` explicitly in production.
 > If the operation can't support your requested algorithm/lock level, MySQL will **fail immediately** instead of silently falling back to a full table copy that blocks your app.
 
+</details>
+
 ### How Are Concurrent Writes Handled During an INPLACE ALTER?
+
+<details>
+<summary>Show answer</summary>
 
 This is the key internal detail — InnoDB uses an **online log** mechanism:
 
 ![INPLACE ALTER timeline: brief exclusive MDL, online DDL with concurrent DML captured in the online log, apply online log, brief exclusive MDL swap; table altered without blocking the app](../svg/dbms/d006-alter-inplace-online-log-timeline.svg)
 
+</details>
+
 ### Which Operations Use Which Algorithm?
+
+<details>
+<summary>Show answer</summary>
 
 | Operation | Algorithm | Concurrent DML? | Notes |
 |---|---|:---:|---|
@@ -1250,7 +1559,12 @@ This is the key internal detail — InnoDB uses an **online log** mechanism:
 | **Add `FULLTEXT` index** | `INPLACE` | ❌ No (blocks writes) | Reads are allowed, writes are blocked |
 | **Change `ROW_FORMAT`** | `COPY` 🐌 | ❌ No | Full table rebuild |
 
+</details>
+
 ### ⚠️ The Metadata Lock (MDL) Trap — This Catches Everyone
+
+<details>
+<summary>Show answer</summary>
 
 Even though the ALTER itself is "online", `INSTANT` and `INPLACE` operations still need a brief **metadata lock** at the start and end. It's usually held for microseconds — but here's the catch.
 
@@ -1275,9 +1589,16 @@ If there's a **long-running query or uncommitted transaction** on that table, th
 - Use `pt-online-schema-change` (Percona) or `gh-ost` (GitHub) for large production tables — these create a shadow copy and swap tables, avoiding metadata-lock issues entirely (see [Production Tools for Zero-Downtime ALTER](#production-tools-for-zero-downtime-alter) below)
 - Always run ALTER during low-traffic windows
 
+</details>
+
+</details>
+
 ---
 
 ## Advantages of ALTER TABLE
+
+<details>
+<summary>Show answer</summary>
 
 | Advantage | Explanation |
 |---|---|
@@ -1288,9 +1609,14 @@ If there's a **long-running query or uncommitted transaction** on that table, th
 | **INSTANT operations (8.0+)** | Adding a column is now instantaneous regardless of table size — just a metadata change |
 | **Standardized** | Part of the SQL standard — every developer and ORM knows how to use it |
 
+</details>
+
 ---
 
 ## Disadvantages of ALTER TABLE
+
+<details>
+<summary>Open section</summary>
 
 | Disadvantage | Explanation |
 |---|---|
@@ -1305,6 +1631,9 @@ If there's a **long-running query or uncommitted transaction** on that table, th
 
 ### Production Tools for Zero-Downtime ALTER
 
+<details>
+<summary>Show answer</summary>
+
 For operations that still require a `COPY`, teams often use external tools that avoid locking:
 
 | Tool | How It Works |
@@ -1315,13 +1644,23 @@ For operations that still require a `COPY`, teams often use external tools that 
 
 These tools let you run even a full table rebuild (`COPY` operation) without locking the table — at the cost of additional complexity and longer total execution time.
 
+</details>
+
+</details>
+
 ---
 
 ## The "Future Columns" Strategy — Pre-Allocating Columns to Avoid ALTER
 
+<details>
+<summary>Open section</summary>
+
 One strategy to avoid `ALTER TABLE` entirely is to **pre-create extra columns** upfront that you don't need yet — "reserving" them for future use.
 
 ### How It Works
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE users (
@@ -1356,7 +1695,12 @@ ALTER TABLE users RENAME COLUMN extra_str_1 TO phone;
 
 You skip the `ALTER TABLE ADD COLUMN` entirely — the column already exists. You just start writing data to it. If the column's existing type doesn't match what you need exactly, at worst you rename it (which is `INSTANT`).
 
+</details>
+
 ### Advantages of Future Columns
+
+<details>
+<summary>Show answer</summary>
 
 | Advantage | Explanation |
 |---|---|
@@ -1368,7 +1712,12 @@ You skip the `ALTER TABLE ADD COLUMN` entirely — the column already exists. Yo
 | **Predictable schema** | DevOps teams know the schema won't change unexpectedly, simplifying migration and deployment pipelines |
 | **Good for high-frequency schema iterations** | If your product is evolving rapidly and you'd otherwise ALTER daily, pre-allocated columns save repeated DDL risk |
 
+</details>
+
 ### Disadvantages of Future Columns
+
+<details>
+<summary>Show answer</summary>
 
 | Disadvantage | Explanation |
 |---|---|
@@ -1382,7 +1731,12 @@ You skip the `ALTER TABLE ADD COLUMN` entirely — the column already exists. Yo
 | **Index limitations** | You can't pre-create useful indexes on columns whose query patterns are unknown. Adding indexes later still requires ALTER (though `ADD INDEX` is `INPLACE` and online) |
 | **Anti-pattern in relational design** | It violates normalization principles. The schema should describe the data, not anticipate hypothetical future data. This approach trades schema clarity for operational convenience |
 
+</details>
+
 ### A Better Alternative: The JSON Column Approach
+
+<details>
+<summary>Show answer</summary>
 
 Instead of reserving typed columns, a more flexible "future-proof" strategy is using a single `JSON` column for extensible attributes:
 
@@ -1439,7 +1793,12 @@ CREATE INDEX idx_phone ON users (phone);
 SELECT * FROM users WHERE phone = '+1-555-1234';
 ```
 
+</details>
+
 ### When to Use Each Strategy
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Recommended Approach |
 |---|---|
@@ -1452,26 +1811,48 @@ SELECT * FROM users WHERE phone = '+1-555-1234';
 > [!IMPORTANT]
 > **The bottom line:** In modern MySQL (8.0+), `ALTER TABLE ADD COLUMN` is `INSTANT` and there is almost **no reason** to pre-allocate future columns. The JSON column approach is strictly better when you need extensibility without DDL. Reserved columns are a legacy workaround from the era of full-table-locking ALTER — they trade schema clarity for a problem that modern MySQL has already solved.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # ❓ What is Schema Migration? (Prisma, Django, Rails, etc.)
 
+<details>
+<summary>Open section</summary>
+
 **Schema migration** is the process of **versioning and applying changes to your database schema** (tables, columns, indexes, constraints) in a controlled, repeatable way — just like Git tracks changes to your code, migrations track changes to your database structure.
 
 ## The Problem Migrations Solve
+
+<details>
+<summary>Show answer</summary>
 
 Without migrations, schema changes are chaos:
 
 ![Without migrations, dev, staging and production schemas drift; with migrations every environment runs the same timestamped files in order so Local = Staging = Production](../svg/dbms/d009-without-vs-with-migrations.svg)
 
+</details>
+
 ## What Happens Under the Hood When You Run a Migration?
+
+<details>
+<summary>Show answer</summary>
 
 Taking **Prisma** as an example:
 
 ![Prisma migrate dev under the hood: add phone field to schema.prisma, then diff, generate ALTER TABLE SQL, save timestamped migration.sql, execute, and record a checksum row in _prisma_migrations](../svg/dbms/d010-prisma-migrate-under-the-hood.svg)
 
+</details>
+
 ## The Migration Tracking Table
+
+<details>
+<summary>Show answer</summary>
 
 Every ORM maintains a **migrations table** inside your database to track which migrations have been applied:
 
@@ -1486,7 +1867,12 @@ Every ORM maintains a **migrations table** inside your database to track which m
 
 **Why the checksum matters (Prisma):** If you edit a migration file that was already applied, the SHA256 hash won't match what's stored in `_prisma_migrations`. Prisma detects this **drift** and refuses to proceed — preventing silent corruption.
 
+</details>
+
 ## Migration Commands Across ORMs
+
+<details>
+<summary>Show answer</summary>
 
 | Action | Prisma | Django | Rails | Sequelize |
 |--------|--------|--------|-------|-----------|
@@ -1496,7 +1882,12 @@ Every ORM maintains a **migrations table** inside your database to track which m
 | **Rollback** | ❌ (manual) | `python manage.py migrate app_name 0003` | `rails db:rollback` | `npx sequelize db:migrate:undo` |
 | **Reset DB** | `prisma migrate reset` | `python manage.py flush` | `rails db:reset` | `npx sequelize db:migrate:undo:all` |
 
+</details>
+
 ## What SQL Does a Migration Actually Generate?
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Adding a column
@@ -1524,7 +1915,12 @@ CREATE TABLE posts (
 > [!NOTE]
 > Every migration is just **DDL statements** (`ALTER`, `CREATE`, `DROP`) wrapped in a versioned, trackable file.
 
+</details>
+
 ## Prisma: `migrate dev` vs `db push`
+
+<details>
+<summary>Show answer</summary>
 
 | | `prisma migrate dev` | `prisma db push` |
 |--|:---:|:---:|
@@ -1536,14 +1932,24 @@ CREATE TABLE posts (
 > [!IMPORTANT]
 > **Key Takeaway:** Schema migration = **version control for your database**. The ORM diffs your desired schema vs the current DB, generates the SQL, saves it in a timestamped file, executes it, and records it in a tracking table. Every environment runs the same migrations in the same order — ensuring your database is always in sync across dev, staging, and production.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # ❓ What Does "Seed a Database" Mean?
 
+<details>
+<summary>Open section</summary>
+
 **Seeding** means **populating a database with initial/sample data** so it's not empty after creation. Think of it like planting seeds in a garden — you're putting the initial data in so your app has something to work with.
 
 ## Why Do We Need Seeding?
+
+<details>
+<summary>Show answer</summary>
 
 ![After migrations the users table exists but is empty; after seeding it holds Admin User, John Doe and Jane Smith](../svg/dbms/d011-seed-before-after.svg)
 
@@ -1556,7 +1962,12 @@ CREATE TABLE posts (
 | **Testing data** | Predictable data for automated tests | Specific users with known IDs for test assertions |
 | **Demo data** | Showcase data for demos/sales | Pre-built dashboards, sample reports |
 
+</details>
+
 ## How Seeding Works — Raw SQL
+
+<details>
+<summary>Show answer</summary>
 
 At its simplest, seeding is just `INSERT` statements:
 
@@ -1575,7 +1986,12 @@ INSERT INTO categories (name, slug) VALUES
   ('Books', 'books');
 ```
 
+</details>
+
 ## How Seeding Works in Prisma
+
+<details>
+<summary>Show answer</summary>
 
 Prisma uses a dedicated `prisma/seed.ts` (or `.js`) file:
 
@@ -1626,7 +2042,12 @@ npx prisma db seed
 > [!NOTE]
 > **Why `upsert`?** It's **idempotent** — you can run the seed multiple times without creating duplicates. If the data already exists, it skips or updates. This is crucial because seeds often run automatically after `prisma migrate reset`.
 
+</details>
+
 ## Seed Commands Across ORMs
+
+<details>
+<summary>Show answer</summary>
 
 | ORM / Framework | Seed Command | Seed File Location |
 |----------------|-------------|-------------------|
@@ -1637,7 +2058,12 @@ npx prisma db seed
 | **Laravel** | `php artisan db:seed` | `database/seeders/*.php` |
 | **TypeORM** | Custom script (no built-in) | Your own script |
 
+</details>
+
 ## Migration vs Seeding — What's the Difference?
+
+<details>
+<summary>Show answer</summary>
 
 | | Migration | Seeding |
 |--|:---:|:---:|
@@ -1652,16 +2078,26 @@ npx prisma db seed
 > [!IMPORTANT]
 > **Key Takeaway:** Migration creates the **container** (tables/columns). Seeding fills the container with **initial data**. Migrations are mandatory everywhere; seeding is mostly for dev/test environments. Always make seeds idempotent (safe to run multiple times).
 
+</details>
+
+</details>
+
 ---
 ---
 
 # ❓ MySQL Pagination — OFFSET/LIMIT vs Cursor-Based (Keyset) Pagination
+
+<details>
+<summary>Open section</summary>
 
 🔗 [PlanetScale — MySQL Pagination](https://planetscale.com/blog/mysql-pagination)
 
 When you have millions of rows and need to show them page by page (like a product listing or infinite scroll feed), **how** you paginate matters enormously.
 
 ## Approach 1: OFFSET/LIMIT (The Naïve Way)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Page 1
@@ -1682,7 +2118,12 @@ SELECT * FROM products ORDER BY id LIMIT 20 OFFSET 10000;
 - **Data inconsistency** — If a row is inserted or deleted while the user is paginating, they may see **duplicate items** or **skip entries** entirely
 - **Performance is O(OFFSET + LIMIT)** — gets linearly worse as you go deeper
 
+</details>
+
 ## Approach 2: Deferred Join (Keep OFFSET/LIMIT, Just Make It Fast)
+
+<details>
+<summary>Open section</summary>
 
 > [!NOTE]
 > Also known as a **"late row lookup"**. Real-world implementations: [FastPage](https://github.com/planetscale/fast_page) (Rails), [Fast Paginate](https://github.com/hammerstonedev/fast-paginate) (Laravel).
@@ -1690,6 +2131,9 @@ SELECT * FROM products ORDER BY id LIMIT 20 OFFSET 10000;
 Cursor pagination (Approach 3) is strictly better — **but you can't always use it**. If the product demands numbered pages ("Page 47 of 2,000"), a "jump to last page" button, or a sortable admin grid, you're stuck with `OFFSET`. A **deferred join** keeps `OFFSET/LIMIT` semantics but strips out most of its cost.
 
 ### Step 1 — Understand What *Actually* Makes OFFSET Slow
+
+<details>
+<summary>Show answer</summary>
 
 It is **not** the counting. Counting to 450,000 is nothing for a CPU. The real cost is **what MySQL has to carry while it counts**.
 
@@ -1706,7 +2150,12 @@ Here is what InnoDB actually does, step by step:
 > [!IMPORTANT]
 > **The critical detail:** MySQL applies `LIMIT`/`OFFSET` at the **top** of the execution plan, *after* rows have been materialized. It does **not** push "skip 450,000" down into the index scan. So every single skipped row still pays for a full random-I/O row fetch — and is then discarded.
 
+</details>
+
 ### Step 2 — The Fix: Paginate the Index, Then Fetch the Rows
+
+<details>
+<summary>Show answer</summary>
 
 Split the query into two halves:
 
@@ -1736,7 +2185,12 @@ ORDER BY p.price, p.id;          -- ← must repeat! (see gotchas)
 | `INNER JOIN products AS p USING (id)` | Joins those 20 IDs back to the real table. | 20 primary-key lookups. **Not 450,020.** |
 | `ORDER BY p.price, p.id` (outer) | Re-sorts the final result. | A `JOIN` gives **no ordering guarantee** — dropping this returns the right 20 rows in the wrong order. Sorting 20 rows is free. |
 
+</details>
+
 ### Step 3 — Why This Is *Actually* Faster (The Numbers)
+
+<details>
+<summary>Show answer</summary>
 
 `products` = 1M rows, avg row ≈ 600 bytes (name, description, etc.), index entry ≈ 20 bytes.
 
@@ -1766,7 +2220,12 @@ EXPLAIN SELECT id FROM products ORDER BY price, id LIMIT 20 OFFSET 450000;
 
 `Using index` in the `Extra` column is the whole trick. If you don't see it in your subquery, the deferred join won't help — your index doesn't cover the `ORDER BY`.
 
+</details>
+
 ### 📚 The Analogy — The Library Card Catalog
+
+<details>
+<summary>Show answer</summary>
 
 You want the books ranked **#450,001 to #450,010** in alphabetical order by author.
 
@@ -1787,7 +2246,12 @@ The mapping is one-to-one:
 > [!IMPORTANT]
 > **The punchline:** The card catalog does **not** make the counting shorter — you still flip 450,000 cards. It makes **each count cheaper**. That single sentence *is* the deferred join.
 
+</details>
+
 ### What Deferred Joins Do NOT Fix
+
+<details>
+<summary>Show answer</summary>
 
 This is a **constant-factor** optimization, not an algorithmic one — an important distinction for interviews:
 
@@ -1798,7 +2262,12 @@ This is a **constant-factor** optimization, not an algorithmic one — an import
 | **Needs a covering index** | If `ORDER BY` can't be served by an index, the subquery does a `filesort` over the whole table anyway and you gain almost nothing. |
 | **Two round trips of work** | Slightly more complex SQL, and the optimizer occasionally misbehaves on old MySQL versions — always `EXPLAIN` it. |
 
+</details>
+
 ### When It's Worth It
+
+<details>
+<summary>Show answer</summary>
 
 | Situation | Verdict |
 |---|:---:|
@@ -1813,7 +2282,14 @@ This is a **constant-factor** optimization, not an algorithmic one — an import
 > [!TIP]
 > **Tip:** Prefer `INNER JOIN (...) USING (id)` over `WHERE id IN (SELECT ...)`. The `IN` form can trigger semi-join materialization strategies that lose the optimization on some MySQL versions.
 
+</details>
+
+</details>
+
 ## Approach 3: Cursor-Based / Keyset Pagination (The Right Way)
+
+<details>
+<summary>Open section</summary>
 
 Instead of saying "skip N rows", you say "give me rows **after** this specific value":
 
@@ -1837,6 +2313,9 @@ SELECT * FROM products WHERE id > 9980 ORDER BY id ASC LIMIT 20;
 
 ### Handling Non-Unique Sort Columns
 
+<details>
+<summary>Show answer</summary>
+
 If you're sorting by a non-unique column (like `price`), you need a **tiebreaker** to avoid skipping/duplicating rows with the same value:
 
 ```sql
@@ -1850,7 +2329,12 @@ ORDER BY price ASC, id ASC
 LIMIT 20;
 ```
 
+</details>
+
 ### The API Contract — What You Send the Frontend, What the Frontend Sends Back
+
+<details>
+<summary>Show answer</summary>
 
 Cursor pagination only works if the **client and server agree on a contract**. This is the part interviews actually probe, and it's where most implementations go wrong.
 
@@ -1923,7 +2407,12 @@ eyJ2IjoxLCJzb3J0IjoicHJpY2VfYXNjIiwicHJpY2UiOiIyOS45OSIsImlkIjoxMDQyfQ==
 > 2. **Fetch `limit + 1` rows to compute `has_more`.** One extra row costs nothing. A separate `SELECT COUNT(*)` costs a full scan — never do that just to fill in a boolean.
 > 3. **For backwards pagination**, return a `prev_cursor` too. The frontend sends it as `?before=...`, and the server flips the comparison (`<` instead of `>`), flips the `ORDER BY` to `DESC`, then **re-reverses the rows in application code** before returning them.
 
+</details>
+
 ### ⚠️ Problems with Cursor-Based Pagination
+
+<details>
+<summary>Show answer</summary>
 
 Cursor pagination is the right default for large datasets, but it is **not free**. Know these before you commit:
 
@@ -1943,7 +2432,14 @@ Cursor pagination is the right default for large datasets, but it is **not free*
 > [!WARNING]
 > **Not a problem (common misconception):** "What if the row the cursor points to gets deleted?" — Nothing breaks. `WHERE id > 1042` is a **value comparison**, not a row reference. If row `1042` is gone, the index seek simply lands on the next row after that position. This is precisely why cursors beat offsets on stability.
 
+</details>
+
+</details>
+
 ## Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | | OFFSET/LIMIT | Deferred Join | Cursor-Based (Keyset) |
 |--|:---:|:---:|:---:|
@@ -1966,14 +2462,22 @@ Cursor pagination is the right default for large datasets, but it is **not free*
 >
 > **The one-line summary:** *Deferred join makes each skipped row cheaper. Cursor pagination stops skipping rows altogether.*
 
+</details>
+
 ---
 
 ## Worked Implementation — Chat Messages (MySQL + Spring Boot)
+
+<details>
+<summary>Open section</summary>
 
 The same keyset idea applied end to end against a real schema: messages inside a
 conversation, from the SQL through to the repository and service layer.
 
 ### The Solution: Cursor-Based Pagination in MySQL
+
+<details>
+<summary>Show answer</summary>
 
 Instead of skipping rows, use the **last seen value** from the previous page as a cursor:
 
@@ -2006,7 +2510,12 @@ ORDER BY message_id DESC
 LIMIT 50;
 ```
 
+</details>
+
 ### Why This Is Fast
+
+<details>
+<summary>Show answer</summary>
 
 MySQL uses the **B-tree index** on `message_id` to **seek directly** to the cursor position. It doesn't scan or discard any rows. Whether you're fetching page 2 or page 2,000, the cost is the same — O(limit).
 
@@ -2019,7 +2528,12 @@ CREATE INDEX idx_conv_msg ON messages (conversation_id, message_id DESC);
 
 Without this index, MySQL falls back to a full table scan, and cursor pagination loses its advantage.
 
+</details>
+
 ### How the API Server Builds the Cursor
+
+<details>
+<summary>Show answer</summary>
 
 The cursor is **not stored in MySQL**. It's derived from the query results:
 
@@ -2027,7 +2541,12 @@ The cursor is **not stored in MySQL**. It's derived from the query results:
 
 The cursor is base64-encoded to keep it **opaque** — the client doesn't need to know the internal format. The server can change the cursor structure (e.g., add a timestamp field) without breaking any client.
 
+</details>
+
 ### Spring Boot / JPA Example
+
+<details>
+<summary>Show answer</summary>
 
 ```java
 @Repository
@@ -2072,10 +2591,19 @@ public class MessageService {
 > 🔗 Do not confuse this with a **SQL cursor** (`DECLARE ... CURSOR`), which is a
 > server-side row-by-row iteration feature. See [Cursor in SQL](#cursor-in-sql).
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # ❓ What is the N+1 Query Problem and How to Solve It?
+
+<details>
+<summary>Open section</summary>
 
 🔗 [PlanetScale — What is N+1 Query Problem and How to Solve It](https://planetscale.com/blog/what-is-n-1-query-problem-and-how-to-solve-it)
 
@@ -2083,13 +2611,21 @@ The **N+1 query problem** is one of the most common performance killers in datab
 
 ## The Problem — A Concrete Example
 
+<details>
+<summary>Show answer</summary>
+
 Say you want to display 100 authors with their books:
 
 ![N+1 way: one SELECT for 100 authors plus one books query per author, 1 + 100 = 101 queries, each a network round trip](../svg/dbms/d018-n-plus-one-queries.svg)
 
 With 100 authors, this is 101 queries. With 10,000 authors → 10,001 queries. **Each query involves a separate network round trip**, so even if each query is fast (1ms), 10,001 queries = **10 seconds** of just network overhead.
 
+</details>
+
 ## Solution 1: Use a JOIN (Best — 1 Query)
+
+<details>
+<summary>Show answer</summary>
 
 Fetch everything in a **single query** using a JOIN:
 
@@ -2102,7 +2638,12 @@ LEFT JOIN books b ON a.id = b.author_id;
 
 MySQL fetches everything in one round trip. The database does the heavy lifting instead of your application code.
 
+</details>
+
 ## Solution 2: Batch with IN Clause (2 Queries)
+
+<details>
+<summary>Show answer</summary>
 
 If a JOIN creates too many duplicate rows (e.g., authors with many books), use two queries with an `IN` clause:
 
@@ -2116,7 +2657,12 @@ SELECT * FROM books WHERE author_id IN (1, 2, 3, ..., 100);
 
 **Total: 2 queries** instead of 101. Your application code then groups the books by `author_id` in memory.
 
+</details>
+
 ## Solution 3: ORM Eager Loading
+
+<details>
+<summary>Show answer</summary>
 
 Most ORMs have built-in solutions that generate the optimized queries for you:
 
@@ -2128,19 +2674,34 @@ Most ORMs have built-in solutions that generate the optimized queries for you:
 | **Entity Framework (.NET)** | Navigation property access | `.Include(a => a.Books)` |
 | **Sequelize (Node.js)** | `author.getBooks()` in a loop | `{ include: [Book] }` |
 
+</details>
+
 ## How to Detect N+1 in Your App
+
+<details>
+<summary>Show answer</summary>
 
 ![Four signs of N+1: same query template repeated hundreds of times, load time growing linearly with records, exhausted connection pool, lazy loading ORM default](../svg/dbms/d019-n-plus-one-warning-signs.svg)
 
 > [!IMPORTANT]
 > **Key Takeaway:** Never query inside a loop. If you're doing `for each parent → query children`, you have an N+1 problem. Always **batch** your queries using JOINs, IN clauses, or ORM eager loading.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Instance, Schema & Sub-Schema in DBMS
 
+<details>
+<summary>Open section</summary>
+
 ## Instance (Database State)
+
+<details>
+<summary>Open section</summary>
 
 An **instance** is a **snapshot of the database at a particular moment in time**. It is the actual collection of data stored in the database right now.
 
@@ -2152,6 +2713,9 @@ Every time the data changes (INSERT / DELETE / UPDATE), the database transitions
 ![Database instances at T1, T2 and T3: initial Alice and Bob, then INSERT Carol, then UPDATE Alice from HR to IT](../svg/dbms/d020-database-instances-over-time.svg)
 
 ### Real-World Example — Multiple Instances
+
+<details>
+<summary>Show answer</summary>
 
 An organization's `employees` database typically has three different instances running simultaneously:
 
@@ -2166,9 +2730,16 @@ Each of these is at a *different state* (different data) even though they all sh
 > [!IMPORTANT]
 > **Important:** The DBMS ensures that **every instance is in a valid state** by enforcing all validations, constraints, and conditions that the database designers have imposed. An instance can never violate the rules defined by the schema.
 
+</details>
+
+</details>
+
 ---
 
 ## Schema (Database Design / Blueprint)
+
+<details>
+<summary>Open section</summary>
 
 🔗 [Tutorialspoint — DBMS Data Schemas](https://www.tutorialspoint.com/dbms/dbms_data_schemas.htm)
 
@@ -2186,6 +2757,9 @@ A **schema** is the **overall structure or design** of the database. It defines 
 
 ### Example Schemas
 
+<details>
+<summary>Show answer</summary>
+
 **STORES table schema:**
 
 | store_name | store_id | store_add | city | state | zip_code |
@@ -2201,7 +2775,12 @@ A **schema** is the **overall structure or design** of the database. It defines 
 > [!NOTE]
 > The schema tells you **what information is captured** (store name, address, zip code, discount type, etc.) but says nothing about the actual values or the relationships between these tables.
 
+</details>
+
 ### Types of Schema
+
+<details>
+<summary>Show answer</summary>
 
 ![Database schema splits into the logical schema (what data and structure: tables, columns, types) and the physical schema (how it is stored on disk: files, indexes, pages, partitions)](../svg/dbms/d021-logical-vs-physical-schema.svg)
 
@@ -2214,9 +2793,16 @@ A **schema** is the **overall structure or design** of the database. It defines 
 - The DBMS provides **DDL (Data Definition Language)** to define the logical schema
 - The **physical schema is hidden** behind the logical schema — it can be changed (e.g., adding an index, changing storage engine) without affecting application programs
 
+</details>
+
+</details>
+
 ---
 
 ## Sub-Schema (External Schema / View)
+
+<details>
+<summary>Show answer</summary>
 
 A **sub-schema** is a **subset of the schema** — it defines what portion of the database a specific user or application can see.
 
@@ -2229,9 +2815,14 @@ A **sub-schema** is a **subset of the schema** — it defines what portion of th
 - The HR app can see salary and SSN, but the manager app cannot
 - This provides **security** (hide sensitive data) and **simplicity** (show only relevant data)
 
+</details>
+
 ---
 
 ## Three-Schema Architecture (ANSI/SPARC)
+
+<details>
+<summary>Show answer</summary>
 
 The three ideas above (the physical schema, the logical schema and sub-schemas) are the three **levels** of the classic **three-schema architecture** (ANSI/SPARC, 1975). Its goal is to separate *how users see data* from *how it's logically organised* from *how it's physically stored*, so that a change at one level doesn't ripple into the others.
 
@@ -2250,9 +2841,14 @@ Between the levels sit two **mappings**, maintained by the DBMS:
 
 Users and applications only ever talk to the **external** (or conceptual) level. The mappings are what let the lower levels change underneath them.
 
+</details>
+
 ---
 
 ## Data Independence — Logical vs Physical
+
+<details>
+<summary>Open section</summary>
 
 **Data independence** = you can change the schema at one level **without having to change the level above it** (and so without rewriting applications). It comes in two kinds:
 
@@ -2293,6 +2889,9 @@ Every `SELECT … FROM employees` keeps working. (Writes through a join view are
 
 ### Quick Summary
 
+<details>
+<summary>Show answer</summary>
+
 | Concept | What It Is | Analogy |
 |---------|-----------|---------|
 | **Instance** | Snapshot of data at a moment in time | A photo of the building right now |
@@ -2301,12 +2900,24 @@ Every `SELECT … FROM employees` keeps working. (Writes through a join view are
 | **Three-schema architecture** | External views → conceptual schema → internal storage, linked by mappings | Windows → floor plan → bricks and plumbing |
 | **Data independence** | Changing one level without breaking the level above | Rewiring the walls without changing the floor plan (physical), or changing the floor plan while keeping the windows (logical) |
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # Referential Integrity & Foreign Key Actions (ON DELETE / ON UPDATE)
 
+<details>
+<summary>Open section</summary>
+
 ## What Is Referential Integrity?
+
+<details>
+<summary>Open section</summary>
 
 🔗 [Tutorialspoint — Referential Integrity Rule in RDBMS](https://www.tutorialspoint.com/Referential-Integrity-Rule-in-RDBMS)
 
@@ -2319,6 +2930,9 @@ In simple words — you can't reference something that doesn't exist.
 
 ### The Two Tables Involved
 
+<details>
+<summary>Show answer</summary>
+
 Every referential integrity constraint involves two tables:
 
 | Term | Role |
@@ -2326,9 +2940,16 @@ Every referential integrity constraint involves two tables:
 | **Parent table** (Referenced table) | Contains the **primary key** being referenced |
 | **Child table** (Referencing table) | Contains the **foreign key** that points to the parent |
 
+</details>
+
+</details>
+
 ---
 
 ## Example — Departments & Employees
+
+<details>
+<summary>Open section</summary>
 
 This one example is used throughout the section. `employees.dept_id` → `departments.dept_id`. Departments is the **parent**, employees is the **child**.
 
@@ -2350,13 +2971,21 @@ CREATE TABLE employees (
 
 ### Parent Table: `departments`
 
+<details>
+<summary>Show answer</summary>
+
 | dept_id (PK) | dept_name |
 |:---:|:---:|
 | 10 | Engineering |
 | 20 | Marketing |
 | 30 | HR |
 
+</details>
+
 ### Child Table: `employees`
+
+<details>
+<summary>Show answer</summary>
 
 | emp_id (PK) | emp_name | dept_id (FK) |
 |:---:|:---:|:---:|
@@ -2376,11 +3005,21 @@ Let's walk through each row:
 
 ![employees rows Alice, Bob and Carol point to existing departments 10, 20 and 30; Eve's dept_id 50 has no parent row: referential integrity violation](../svg/dbms/d023-referential-integrity-violation.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## What Operations Can Violate Referential Integrity?
 
+<details>
+<summary>Open section</summary>
+
 ### On the Child Table (employees)
+
+<details>
+<summary>Show answer</summary>
 
 | Operation | Violation? | Example |
 |-----------|-----------|---------|
@@ -2389,7 +3028,12 @@ Let's walk through each row:
 
 Child-side violations are **always rejected** — no referential action can change that.
 
+</details>
+
 ### On the Parent Table (departments)
+
+<details>
+<summary>Show answer</summary>
 
 | Operation | Violation? | Example |
 |-----------|-----------|---------|
@@ -2398,9 +3042,16 @@ Child-side violations are **always rejected** — no referential action can chan
 
 Parent-side operations raise the question: *"What should happen to child rows when their referenced parent row is deleted or updated?"* Foreign key **referential actions** answer this question.
 
+</details>
+
+</details>
+
 ---
 
 ## All 5 Referential Actions
+
+<details>
+<summary>Open section</summary>
 
 When defining a foreign key, you specify what should happen if the parent row is deleted (`ON DELETE`) or its key is updated (`ON UPDATE`). The two clauses are independent, so you can mix them:
 
@@ -2411,6 +3062,9 @@ FOREIGN KEY (dept_id) REFERENCES departments(dept_id)
 ```
 
 ### 1. `CASCADE` — Propagate the change to children
+
+<details>
+<summary>Show answer</summary>
 
 **`ON DELETE CASCADE`** — When a parent row is deleted, **automatically delete all child rows** that reference it.
 
@@ -2441,7 +3095,12 @@ UPDATE departments SET dept_id = 99 WHERE dept_id = 10;
 -- ✅ All employees with dept_id = 10 (Alice) are automatically changed to dept_id = 99
 ```
 
+</details>
+
 ### 2. `SET NULL` — Set child FK to NULL
+
+<details>
+<summary>Show answer</summary>
 
 **`ON DELETE SET NULL`** — When the parent is deleted, set the FK column in child rows to `NULL`.
 
@@ -2467,7 +3126,12 @@ DELETE FROM departments WHERE dept_id = 10;
 
 **Use case:** The employee still exists but is temporarily unassigned to a department (just like Dave above).
 
+</details>
+
 ### 3. `RESTRICT` — Block the operation
+
+<details>
+<summary>Show answer</summary>
 
 **`ON DELETE RESTRICT`** — If any child rows reference the parent, **refuse to delete** the parent. Throws an error immediately.
 
@@ -2481,23 +3145,40 @@ DELETE FROM departments WHERE dept_id = 10;
 
 You must manually delete or reassign all employees first, then delete the department. `ON UPDATE RESTRICT` likewise blocks changing a referenced parent key.
 
+</details>
+
 ### 4. `NO ACTION` — The default; same as RESTRICT in MySQL
+
+<details>
+<summary>Show answer</summary>
 
 If you don't specify any action, the default is **`NO ACTION`**. In MySQL, `NO ACTION` behaves **identically** to `RESTRICT`. Both block the operation if child rows exist — so in practice, **blocking is the default behavior**.
 
 > [!NOTE]
 > In some other databases (PostgreSQL), `RESTRICT` checks immediately, while `NO ACTION` checks at the **end of the statement** — and, if the constraint is declared `DEFERRABLE`, can be deferred to the **end of the transaction**. MySQL doesn't support deferred checks, so they're the same.
 
+</details>
+
 ### 5. `SET DEFAULT` — Set FK to its default value
+
+<details>
+<summary>Show answer</summary>
 
 **`ON DELETE SET DEFAULT`** — Sets the child FK to its column default value when the parent is deleted (`ON UPDATE SET DEFAULT` does the same on a key change).
 
 > [!WARNING]
 > **InnoDB does NOT support `SET DEFAULT`**. MySQL parses it but will throw an error if you try to use it with InnoDB. This exists mainly in the SQL standard and in other databases.
 
+</details>
+
+</details>
+
 ---
 
 ## Side-by-Side Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | Action | On Parent DELETE | On Parent UPDATE | When to Use |
 |---|---|---|---|
@@ -2507,11 +3188,19 @@ If you don't specify any action, the default is **`NO ACTION`**. In MySQL, `NO A
 | **`NO ACTION`** (default) | ❌ Block — same as RESTRICT in MySQL | ❌ Block — same as RESTRICT in MySQL | Same as above |
 | **`SET DEFAULT`** | Set FK to its default value | Set FK to its default value | ❌ Not supported in InnoDB |
 
+</details>
+
 ---
 
 ## Real-World Examples
 
+<details>
+<summary>Open section</summary>
+
 ### E-Commerce — `CASCADE` makes sense
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE orders (
@@ -2532,7 +3221,12 @@ CREATE TABLE order_items (
 
 **Why CASCADE?** An order item has **no meaning** without its order. If the order is deleted, keeping orphaned items makes no sense.
 
+</details>
+
 ### HR System — `SET NULL` makes sense
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE managers (
@@ -2551,7 +3245,12 @@ CREATE TABLE employees (
 
 **Why SET NULL?** Employees don't get fired when their manager leaves. They just temporarily have no manager.
 
+</details>
+
 ### Banking — `RESTRICT` makes sense
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE accounts (
@@ -2570,13 +3269,23 @@ CREATE TABLE transactions (
 
 **Why RESTRICT?** Financial records must never be silently deleted. You must explicitly handle or archive transactions before closing an account.
 
+</details>
+
+</details>
+
 ---
 
 ## What Happens If You Don't Use FK Constraints?
 
+<details>
+<summary>Open section</summary>
+
 If you define a foreign key but don't specify `ON DELETE` / `ON UPDATE`, MySQL defaults to **`NO ACTION`** (which behaves as `RESTRICT`). But if you skip defining foreign keys entirely, things get worse:
 
 ### Problem 1: Orphaned rows (silent data corruption)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- No FK defined — just a plain column
@@ -2592,7 +3301,12 @@ DELETE FROM orders WHERE id = 42;
 -- JOINs return nothing, reports are wrong, data is silently broken
 ```
 
+</details>
+
 ### Problem 2: Manual cleanup everywhere
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Without CASCADE, deleting an order requires multiple steps:
@@ -2605,7 +3319,12 @@ DELETE FROM orders WHERE id = 42;               -- Step 4: FINALLY the parent
 DELETE FROM orders WHERE id = 42;               -- Done. Everything cleaned up.
 ```
 
+</details>
+
 ### Problem 3: Application-level enforcement is fragile
+
+<details>
+<summary>Show answer</summary>
 
 ```java
 // ❌ Fragile — what if someone runs raw SQL or a migration script?
@@ -2619,9 +3338,16 @@ public void deleteOrder(Long orderId) {
 
 Anyone who bypasses your application (raw SQL, a DBA, another microservice) can break the data. **Database-level FK constraints are the last line of defense.**
 
+</details>
+
+</details>
+
 ---
 
 ## Do FK Actions Fix Anomalies?
+
+<details>
+<summary>Show answer</summary>
 
 **No.** They solve a **different problem** (see [Database Anomalies](#database-anomalies)):
 
@@ -2632,11 +3358,19 @@ Anyone who bypasses your application (raw SQL, a DBA, another microservice) can 
 
 **Normalization** creates the proper multi-table structure (fixing anomalies). **FK actions** then protect that structure from breaking. They're **complementary** — normalization solves the design problem, FK constraints solve the integrity problem.
 
+</details>
+
 ---
 
 ## Summary & Quick Decision Guide
 
+<details>
+<summary>Open section</summary>
+
 ### Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Rule | Description |
 |------|-------------|
@@ -2645,7 +3379,12 @@ Anyone who bypasses your application (raw SQL, a DBA, another microservice) can 
 | **Enforced by** | `FOREIGN KEY` constraint in table definition |
 | **Violation handling** | `CASCADE`, `SET NULL`, `SET DEFAULT`, `RESTRICT`, or `NO ACTION` (default) |
 
+</details>
+
 ### Quick Decision Guide
+
+<details>
+<summary>Show answer</summary>
 
 | Relationship | Recommended Action | Reason |
 |---|---|---|
@@ -2663,10 +3402,19 @@ Anyone who bypasses your application (raw SQL, a DBA, another microservice) can 
 > [!TIP]
 > **Interview tip:** Referential integrity is one of the two key integrity rules in RDBMS. The other is **Entity Integrity** — which states that the primary key can never be NULL. Together they ensure the database remains consistent and meaningful.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # Three Relationship Types in ER Modeling
+
+<details>
+<summary>Open section</summary>
 
 Entity-Relationship (ER) diagrams model how entities relate to each other. In practice, almost every design choice — keys, foreign keys, junction tables — follows from the **type of relationship** and whether participation is optional or mandatory.
 
@@ -2676,9 +3424,15 @@ Entity-Relationship (ER) diagrams model how entities relate to each other. In pr
 
 ## The Three Canonical Types
 
+<details>
+<summary>Open section</summary>
+
 ![Three ER relationship types: 1:1 one A to one B, 1:N one A to many B, M:N many A to many B](../svg/dbms/d024-er-relationship-types.svg)
 
 ### 1. One-to-One (1:1)
+
+<details>
+<summary>Show answer</summary>
 
 One instance of A relates to **at most one** instance of B, and vice versa.
 
@@ -2705,9 +3459,14 @@ CREATE TABLE passport (
 > - **Sparsity** — only some rows need the extra columns (avoid NULLs)
 > - **Lifecycle** — entities are created/deleted at different times
 
+</details>
+
 ---
 
 ### 2. One-to-Many (1:N)
+
+<details>
+<summary>Open section</summary>
 
 One instance of A relates to **zero or many** instances of B. Each instance of B relates to **at most one** A.
 
@@ -2732,6 +3491,9 @@ CREATE TABLE employee (
 
 #### Many-to-One (N:1) — Just the Inverse View
 
+<details>
+<summary>Show answer</summary>
+
 N:1 is the same relationship as 1:N, just viewed from the other direction:
 
 | Viewpoint | Description |
@@ -2741,9 +3503,16 @@ N:1 is the same relationship as 1:N, just viewed from the other direction:
 
 Same table design, same FK — just a different perspective.
 
+</details>
+
+</details>
+
 ---
 
 ### 3. Many-to-Many (M:N)
+
+<details>
+<summary>Show answer</summary>
 
 One instance of A relates to **zero or many** instances of B, **and** one instance of B relates to **zero or many** instances of A.
 
@@ -2779,13 +3548,23 @@ CREATE TABLE enrollment (
 > [!IMPORTANT]
 > **Key design choice:** Use a composite primary key `(student_id, course_id)` to enforce that a student can't enroll in the same course twice. Alternatively, use a surrogate key and add a UNIQUE constraint on the pair. Store **relationship attributes** (grade, enrollment date) in this junction table — they don't belong to either Student or Course alone.
 
+</details>
+
+</details>
+
 ---
 
 ## Cardinality & Participation (Constraints)
 
+<details>
+<summary>Open section</summary>
+
 When documenting a relationship, specify **two things**:
 
 ### 1. Cardinality Ratio — "How many?"
+
+<details>
+<summary>Show answer</summary>
 
 | Ratio | Meaning |
 |-------|---------|
@@ -2794,7 +3573,12 @@ When documenting a relationship, specify **two things**:
 | N:1 | Many A → one B |
 | M:N | Many A → many B |
 
+</details>
+
 ### 2. Participation — "Must or may?"
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Meaning | Symbol |
 |------|---------|--------|
@@ -2807,9 +3591,16 @@ When documenting a relationship, specify **two things**:
 - **Mandatory participation** → use `NOT NULL` on the FK
 - **Optional participation** → allow `NULL` on the FK
 
+</details>
+
+</details>
+
 ---
 
 ## Notation Cheat Sheet
+
+<details>
+<summary>Show answer</summary>
 
 | Concept | Chen Notation | Crow's Foot | UML |
 |---------|:---:|:---:|:---:|
@@ -2821,9 +3612,14 @@ When documenting a relationship, specify **two things**:
 > [!NOTE]
 > **FAQ:** `1..*` (UML) and `1:N` (ER) both mean one-to-many. UML makes optionality explicit via the lower bound (e.g., `0..*` = optional-many vs `1..*` = mandatory-many).
 
+</details>
+
 ---
 
 ## Relational Implementation Patterns — Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Relationship | Where to Put FK | Key Constraints | Notes |
 |:---:|---|---|---|
@@ -2831,9 +3627,14 @@ When documenting a relationship, specify **two things**:
 | **1:1** | FK on either side with `UNIQUE` constraint | Or share the PK across both tables | Choose based on ownership/optionality |
 | **M:N** | Create a junction table with two FKs | Composite PK `(A_id, B_id)` or surrogate key + UNIQUE | Store relationship attributes here |
 
+</details>
+
 ---
 
 ## Everyday Examples
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Example | Implementation |
 |:---:|---------|----------------|
@@ -2844,10 +3645,17 @@ When documenting a relationship, specify **two things**:
 > [!NOTE]
 > **In real systems**, 1:N and M:N dominate. True 1:1 is rarer and usually modeled for lifecycle, security, or sparsity reasons.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Keys in DBMS
+
+<details>
+<summary>Open section</summary>
 
 Keys are attributes (or sets of attributes) used to **uniquely identify rows**, **establish relationships** between tables, and **enforce data integrity**. Understanding keys is fundamental — they drive every table design decision.
 
@@ -2856,6 +3664,9 @@ Keys are attributes (or sets of attributes) used to **uniquely identify rows**, 
 We'll use this single table throughout to explain every key type:
 
 ### `students` Table
+
+<details>
+<summary>Show answer</summary>
 
 | roll_no | name | email | phone | dept |
 |:---:|:---:|:---:|:---:|:---:|
@@ -2867,15 +3678,25 @@ We'll use this single table throughout to explain every key type:
 > [!NOTE]
 > In this table, `roll_no`, `email`, and `phone` are all unique for each student. `name` and `dept` can repeat.
 
+</details>
+
 ---
 
 ## Key Hierarchy — How They Relate
 
+<details>
+<summary>Show answer</summary>
+
 ![Key hierarchy: super keys, minimised to candidate keys, then one picked as primary key and the rest become alternate keys](../svg/dbms/d030-key-hierarchy.svg)
+
+</details>
 
 ---
 
 ## 1. Super Key
+
+<details>
+<summary>Open section</summary>
 
 A **super key** is any set of one or more columns that can **uniquely identify every row** in a table. It may contain extra (redundant) columns.
 
@@ -2883,6 +3704,9 @@ A **super key** is any set of one or more columns that can **uniquely identify e
 > **Think of it as:** "Any combination that is enough to uniquely find a student — even if you're using more columns than necessary."
 
 ### Super Keys for `students`:
+
+<details>
+<summary>Show answer</summary>
 
 | Super Key | Unique? | Minimal? |
 |-----------|:---:|:---:|
@@ -2899,9 +3723,16 @@ A **super key** is any set of one or more columns that can **uniquely identify e
 > [!IMPORTANT]
 > **Key point:** Every candidate key is a super key, but NOT every super key is a candidate key. Super keys can have unnecessary extra columns.
 
+</details>
+
+</details>
+
 ---
 
 ## 2. Candidate Key
+
+<details>
+<summary>Open section</summary>
 
 A **candidate key** is a **minimal super key** — it uniquely identifies rows, and removing any column from it would break uniqueness.
 
@@ -2909,6 +3740,9 @@ A **candidate key** is a **minimal super key** — it uniquely identifies rows, 
 > **Think of it as:** "The leanest possible set of columns that still guarantees uniqueness."
 
 ### Candidate Keys for `students`:
+
+<details>
+<summary>Show answer</summary>
 
 | Candidate Key | Why it's minimal |
 |:---:|---|
@@ -2921,13 +3755,24 @@ A **candidate key** is a **minimal super key** — it uniquely identifies rows, 
 > [!TIP]
 > **Interview note:** A table can have multiple candidate keys — they are all "candidates" to become the primary key.
 
+</details>
+
+</details>
+
 ---
 
 ## 3. Primary Key
 
+<details>
+<summary>Open section</summary>
+
 The **primary key** is the **one candidate key chosen** by the designer to be the main identifier for the table.
 
 ### Rules for Primary Key:
+
+<details>
+<summary>Show answer</summary>
+
 | Rule | Explanation |
 |------|-------------|
 | **Unique** | No two rows can have the same PK value |
@@ -2935,7 +3780,12 @@ The **primary key** is the **one candidate key chosen** by the designer to be th
 | **One per table** | Only one primary key allowed per table |
 | **Immutable** (best practice) | Should rarely change once set |
 
+</details>
+
 ### Choosing the Primary Key for `students`:
+
+<details>
+<summary>Show answer</summary>
 
 We have three candidate keys: `{roll_no}`, `{email}`, `{phone}`. Let's compare:
 
@@ -2955,7 +3805,12 @@ CREATE TABLE students (
 );
 ```
 
+</details>
+
 ### Composite Primary Key
+
+<details>
+<summary>Show answer</summary>
 
 Sometimes a single column isn't enough. A **composite PK** uses multiple columns together:
 
@@ -2973,14 +3828,23 @@ Neither `student_id` alone nor `course_id` alone is unique. But `{student_id, co
 PRIMARY KEY (student_id, course_id)
 ```
 
+</details>
 
 ### Why UUID is Not Preferred as Primary Key
 
+<details>
+<summary>Show answer</summary>
+
 A random UUID is wide and non-sequential, which hurts a clustered index. The full breakdown is in [UUID vs Auto-Increment Integer as Primary Key](#uuid-vs-auto-increment-integer-as-primary-key).
+
+</details>
 
 ---
 
 ### ❓ Is Declaring a PRIMARY KEY Mandatory in MySQL?
+
+<details>
+<summary>Open section</summary>
 
 **Technically no. Practically, always yes.**
 
@@ -2991,6 +3855,9 @@ CREATE TABLE logs (message VARCHAR(255));   -- perfectly legal, MySQL accepts it
 But InnoDB builds a clustered index **anyway** — it falls back to a hidden `GEN_CLUST_INDEX` (see [the fallback chain](#-does-declaring-a-key-in-mysql-automatically-create-an-index)). So skipping the PK doesn't avoid the cost. It just means you don't get to choose it, and you can never reference what it built.
 
 #### What Actually Goes Wrong
+
+<details>
+<summary>Show answer</summary>
 
 **1. Replication falls over** — this is the big one
 
@@ -3010,7 +3877,12 @@ Every secondary index appends the clustered key ([see #3 below](#three-things-wo
 
 `pt-online-schema-change`, `gh-ost`, Vitess, Debezium/CDC pipelines, and most ORMs all require a primary or unique key. You find this out the day you need an online schema change on a 500M-row table.
 
+</details>
+
 #### MySQL Ships Two Switches for This
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- 8.0.13+ : reject any CREATE TABLE that has no primary key
@@ -3022,11 +3894,21 @@ SET GLOBAL sql_generate_invisible_primary_key = ON;
 
 Managed platforms (PlanetScale, Vitess, many RDS setups) commonly force `sql_require_primary_key = ON`.
 
+</details>
+
 #### The Nuance
+
+<details>
+<summary>Show answer</summary>
 
 If you declared a `UNIQUE NOT NULL` column, InnoDB promotes the first one to clustered index and you're *mostly* fine — but declare it as `PRIMARY KEY` explicitly anyway, so the intent is visible and the tooling recognizes it.
 
+</details>
+
 #### The Default That's Always Right
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY
@@ -3037,13 +3919,25 @@ id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY
 > [!NOTE]
 > **Only real exception:** throwaway staging/scratch tables that get truncated wholesale and are never replicated. Even there, adding a PK costs nothing.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 
 ## 4. Alternate Key
 
+<details>
+<summary>Open section</summary>
+
 An **alternate key** is any candidate key that was **NOT chosen** as the primary key. They're the "runner-up" identifiers.
 
 ### Alternate Keys for `students`:
+
+<details>
+<summary>Show answer</summary>
 
 | Key | Role |
 |:---:|---|
@@ -3058,13 +3952,23 @@ An **alternate key** is any candidate key that was **NOT chosen** as the primary
 
 How a `PRIMARY KEY` and a `UNIQUE` key differ (NULLs, count per table, index type) is compared head-to-head in [Primary Key vs Unique Key](#primary-key-vs-unique-key).
 
+</details>
+
+</details>
+
 ---
 
 ## 5. Foreign Key
 
+<details>
+<summary>Open section</summary>
+
 A **foreign key** is a column (or set of columns) in one table that **references the primary key of another table**. It creates a link between two tables.
 
 ### Example — `students` and `departments`
+
+<details>
+<summary>Show answer</summary>
 
 **`departments` (Parent table):**
 
@@ -3085,7 +3989,12 @@ A **foreign key** is a column (or set of columns) in one table that **references
 
 ![Foreign key: students.dept rows point to departments.dept_id (Alice, Carol to CSE; Bob to ECE; Dave to ME)](../svg/dbms/d033-foreign-key-students-departments.svg)
 
+</details>
+
 ### Foreign Key Properties:
+
+<details>
+<summary>Show answer</summary>
 
 | Property | Description |
 |----------|-------------|
@@ -3105,9 +4014,16 @@ CREATE TABLE students (
 
 What the database does when a referenced parent row is deleted or updated (`CASCADE`, `SET NULL`, `RESTRICT`, …) is covered in [Referential Integrity & Foreign Key Actions](#referential-integrity--foreign-key-actions-on-delete--on-update).
 
+</details>
+
+</details>
+
 ---
 
 ## 6. Secondary Key (Search Key)
+
+<details>
+<summary>Open section</summary>
 
 A **secondary key** is any column used frequently for **searching or looking up** data, but which is NOT the primary key. It doesn't need to be unique.
 
@@ -3115,6 +4031,9 @@ A **secondary key** is any column used frequently for **searching or looking up*
 > **Think of it as:** "Not the official ID, but a column you search by often — so you index it for speed."
 
 ### Secondary Keys for `students`:
+
+<details>
+<summary>Show answer</summary>
 
 | Column | PK? | Often searched? | Secondary Key? |
 |:---:|:---:|:---:|:---:|
@@ -3134,9 +4053,16 @@ CREATE INDEX idx_student_dept ON students(dept);
 > [!IMPORTANT]
 > **Key distinction:** Primary/candidate/alternate keys are about **uniqueness and identity**. Secondary keys are about **query performance** — any column you search on frequently.
 
+</details>
+
+</details>
+
 ---
 
 ## Complete Summary — All Keys at a Glance
+
+<details>
+<summary>Open section</summary>
 
 | Key Type | Definition | Unique? | NULL allowed? | Example from `students` |
 |----------|-----------|:---:|:---:|:---:|
@@ -3149,14 +4075,24 @@ CREATE INDEX idx_student_dept ON students(dept);
 
 ### The Relationship Chain
 
+<details>
+<summary>Show answer</summary>
+
 ![Key chain: Super Key contains Candidate Key = Primary Key + Alternate Key(s); Primary Key is referenced by a Foreign Key; Secondary Key is orthogonal](../svg/dbms/d034-key-relationship-chain.svg)
 
 > [!TIP]
 > **Interview tip:** The most common question is "What's the difference between a candidate key and a primary key?" Answer: *All* candidate keys are eligible to be the PK. The designer picks ONE → that becomes the PK. The rest become alternate keys.
 
+</details>
+
+</details>
+
 ---
 
 ## ❓ Does Declaring a KEY in MySQL Automatically Create an Index?
+
+<details>
+<summary>Open section</summary>
 
 **Yes — for `PRIMARY KEY`, `UNIQUE`, and `FOREIGN KEY`. Not for anything else.**
 
@@ -3171,6 +4107,9 @@ So "key" inside `CREATE TABLE` *is* an index declaration — there's nothing to 
 
 ### What Creates an Index vs What Doesn't
 
+<details>
+<summary>Show answer</summary>
+
 | Declaration | Index? | What you actually get |
 |---|:---:|---|
 | `PRIMARY KEY` | ✅ | The **clustered index** in InnoDB — not a separate structure. The table *is* the index, physically stored in PK order |
@@ -3181,7 +4120,12 @@ So "key" inside `CREATE TABLE` *is* an index declaration — there's nothing to 
 | `NOT NULL`, `DEFAULT` | ❌ | Column attributes, no structure |
 | A plain column | ❌ | Nothing |
 
+</details>
+
 ### See It Yourself
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE students (
@@ -3213,7 +4157,12 @@ SHOW INDEX FROM students;
 
 Note what's **missing**: `name`. The summary table above calls it a *secondary key*, but that's relational-theory vocabulary — MySQL creates nothing for it. If you want `WHERE name = ?` to be fast, you must declare `INDEX(name)` yourself.
 
+</details>
+
 ### Three Things Worth Knowing
+
+<details>
+<summary>Show answer</summary>
 
 **1. No `PRIMARY KEY` declared? InnoDB builds one anyway.**
 
@@ -3230,10 +4179,19 @@ This is exactly why `SELECT id FROM products ORDER BY price, id` shows `Using in
 > [!TIP]
 > **Interview tip:** "Is a key the same as an index?" — **No.** A *key* is a logical constraint (this identifies a row / this must be unique / this references another table). An *index* is a physical B+ Tree structure. MySQL happens to implement most key constraints *using* an index, which is why they're conflated — but you can have an index with no constraint (`INDEX(name)`), and in relational theory a key with no index (`name` as a secondary key).
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # SQL Joins (INNER, LEFT, RIGHT, FULL, CROSS, SELF & NATURAL)
+
+<details>
+<summary>Open section</summary>
 
 SQL Joins combine rows from two or more tables based on a related column. Without joins, your data would be trapped in isolated tables — joins are how you **reconnect** it.
 
@@ -3241,7 +4199,13 @@ SQL Joins combine rows from two or more tables based on a related column. Withou
 
 ## Sample Data (Used Throughout)
 
+<details>
+<summary>Open section</summary>
+
 ### `Student` Table
+
+<details>
+<summary>Show answer</summary>
 
 | ROLL_NO | NAME | AGE | DEPT |
 |:---:|:---:|:---:|:---:|
@@ -3250,7 +4214,12 @@ SQL Joins combine rows from two or more tables based on a related column. Withou
 | 3 | Carol | 20 | CSE |
 | 4 | Dave | 22 | ME |
 
+</details>
+
 ### `StudentCourse` Table
+
+<details>
+<summary>Show answer</summary>
 
 | COURSE_ID | ROLL_NO |
 |:---:|:---:|
@@ -3262,15 +4231,27 @@ SQL Joins combine rows from two or more tables based on a related column. Withou
 > [!NOTE]
 > Notice: `ROLL_NO = 5` in `StudentCourse` doesn't exist in `Student` (orphan). `ROLL_NO = 3, 4` in `Student` have no courses.
 
+</details>
+
+</details>
+
 ---
 
 ## Join Types — Visual Overview
 
+<details>
+<summary>Show answer</summary>
+
 ![Venn diagrams for INNER, LEFT, RIGHT and FULL JOIN](../svg/dbms/d037-join-types-venn.svg)
+
+</details>
 
 ---
 
 ## 1. INNER JOIN
+
+<details>
+<summary>Show answer</summary>
 
 Returns **only rows that have matching values in both tables**. Non-matching rows from both sides are excluded.
 
@@ -3299,9 +4280,14 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 > [!NOTE]
 > Carol, Dave (no courses) and COURSE C104 (ROLL_NO 5 doesn't exist) are all excluded.
 
+</details>
+
 ---
 
 ## 2. LEFT JOIN (LEFT OUTER JOIN)
+
+<details>
+<summary>Show answer</summary>
 
 Returns **all rows from the left table**, plus matching rows from the right table. If no match exists, the right-side columns show **NULL**.
 
@@ -3332,9 +4318,14 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 > [!NOTE]
 > Every student appears — even those without courses. C104 (ROLL_NO=5) is NOT shown because ROLL_NO=5 is not in the left table.
 
+</details>
+
 ---
 
 ## 3. RIGHT JOIN (RIGHT OUTER JOIN)
+
+<details>
+<summary>Show answer</summary>
 
 Returns **all rows from the right table**, plus matching rows from the left table. If no match exists, the left-side columns show **NULL**.
 
@@ -3364,9 +4355,14 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 > [!NOTE]
 > Every course appears — even C104 where the student doesn't exist. Carol and Dave don't appear because they have no courses in the right table.
 
+</details>
+
 ---
 
 ## 4. FULL JOIN (FULL OUTER JOIN)
+
+<details>
+<summary>Show answer</summary>
 
 Returns **all rows from both tables**. Matches where possible, fills **NULL** where no match exists.
 
@@ -3395,9 +4391,14 @@ ON Student.ROLL_NO = StudentCourse.ROLL_NO;
 > [!NOTE]
 > Everything from both sides — nothing is lost. This is LEFT JOIN + RIGHT JOIN combined (with duplicates removed).
 
+</details>
+
 ---
 
 ## 5. CROSS JOIN (Cartesian Product)
+
+<details>
+<summary>Show answer</summary>
 
 Returns **every possible combination** of rows from both tables. No `ON` condition needed.
 
@@ -3419,13 +4420,21 @@ If Student has 4 rows and StudentCourse has 4 rows → result has **4 × 4 = 16 
 > [!WARNING]
 > **Use with caution** — CROSS JOINs can produce massive result sets. Rarely used in practice, but useful for generating combinations (e.g., all product-color pairs).
 
+</details>
+
 ---
 
 ## 6. SELF JOIN
 
+<details>
+<summary>Open section</summary>
+
 A table is joined **with itself**. Used when rows in a table have a relationship with other rows in the **same table**.
 
 ### Example — Employee & Manager
+
+<details>
+<summary>Show answer</summary>
 
 | emp_id | name | manager_id |
 |:---:|:---:|:---:|
@@ -3451,13 +4460,23 @@ LEFT JOIN employees m ON e.manager_id = m.emp_id;
 
 ![Org chart: Alice (CEO) manages Bob and Carol; Bob manages Dave](../svg/dbms/d042-self-join-org-hierarchy.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## 7. NATURAL JOIN
 
+<details>
+<summary>Open section</summary>
+
 Automatically joins tables on **all columns with the same name and data type**. No `ON` clause needed — it figures out the join column itself.
 
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 **`Employee` Table:**
 
@@ -3494,9 +4513,16 @@ The database sees `dept_id` exists in both tables → automatically joins on it.
 > [!WARNING]
 > **Warning:** NATURAL JOIN is convenient but **dangerous** — if tables share column names by coincidence (e.g., both have a `name` column), the join condition will be wrong. Prefer explicit `INNER JOIN ... ON` in production code.
 
+</details>
+
+</details>
+
 ---
 
 ## Quick Reference — All Joins at a Glance
+
+<details>
+<summary>Open section</summary>
 
 | Join Type | Returns | NULL Filling | Use Case |
 |-----------|---------|:---:|---------|
@@ -3510,6 +4536,9 @@ The database sees `dept_id` exists in both tables → automatically joins on it.
 
 ### When to Use Which?
 
+<details>
+<summary>Show answer</summary>
+
 ![Which join to use: only matches INNER, all left LEFT, all right RIGHT, both FULL, every combination CROSS, same table SELF](../svg/dbms/d043-when-to-use-which-join.svg)
 
 > [!TIP]
@@ -3522,10 +4551,19 @@ The database sees `dept_id` exists in both tables → automatically joins on it.
 > WHERE o.id IS NULL;  -- customers with NO orders
 > ```
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # SQL Views
+
+<details>
+<summary>Open section</summary>
 
 A **View** is a **virtual table** created from a `SELECT` query. It does NOT store data physically — it's just a saved query that behaves like a table. Every time you query a view, the underlying `SELECT` runs and fetches fresh data.
 
@@ -3536,6 +4574,9 @@ A **View** is a **virtual table** created from a `SELECT` query. It does NOT sto
 
 ### Why Use Views?
 
+<details>
+<summary>Show answer</summary>
+
 | Benefit | Explanation |
 |---------|-------------|
 | **Simplify complex queries** | Wrap a 20-line JOIN query into `SELECT * FROM MyView` |
@@ -3543,11 +4584,19 @@ A **View** is a **virtual table** created from a `SELECT` query. It does NOT sto
 | **Abstraction** | If table structure changes, update the view — applications don't need to change |
 | **Reusability** | Write the logic once, use it everywhere |
 
+</details>
+
 ---
 
 ## Sample Data
 
+<details>
+<summary>Open section</summary>
+
 ### `StudentDetails` Table
+
+<details>
+<summary>Show answer</summary>
 
 | S_ID | NAME | ADDRESS |
 |:---:|:---:|:---:|
@@ -3557,7 +4606,12 @@ A **View** is a **virtual table** created from a `SELECT` query. It does NOT sto
 | 4 | Dave | Kolkata |
 | 5 | Eve | Pune |
 
+</details>
+
 ### `StudentMarks` Table
+
+<details>
+<summary>Show answer</summary>
 
 | NAME | MARKS | AGE |
 |:---:|:---:|:---:|
@@ -3566,11 +4620,21 @@ A **View** is a **virtual table** created from a `SELECT` query. It does NOT sto
 | Carol | 78 | 20 |
 | Dave | 88 | 22 |
 
+</details>
+
+</details>
+
 ---
 
 ## 1. Creating Views
 
+<details>
+<summary>Open section</summary>
+
 ### Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE VIEW view_name AS
@@ -3579,7 +4643,12 @@ FROM table_name
 WHERE condition;
 ```
 
+</details>
+
 ### Example 1 — View from a Single Table
+
+<details>
+<summary>Show answer</summary>
 
 Create a view that shows only students with `S_ID < 5`:
 
@@ -3606,7 +4675,12 @@ SELECT * FROM DetailsView;
 > [!NOTE]
 > Eve is excluded because her `S_ID = 5` (not < 5).
 
+</details>
+
 ### Example 2 — View from Multiple Tables
+
+<details>
+<summary>Show answer</summary>
 
 Create a view that combines student details with their marks:
 
@@ -3633,11 +4707,21 @@ SELECT * FROM MarksView;
 > [!NOTE]
 > The view pulls from two tables and presents them as one — the user doesn't need to know about the underlying join.
 
+</details>
+
+</details>
+
 ---
 
 ## 2. Managing Views
 
+<details>
+<summary>Open section</summary>
+
 ### Listing All Views in a Database
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- MySQL
@@ -3649,7 +4733,12 @@ FROM information_schema.views
 WHERE table_schema = 'your_database_name';
 ```
 
+</details>
+
 ### Dropping (Deleting) a View
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 DROP VIEW MarksView;
@@ -3658,7 +4747,12 @@ DROP VIEW MarksView;
 > [!NOTE]
 > This only removes the view definition — the underlying tables and their data are **not affected**.
 
+</details>
+
 ### Updating a View Definition — `CREATE OR REPLACE`
+
+<details>
+<summary>Show answer</summary>
 
 If you want to change what a view shows without dropping and recreating it:
 
@@ -3679,11 +4773,21 @@ WHERE StudentDetails.NAME = StudentMarks.NAME;
 | Carol | Chennai | 78 | 20 |
 | Dave | Kolkata | 88 | 22 |
 
+</details>
+
+</details>
+
 ---
 
 ## 3. Modifying Data Through Views
 
+<details>
+<summary>Open section</summary>
+
 ### INSERT Through a View
+
+<details>
+<summary>Show answer</summary>
 
 You can insert data through a view — it actually inserts into the underlying table:
 
@@ -3694,7 +4798,12 @@ VALUES ('John', 'Berlin');
 
 The row is inserted into `StudentDetails`. When you query the view, it appears.
 
+</details>
+
 ### UPDATE Through a View
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 UPDATE DetailsView
@@ -3704,7 +4813,12 @@ WHERE NAME = 'Alice';
 
 This updates the `ADDRESS` in the underlying `StudentDetails` table.
 
+</details>
+
 ### DELETE Through a View
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 DELETE FROM DetailsView
@@ -3713,9 +4827,16 @@ WHERE NAME = 'John';
 
 The row is removed from the underlying `StudentDetails` table.
 
+</details>
+
+</details>
+
 ---
 
 ## 4. Rules for Updatable Views
+
+<details>
+<summary>Show answer</summary>
 
 > [!WARNING]
 > **Not all views are updatable.** A view can be updated (INSERT/UPDATE/DELETE) only if it meets ALL of these conditions:
@@ -3732,13 +4853,21 @@ The row is removed from the underlying `StudentDetails` table.
 
 ![Updatable view checklist: single table, no GROUP BY/HAVING, no DISTINCT, no aggregates; any failure means not updatable](../svg/dbms/d045-updatable-view-checklist.svg)
 
+</details>
+
 ---
 
 ## 5. WITH CHECK OPTION
 
+<details>
+<summary>Open section</summary>
+
 The `WITH CHECK OPTION` clause ensures that any `INSERT` or `UPDATE` through the view **must satisfy the view's WHERE condition**. If the new/updated row would fall outside the view's filter, the operation is **rejected**.
 
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE VIEW CSE_Students AS
@@ -3764,9 +4893,16 @@ VALUES (7, 'Grace', 'Mumbai');
 > [!NOTE]
 > **Why use it?** Without `WITH CHECK OPTION`, you could insert a row through a view that immediately "disappears" from that view because it doesn't match the `WHERE` clause. This is confusing and error-prone. The check option prevents this.
 
+</details>
+
+</details>
+
 ---
 
 ## 6. Views vs Tables — Quick Comparison
+
+<details>
+<summary>Open section</summary>
 
 | Aspect | Table | View |
 |--------|-------|------|
@@ -3778,6 +4914,9 @@ VALUES (7, 'Grace', 'Mumbai');
 | **Performance** | Direct access | May be slower (runs underlying query each time) |
 
 ### Materialized Views (Bonus)
+
+<details>
+<summary>Show answer</summary>
 
 Some databases (PostgreSQL, Oracle) support **materialized views** — these actually **store the query result** physically and need to be **refreshed** periodically:
 
@@ -3802,10 +4941,19 @@ REFRESH MATERIALIZED VIEW MatView;
 > [!TIP]
 > **Interview tip:** "What's the difference between a view and a materialized view?" is a common question. Regular views = virtual (no storage, always fresh). Materialized views = physical snapshot (fast reads, stale until refreshed).
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # SQL Triggers
+
+<details>
+<summary>Open section</summary>
 
 A **trigger** is a special stored procedure that **runs automatically** when an `INSERT`, `UPDATE`, or `DELETE` (or DDL) operation occurs on a table. You don't call a trigger — it fires on its own when the specified event happens.
 
@@ -3816,6 +4964,9 @@ A **trigger** is a special stored procedure that **runs automatically** when an 
 
 ### Why Use Triggers?
 
+<details>
+<summary>Show answer</summary>
+
 | Use Case | Example |
 |----------|---------|
 | **Audit logging** | Record who changed what and when |
@@ -3824,9 +4975,14 @@ A **trigger** is a special stored procedure that **runs automatically** when an 
 | **Enforce business rules** | Prevent deleting a customer with active orders |
 | **Auto-fill columns** | Set `updated_at = NOW()` on every update |
 
+</details>
+
 ---
 
 ## Trigger Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TRIGGER trigger_name
@@ -3848,9 +5004,14 @@ END;
 | `NEW` | Refers to the **new** row data (INSERT/UPDATE) |
 | `OLD` | Refers to the **old** row data (UPDATE/DELETE) |
 
+</details>
+
 ---
 
 ## BEFORE vs AFTER Triggers
+
+<details>
+<summary>Show answer</summary>
 
 | | BEFORE Trigger | AFTER Trigger |
 |--|---------------|---------------|
@@ -3860,13 +5021,21 @@ END;
 
 ![BEFORE trigger validates/modifies before the row is saved; AFTER trigger logs/cascades after the row is saved](../svg/dbms/d048-before-vs-after-trigger.svg)
 
+</details>
+
 ---
 
 ## Types of SQL Triggers
 
+<details>
+<summary>Open section</summary>
+
 ![Types of SQL triggers: DDL (CREATE/ALTER/DROP), DML (INSERT/UPDATE/DELETE), Logon (user login events)](../svg/dbms/d049-sql-trigger-types.svg)
 
 ### 1. DDL Triggers
+
+<details>
+<summary>Show answer</summary>
 
 Fire on **structure changes** — `CREATE`, `ALTER`, `DROP`.
 
@@ -3885,7 +5054,12 @@ END;
 > [!NOTE]
 > Useful for protecting production databases from accidental schema changes.
 
+</details>
+
 ### 2. DML Triggers
+
+<details>
+<summary>Show answer</summary>
 
 Fire on **data changes** — `INSERT`, `UPDATE`, `DELETE`. Most common type.
 
@@ -3901,7 +5075,12 @@ BEGIN
 END;
 ```
 
+</details>
+
 ### 3. Logon Triggers
+
+<details>
+<summary>Show answer</summary>
 
 Fire when a **user logs in**. Used for tracking logins, limiting sessions, or blocking access.
 
@@ -3915,11 +5094,21 @@ BEGIN
 END;
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Real-World Examples
 
+<details>
+<summary>Open section</summary>
+
 ### Example 1 — Auto-Update Timestamp
+
+<details>
+<summary>Show answer</summary>
 
 Automatically set `updated_at` whenever a user record is modified:
 
@@ -3950,7 +5139,12 @@ UPDATE users SET email = 'amit_new@example.com' WHERE id = 1;
 |:---:|:---:|:---:|:---:|
 | 1 | Amit | amit_new@example.com | 2026-03-04 01:58:00 |
 
+</details>
+
 ### Example 2 — Data Validation
+
+<details>
+<summary>Show answer</summary>
 
 Reject grades outside the valid range:
 
@@ -3971,7 +5165,12 @@ INSERT INTO student_grades VALUES (1, 85);   -- ✅ Works
 INSERT INTO student_grades VALUES (2, 150);  -- ❌ Rejected: "Invalid grade!"
 ```
 
+</details>
+
 ### Example 3 — Auto-Calculate Totals (AFTER INSERT)
+
+<details>
+<summary>Show answer</summary>
 
 Automatically compute total marks and percentage when student marks are inserted:
 
@@ -3988,7 +5187,12 @@ BEGIN
 END;
 ```
 
+</details>
+
 ### Example 4 — Audit Log
+
+<details>
+<summary>Show answer</summary>
 
 Track every change to the `employees` table:
 
@@ -4017,9 +5221,16 @@ END;
 |:---:|:---:|:---:|:---:|:---:|:---:|
 | 1 | 101 | UPDATE | 50000.00 | 55000.00 | 2026-03-04 02:00:00 |
 
+</details>
+
+</details>
+
 ---
 
 ## Viewing & Managing Triggers
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- List all triggers (SQL Server)
@@ -4037,9 +5248,14 @@ DROP TRIGGER trigger_name;
 DROP TRIGGER IF EXISTS trigger_name;
 ```
 
+</details>
+
 ---
 
 ## Trigger Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Details |
 |--------|---------|
@@ -4052,10 +5268,17 @@ DROP TRIGGER IF EXISTS trigger_name;
 
 > For how triggers compare with stored procedures and functions, see [Stored Procedure vs Function vs Trigger](#stored-procedure-vs-function-vs-trigger).
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Stored Procedures in SQL
+
+<details>
+<summary>Open section</summary>
 
 A **stored procedure** is a **precompiled set of SQL statements** saved in the database that you can call by name. Unlike triggers (which fire automatically), stored procedures are **invoked explicitly** by the user or application.
 
@@ -4066,6 +5289,9 @@ A **stored procedure** is a **precompiled set of SQL statements** saved in the d
 
 ### Why Use Stored Procedures?
 
+<details>
+<summary>Show answer</summary>
+
 | Benefit | Explanation |
 |---------|-------------|
 | **Performance** | Precompiled — no need to parse SQL every time |
@@ -4074,9 +5300,14 @@ A **stored procedure** is a **precompiled set of SQL statements** saved in the d
 | **Reduced network traffic** | One call instead of many queries |
 | **Maintainability** | Change logic in one place, all callers benefit |
 
+</details>
+
 ---
 
 ## Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Create
@@ -4092,11 +5323,19 @@ CALL procedure_name(value1, value2, ...);
 DROP PROCEDURE procedure_name;
 ```
 
+</details>
+
 ---
 
 ## Examples
 
+<details>
+<summary>Open section</summary>
+
 ### Example 1 — Simple Procedure (No Parameters)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE GetAllEmployees()
@@ -4108,7 +5347,12 @@ END;
 CALL GetAllEmployees();
 ```
 
+</details>
+
 ### Example 2 — Procedure with Input Parameters (IN)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE GetEmployeeByDept(IN dept_name VARCHAR(50))
@@ -4129,7 +5373,12 @@ CALL GetEmployeeByDept('Engineering');
 | 101 | Alice | 75000 |
 | 103 | Carol | 68000 |
 
+</details>
+
 ### Example 3 — Procedure with Output Parameters (OUT)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE CountEmployees(IN dept_name VARCHAR(50), OUT emp_count INT)
@@ -4144,7 +5393,12 @@ CALL CountEmployees('Engineering', @count);
 SELECT @count;   -- Returns: 2
 ```
 
+</details>
+
 ### Example 4 — Procedure with IN/OUT Parameter
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE ApplyRaise(INOUT salary DECIMAL(10,2), IN raise_pct DECIMAL(5,2))
@@ -4158,9 +5412,16 @@ CALL ApplyRaise(@sal, 10);    -- 10% raise
 SELECT @sal;                   -- Returns: 55000.00
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Parameter Types
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Direction | Description |
 |:---:|:---:|---|
@@ -4168,11 +5429,19 @@ SELECT @sal;                   -- Returns: 55000.00
 | `OUT` | Procedure → Caller | Output value returned to the caller |
 | `INOUT` | Both ways | Input that gets modified and returned |
 
+</details>
+
 ---
 
 ## Variables & Control Flow
 
+<details>
+<summary>Open section</summary>
+
 ### Variables
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE CalculateBonus(IN emp_id INT)
@@ -4187,7 +5456,12 @@ BEGIN
 END;
 ```
 
+</details>
+
 ### IF-ELSE
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE CheckGrade(IN marks INT, OUT result VARCHAR(10))
@@ -4204,7 +5478,12 @@ BEGIN
 END;
 ```
 
+</details>
+
 ### LOOP / WHILE
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE PROCEDURE InsertNumbers()
@@ -4217,9 +5496,16 @@ BEGIN
 END;
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Viewing & Managing Procedures
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- List all procedures (MySQL)
@@ -4232,9 +5518,14 @@ SHOW CREATE PROCEDURE procedure_name;
 DROP PROCEDURE IF EXISTS procedure_name;
 ```
 
+</details>
+
 ---
 
 ## Stored Procedure vs Function vs Trigger
+
+<details>
+<summary>Open section</summary>
 
 Now that both triggers and stored procedures are introduced, here is how they compare with each other (and with functions):
 
@@ -4251,6 +5542,9 @@ Now that both triggers and stored procedures are introduced, here is how they co
 | **Typical use case** | Reusable business logic, batch jobs, reporting | Calculations, transformations | Auditing, enforcing rules, keeping derived data in sync (auto-reactions to data changes) |
 
 ### Example — Auditing Salary Changes
+
+<details>
+<summary>Show answer</summary>
 
 The same audit requirement as [Example 4 — Audit Log](#example-4--audit-log), implemented both ways in MySQL to show the practical difference.
 
@@ -4307,19 +5601,34 @@ CALL update_salary(101, 75000);
 > [!TIP]
 > **Interview tip:** "What's the difference between a trigger and a stored procedure?" — A stored procedure is **called explicitly** by the user. A trigger **fires automatically** when an event occurs. You can't call a trigger manually.
 
+</details>
+
+</details>
+
 ---
 
 ## ❓ Why Do Most Companies Avoid Triggers & Stored Procedures and Keep Logic in the Application?
+
+<details>
+<summary>Open section</summary>
 
 Triggers and stored procedures are powerful — yet most modern product companies (especially at scale) deliberately keep business logic **in the application layer** instead. Here's why.
 
 ### 1. Invisible / Hidden Logic — "Spooky Action at a Distance"
 
+<details>
+<summary>Show answer</summary>
+
 A trigger runs **without appearing anywhere in your codebase**. A new developer reads the app code, sees a simple `UPDATE`, and has no idea that three other tables just changed.
 
 ![Hidden trigger logic: a simple UPDATE silently fires three triggers, one of which fires another trigger](../svg/dbms/d051-hidden-trigger-logic.svg)
 
+</details>
+
 ### 2. Not Version Controlled with the Code
+
+<details>
+<summary>Show answer</summary>
 
 This is arguably the biggest practical issue:
 
@@ -4334,17 +5643,32 @@ This is arguably the biggest practical issue:
 > [!NOTE]
 > Even *with* migration tooling, a DBA hotfixing a procedure directly in prod at 2 AM instantly desyncs the database from Git — and nobody finds out until something breaks.
 
+</details>
+
 ### 3. Testing Is Painful
+
+<details>
+<summary>Show answer</summary>
 
 ![Testing application logic (fast unit tests, mocks, debugger) vs testing triggers/procedures (real DB, slow integration tests, limited debugging)](../svg/dbms/d052-testing-app-logic-vs-triggers.svg)
 
+</details>
+
 ### 4. Poor Scalability — The Database Is the Hardest Thing to Scale
+
+<details>
+<summary>Show answer</summary>
 
 ![Application servers scale out cheaply; the database primary is usually one writer and only scales vertically](../svg/dbms/d053-app-scales-out-db-does-not.svg)
 
 CPU spent running procedures and triggers is CPU **stolen from query execution** on your most expensive, least scalable, hardest-to-replace tier. Application servers are cheap and horizontally scalable; the database primary is not.
 
+</details>
+
 ### 5. Vendor Lock-In
+
+<details>
+<summary>Show answer</summary>
 
 Stored procedure languages are **not portable** — each vendor has its own:
 
@@ -4357,7 +5681,12 @@ Stored procedure languages are **not portable** — each vendor has its own:
 
 Thousands of lines of PL/SQL make migrating off Oracle a multi-year project. Business logic in Java/Python/Go moves to any database.
 
+</details>
+
 ### 6. Weak Ecosystem & Developer Tooling
+
+<details>
+<summary>Show answer</summary>
 
 | Application Code | Stored Procedures |
 |---|---|
@@ -4367,7 +5696,12 @@ Thousands of lines of PL/SQL make migrating off Oracle a multi-year project. Bus
 | Easy calls to external services/APIs | Effectively impossible |
 | Deep talent pool | Shrinking pool of specialists |
 
+</details>
+
 ### 7. Hidden Performance & Correctness Traps
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Looks harmless: one statement
@@ -4382,9 +5716,14 @@ DELETE FROM orders WHERE order_date < '2020-01-01';   -- 5 million rows
 
 Other traps: **cascading triggers** (trigger A fires trigger B fires trigger C), triggers silently breaking bulk imports, and trigger failures **rolling back the entire parent transaction** in ways callers never anticipated.
 
+</details>
+
 ---
 
 ### So When ARE They Still the Right Choice?
+
+<details>
+<summary>Show answer</summary>
 
 They're a tool, not an anti-pattern — the argument is about *default placement* of business logic, not a ban.
 
@@ -4397,7 +5736,12 @@ They're a tool, not an anti-pattern — the argument is about *default placement
 | **Heavy data-local batch work** | Bulk aggregations where shipping millions of rows to the app is far slower |
 | **Compliance requirements** | Regulators may require DB-level enforcement, not app-level trust |
 
+</details>
+
 ### The Modern Consensus
+
+<details>
+<summary>Show answer</summary>
 
 ![Keep constraints, indexes, transactions and occasional audit triggers in the database; keep business rules, validation, orchestration and changing logic in the application](../svg/dbms/d054-database-vs-application-responsibilities.svg)
 
@@ -4410,10 +5754,19 @@ They're a tool, not an anti-pattern — the argument is about *default placement
 > [!TIP]
 > **Interview tip:** "When would you use a stored procedure vs writing SQL in the application?" — Use stored procedures when the logic is database-centric (complex joins, calculations on large datasets, security-sensitive operations). Keep business logic in the app when it involves external services, complex workflows, or needs to be testable outside the database.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # Primary Key vs Unique Key
+
+<details>
+<summary>Open section</summary>
 
 Both Primary Key and Unique Key enforce **uniqueness**, but they serve different purposes and have different rules. This is one of the most frequently asked interview questions.
 
@@ -4422,6 +5775,9 @@ For the definitions, see [3. Primary Key](#3-primary-key) and [4. Alternate Key]
 ---
 
 ## Side-by-Side Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Primary Key | Unique Key |
 |--------|:---:|:---:|
@@ -4433,9 +5789,14 @@ For the definitions, see [3. Primary Key](#3-primary-key) and [4. Alternate Key]
 | **Auto NOT NULL?** | ✅ Automatically adds NOT NULL | ❌ Must specify NOT NULL explicitly |
 | **Duplicate values?** | ❌ Never | ❌ Never (except multiple NULLs, where the RDBMS allows them) |
 
+</details>
+
 ---
 
 ## Example
+
+<details>
+<summary>Open section</summary>
 
 ```sql
 CREATE TABLE employees (
@@ -4449,6 +5810,9 @@ CREATE TABLE employees (
 ```
 
 ### Sample Data
+
+<details>
+<summary>Show answer</summary>
 
 | emp_id (PK) | email (UQ) | phone (UQ) | aadhar_no (UQ) | name | dept |
 |:---:|:---:|:---:|:---:|:---:|:---:|
@@ -4466,18 +5830,30 @@ CREATE TABLE employees (
 | `INSERT (emp_id=5, email='alice@co.com', ...)` | ❌ | Unique key violation (email already exists) |
 | `INSERT (emp_id=6, phone=NULL, ...)` | ✅ | Carol's phone is already NULL, but MySQL allows multiple NULLs in a UNIQUE column (SQL Server would reject this) |
 
+</details>
+
+</details>
+
 ---
 
 ## Visual Comparison
+
+<details>
+<summary>Show answer</summary>
 
 ![Primary key rejects NULL and duplicates (clustered index); unique key accepts NULLs (many in MySQL/PostgreSQL, one in SQL Server) but rejects duplicates (non-clustered index)](../svg/dbms/d055-primary-vs-unique-key.svg)
 
 > [!NOTE]
 > **Which index each one gets:** in InnoDB the `PRIMARY KEY` *is* the clustered index (the table is stored in PK order, only one per table). Each `UNIQUE` key gets its own secondary (non-clustered) index, which needs an extra lookup to reach the row. See [Clustered vs Secondary Indexes (InnoDB Specifics)](#clustered-vs-secondary-indexes-innodb-specifics).
 
+</details>
+
 ---
 
 ## When to Use Which?
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Use |
 |----------|-----|
@@ -4489,10 +5865,17 @@ CREATE TABLE employees (
 > [!TIP]
 > **Interview tip:** If asked "Can a table have multiple primary keys?" — No, only ONE primary key (but it can be a composite PK with multiple columns). A table CAN have multiple UNIQUE keys though.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # UUID vs Auto-Increment Integer as Primary Key
+
+<details>
+<summary>Open section</summary>
 
 Choosing between a UUID and an auto-increment integer (`INT`/`BIGINT`) as your primary key is one of the most impactful design decisions you'll make. It affects storage, query performance, insert throughput, index size, and how well your system scales across multiple databases. Let's break it down.
 
@@ -4501,6 +5884,9 @@ Choosing between a UUID and an auto-increment integer (`INT`/`BIGINT`) as your p
 ---
 
 ## What Each Option Looks Like
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Auto-increment integer
@@ -4525,9 +5911,14 @@ CREATE TABLE orders (
 );
 ```
 
+</details>
+
 ---
 
 ## Storage Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | Format | Size per Value | Example |
 |---|---|---|
@@ -4553,13 +5944,21 @@ For a table with 100 million rows and 5 secondary indexes:
 > [!IMPORTANT]
 > **Rule:** If you use UUIDs, **always** store them as `BINARY(16)`, never as `CHAR(36)`. You save 20 bytes per primary key value and per secondary index entry.
 
+</details>
+
 ---
 
 ## Insert Performance — The B+ Tree Problem
 
+<details>
+<summary>Open section</summary>
+
 This is the **biggest** performance difference between the two, and it comes down to how InnoDB's clustered index (B+ Tree) handles inserts. (For the general page-split mechanics, meaning what a split writes and InnoDB's right-hand split for ascending keys, see [Page Splits — The Hidden Cost of a Random Primary Key](#page-splits--the-hidden-cost-of-a-random-primary-key). This section focuses on how the PK choice triggers them.)
 
 ### Auto-Increment: Sequential Inserts (Fast)
+
+<details>
+<summary>Show answer</summary>
 
 Auto-increment IDs are **monotonically increasing**: 1, 2, 3, 4, 5, ... Each new row has a higher key than the last. In the B+ Tree, this means every insert goes to the **rightmost leaf page** — the same page, over and over, until it fills up and splits.
 
@@ -4571,7 +5970,12 @@ Auto-increment IDs are **monotonically increasing**: 1, 2, 3, 4, 5, ... Each new
 - **Sequential I/O** — if the page does need to be flushed to disk, it's written sequentially (adjacent pages are next to each other on disk).
 - **Pages fill up to ~90-95%** — minimal wasted space because data is inserted in order.
 
+</details>
+
 ### UUID (v4): Random Inserts (Slow)
+
+<details>
+<summary>Show answer</summary>
 
 UUID v4 values are **completely random**: `a3b8d1b6...`, `f81d4fae...`, `0c8cfc82...`. Each new row's key lands at a **random position** in the B+ Tree — NOT at the end.
 
@@ -4583,7 +5987,12 @@ UUID v4 values are **completely random**: `a3b8d1b6...`, `f81d4fae...`, `0c8cfc8
 - **Constant page splits in the middle** — when a random insert fills a page in the middle of the tree, it splits. Middle splits are more expensive than end-of-tree splits because they may cascade upward and cause page reorganization.
 - **Pages fill only ~50-70%** — random inserts cause splits at random points, leaving pages half-empty (fragmentation). This wastes disk space and means more pages to scan for range queries.
 
+</details>
+
 ### Real-World Benchmark Numbers
+
+<details>
+<summary>Show answer</summary>
 
 | Metric | `BIGINT` Auto-Increment | UUID v4 (`BINARY(16)`) | UUID v4 (`CHAR(36)`) |
 |---|---|---|---|
@@ -4598,9 +6007,16 @@ UUID v4 values are **completely random**: `a3b8d1b6...`, `f81d4fae...`, `0c8cfc8
 
 **The critical threshold:** UUID inserts are "fine" when your entire B+ Tree fits in the buffer pool (RAM). The moment the tree exceeds available memory, performance **falls off a cliff** because every random insert now requires a disk read. With auto-increment, even if the tree doesn't fit in RAM, inserts are still fast because they only touch the rightmost page (which is always cached).
 
+</details>
+
+</details>
+
 ---
 
 ## UUID v7 / ULID — The Best of Both Worlds?
+
+<details>
+<summary>Show answer</summary>
 
 The performance problems above apply to **UUID v4** (fully random). Newer formats like **UUID v7** (RFC 9562, 2024) and **ULID** solve this by embedding a **timestamp** in the most significant bits:
 
@@ -4634,9 +6050,14 @@ CREATE TABLE orders (
 -- byte[] bytes = uuidToBytes(uuid);
 ```
 
+</details>
+
 ---
 
 ## Pros & Cons — Auto-Increment Integer vs UUID
+
+<details>
+<summary>Show answer</summary>
 
 Each row compares one property of both options. ✅ marks an advantage and ❌ a disadvantage.
 
@@ -4658,9 +6079,14 @@ Each row compares one property of both options. ✅ marks an advantage and ❌ a
 | **Cross-system identity** | — | ✅ The same UUID can identify an entity across databases, caches, message queues, event logs, and external APIs, as a universal identifier |
 | **Format consistency** | — | ❌ **Inconsistent formatting.** Different systems may store UUIDs with or without dashes, in uppercase or lowercase, as binary or as a string, which leads to subtle bugs |
 
+</details>
+
 ---
 
 ## Practical Performance Comparison Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | `BIGINT` Auto-Increment | UUID v4 `BINARY(16)` | UUID v7 `BINARY(16)` |
 |---|---|---|---|
@@ -4675,9 +6101,14 @@ Each row compares one property of both options. ✅ marks an advantage and ❌ a
 | **Human readable** | ✅ Easy | ❌ Hard | ❌ Hard |
 | **Natural sort order** | ✅ By creation time | ❌ Random | ✅ By creation time |
 
+</details>
+
 ---
 
 ## Best Practice: Use Both (Hybrid Approach)
+
+<details>
+<summary>Show answer</summary>
 
 Many production systems use **both** — an internal auto-increment ID for performance and a public UUID for external exposure:
 
@@ -4723,9 +6154,14 @@ public OrderResponse getOrder(@PathVariable UUID publicId) {
 - The **clustered index** benefits from sequential auto-increment inserts
 - The UUID column has a **secondary `UNIQUE` index** — lookups by UUID do one extra index hop, but this is acceptable since API lookups are typically by single ID
 
+</details>
+
 ---
 
 ## Quick Decision Guide
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Recommended Primary Key |
 |---|---|
@@ -4742,10 +6178,17 @@ public OrderResponse getOrder(@PathVariable UUID publicId) {
 > [!IMPORTANT]
 > **The golden rule:** Use `BIGINT AUTO_INCREMENT` as your primary key for maximum InnoDB performance. If you need non-enumerable external identifiers, add a separate `UUID` column (preferably v7, stored as `BINARY(16)`). If you're in a distributed system where centralized ID generation is impossible, use `UUID v7` as your primary key — it gives you global uniqueness with near-sequential insert performance.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # SQL Injection
+
+<details>
+<summary>Open section</summary>
 
 SQL Injection is a **code injection attack** where a hacker inserts malicious SQL code through user input fields (login forms, search boxes, URLs) to manipulate the database. It's one of the **most common and dangerous** web vulnerabilities.
 
@@ -4756,9 +6199,15 @@ SQL Injection is a **code injection attack** where a hacker inserts malicious SQ
 
 ## How It Works
 
+<details>
+<summary>Open section</summary>
+
 ![Normal input 105 returns user #105 only; injected 105 OR 1=1 returns all users because 1=1 is always true](../svg/dbms/d061-sql-injection-normal-vs-injected.svg)
 
 ### The Vulnerable Code
+
+<details>
+<summary>Show answer</summary>
 
 ```
 txtUserId = getRequestString("UserId");           // User input
@@ -4767,11 +6216,21 @@ txtSQL = "SELECT * FROM Users WHERE UserId = " + txtUserId;   // String concaten
 
 The problem: **user input is directly concatenated** into the SQL query without any validation.
 
+</details>
+
+</details>
+
 ---
 
 ## Types of SQL Injection Attacks
 
+<details>
+<summary>Open section</summary>
+
 ### 1. Tautology Attack (1=1 is Always True)
+
+<details>
+<summary>Show answer</summary>
 
 ```
   Input:  105 OR 1=1
@@ -4782,7 +6241,12 @@ Since `1=1` is always TRUE, the `WHERE` clause is effectively removed → **retu
 
 ![Tautology attack returns every row of the Users table, exposing all usernames and passwords](../svg/dbms/d062-tautology-attack-all-rows.svg)
 
+</details>
+
 ### 2. Login Bypass (" OR ""=")
+
+<details>
+<summary>Show answer</summary>
 
 Normal login:
 ```sql
@@ -4799,7 +6263,12 @@ Since `""=""` is always TRUE → **bypasses authentication entirely**.
 
 ![Login bypass: " OR ""=" in both fields makes Name and Pass conditions always true, logging the attacker in as the first user](../svg/dbms/d063-login-bypass-or-empty-string.svg)
 
+</details>
+
 ### 3. Batched Statements (Destructive)
+
+<details>
+<summary>Show answer</summary>
 
 User input: `105; DROP TABLE Suppliers`
 
@@ -4816,7 +6285,12 @@ This executes TWO statements:
   Step 2: DROP TABLE Suppliers                     💀 TABLE DESTROYED!
 ```
 
+</details>
+
 ### 4. UNION-Based Injection
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Normal query
@@ -4829,17 +6303,32 @@ UNION SELECT username, password FROM admin_users
 
 The attacker **piggybacks a second query** to extract data from a completely different table.
 
+</details>
+
+</details>
+
 ---
 
 ## Prevention — Parameterized Queries
+
+<details>
+<summary>Open section</summary>
 
 The **#1 defense** against SQL Injection is **parameterized queries** (prepared statements). Instead of concatenating user input into the SQL string, you use **placeholders** that the database engine treats as data, never as SQL code.
 
 ### How It Works
 
+<details>
+<summary>Show answer</summary>
+
 ![String concatenation lets input change SQL structure; a parameterized query with @id treats "105 OR 1=1" as a literal string](../svg/dbms/d064-concatenation-vs-parameterized.svg)
 
+</details>
+
 ### Examples in Different Languages
+
+<details>
+<summary>Show answer</summary>
 
 **Java (PreparedStatement):**
 ```java
@@ -4876,9 +6365,16 @@ const [rows] = await connection.execute(
 );
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Other Prevention Techniques
+
+<details>
+<summary>Show answer</summary>
 
 | Technique | How It Helps |
 |-----------|-------------|
@@ -4890,19 +6386,31 @@ const [rows] = await connection.execute(
 | **WAF (Web Application Firewall)** | Blocks common injection patterns |
 | **Escape special characters** | Last resort — less reliable than parameterization |
 
+</details>
+
 ---
 
 ## Quick Summary
+
+<details>
+<summary>Show answer</summary>
 
 ![SQL injection summary: four attack types and their effects, and prevention measures (parameterized queries best, never string concatenation)](../svg/dbms/d065-sql-injection-summary.svg)
 
 > [!TIP]
 > **Interview tip:** If asked "How do you prevent SQL Injection?" — the answer is always **parameterized queries / prepared statements**. Input validation is a secondary defense, not a replacement.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # MySQL GRANT / REVOKE Privileges (Detailed)
+
+<details>
+<summary>Open section</summary>
 
 The [DCL overview](#4-dcl--data-control-language) introduced `GRANT` and `REVOKE`. This is the full reference: the **MySQL-specific syntax**, privilege types, granting on functions/procedures, checking grants, delegation with `GRANT OPTION` / `CASCADE`, and privilege scopes.
 
@@ -4910,7 +6418,13 @@ The [DCL overview](#4-dcl--data-control-language) introduced `GRANT` and `REVOKE
 
 ## GRANT — Assigning Privileges
 
+<details>
+<summary>Open section</summary>
+
 ### Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 GRANT privilege_type ON object TO 'user'@'host';
@@ -4919,7 +6433,12 @@ GRANT privilege_type ON object TO 'user'@'host';
 > [!NOTE]
 > **User format:** Always specify as `'username'@'host'` — e.g., `'Amit'@'localhost'` or `'Amit'@'192.168.1.100'`.
 
+</details>
+
 ### Common Privilege Types
+
+<details>
+<summary>Show answer</summary>
 
 | Privilege | What It Allows |
 |-----------|---------------|
@@ -4935,7 +6454,12 @@ GRANT privilege_type ON object TO 'user'@'host';
 | `GRANT OPTION` | Pass privileges to other users |
 | `ALL PRIVILEGES` (or just `ALL`) | Everything above |
 
+</details>
+
 ### Examples
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- 1. Grant SELECT only (read-only access)
@@ -4960,7 +6484,12 @@ GRANT ALL ON *.* TO 'Amit'@'localhost';
 > [!WARNING]
 > **MySQL has no user-name wildcard.** `'*'@'localhost'` is a user literally named `*`. The `%` wildcard works only in the **host** part (`'Amit'@'%'` = Amit connecting from any host). To give many users the same rights, grant them to a **role** and assign that role to each user (MySQL 8.0+).
 
+</details>
+
 ### Granting EXECUTE on Functions / Procedures
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Grant EXECUTE on a function
@@ -4970,7 +6499,12 @@ GRANT EXECUTE ON FUNCTION CalculateSalary TO 'Amit'@'localhost';
 GRANT EXECUTE ON PROCEDURE DBMSProcedure TO 'Amit'@'localhost';
 ```
 
+</details>
+
 ### Checking Granted Privileges
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SHOW GRANTS FOR 'Amit'@'localhost';
@@ -4985,17 +6519,32 @@ SHOW GRANTS FOR 'Amit'@'localhost';
 +------------------------------------------------------+
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## REVOKE — Removing Privileges
 
+<details>
+<summary>Open section</summary>
+
 ### Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 REVOKE privilege_type ON object FROM 'user'@'host';
 ```
 
+</details>
+
 ### Examples
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- 1. Revoke SELECT
@@ -5014,9 +6563,16 @@ REVOKE EXECUTE ON FUNCTION CalculateSalary FROM 'Amit'@'localhost';
 REVOKE EXECUTE ON PROCEDURE DBMSProcedure FROM 'Amit'@'localhost';
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## GRANT OPTION & CASCADE
+
+<details>
+<summary>Show answer</summary>
 
 - **`WITH GRANT OPTION`** — allows the grantee to further grant the same privilege to other users (delegation).
 - **`CASCADE`** — when revoking, also revokes from anyone who received the privilege through the original grantee.
@@ -5031,9 +6587,14 @@ GRANT SELECT ON employees TO team_lead WITH GRANT OPTION;
 > [!NOTE]
 > `REVOKE ... CASCADE` is **standard SQL** (e.g. PostgreSQL). **MySQL does not cascade revokes:** privileges that `team_lead` passed on to others stay in place until you revoke them from each user separately.
 
+</details>
+
 ---
 
 ## Privilege Scope Hierarchy
+
+<details>
+<summary>Show answer</summary>
 
 ![MySQL privilege scope hierarchy from *.* (global) through database.* and database.table down to database.table(col)](../svg/dbms/d067-privilege-scope-hierarchy.svg)
 
@@ -5054,10 +6615,17 @@ GRANT UPDATE (status) ON shop.orders TO 'support'@'localhost';
 > [!TIP]
 > **Best practice:** Follow the **principle of least privilege** — give users only the minimum permissions they need. Don't use `GRANT ALL ON *.*` unless absolutely necessary.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Indexes in MySQL (InnoDB)
+
+<details>
+<summary>Open section</summary>
 
 An index is a **separate data structure** that MySQL maintains alongside your table data. Its sole purpose is to make finding rows **fast** — without an index, MySQL has no choice but to scan every single row in the table (a "full table scan") to answer your query. With the right index, MySQL can jump directly to the matching rows, the same way a book's index lets you jump to the exact page instead of reading the whole book.
 
@@ -5070,14 +6638,22 @@ Indexes are not free. They speed up reads but slow down writes, and they consume
 
 ## What Is an Index?
 
+<details>
+<summary>Show answer</summary>
+
 > [!NOTE]
 > **Think of it this way:** A database without an index is like a book without a table of contents — you'd have to read every page to find what you're looking for. An index is the table of contents that tells you exactly which page to go to.
 
 ![Finding employee #500: full table scan reads rows 1..500 in O(n); an index lookup goes directly to row 500 in O(log n)](../svg/dbms/d068-full-scan-vs-index-lookup.svg)
 
+</details>
+
 ---
 
 ## How a B+ Tree Works — The Engine Behind MySQL Indexes
+
+<details>
+<summary>Open section</summary>
 
 Almost every index in InnoDB is a **B+ Tree** (a balanced, sorted tree optimized for disk-based storage). Understanding this structure is essential because it explains *why* indexes are fast for some queries and useless for others.
 
@@ -5093,6 +6669,9 @@ Both the clustered (primary key) index and every secondary index use this same s
 
 ### Why Not a Simple Binary Search Tree?
 
+<details>
+<summary>Show answer</summary>
+
 A binary search tree (BST) stores one key per node and has two children. For a table with 1 million rows, a balanced BST would be ~20 levels deep (`log₂(1,000,000) ≈ 20`). Each level means a separate **disk read** (since nodes are scattered across disk), so finding one row = 20 disk I/Os. Disk seeks take ~5-10ms each, so a single lookup could take 100-200ms — unacceptable.
 
 A B+ Tree solves this by being **wide and short**:
@@ -5105,7 +6684,12 @@ A B+ Tree solves this by being **wide and short**:
 | Disk reads per lookup | ~20 | **3-4** |
 | Data stored in | Every node | **Leaf nodes only** |
 
+</details>
+
 ### The Structure: Internal Nodes vs Leaf Nodes
+
+<details>
+<summary>Show answer</summary>
 
 A B+ Tree has two types of nodes:
 
@@ -5117,7 +6701,12 @@ A B+ Tree has two types of nodes:
 
 All leaf nodes are connected in a **doubly linked list** — this is what makes range scans fast. Once you find the first matching leaf, you just walk sideways through the chain without going back up the tree.
 
+</details>
+
 ### Visual Example: B+ Tree with Order 4
+
+<details>
+<summary>Show answer</summary>
 
 "Order 4" means each node can hold at most 3 keys and 4 child pointers. (InnoDB nodes are 16 KB pages that can hold hundreds of keys; we use small numbers here for clarity.)
 
@@ -5135,7 +6724,12 @@ The resulting B+ Tree looks like this:
 
 ![Range scan 30-60: root sends left, start at 30 in leaf  10,20,30 , follow the leaf link to  40,50,60 , stop at 60; 3 pages read](../svg/dbms/d077-bplus-range-scan-30-60.svg)
 
+</details>
+
 ### How Inserts and Splits Work — Step by Step
+
+<details>
+<summary>Show answer</summary>
 
 Understanding splits is crucial because they explain why B+ Trees stay balanced and why write performance has overhead.
 
@@ -5183,7 +6777,12 @@ Result:
 | **Tree height increase** | Only increases when the **root** splits — always stays balanced |
 | **Deletions** | Reverse of splits — nodes merge when they become less than half full |
 
+</details>
+
 ### Real InnoDB Numbers
+
+<details>
+<summary>Show answer</summary>
 
 In production (with 16 KB pages and typical `BIGINT` keys):
 
@@ -5197,11 +6796,21 @@ In production (with 16 KB pages and typical `BIGINT` keys):
 
 Because the root and first-level internal pages are almost always in the **buffer pool** (InnoDB's memory cache), a typical lookup in a well-configured database needs only **1 disk read** (the leaf page).
 
+</details>
+
+</details>
+
 ---
 
 ## Types of Indexes
 
+<details>
+<summary>Open section</summary>
+
 ### 1. Primary Key Index (Clustered Index)
+
+<details>
+<summary>Show answer</summary>
 
 In InnoDB, the **primary key IS the table**. The actual row data is stored in the leaf nodes of the primary key's B+ Tree. This is called a **clustered index** — the table data is physically ordered (clustered) by the primary key.
 
@@ -5222,7 +6831,12 @@ CREATE TABLE employees (
 
 🔗 How the clustered index differs from secondary indexes (leaf contents, bookmark lookups, PK size) is covered in [Clustered vs Secondary Indexes (InnoDB Specifics)](#clustered-vs-secondary-indexes-innodb-specifics).
 
+</details>
+
 ### 2. Unique Index
+
+<details>
+<summary>Show answer</summary>
 
 Enforces that no two rows can have the same value in the indexed column(s). Internally, it's the same B+ Tree structure as any other index, but MySQL checks for duplicates on every insert/update.
 
@@ -5241,7 +6855,12 @@ CREATE TABLE users (
 
 Unlike a primary key, a unique index **allows NULLs** — and multiple NULLs, since NULL ≠ NULL. See [Primary Key vs Unique Key](#primary-key-vs-unique-key).
 
+</details>
+
 ### 3. Composite (Multi-Column) Index
+
+<details>
+<summary>Show answer</summary>
 
 A **composite index** (also called a **compound** or **multi-column** index) is one B+ Tree index built from **two or more columns** (MySQL: up to 16). The B+ Tree is sorted by the first column, then by the second column within rows that share the same first column, and so on — like a phone book sorted by last name, then first name.
 
@@ -5264,7 +6883,12 @@ CREATE INDEX idx_dept_salary ON employees (department, salary);
 
 How to use it well — the **leftmost-prefix rule**, choosing column order, and composite vs separate indexes — is covered in [Leftmost-Prefix Rule](#leftmost-prefix-rule) right after the index types.
 
+</details>
+
 ### 4. Full-Text Index
+
+<details>
+<summary>Show answer</summary>
 
 Designed for **natural language text search** — finding words or phrases inside `TEXT` or `VARCHAR` columns. Regular B+ Tree indexes are useless for `LIKE '%keyword%'` (leading wildcard prevents index usage). Full-text indexes use an **inverted index** internally: a mapping from each word to the list of rows that contain it.
 
@@ -5282,7 +6906,12 @@ WHERE MATCH(title, body) AGAINST('+database +indexing -NoSQL' IN BOOLEAN MODE);
 
 **When to use:** Blog search, product search, documentation search — anywhere you need to find rows containing specific words inside large text blocks. For more advanced search (fuzzy matching, synonyms, stemming, ranking), consider **Elasticsearch** or **Solr** instead of MySQL full-text.
 
+</details>
+
 ### 5. Spatial Index (R-Tree)
+
+<details>
+<summary>Show answer</summary>
 
 Used for **geometry** and **geographic** data types (`POINT`, `POLYGON`, etc.). Spatial indexes use **R-Trees** (not B+ Trees) which partition multi-dimensional space into nested bounding rectangles.
 
@@ -5296,7 +6925,12 @@ WHERE ST_Distance_Sphere(coordinates, ST_GeomFromText('POINT(77.5946 12.9716)'))
 
 **When to use:** "Find nearest" queries, geofencing, delivery zone checks, map-based applications.
 
+</details>
+
 ### 6. Hash Index (MEMORY Engine Only)
+
+<details>
+<summary>Show answer</summary>
 
 A hash index stores a **hash of the key** → row pointer mapping. Lookups are O(1) — instant for exact-match queries. But it **cannot** do range scans, sorting, or partial matches because hashing destroys order.
 
@@ -5319,8 +6953,13 @@ CREATE TABLE sessions (
 | Full-Text | Inverted index | Words only | ❌ | By relevance | ✅ (words) |
 | Spatial (R-Tree) | Bounding rectangles | ❌ | Spatial only | ❌ | ❌ |
 
+</details>
+
 ---
 ### 7. Prefix Index
+
+<details>
+<summary>Show answer</summary>
 
 Indexes only the **first N characters** of a column (bytes for binary types like `BLOB`). Much smaller; used for long `VARCHAR`/`TEXT`/`BLOB` columns.
 
@@ -5333,7 +6972,12 @@ CREATE INDEX idx_name_pfx ON users (name(10));   -- prefix: first 10 characters
 
 A **covering index** isn't a separate index type — it's any index (usually composite) that contains every column a query needs. See [Covering Indexes and Index-Only Scans](#covering-indexes-and-index-only-scans).
 
+</details>
+
 ### Creating and Dropping Indexes
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Clustered index: in MySQL/InnoDB this is always the PRIMARY KEY — there is no separate syntax
@@ -5352,9 +6996,16 @@ CREATE UNIQUE INDEX idx_email ON employees(email);
 DROP INDEX idx_emp_name ON employees;
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Leftmost-Prefix Rule
+
+<details>
+<summary>Show answer</summary>
 
 This is the most important rule for [composite indexes](#3-composite-multi-column-index). Take this index:
 
@@ -5409,9 +7060,14 @@ SELECT * FROM employees WHERE salary > 80000;
 > [!IMPORTANT]
 > **Key idea:** An index on `(A, B, C)` is generally useful for `(A)`, `(A, B)`, and `(A, B, C)`, but not usually for `(B)` or `(C)` alone. It is not the same as three independent single-column indexes.
 
+</details>
+
 ---
 
 ## Choosing Column Order
+
+<details>
+<summary>Show answer</summary>
 
 Design the index for the actual query pattern:
 
@@ -5432,9 +7088,14 @@ For the earlier query, `(customer_id, status, created_at)` is better than `(crea
 SELECT * FROM employees WHERE department = 'Eng' AND created_at > '2025-01-01';
 ```
 
+</details>
+
 ---
 
 ## Composite Index vs Separate Indexes
+
+<details>
+<summary>Show answer</summary>
 
 If a common query filters on both columns, a composite index is often better:
 
@@ -5452,13 +7113,21 @@ Separate indexes on `customer_id` and `status` may require the optimizer to use 
 > [!NOTE]
 > **Trade-off:** Do not create every possible column combination. Composite indexes consume space and increase write overhead. Keep only indexes that support real, measured query patterns, and verify them with `EXPLAIN`.
 
+</details>
+
 ---
 
 ## Clustered vs Secondary Indexes (InnoDB Specifics)
 
+<details>
+<summary>Open section</summary>
+
 This distinction is unique to InnoDB and is **critical** for understanding query performance. In general DBMS terms, the InnoDB primary key index is the **clustered index** and every other index is a **secondary (non-clustered) index**.
 
 ### Clustered Index (Primary Key)
+
+<details>
+<summary>Show answer</summary>
 
 A **clustered index** physically sorts and stores the **actual data rows** in the order of the index key. The table data IS the index.
 
@@ -5475,7 +7144,12 @@ A **clustered index** physically sorts and stores the **actual data rows** in th
 > [!NOTE]
 > **Analogy:** A **phone book** sorted alphabetically by last name. The data itself is in order — you don't need a separate lookup.
 
+</details>
+
 ### Secondary Index (Any Non-Primary Index)
+
+<details>
+<summary>Show answer</summary>
 
 A **secondary (non-clustered) index** is a **separate structure** that stores the index key + a pointer back to the actual data row. The table data stays in its own order (in InnoDB, primary key order) — not the order of this index.
 
@@ -5511,7 +7185,12 @@ SELECT email FROM users WHERE email = 'alice@example.com';
 -- Total: 1 B+ Tree traversal — "Using index"
 ```
 
+</details>
+
 ### Why Primary Key Size Matters
+
+<details>
+<summary>Show answer</summary>
 
 Since **every secondary index stores a copy of the primary key** in its leaf nodes, a large primary key bloats all secondary indexes.
 
@@ -5524,7 +7203,12 @@ Since **every secondary index stores a copy of the primary key** in its leaf nod
 
 **Recommendation:** Keep primary keys **short** (prefer `INT` or `BIGINT` with auto-increment). If you must use UUIDs, store them as `BINARY(16)` (16 bytes) instead of `CHAR(36)` (36 bytes). 🔗 The full trade-off is in [UUID vs Auto-Increment Integer as Primary Key](#uuid-vs-auto-increment-integer-as-primary-key).
 
+</details>
+
 ### Clustered vs Secondary — Quick Reference
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Clustered Index | Secondary (Non-Clustered) Index |
 |---|---|---|
@@ -5541,9 +7225,17 @@ Since **every secondary index stores a copy of the primary key** in its leaf nod
 | **Insert/Update overhead** | ⚠️ Higher (must maintain physical order) | ⚠️ Moderate (update index entries) |
 | **Analogy** | Phone book sorted by name | Index at back of textbook |
 
+</details>
+
 ### Advantages & Disadvantages
 
+<details>
+<summary>Open section</summary>
+
 #### Clustered Index
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Advantages | ❌ Disadvantages |
 |---|---|
@@ -5552,7 +7244,12 @@ Since **every secondary index stores a copy of the primary key** in its leaf nod
 | Data is always sorted | Updates to indexed columns are expensive |
 | Cache-friendly (sequential reads) | Fragmentation over time |
 
+</details>
+
 #### Secondary (Non-Clustered) Index
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Advantages | ❌ Disadvantages |
 |---|---|
@@ -5564,11 +7261,23 @@ Since **every secondary index stores a copy of the primary key** in its leaf nod
 > [!TIP]
 > **Interview tip:** "What happens if you create a table without a primary key?" — In engines like SQL Server or PostgreSQL the table has no clustered index (it's a **heap**). InnoDB never stores a true heap: it uses the first `UNIQUE NOT NULL` index as the clustered index, or else creates a hidden 6-byte row ID. That hidden key can't be used in your queries, so any lookup not covered by a secondary index is a full table scan. Always define a primary key.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 
 ## When to Use an Index
 
+<details>
+<summary>Open section</summary>
+
 ### ✅ Index These Columns
+
+<details>
+<summary>Show answer</summary>
 
 | Column Type | Why |
 |---|---|
@@ -5581,7 +7290,12 @@ Since **every secondary index stores a copy of the primary key** in its leaf nod
 | **High-cardinality columns** | Columns with many distinct values (e.g., `email`, `order_id`) are ideal for indexes |
 | **Columns used in `UNIQUE` constraints** | Automatically indexed; also enables the optimizer to stop after one match |
 
+</details>
+
 ### ❌ Do NOT Index These
+
+<details>
+<summary>Show answer</summary>
 
 | Column Type | Why |
 |---|---|
@@ -5593,11 +7307,21 @@ Since **every secondary index stores a copy of the primary key** in its leaf nod
 | **Columns with lots of NULLs** (usually) | Depends on the use case, but indexes on mostly-NULL columns are often wasteful |
 | **Tables with heavy inserts** | Each index slows down writes — keep indexes to a minimum (see [Impact on Write Performance](#impact-on-write-performance)) |
 
+</details>
+
+</details>
+
 ---
 
 ## How Indexes Are Used in Common Operations
 
+<details>
+<summary>Open section</summary>
+
 ### 1. Point Lookups (Equality Queries)
+
+<details>
+<summary>Show answer</summary>
 
 The most basic use case. MySQL walks down the B+ Tree to find the exact matching leaf node.
 
@@ -5612,7 +7336,12 @@ SELECT * FROM users WHERE email = 'alice@example.com';
 **Without index:** Full table scan — reads every single row. O(N).
 **With index:** B+ Tree seek. O(log N) — in practice, 2-4 disk reads.
 
+</details>
+
 ### 2. Range Queries
+
+<details>
+<summary>Show answer</summary>
 
 This is where the B+ Tree's **linked list at the leaf level** shines. MySQL seeks to the starting point, then walks the linked list forward (or backward) until the range boundary.
 
@@ -5634,7 +7363,12 @@ SELECT * FROM employees WHERE salary > 100000;
 
 **Without index:** MySQL reads the **entire table** and checks every row's `order_date`. If the table has 10 million rows and only 50,000 match, it still reads all 10 million.
 
+</details>
+
 ### 3. Sorting (`ORDER BY`)
+
+<details>
+<summary>Show answer</summary>
 
 If the `ORDER BY` column matches an index, MySQL reads the data **in index order** — it's already sorted, so no additional sort step is needed. Without an index, MySQL must load all matching rows into memory (or a temp file) and perform a **filesort**, which is slow for large result sets.
 
@@ -5662,7 +7396,12 @@ SELECT * FROM posts WHERE user_id = 5 ORDER BY created_at DESC;
 SELECT * FROM posts WHERE user_id = 5 ORDER BY title;
 ```
 
+</details>
+
 ### 4. JOINs
+
+<details>
+<summary>Show answer</summary>
 
 Joins are where indexes provide the most dramatic performance improvement. Without indexes, MySQL must use a **Nested Loop Join** with full table scans — for every row in table A, it scans every row in table B. That's O(N × M).
 
@@ -5699,7 +7438,12 @@ CREATE INDEX idx_customer_id ON orders (customer_id);
 -- customers.id is already indexed (it's the primary key)
 ```
 
+</details>
+
 ### 5. GROUP BY
+
+<details>
+<summary>Show answer</summary>
 
 If the `GROUP BY` column has an index, MySQL can group rows by reading the index in order — no need to hash or sort. This is called a **"loose index scan"** or **"tight index scan"** depending on the query.
 
@@ -5722,7 +7466,12 @@ GROUP BY department;
 
 **EXPLAIN tells you:** Look for `Using index for group-by` (loose index scan) — this is the best case. If you see `Using temporary; Using filesort`, the GROUP BY is not using an index.
 
+</details>
+
 ### 6. DISTINCT
+
+<details>
+<summary>Show answer</summary>
 
 `DISTINCT` is essentially the same operation as `GROUP BY` from MySQL's perspective. If the column has an index, MySQL reads sorted values and skips duplicates naturally.
 
@@ -5733,7 +7482,12 @@ SELECT DISTINCT department FROM employees;
 -- Equivalent to a loose index scan
 ```
 
+</details>
+
 ### 7. Aggregate Functions (MIN, MAX)
+
+<details>
+<summary>Show answer</summary>
 
 `MIN()` and `MAX()` on an indexed column are **O(1)** — MySQL just reads the first or last entry in the B+ Tree.
 
@@ -5747,7 +7501,12 @@ SELECT MAX(salary) FROM employees;   -- Read the rightmost leaf → instant
 
 **EXPLAIN shows** `Select tables optimized away` — meaning MySQL answered the query from the index metadata without reading any table rows at all.
 
+</details>
+
 ### 8. LIKE Queries (Prefix Only)
+
+<details>
+<summary>Show answer</summary>
 
 B+ Tree indexes can help with `LIKE` queries **only when the wildcard is at the end** (prefix search). A leading wildcard destroys the ability to use the index because the B+ Tree is sorted from the left.
 
@@ -5766,7 +7525,12 @@ CREATE FULLTEXT INDEX idx_ft_name ON users (name);
 SELECT * FROM users WHERE MATCH(name) AGAINST('son');
 ```
 
+</details>
+
 ### 9. Subqueries and EXISTS
+
+<details>
+<summary>Show answer</summary>
 
 Indexes on the correlated column make `EXISTS` and `IN` subqueries efficient.
 
@@ -5785,17 +7549,32 @@ WHERE category_id IN (SELECT id FROM categories WHERE active = 1);
 -- Index on categories.id (primary key) and products.category_id
 ```
 
+</details>
+
 ### 10. UNION and Deduplication
 
+<details>
+<summary>Show answer</summary>
+
 When using `UNION` (which removes duplicates) vs `UNION ALL` (which doesn't), MySQL needs to sort and deduplicate the combined result. Indexes on the selected columns can speed up this deduplication.
+
+</details>
+
+</details>
 
 ---
 
 ## Covering Indexes and Index-Only Scans
 
+<details>
+<summary>Open section</summary>
+
 A **covering index** is an index that contains **all the columns** a query needs — so MySQL can answer the query entirely from the index, without ever reading the actual table row. This is called an **index-only scan** and it's the fastest possible read path.
 
 ### Why It's Fast
+
+<details>
+<summary>Show answer</summary>
 
 Normally, a secondary index lookup has **two steps**:
 1. Walk the secondary index B+ Tree to find the matching primary key
@@ -5821,7 +7600,12 @@ SELECT department, salary, name FROM employees WHERE department = 'Engineering';
 -- MySQL must look up each matching row in the clustered index to get 'name'
 ```
 
+</details>
+
 ### INCLUDE Columns (MySQL 8.0+ Functional Equivalent)
+
+<details>
+<summary>Show answer</summary>
 
 MySQL doesn't have a formal `INCLUDE` keyword (SQL Server/PostgreSQL do), but you can simulate it by adding columns to the end of a composite index. The extra columns are stored in the index but not used for sorting — they just "come along for the ride" to make the index covering.
 
@@ -5835,7 +7619,12 @@ SELECT department, salary, name FROM employees WHERE department = 'Engineering';
 
 **Trade-off:** Wider indexes use more storage and are slower to maintain on writes. Only add columns to make an index covering if the query is critical and frequent.
 
+</details>
+
 ### How to Know if Your Query Uses a Covering Index
+
+<details>
+<summary>Show answer</summary>
 
 Run `EXPLAIN` and look at the `Extra` column:
 
@@ -5845,9 +7634,16 @@ Run `EXPLAIN` and look at the `Extra` column:
 | `Using index condition` | Index used for filtering, but table data still accessed |
 | (nothing about index) | Index may or may not be used; table rows are being read |
 
+</details>
+
+</details>
+
 ---
 
 ## Cardinality & Selectivity — How Duplicate Values Affect an Index
+
+<details>
+<summary>Open section</summary>
 
 **Question:** Many people share the same `name`. If I create `INDEX(name)`, do the duplicates break it?
 
@@ -5855,11 +7651,19 @@ Run `EXPLAIN` and look at the `Extra` column:
 
 ### Structurally, Duplicates Are a Non-Issue
 
+<details>
+<summary>Show answer</summary>
+
 A non-unique secondary index in InnoDB stores `[indexed column | primary key]`. So `INDEX(name)` is physically sorted by `(name, id)` — every entry is still unique at the storage level. 500 people named "John Smith" = 500 index entries sitting contiguously, sorted by `id`. Nothing collides, nothing overflows.
 
 ![INDEX(name) leaf page stores duplicate names fine as (name, PK) pairs, e.g. three John Smith entries](../svg/dbms/d073-index-duplicates-leaf-page.svg)
 
+</details>
+
 ### The Real Issue Is Selectivity
+
+<details>
+<summary>Show answer</summary>
 
 Two terms that get confused:
 
@@ -5885,7 +7689,12 @@ Closer to **1.0** is better. On a 1M-row table:
 > [!NOTE]
 > Note the table proves selectivity is only a **rough guide** — `city` has terrible raw selectivity but works great, because what actually matters is **rows matched per value**, not the ratio.
 
+</details>
+
 ### Why the Optimizer Abandons a Low-Selectivity Index
+
+<details>
+<summary>Show answer</summary>
 
 ![WHERE gender='M': 500,000 cheap index entries but 500,000 random clustered lookups cost more than a sequential scan, so the optimizer ignores the index](../svg/dbms/d074-optimizer-ignores-low-selectivity.svg)
 
@@ -5900,7 +7709,12 @@ And you still pay for that index on **every** `INSERT`, `UPDATE`, and `DELETE`. 
 
 **So for `name`: totally fine.** Even a very common name is a tiny fraction of the table. Duplicates only hurt when a **single value** covers a large share of rows.
 
+</details>
+
 ### ⚠️ The Nuance That Bites — Data Skew
+
+<details>
+<summary>Show answer</summary>
 
 The decision is made **per value**, not per column. If `status` is 95% `'active'`:
 
@@ -5915,7 +7729,12 @@ Same index, opposite decisions. By default MySQL assumes values are **uniformly 
 ANALYZE TABLE orders UPDATE HISTOGRAM ON status;   -- MySQL 8.0+
 ```
 
+</details>
+
 ### How to Check Your Own Columns
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Exact selectivity
@@ -5939,7 +7758,12 @@ FROM information_schema.STATISTICS
 WHERE TABLE_NAME = 'students';
 ```
 
+</details>
+
 ### The Fix for a Low-Selectivity Column
+
+<details>
+<summary>Show answer</summary>
 
 Don't index it alone — make it part of a **composite index**, with a selective column leading:
 
@@ -5959,11 +7783,21 @@ The **leading column** decides whether the index is seekable at all — see [Lef
 > [!TIP]
 > **Interview tip:** "Should I index a boolean / status / gender column?" — Normally **no**, because one value matches most of the table and the optimizer will skip it. The **exception** is a heavily skewed column where you only ever query the *rare* value — e.g. `WHERE status = 'failed'` on a table that's 99.9% `'success'`. There the index is excellent, and a **partial/filtered index** would be ideal (though MySQL doesn't support those — PostgreSQL does).
 
+</details>
+
+</details>
+
 ---
 
 ## Impact on Write Performance
 
+<details>
+<summary>Open section</summary>
+
 ### ⭐ The Core Rule
+
+<details>
+<summary>Show answer</summary>
 
 **Every index is a separate B+ Tree that must be maintained on every write.**
 
@@ -5973,7 +7807,12 @@ One `INSERT` into a table with 4 secondary indexes is really **5 B+ Tree inserti
 
 That is **write amplification**, and it is the real cost of "just add an index." Indexes are not free storage — they are a tax on every `INSERT`, `UPDATE` and `DELETE` forever.
 
+</details>
+
 ### What Happens on Each Operation
+
+<details>
+<summary>Show answer</summary>
 
 | Operation | Impact on Indexes |
 |---|---|
@@ -5986,7 +7825,12 @@ That is **write amplification**, and it is the real cost of "just add an index."
 > [!WARNING]
 > **The most common misconception:** a `DELETE` does *not* remove index entries. It only flags them. See [DELETE — Nothing Is Removed Immediately](#delete--nothing-is-removed-immediately) below.
 
+</details>
+
 ### INSERT — Where the Row Actually Lands
+
+<details>
+<summary>Show answer</summary>
 
 In InnoDB the **clustered index *is* the table** — the full row lives in the PK B+ Tree's leaf page. So the insert position is decided entirely by your primary key value:
 
@@ -5994,7 +7838,12 @@ In InnoDB the **clustered index *is* the table** — the full row lives in the P
 
 🔗 This is the single biggest argument in [UUID vs Auto-Increment Integer as Primary Key](#uuid-vs-auto-increment-integer-as-primary-key).
 
+</details>
+
 ### Page Splits — The Hidden Cost of a Random Primary Key
+
+<details>
+<summary>Show answer</summary>
 
 When the target 16 KB leaf page has no room left:
 
@@ -6008,7 +7857,12 @@ Two consequences people miss:
 > [!NOTE]
 > **Optimization:** for strictly ascending inserts InnoDB detects the pattern and does a **right-hand split** — it leaves the old page full and starts a fresh page — instead of splitting 50/50. This is exactly why sequential keys pack so much better.
 
+</details>
+
 ### The Change Buffer — and When It Can't Save You
+
+<details>
+<summary>Show answer</summary>
 
 To avoid a random disk read on every secondary index insert, InnoDB records the change in the **change buffer** and merges it into the real page later, when that page is read for some other reason (or by a background merge). But it is **not** always available:
 
@@ -6021,7 +7875,12 @@ To avoid a random disk read on every secondary index insert, InnoDB records the 
 > [!TIP]
 > **Practical consequence:** a `UNIQUE` secondary index is meaningfully more expensive on writes than an ordinary one — it forces a random read that a non-unique index defers. Don't add `UNIQUE` unless you actually need the constraint.
 
+</details>
+
 ### ❓ If a Random UUID Hurts, Doesn't an Index on `email` Hurt Too?
+
+<details>
+<summary>Open section</summary>
 
 A very fair question — and the **mechanism is identical**. Emails arrive in no order at all (`zoe@…`, then `adam@…`, then `mike@…`), so every insert lands at a random leaf of the email B+ Tree, causing the same page splits and the same ~50% page fill.
 
@@ -6029,11 +7888,19 @@ So why does nobody worry about it? Because the **blast radius** is completely di
 
 #### What Actually Moves During a Split
 
+<details>
+<summary>Show answer</summary>
+
 ![Clustered PK leaf holds whole ~800 B rows (~20 per 16 KB page) vs secondary email leaf holding ~40-byte (email, PK) entries (~400 per page)](../svg/dbms/d087-split-payload-clustered-vs-secondary.svg)
 
 A split in the clustered index relocates half a page of **full rows**. A split in a secondary index relocates half a page of **tiny pointers**.
 
+</details>
+
 #### Blast Radius — The Real Reason
+
+<details>
+<summary>Show answer</summary>
 
 | | Random **PK** (UUIDv4) | Random **secondary index** (email) |
 |---|---|---|
@@ -6044,7 +7911,12 @@ A split in the clustered index relocates half a page of **full rows**. A split i
 
 **The root cause of the asymmetry:** InnoDB's clustered index *forces the physical order of your rows* to follow the primary key. A secondary index has no such power — it's just a side tree. So a bad PK poisons **everything**; a bad secondary index poisons **only itself**.
 
+</details>
+
 #### The Same Percentage, a Wildly Different Bill
+
+<details>
+<summary>Show answer</summary>
 
 If your table is 100 GB and the email index is 3 GB, 50% fragmentation means:
 
@@ -6053,7 +7925,12 @@ If your table is 100 GB and the email index is 3 GB, 50% fragmentation means:
 | Random PK | 100 GB | **~200 GB** |
 | Random email index | 3 GB | ~6 GB |
 
+</details>
+
 #### Where the Worry *Does* Have Teeth
+
+<details>
+<summary>Show answer</summary>
 
 `email` is almost always `UNIQUE` — and unique secondary indexes **cannot use the change buffer** (see the table above). Every insert must read the target page from disk *right now* to check for duplicates.
 
@@ -6064,11 +7941,21 @@ KEY idx_email (email)         -- ✅ change buffer defers the write
 
 So `UNIQUE(email)` genuinely is one of the more expensive secondary indexes you can have. It's still worth it — you want the database enforcing that constraint, not application code — but that's the honest cost.
 
+</details>
+
 #### The Contrast That Makes It Click
+
+<details>
+<summary>Show answer</summary>
 
 ![Insert cost by key pattern: sequential idx_created_at appends (cheapest), random idx_email splits (acceptable), random UUID primary key splits, drags whole rows and bloats every index](../svg/dbms/d088-index-insert-cost-contrast.svg)
 
+</details>
+
 #### ⭐ The Rule — Only the Primary Key Has to Be Sequential
+
+<details>
+<summary>Show answer</summary>
 
 > [!CAUTION]
 > **Never let a random value be your clustered index. Anywhere else, randomness is a bounded, local cost you pay in exchange for a lookup you actually need.**
@@ -6080,13 +7967,25 @@ So `UNIQUE(email)` genuinely is one of the more expensive secondary indexes you 
 
 Every real schema has random-valued secondary indexes — email, username, phone, external references, API keys. That is **normal and correct**. The problem was never "random values in indexes"; it was only ever "random values in the *clustered* index."
 
+</details>
+
 #### It's "Random Bad", Not "UUID Bad"
+
+<details>
+<summary>Show answer</summary>
 
 Not every UUID is random. Time-ordered IDs — **UUIDv7**, **ULID**, **Snowflake** — are timestamp-prefixed, sort like an `AUTO_INCREMENT`, and are fine as a primary key; only fully random **UUIDv4** causes the problem. And if you're stuck with v4, keep a sequential `BIGINT` PK for storage and expose the UUID through a `UNIQUE` secondary index, where randomness is affordable.
 
 🔗 Full treatment in [UUID vs Auto-Increment Integer as Primary Key](#uuid-vs-auto-increment-integer-as-primary-key) — especially [UUID v7 / ULID — The Best of Both Worlds?](#uuid-v7--ulid--the-best-of-both-worlds) and [Best Practice: Use Both (Hybrid Approach)](#best-practice-use-both-hybrid-approach).
 
+</details>
+
+</details>
+
 ### DELETE — Nothing Is Removed Immediately
+
+<details>
+<summary>Show answer</summary>
 
 ![DELETE lifecycle: delete-mark in clustered and secondary indexes, commit, purge thread removes records and frees undo pages, page merge below MERGE_THRESHOLD](../svg/dbms/d089-delete-purge-lifecycle.svg)
 
@@ -6104,7 +8003,12 @@ ALTER TABLE orders FORCE;     -- identical operation
 
 🔗 See [TRUNCATE vs DROP vs DELETE](#truncate-vs-drop-vs-delete--a-common-confusion) — `TRUNCATE` drops and recreates the tablespace, returning all space instantly.
 
+</details>
+
 ### ⚠️ Purge Lag — When DELETE Backfires
+
+<details>
+<summary>Show answer</summary>
 
 If a **long-running transaction** (even an idle-in-transaction `SELECT`) holds an old read view, the purge thread cannot advance. Delete-marked rows pile up, undo history grows, and the undo tablespace can bloat to hundreds of GB.
 
@@ -6118,7 +8022,12 @@ A history list length in the millions means purge is starving — find and kill 
 SELECT * FROM information_schema.INNODB_TRX ORDER BY trx_started LIMIT 5;
 ```
 
+</details>
+
 ### Real-World Write Overhead
+
+<details>
+<summary>Show answer</summary>
 
 | Indexes on Table | INSERT Relative Speed | Notes |
 |---|---|---|
@@ -6128,7 +8037,12 @@ SELECT * FROM information_schema.INNODB_TRX ORDER BY trx_started LIMIT 5;
 | 5 indexes | ~2-3× slower | Noticeable on high-throughput writes |
 | 10+ indexes | ~3-5× slower | Seriously impacts write performance |
 
+</details>
+
 ### Best Practices for Write-Heavy Tables
+
+<details>
+<summary>Show answer</summary>
 
 1. **Use a sequential primary key** (`AUTO_INCREMENT`, UUIDv7/ULID) — this single choice eliminates most page splits and fragmentation
 2. **Only create indexes you actually use** — run `SHOW INDEX FROM table` and check if any index is never hit
@@ -6148,7 +8062,12 @@ SELECT * FROM information_schema.INNODB_TRX ORDER BY trx_started LIMIT 5;
 8. **Run `ANALYZE TABLE` after bulk inserts or deletes** — statistics go stale and the optimizer starts choosing bad plans
 9. **Clearing a whole table?** Use `TRUNCATE`, not `DELETE` — no per-row undo, no purge backlog, space returned immediately
 
+</details>
+
 ### Quick-Fire Q&A
+
+<details>
+<summary>Show answer</summary>
 
 | Question | Answer |
 |---|---|
@@ -6161,13 +8080,23 @@ SELECT * FROM information_schema.INNODB_TRX ORDER BY trx_started LIMIT 5;
 | If a random UUID is bad as a PK, is a random `email` index bad too? | Same mechanism, far smaller blast radius. Only the **clustered index** must be sequential; random secondary indexes are normal and correct |
 | What is "History list length" telling you? | How far behind the purge thread is; a large value means a long transaction is blocking purge |
 
+</details>
+
+</details>
+
 ---
 
 ## EXPLAIN — Reading Query Execution Plans
 
+<details>
+<summary>Open section</summary>
+
 `EXPLAIN` is the single most important tool for understanding how MySQL executes your queries and whether your indexes are being used. Always use `EXPLAIN` before and after adding indexes. (Where the plan comes from is covered in [The Cost-Based Optimizer](#mysql-query-pipeline--parser-precompiler--the-cost-based-optimizer).)
 
 ### EXPLAIN vs EXPLAIN ANALYZE
+
+<details>
+<summary>Show answer</summary>
 
 | | `EXPLAIN` | `EXPLAIN ANALYZE` (MySQL 8.0.18+) |
 |---|---|---|
@@ -6191,7 +8120,12 @@ EXPLAIN ANALYZE SELECT ...;          -- 8.0.18+: tree + ACTUAL rows and time
 
 Add `\G` instead of `;` in the MySQL client to print each row vertically, which is easier to read when the table is wide.
 
+</details>
+
 ### Sample Schema & Data (Used in Every Example)
+
+<details>
+<summary>Show answer</summary>
 
 An online shop with **50,000 customers** and **500,000 orders**. We start with **no secondary indexes** and add them as the plans tell us to.
 
@@ -6236,7 +8170,12 @@ A few sample rows:
 > [!NOTE]
 > All plan numbers below (`rows`, `cost`, `time`) are **illustrative** for this data size. Your exact numbers will differ, but their *shape* and the way you read them won't.
 
+</details>
+
 ### Reading EXPLAIN Output — Column by Column
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 EXPLAIN SELECT * FROM orders WHERE customer_id = 42\G
@@ -6276,7 +8215,12 @@ possible_keys: NULL
 
 **Reading it as one sentence:** *"MySQL will read every row of `orders` (~500k), check `customer_id = 42` on each, and expects about 10% to match."* The real answer is 10 rows. Reading 500,000 rows to return 10 is the problem.
 
+</details>
+
 ### Access Types (the `type` column) — Best to Worst
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Meaning | Performance | Example |
 |---|---|---|---|
@@ -6290,7 +8234,12 @@ possible_keys: NULL
 
 **Goal:** Get your important queries to `const`, `eq_ref`, `ref`, or `range`. If `EXPLAIN` shows `ALL` for a large table, that query needs an index.
 
+</details>
+
 ### Important `Extra` Values
+
+<details>
+<summary>Show answer</summary>
 
 | Extra Value | Meaning | Action |
 |---|---|---|
@@ -6303,7 +8252,12 @@ possible_keys: NULL
 | `Using join buffer (hash join)` | ⚠️ No index for the join — MySQL builds an in-memory hash table (8.0.18+; older versions say `Block Nested Loop`) | Add an index on the join column |
 | `Select tables optimized away` | ✅ Query answered from index metadata alone (e.g., `MIN`/`MAX`) | Best possible case |
 
+</details>
+
 ### Walkthrough — Analysing Real Plans
+
+<details>
+<summary>Show answer</summary>
 
 **Scenario 1 — No index: full table scan**
 
@@ -6473,7 +8427,12 @@ How to read it:
 
 🔍 Could it be better? `status` is filtered *after* the range read (`Using where`). An index on `(status, created_at)` would let MySQL read only `SHIPPED` rows from 1 Sep onward. `EXPLAIN ANALYZE` (next) tells you whether that's worth it.
 
+</details>
+
 ### EXPLAIN ANALYZE — Reading the Tree
+
+<details>
+<summary>Show answer</summary>
 
 `EXPLAIN ANALYZE` prints the plan as a tree and annotates every node with **estimates** and **actuals**:
 
@@ -6554,7 +8513,12 @@ ANALYZE TABLE orders;                                   -- refresh index statist
 ANALYZE TABLE orders UPDATE HISTOGRAM ON status;        -- 8.0+: stats for skewed, un-indexed columns
 ```
 
+</details>
+
 ### Spotting Problems — A 60-Second Checklist
+
+<details>
+<summary>Show answer</summary>
 
 | You see | It means | Try |
 |---|---|---|
@@ -6568,9 +8532,16 @@ ANALYZE TABLE orders UPDATE HISTOGRAM ON status;        -- 8.0+: stats for skewe
 | Estimated vs actual rows off by 10×+ (`ANALYZE`) | Stale or missing statistics | `ANALYZE TABLE`, histograms |
 | Small `actual time` but huge `loops` | Inner side of a join runs too often | Reduce outer rows, or index the inner lookup |
 
+</details>
+
+</details>
+
 ---
 
 ## Common Index Mistakes
+
+<details>
+<summary>Show answer</summary>
 
 | Mistake | Why It's Bad | Fix |
 |---|---|---|
@@ -6584,11 +8555,19 @@ ANALYZE TABLE orders UPDATE HISTOGRAM ON status;        -- 8.0+: stats for skewe
 | **Not checking EXPLAIN** | You never know if your index is actually being used | Always `EXPLAIN` your important queries |
 | **Redundant indexes** | `INDEX(a)` is redundant if `INDEX(a, b)` already exists | Drop the single-column index |
 
+</details>
+
 ---
 
 ## Quick Decision Guide for Indexes
 
+<details>
+<summary>Open section</summary>
+
 ### Index Types at a Glance
+
+<details>
+<summary>Show answer</summary>
 
 | Type | What it is | Note |
 |---|---|---|
@@ -6600,7 +8579,12 @@ ANALYZE TABLE orders UPDATE HISTOGRAM ON status;        -- 8.0+: stats for skewe
 | **Prefix** | Indexes only the **first N characters** of a column | Much smaller; used for long `VARCHAR`/`BLOB` columns |
 | **Full-Text / Spatial / Hash** | Inverted index / R-Tree / hash table | Word search / geometry / exact match only (MEMORY engine) |
 
+</details>
+
 ### Which Index for Which Scenario
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Recommended Index |
 |---|---|
@@ -6617,10 +8601,19 @@ ANALYZE TABLE orders UPDATE HISTOGRAM ON status;        -- 8.0+: stats for skewe
 > [!IMPORTANT]
 > **The golden rule:** Indexes exist to help **reads**. Every index you add is a **tax on writes** (and consumes storage). Design your indexes based on your **actual query patterns**, not theoretical ones. Use `EXPLAIN` to verify that MySQL is actually using the index, and monitor for unused indexes that are just wasting resources. See also [How to Optimize a SQL Query](#how-to-optimize-a-sql-query).
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # Dense Index vs Sparse Index
+
+<details>
+<summary>Open section</summary>
 
 Indexes can be classified by how many entries they maintain relative to the rows in the data file. A **dense index** has an entry for every row, while a **sparse index** has entries for only some rows (typically one per disk block/page). This distinction is fundamental to database internals and affects storage, lookup speed, and write overhead.
 
@@ -6628,13 +8621,21 @@ Indexes can be classified by how many entries they maintain relative to the rows
 
 ## What Is a Dense Index?
 
+<details>
+<summary>Show answer</summary>
+
 A dense index has an entry for **every single row** (every search key value) in the data file. Think of it as a complete phone book where every person has a listing.
 
 ![Dense index: six index entries ID=1..6, one pointer per data row in the sorted data file](../svg/dbms/d095-dense-index.svg)
 
+</details>
+
 ---
 
 ## What Is a Sparse Index?
+
+<details>
+<summary>Show answer</summary>
 
 A sparse index has entries for only **some** rows — typically one entry per **disk block/page**. It points to the **first record in each block**. The data **must be sorted** on the search key for this to work.
 
@@ -6642,9 +8643,14 @@ A sparse index has entries for only **some** rows — typically one entry per **
 
 To find **ID=5**: the index sees `ID=4 ≤ 5 < next entry`, so it jumps to Block 2 and does a **short linear scan** within that block.
 
+</details>
+
 ---
 
 ## Advantages of Sparse Index Over Dense Index
+
+<details>
+<summary>Show answer</summary>
 
 | Advantage | Explanation |
 |---|---|
@@ -6654,9 +8660,14 @@ To find **ID=5**: the index sees `ID=4 ≤ 5 < next entry`, so it jumps to Block
 | **Less disk I/O for the index itself** | Fewer index pages to read from disk during lookups. The index traversal is shorter |
 | **Lower storage cost** | Takes up less disk space overall, which matters at massive scale |
 
+</details>
+
 ---
 
 ## Disadvantages of Sparse Index vs Dense Index
+
+<details>
+<summary>Show answer</summary>
 
 | Disadvantage | Explanation |
 |---|---|
@@ -6667,9 +8678,14 @@ To find **ID=5**: the index sees `ID=4 ≤ 5 < next entry`, so it jumps to Block
 | **Cannot cover queries** | A dense index can be a **covering index** (stores all needed columns, answering the query without touching the table). A sparse index only stores one key per block — you always have to read the actual data block |
 | **Less precise statistics** | The optimizer has less granular information about data distribution. A dense index tells MySQL exactly how many rows match a value; a sparse index can only estimate at the block level |
 
+</details>
+
 ---
 
 ## Why Would Anyone Use a Sparse Index?
+
+<details>
+<summary>Show answer</summary>
 
 The core reason: **the trade-off is worth it when data is sorted.**
 
@@ -6684,13 +8700,21 @@ The core reason: **the trade-off is worth it when data is sorted.**
 > [!NOTE]
 > **Real-world analogy:** A book's index is sparse — it tells you "Chapter 5 starts on page 87." It doesn't say "sentence 1 is on page 87, sentence 2 is on page 87, sentence 3 is on page 87..." You jump to page 87 and scan from there. That's fast enough.
 
+</details>
+
 ---
 
 ## How Is a Sparse Index Created?
 
+<details>
+<summary>Open section</summary>
+
 A sparse index **requires the data file to be sorted** on the indexed column. Here's the process:
 
 ### Step 1: Data Must Be Sorted on the Search Key
+
+<details>
+<summary>Show answer</summary>
 
 ```
 Data file sorted by employee_id:
@@ -6699,15 +8723,30 @@ Block 1: [501, 502, ..., 1000]
 Block 2: [1001, 1002, ..., 1500]
 ```
 
+</details>
+
 ### Step 2: Pick the First Key from Each Block
+
+<details>
+<summary>Show answer</summary>
 
 ![Sparse index entries: (1 → Block 0), (501 → Block 1), (1001 → Block 2), one entry per block](../svg/dbms/d097-sparse-index-entries.svg)
 
+</details>
+
 ### Step 3: Store the Index as a Sorted Structure
+
+<details>
+<summary>Show answer</summary>
 
 The index itself is stored as a small sorted file (or B+ Tree). Since it's tiny, it usually fits in one or two disk pages.
 
+</details>
+
 ### In Practice (InnoDB)
+
+<details>
+<summary>Show answer</summary>
 
 You don't explicitly say `CREATE SPARSE INDEX`. The database engine decides internally:
 
@@ -6719,14 +8758,26 @@ The sparse index concept is most visible in:
 - **SSTable files** in LSM-Tree databases (Cassandra, RocksDB, LevelDB) — they use sparse indexes on sorted data blocks
 - **Academic/exam contexts** — the concept is taught as a fundamental indexing strategy
 
+</details>
+
 ### Critical Constraint
+
+<details>
+<summary>Show answer</summary>
 
 > [!NOTE]
 > **A sparse index can ONLY be built on the column the data is physically sorted by.** You can have at most **one** sparse index per table (because a table can only be physically sorted one way). Any other column needs a dense index. This is exactly why InnoDB has one clustered index (sparse-like) and all secondary indexes are dense.
 
+</details>
+
+</details>
+
 ---
 
 ## Dense vs Sparse Index — Quick Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Dense Index | Sparse Index |
 |---|---|---|
@@ -6742,10 +8793,17 @@ The sparse index concept is most visible in:
 > [!IMPORTANT]
 > **The key trade-off in one line:** Sparse index trades **lookup precision** (must scan within a block) for **smaller size** (fits in memory, cheaper writes). Dense index trades **size and write cost** for **exact, direct access** to every row.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Cursor in SQL
+
+<details>
+<summary>Open section</summary>
 
 A **cursor** is a database object that allows you to process query results **one row at a time**, instead of all at once. Think of it as a pointer that moves through the result set row by row.
 
@@ -6758,6 +8816,9 @@ A **cursor** is a database object that allows you to process query results **one
 
 ## When Do You Need Cursors?
 
+<details>
+<summary>Show answer</summary>
+
 | Use Case | Why a Cursor Helps |
 |----------|-------------------|
 | Row-by-row processing | Need to apply different logic per row |
@@ -6768,9 +8829,14 @@ A **cursor** is a database object that allows you to process query results **one
 > [!WARNING]
 > **Important:** Cursors are **slower** than set-based operations. SQL is designed to work on sets of rows, not one at a time. **Always prefer set-based queries** (`UPDATE ... WHERE`, `INSERT ... SELECT`) when possible. Use cursors only as a last resort.
 
+</details>
+
 ---
 
 ## Cursor Lifecycle — 5 Steps
+
+<details>
+<summary>Show answer</summary>
 
 ![Cursor lifecycle: DECLARE (define) → OPEN (execute query) → FETCH loop (one row at a time) → CLOSE (release) → DEALLOCATE (free memory)](../svg/dbms/d099-cursor-lifecycle-5-steps.svg)
 
@@ -6782,11 +8848,19 @@ A **cursor** is a database object that allows you to process query results **one
 | **CLOSE** | Release the current result set (cursor can be reopened) | `CLOSE cursor_name` |
 | **DEALLOCATE** | Free the cursor's memory completely | `DEALLOCATE cursor_name` |
 
+</details>
+
 ---
 
 ## Basic Syntax
 
+<details>
+<summary>Open section</summary>
+
 ### MySQL Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 DECLARE cursor_name CURSOR FOR
@@ -6807,7 +8881,12 @@ END LOOP;
 CLOSE cursor_name;
 ```
 
+</details>
+
 ### SQL Server Syntax
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 DECLARE cursor_name CURSOR FOR
@@ -6827,11 +8906,21 @@ CLOSE cursor_name;
 DEALLOCATE cursor_name;
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Complete Example — Process Employee Bonuses
 
+<details>
+<summary>Open section</summary>
+
 ### Scenario
+
+<details>
+<summary>Show answer</summary>
 
 Give a 10% bonus to employees earning < 50000 and a 5% bonus to everyone else, logging each action:
 
@@ -6874,13 +8963,25 @@ CLOSE emp_cursor;
 DEALLOCATE emp_cursor;
 ```
 
+</details>
+
 ### How It Processes
 
+<details>
+<summary>Show answer</summary>
+
 ![Cursor loop over employees: each row is fetched, bonus computed (10% or 5%) and updated; @@FETCH_STATUS = -1 exits the loop](../svg/dbms/d100-cursor-fetch-bonus-loop.svg)
+
+</details>
+
+</details>
 
 ---
 
 ## MySQL Cursor Example (Inside a Stored Procedure)
+
+<details>
+<summary>Show answer</summary>
 
 In MySQL, cursors can only be used inside **stored procedures or functions**:
 
@@ -6928,9 +9029,14 @@ DELIMITER ;
 CALL ProcessBonuses();
 ```
 
+</details>
+
 ---
 
 ## Types of Cursors
+
+<details>
+<summary>Open section</summary>
 
 | Type | Description | Use Case |
 |:---:|-------------|----------|
@@ -6941,6 +9047,9 @@ CALL ProcessBonuses();
 | **Keyset** | Middle ground — structure is fixed, values can change | Moderate performance |
 
 ### Declaring Scrollable Cursor (SQL Server)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 DECLARE scroll_cursor SCROLL CURSOR FOR
@@ -6958,9 +9067,16 @@ CLOSE scroll_cursor;
 DEALLOCATE scroll_cursor;
 ```
 
+</details>
+
+</details>
+
 ---
 
 ## Implicit vs Explicit Cursors
+
+<details>
+<summary>Show answer</summary>
 
 | | Implicit Cursor | Explicit Cursor |
 |--|---|---|
@@ -6972,9 +9088,14 @@ DEALLOCATE scroll_cursor;
 > [!NOTE]
 > Most of what we discussed above are **explicit cursors**. Implicit cursors are created behind the scenes for single-row operations.
 
+</details>
+
 ---
 
 ## Cursor vs Set-Based Operations
+
+<details>
+<summary>Show answer</summary>
 
 ![Cursor approach (slow): DECLARE/OPEN/LOOP FETCH + UPDATE one row/CLOSE vs set-based (fast): one UPDATE ... SET bonus = CASE statement for all rows](../svg/dbms/d101-cursor-vs-set-based.svg)
 
@@ -6986,18 +9107,28 @@ DEALLOCATE scroll_cursor;
 | **Memory** | ❌ Higher overhead | ✅ Optimized by engine |
 | **When to use** | Complex row-by-row logic | Simple transformations |
 
+</details>
+
 ---
 
 ## Quick Summary
+
+<details>
+<summary>Show answer</summary>
 
 ![Cursor summary: lifecycle DECLARE → OPEN → FETCH (loop) → CLOSE → DEALLOCATE; when to use vs when to avoid cursors](../svg/dbms/d102-cursor-quick-summary.svg)
 
 > [!TIP]
 > **Interview tip:** If asked "What is a cursor and when would you use one?" — A cursor processes query results row-by-row. Use it ONLY when set-based SQL can't handle the logic. Always mention that cursors are **slower than set-based operations** and should be a last resort.
 
+</details>
+
 ---
 
 ## MySQL Cursors — Specifics & Limitations
+
+<details>
+<summary>Open section</summary>
 
 MySQL has a built-in `CURSOR` keyword for use inside **stored procedures**. It lets you iterate over a result set **row by row**, similar to a for-each loop in application code.
 
@@ -7033,6 +9164,9 @@ DELIMITER ;
 
 ### Key Points
 
+<details>
+<summary>Show answer</summary>
+
 | Aspect | Detail |
 |---|---|
 | **Where it works** | Only inside stored procedures / functions |
@@ -7044,9 +9178,16 @@ DELIMITER ;
 > [!IMPORTANT]
 > **Important:** SQL cursors are a **server-side database feature**. They have nothing to do with API pagination. Don't confuse the two.
 
+</details>
+
+</details>
+
 ---
 
 ## SQL Cursor vs Cursor-Based Pagination — Quick Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | | SQL Cursor (`DECLARE CURSOR`) | Cursor-Based Pagination (`WHERE id < ?`) |
 |---|---|---|
@@ -7059,10 +9200,17 @@ DELIMITER ;
 > 🔗 For the API-side pattern in full — deferred joins, keyset pagination and the
 > cursor-token contract — see [❓ MySQL Pagination — OFFSET/LIMIT vs Cursor-Based (Keyset) Pagination](#-mysql-pagination--offsetlimit-vs-cursor-based-keyset-pagination).
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Functional Dependencies in DBMS
+
+<details>
+<summary>Open section</summary>
 
 A **functional dependency (FD)** describes a relationship between attributes in a table where one attribute (or set of attributes) **uniquely determines** another attribute.
 
@@ -7075,7 +9223,13 @@ A **functional dependency (FD)** describes a relationship between attributes in 
 
 ## Sample Table (Used Throughout)
 
+<details>
+<summary>Open section</summary>
+
 ### `student_course` Table
+
+<details>
+<summary>Show answer</summary>
 
 | roll_no | name | dept | course_id | course_name | instructor |
 |:---:|:---:|:---:|:---:|:---:|:---:|
@@ -7086,19 +9240,36 @@ A **functional dependency (FD)** describes a relationship between attributes in 
 
 **Key:** `{roll_no, course_id}` is the composite primary key (a student can enroll in multiple courses).
 
+</details>
+
 ### Functional Dependencies in This Table
 
+<details>
+<summary>Show answer</summary>
+
 ![FDs in student_course: roll_no → name, dept; course_id → course_name, instructor; {roll_no, course_id} → all columns](../svg/dbms/d103-student-course-fds.svg)
+
+</details>
+
+</details>
 
 ---
 
 ## Types of Functional Dependencies
 
+<details>
+<summary>Show answer</summary>
+
 ![Functional dependency types: Trivial, Non-Trivial, Full, Partial, Transitive](../svg/dbms/d104-fd-types-tree.svg)
+
+</details>
 
 ---
 
 ## 1. Trivial Functional Dependency
+
+<details>
+<summary>Open section</summary>
 
 A dependency `X → Y` is **trivial** if Y is a **subset of X** (i.e., Y is already part of X). It's always true — you're not learning anything new.
 
@@ -7108,6 +9279,9 @@ A dependency `X → Y` is **trivial** if Y is a **subset of X** (i.e., Y is alre
 ### Rule: `X → Y` is trivial if `Y ⊆ X`
 
 ### Examples
+
+<details>
+<summary>Show answer</summary>
 
 | Dependency | Trivial? | Why |
 |-----------|:---:|-----|
@@ -7121,15 +9295,25 @@ A dependency `X → Y` is **trivial** if Y is a **subset of X** (i.e., Y is alre
 > [!IMPORTANT]
 > **Key point:** Trivial FDs are useless for normalization — they tell you nothing new about the data relationships.
 
+</details>
+
+</details>
+
 ---
 
 ## 2. Non-Trivial Functional Dependency
+
+<details>
+<summary>Open section</summary>
 
 A dependency `X → Y` is **non-trivial** if Y is **NOT a subset of X** — i.e., Y contains at least one attribute that is NOT in X. These are the useful, meaningful dependencies.
 
 ### Rule: `X → Y` is non-trivial if `Y ⊄ X`
 
 ### Examples
+
+<details>
+<summary>Show answer</summary>
 
 | Dependency | Non-Trivial? | Why |
 |-----------|:---:|-----|
@@ -7138,7 +9322,12 @@ A dependency `X → Y` is **non-trivial** if Y is **NOT a subset of X** — i.e.
 | `course_id → course_name` | ✅ Non-Trivial | `course_name` is NOT part of `course_id` |
 | `{roll_no, name} → name` | ❌ Trivial | `name` IS part of `{roll_no, name}` |
 
+</details>
+
 ### Completely Non-Trivial
+
+<details>
+<summary>Show answer</summary>
 
 A special case — when there is **zero overlap** between X and Y:
 
@@ -7150,9 +9339,16 @@ A special case — when there is **zero overlap** between X and Y:
 
 ![Non-trivial FD: roll_no → name, dept, where Y ⊄ X so Y is new information](../svg/dbms/d106-non-trivial-fd.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## 3. Full Functional Dependency (Fully Functional)
+
+<details>
+<summary>Open section</summary>
 
 A dependency `X → Y` is **full** if Y depends on the **entire** X, and removing any attribute from X breaks the dependency.
 
@@ -7163,6 +9359,9 @@ A dependency `X → Y` is **full** if Y depends on the **entire** X, and removin
 
 ### Example Using `student_course`
 
+<details>
+<summary>Show answer</summary>
+
 | Dependency | Full? | Why |
 |-----------|:---:|-----|
 | `{roll_no, course_id} → grade` | ✅ **Full** | Need BOTH roll_no AND course_id to determine grade. Neither alone works. |
@@ -7170,9 +9369,16 @@ A dependency `X → Y` is **full** if Y depends on the **entire** X, and removin
 
 ![Full FD: {roll_no, course_id} → grade; removing roll_no or course_id loses grade, so both are needed](../svg/dbms/d107-full-fd.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## 4. Partial Functional Dependency
+
+<details>
+<summary>Open section</summary>
 
 A dependency `X → Y` is **partial** if Y depends on only a **proper subset** of X — i.e., you can remove some attribute(s) from X and the dependency still holds.
 
@@ -7182,6 +9388,9 @@ A dependency `X → Y` is **partial** if Y depends on only a **proper subset** o
 ### Rule: `X → Y` is partial if some proper subset of X can determine Y
 
 ### Examples from `student_course`
+
+<details>
+<summary>Show answer</summary>
 
 The PK is `{roll_no, course_id}`.
 
@@ -7197,7 +9406,12 @@ The PK is `{roll_no, course_id}`.
 > [!IMPORTANT]
 > **Why it matters:** Partial FDs cause **redundancy**. Alice's name is repeated for every course she takes. **2NF** requires every non-key attribute to be *fully* dependent on the key — if one depends on only PART of the key, the table violates 2NF. Removing partial FDs is the goal of **2NF (Second Normal Form)**.
 
+</details>
+
 ### Showing the Redundancy
+
+<details>
+<summary>Show answer</summary>
 
 | roll_no | name | course_id | course_name |
 |:---:|:---:|:---:|:---:|
@@ -7207,9 +9421,16 @@ The PK is `{roll_no, course_id}`.
 
 `name = "Alice"` is stored **3 times** because of the partial FD `roll_no → name`. Splitting into separate tables (Student + Enrollment) fixes this.
 
+</details>
+
+</details>
+
 ---
 
 ## 5. Transitive Functional Dependency
+
+<details>
+<summary>Open section</summary>
 
 A dependency `X → Z` is **transitive** if there exists an intermediate attribute Y such that `X → Y` and `Y → Z`, but Y does NOT determine X.
 
@@ -7219,6 +9440,9 @@ A dependency `X → Z` is **transitive** if there exists an intermediate attribu
 ### Rule: `X → Y → Z` where `Y ↛ X` → transitive
 
 ### Example from `student_course`
+
+<details>
+<summary>Show answer</summary>
 
 ![Transitive dependency: roll_no → dept and dept → dept_head, but dept ↛ roll_no, so roll_no → dept_head is transitive](../svg/dbms/d110-transitive-dependency-chain.svg)
 
@@ -7230,9 +9454,16 @@ The chain:
 
 **How to fix:** decompose into `students(roll_no, name, dept)` and `departments(dept, dept_head)`, so `dept_head` is stored only ONCE per department — worked through with tables and SQL in [3NF — Third Normal Form](#3nf--third-normal-form).
 
+</details>
+
+</details>
+
 ---
 
 ## All 5 Types at a Glance
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Rule | Example | Useful? |
 |------|------|---------|:---:|
@@ -7242,9 +9473,14 @@ The chain:
 | **Partial** | A subset of X can determine Y | `{roll_no, course_id} → name` | ❌ Causes redundancy |
 | **Transitive** | `X → Y → Z` (Y ↛ X) | `roll_no → dept → dept_head` | ❌ Causes redundancy |
 
+</details>
+
 ---
 
 ## Connection to Normalization
+
+<details>
+<summary>Show answer</summary>
 
 Each normal form forbids one more kind of dependency: **2NF** removes partial FDs, **3NF** removes transitive FDs, and **BCNF** forbids any non-trivial FD whose left side is not a super key. The full ladder is in [The Ladder of Normal Forms](#the-ladder-of-normal-forms).
 
@@ -7253,10 +9489,17 @@ Each normal form forbids one more kind of dependency: **2NF** removes partial FD
 
 > 👉 Next: [Database Anomalies](#database-anomalies) shows the problems these dependencies cause; [Database Normalization — 1NF to BCNF](#database-normalization--1nf-2nf-3nf--bcnf) then removes them form by form.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Database Anomalies
+
+<details>
+<summary>Open section</summary>
 
 Anomalies are **problems that arise when a database table is not properly normalized**. They occur because of **redundant data** — the same piece of information is stored in multiple rows. When you try to insert, delete, or update data in such a table, you run into inconsistencies.
 
@@ -7268,6 +9511,9 @@ There are **three types** of anomalies: **Insertion**, **Deletion**, and **Updat
 ---
 
 ## The Problematic Table (Unnormalized)
+
+<details>
+<summary>Open section</summary>
 
 Consider this single table that stores student course enrollments along with department info:
 
@@ -7288,19 +9534,32 @@ This redundancy is the root cause of all three anomalies.
 
 ### The Root Cause — One Fact Stored in Many Places
 
+<details>
+<summary>Show answer</summary>
+
 ![Root cause: non-key dependency on a non-key → values repeat → redundancy → insertion, modification and deletion anomalies](../svg/dbms/d115-anomaly-root-cause.svg)
 
 > [!TIP]
 > **The single sentence that answers the interview question:** "An anomaly is a symptom of redundancy; redundancy is a symptom of a dependency on a non-key. Remove the dependency by decomposing, and all three anomalies disappear at once — because there's no longer more than one row that has to agree."
 
+</details>
+
+</details>
+
 ---
 
 ## 1. Insertion Anomaly
+
+<details>
+<summary>Open section</summary>
 
 > [!WARNING]
 > **Problem:** You **cannot insert** certain data without also inserting unrelated data that you don't have yet — the table's key forces you to supply it, so a valid, standalone fact has no legal row.
 
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 Suppose a **new department** is created: **"Mechanical Engineering"** with head **Dr. Joshi**. You want to record this in the database. But look at the table — every row requires a `StudentID`, `CourseID`, and `CourseName`.
 
@@ -7316,14 +9575,24 @@ You'd have to either:
 
 **The anomaly:** A perfectly valid fact (a department exists) **cannot be represented** because it's forced to depend on unrelated data (student enrollment).
 
+</details>
+
+</details>
+
 ---
 
 ## 2. Deletion Anomaly
+
+<details>
+<summary>Open section</summary>
 
 > [!WARNING]
 > **Problem:** Deleting a row causes you to **unintentionally lose** other important data — unrelated facts that happened to be co-located in that row, because it was the *only* place they were stored.
 
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 Look at **Carol (103)** — she's the **only student** in the Electrical Engineering department:
 
@@ -7342,14 +9611,24 @@ Now, if Carol **drops the course** (EE201), we delete this row.
 
 **The anomaly:** Removing one fact (student enrollment) accidentally **destroys** completely unrelated facts (department info, course info).
 
+</details>
+
+</details>
+
 ---
 
 ## 3. Update Anomaly
+
+<details>
+<summary>Open section</summary>
 
 > [!WARNING]
 > **Problem:** Updating a piece of data requires changing it in **multiple rows**. If you miss even one row, the database becomes **inconsistent** — it now holds **two contradictory versions of one truth**.
 
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 Suppose **Dr. Gupta retires** and **Dr. Mehta** becomes the new head of Computer Science. You need to update every row where `Department = 'Computer Science'`:
 
@@ -7373,9 +9652,16 @@ Now the database says **two different things** — Bob's row says Dr. Gupta is t
 
 **The anomaly:** A single fact is stored in multiple places, so updating it requires touching every copy. Missing one creates contradictory data.
 
+</details>
+
+</details>
+
 ---
 
 ## The Fix: Normalization
+
+<details>
+<summary>Show answer</summary>
 
 The solution is to **break the table into smaller, properly structured tables** where each fact is stored **exactly once**:
 
@@ -7422,9 +9708,14 @@ Now:
 
 Which normal form removes which anomaly — with before/after SQL — is covered in [Anomalies Resolved by Normalization](#anomalies-resolved-by-normalization--deep-dive).
 
+</details>
+
 ---
 
 ## Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Anomaly | Problem | Cause |
 |---|---|---|
@@ -7436,10 +9727,17 @@ Which normal form removes which anomaly — with before/after SQL — is covered
 > [!IMPORTANT]
 > **The key insight:** Anomalies aren't a separate problem to be patched — they're the observable symptom of **poor table design** (redundancy). Normalization eliminates redundancy by ensuring each independent fact lives in exactly one place. This is why normalization (1NF → 2NF → 3NF → BCNF) exists — it systematically removes the structural flaws that cause these anomalies.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Database Normalization — 1NF, 2NF, 3NF & BCNF
+
+<details>
+<summary>Open section</summary>
 
 📖 **Reference:** [Database Normalization: 1NF, 2NF, 3NF & BCNF Examples — DigitalOcean](https://www.digitalocean.com/community/tutorials/database-normalization)
 
@@ -7453,6 +9751,9 @@ It was introduced by **E. F. Codd** (1NF/2NF/3NF in 1970–72) and refined into 
 ---
 
 ## Why Normalize? — The Three Anomalies
+
+<details>
+<summary>Open section</summary>
 
 Take an **unnormalized** table that stores everything about a student's enrolment in one place:
 
@@ -7471,6 +9772,9 @@ Notice `Alice`, `CSE`, and `Dr. Smith` repeated across rows. That redundancy cre
 
 ### Benefits vs Costs
 
+<details>
+<summary>Show answer</summary>
+
 | ✅ Benefits of normalizing | ❌ Costs of normalizing |
 |---|---|
 | Less redundancy → smaller storage | More tables → more **JOINs** per read query |
@@ -7478,9 +9782,16 @@ Notice `Alice`, `CSE`, and `Dr. Smith` repeated across rows. That redundancy cre
 | Each fact updated in one place → consistency | More complex queries to write |
 | Cleaner schema, easier to extend | Reporting/analytics queries may need denormalized copies |
 
+</details>
+
+</details>
+
 ---
 
 ## The Ladder of Normal Forms
+
+<details>
+<summary>Show answer</summary>
 
 Each form **includes** the previous one — you cannot be in 3NF without already being in 2NF and 1NF.
 
@@ -7493,13 +9804,21 @@ Each form **includes** the previous one — you cannot be in 3NF without already
 | **3NF** | 2NF **+** no non-key attribute depends on another non-key attribute | Transitive dependencies |
 | **BCNF** | For every non-trivial FD `X → Y`, **X must be a super key** | Anomalies from overlapping candidate keys |
 
+</details>
+
 ---
 
 ## 1NF — First Normal Form
 
+<details>
+<summary>Open section</summary>
+
 **Rule:** every attribute must be **atomic** (single-valued and indivisible), each column must hold one data type, and there must be **no repeating groups** or arrays inside a cell. Row order and column order must carry no meaning.
 
 ### ❌ Violates 1NF
+
+<details>
+<summary>Show answer</summary>
 
 `phone` stores two numbers in one cell:
 
@@ -7510,7 +9829,12 @@ Each form **includes** the previous one — you cannot be in 3NF without already
 
 **Why it's a problem:** you can't index or search a single phone efficiently, `WHERE phone = '9990002222'` needs string matching, and adding/removing one number means rewriting the whole cell.
 
+</details>
+
 ### The other bad "fix" — repeating columns
+
+<details>
+<summary>Show answer</summary>
 
 | roll_no | student_name | phone1 | phone2 | phone3 |
 |:---:|:---:|:---:|:---:|:---:|
@@ -7518,7 +9842,12 @@ Each form **includes** the previous one — you cannot be in 3NF without already
 
 This is still wrong: it caps how many phones a student can have and fills the table with NULLs. **Repeating groups (`phone1..phoneN`) are a 1NF violation, not a solution.**
 
+</details>
+
 ### ✅ In 1NF — one row per value
+
+<details>
+<summary>Show answer</summary>
 
 **`students`**
 
@@ -7552,9 +9881,16 @@ CREATE TABLE student_phones (
 > [!WARNING]
 > **Gotcha:** a comma-separated list, a JSON array, or `tags = "sql,dbms,index"` inside a `VARCHAR` column all violate 1NF in the classical sense. Modern databases *support* JSON/array columns, and they're a pragmatic choice when the value is opaque to the database — but you lose per-element constraints, foreign keys, and clean indexing.
 
+</details>
+
+</details>
+
 ---
 
 ## 2NF — Second Normal Form
+
+<details>
+<summary>Open section</summary>
 
 **Rule:** the table is in **1NF**, and **no non-prime attribute is partially dependent on any candidate key** (see [Partial Functional Dependency](#4-partial-functional-dependency)). In practice: every non-key column must depend on the **entire** primary key, not just part of it.
 
@@ -7562,6 +9898,9 @@ CREATE TABLE student_phones (
 > 2NF only becomes interesting when the primary key is **composite**. If the PK is a single column, no partial dependency is possible, so a 1NF table with a single-column PK is automatically in 2NF.
 
 ### ❌ Violates 2NF
+
+<details>
+<summary>Show answer</summary>
 
 **`enrollment`** with composite primary key `{roll_no, course_id}`:
 
@@ -7578,7 +9917,12 @@ The functional dependencies:
 
 **Consequences:** `Alice` repeats for every course she takes; `DBMS` repeats for every student who takes it. Rename the course `DBMS` → `Database Systems` and you must touch every enrolment row.
 
+</details>
+
 ### ✅ In 2NF — one table per dependency
+
+<details>
+<summary>Show answer</summary>
 
 **`students`**
 
@@ -7623,15 +9967,25 @@ CREATE TABLE enrollment (
 
 Now a course rename is a **single-row update** in `courses`, and a new course can be inserted before anyone enrols — the insertion anomaly is gone.
 
+</details>
+
+</details>
+
 ---
 
 ## 3NF — Third Normal Form
+
+<details>
+<summary>Open section</summary>
 
 **Rule:** the table is in **2NF**, and **no non-prime attribute is transitively dependent** on the primary key (see [Transitive Functional Dependency](#5-transitive-functional-dependency)). Equivalently, for every non-trivial FD `X → Y`, either **X is a super key** *or* **Y is a prime attribute** (part of some candidate key).
 
 Plain English: **every non-key column must depend on the key, the whole key, and nothing but the key.**
 
 ### ❌ Violates 3NF
+
+<details>
+<summary>Show answer</summary>
 
 **`students`**
 
@@ -7647,7 +10001,12 @@ This is the [transitive dependency](#5-transitive-functional-dependency) `roll_n
 
 **Anomalies it causes:** the department-level ones — a new CSE head means updating every CSE student row, removing the last CSE student loses the fact that CSE's head is Dr. Smith, and a brand-new department can't be registered until a student joins it.
 
+</details>
+
 ### ✅ In 3NF
+
+<details>
+<summary>Show answer</summary>
 
 **`students`**
 
@@ -7681,15 +10040,25 @@ ALTER TABLE students
 > [!NOTE]
 > **3NF is the practical target** for most OLTP schemas. It removes almost all redundancy while keeping the join count reasonable.
 
+</details>
+
+</details>
+
 ---
 
 ## BCNF — Boyce–Codd Normal Form (3.5NF)
+
+<details>
+<summary>Open section</summary>
 
 **Rule:** for **every** non-trivial functional dependency `X → Y`, **X must be a super key**. BCNF is 3NF *without* the escape clause "…or Y is a prime attribute" — so it is strictly stronger.
 
 BCNF only differs from 3NF when a table has **multiple overlapping candidate keys**.
 
 ### ❌ In 3NF but violates BCNF — the classic example
+
+<details>
+<summary>Show answer</summary>
 
 **`teaches`** — a student takes a subject from exactly one teacher, and each teacher teaches exactly one subject:
 
@@ -7709,7 +10078,12 @@ Functional dependencies and keys:
 
 **The anomaly that survives 3NF:** you cannot record that `Dr. Kumar` teaches `Networks` until some student takes it, and if `Dr. Smith` switches to `Compilers` you must update multiple rows.
 
+</details>
+
 ### ✅ In BCNF — decompose on the offending determinant
+
+<details>
+<summary>Show answer</summary>
 
 **`teacher_subject`**
 
@@ -7731,7 +10105,12 @@ Functional dependencies and keys:
 > [!WARNING]
 > **The BCNF trade-off:** this decomposition is **lossless**, but it is **not dependency-preserving** — the FD `{student, subject} → teacher` can no longer be enforced by a key inside a single table. Nothing stops the same student from being assigned two teachers for DBMS unless you add an application-level or trigger-based check.
 
+</details>
+
 ### 3NF vs BCNF
+
+<details>
+<summary>Show answer</summary>
 
 | | 3NF | BCNF |
 |---|---|---|
@@ -7744,13 +10123,23 @@ Functional dependencies and keys:
 > [!TIP]
 > **Interview answer:** "Every BCNF table is in 3NF, but not vice versa. 3NF allows an FD whose determinant isn't a super key as long as the dependent attribute is part of some candidate key. BCNF forbids that. The practical catch is that BCNF decomposition can lose dependency preservation, which is why real schemas often stop at 3NF."
 
+</details>
+
+</details>
+
 ---
 
 ## Two Rules Every Decomposition Must Respect
 
+<details>
+<summary>Open section</summary>
+
 When you split a table `R` into `R1` and `R2`, check both properties:
 
 ### 1. Lossless Join (mandatory)
+
+<details>
+<summary>Show answer</summary>
 
 `R1 ⋈ R2` must give back **exactly** `R` — no lost rows, no spurious extra rows.
 
@@ -7761,7 +10150,12 @@ When you split a table `R` into `R1` and `R2`, check both properties:
 
 **Lossy example:** splitting `student_report(roll_no, course_id, marks)` into `(roll_no, marks)` and `(course_id, marks)` and joining on `marks` produces garbage rows — `marks` is not a key of either part.
 
+</details>
+
 ### 2. Dependency Preservation (desirable)
+
+<details>
+<summary>Show answer</summary>
 
 Every FD of `R` should be checkable inside **one** of the decomposed tables, without needing a join. If not, the constraint has to move into application logic or a trigger.
 
@@ -7773,9 +10167,16 @@ Every FD of `R` should be checkable inside **one** of the decomposed tables, wit
 > [!NOTE]
 > **This is exactly why 3NF is the industry default:** it's the strongest form you can always reach while keeping *both* properties.
 
+</details>
+
+</details>
+
 ---
 
 ## Full Walkthrough — UNF ➜ 3NF in One Pass
+
+<details>
+<summary>Show answer</summary>
 
 Starting from the very first table on this page:
 
@@ -7822,9 +10223,14 @@ CREATE TABLE enrollment (
 
 Every fact now lives in exactly one place: a student's name in `students`, a course's title in `courses`, a department's head in `departments`, and a grade in `enrollment`.
 
+</details>
+
 ---
 
 ## Anomalies Resolved by Normalization — Deep Dive
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [DBA StackExchange — How does normalization fix the three types of update anomalies?](https://dba.stackexchange.com/questions/194631/how-does-normalization-fix-the-three-types-of-update-anomalies)
 
@@ -7835,6 +10241,9 @@ The key insight: **normalization does not "detect and repair" anomalies at runti
 ---
 
 ### 1. Fixing the Insertion Anomaly
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | What blocks you |
 |---|---|
@@ -7862,9 +10271,14 @@ INSERT INTO students    VALUES (4, 'Dave', 'MECH');        -- student with no en
 
 **Why it works:** an *independent entity* now has an *independent table* with its own primary key, so its existence no longer depends on a related row existing.
 
+</details>
+
 ---
 
 ### 2. Fixing the Deletion Anomaly
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Collateral damage |
 |---|---|
@@ -7889,9 +10303,14 @@ DELETE FROM enrollment WHERE roll_no = 2 AND course_id = 'C1';
 
 **Why it works:** each table now models one entity with its **own lifecycle**. Removing an enrolment removes only the enrolment. Foreign keys with `ON DELETE RESTRICT` / `CASCADE` then let you state deliberately what *should* cascade — instead of losing data by accident.
 
+</details>
+
 ---
 
 ### 3. Fixing the Modification (Update) Anomaly
+
+<details>
+<summary>Show answer</summary>
 
 | Scenario | Rows that must all change together |
 |---|---|
@@ -7923,9 +10342,14 @@ UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
 
 **Why it works:** a single-row update is **atomic by construction** — there is no second copy left behind to disagree with. Partial-update inconsistency becomes unrepresentable.
 
+</details>
+
 ---
 
 ### Which Normal Form Fixes Which Anomaly?
+
+<details>
+<summary>Show answer</summary>
 
 | Normal Form | Dependency removed | Anomalies it eliminates |
 |:---:|---|---|
@@ -7934,9 +10358,14 @@ UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
 | **3NF** | **Transitive** (`non-key → non-key`) | Department facts duplicated per student — register a department with no students; change its head once; keep it when the last student leaves |
 | **BCNF** | Any FD whose LHS isn't a super key | Residual anomalies when candidate keys overlap (e.g. record a teacher's subject before any student enrols) |
 
+</details>
+
 ---
 
 ### Before ➜ After, Side by Side
+
+<details>
+<summary>Show answer</summary>
 
 | Operation | Unnormalized `student_report` | Normalized (3NF) schema |
 |---|---|---|
@@ -7950,9 +10379,16 @@ UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
 > [!IMPORTANT]
 > **Key takeaway:** Normalization attacks the cause, not the symptom. Every normal form is really the same instruction restated at a stricter level: **store each fact exactly once, in the table whose key determines it.**
 
+</details>
+
+</details>
+
 ---
 
 ## Denormalization — Deliberately Going Backwards
+
+<details>
+<summary>Show answer</summary>
 
 **Denormalization** is intentionally reintroducing redundancy to make reads faster: fewer joins, precomputed aggregates, duplicated columns.
 
@@ -7977,9 +10413,14 @@ UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
 > [!TIP]
 > **Interview answer:** "Normalize first for correctness, then denormalize selectively where measurements show a join or aggregate is the bottleneck — and always with a clear plan for keeping the duplicated data in sync."
 
+</details>
+
 ---
 
 ## How to Normalize — A Practical Checklist
+
+<details>
+<summary>Show answer</summary>
 
 1. **List the attributes** and the real-world facts they represent.
 2. **Write down the functional dependencies** (see [Functional Dependencies](#functional-dependencies-in-dbms)).
@@ -7991,9 +10432,14 @@ UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
 8. **Verify** each decomposition is **lossless**, and note any FD you can no longer enforce with a key.
 9. **Measure**, then denormalize only where reads demand it.
 
+</details>
+
 ---
 
 ## Quick-Fire Q&A
+
+<details>
+<summary>Show answer</summary>
 
 | Question | Answer |
 |---|---|
@@ -8011,10 +10457,17 @@ UPDATE students    SET student_name = 'Alicia' WHERE roll_no = 1;
 > [!TIP]
 > **Interview strategy:** define normalization in one sentence, name the anomaly it prevents, then walk one table from 1NF → 3NF using a concrete example (the `student_report` table above works well). Finish by mentioning that 3NF is the practical stopping point and that BCNF can cost dependency preservation — that last point is what separates a memorized answer from an understood one.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Transactions in DBMS
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [Tutorialspoint — DBMS Transaction](https://www.tutorialspoint.com/dbms/dbms_transaction.htm)
 
@@ -8026,6 +10479,9 @@ A **transaction** is a logical unit of work that consists of one or more SQL ope
 ---
 
 ## Bank Transfer Example
+
+<details>
+<summary>Show answer</summary>
 
 Transfer ₹500 from Account A to Account B:
 
@@ -8039,9 +10495,14 @@ Transfer ₹500 from Account A to Account B:
            A = 500,   B = 2000   (Total = 2500) ❌ ₹500 lost!
 ```
 
+</details>
+
 ---
 
 ## ACID Properties
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [GeeksforGeeks — ACID Properties in DBMS](https://www.geeksforgeeks.org/acid-properties-in-dbms/)
 
@@ -8051,6 +10512,9 @@ Every transaction must satisfy these four properties to ensure data integrity:
 
 ### 1. Atomicity — "All or Nothing"
 
+<details>
+<summary>Show answer</summary>
+
 Either ALL operations of a transaction are executed, or NONE are. No partial execution.
 
 ![Atomicity: all steps done leads to COMMIT; a crash after Write(A) undoes it (A back to 1000) and rolls back everything](../svg/dbms/d124-atomicity-commit-vs-rollback.svg)
@@ -8058,7 +10522,12 @@ Either ALL operations of a transaction are executed, or NONE are. No partial exe
 > [!NOTE]
 > Managed by the **Transaction Management** component and **Undo Log** — see [how atomicity is achieved](#1-atomicity--how-its-achieved).
 
+</details>
+
 ### 2. Consistency — "Valid State to Valid State"
+
+<details>
+<summary>Show answer</summary>
 
 The database must go from one **consistent state** to another. All integrity constraints (PK, FK, CHECK, etc.) must hold before and after the transaction.
 
@@ -8067,7 +10536,12 @@ The database must go from one **consistent state** to another. All integrity con
 > [!NOTE]
 > The application/developer is responsible for writing correct transaction logic. The DBMS enforces constraints. Full treatment (and how consistency differs from integrity): [❓ What Is Consistency and Integrity in DBMS?](#-what-is-consistency-and-integrity-in-dbms).
 
+</details>
+
 ### 3. Isolation — "Transactions Don't Interfere"
+
+<details>
+<summary>Show answer</summary>
 
 Even when multiple transactions run **concurrently**, each transaction must behave as if it's the **only one** running. One transaction's intermediate state must NOT be visible to another.
 
@@ -8076,7 +10550,12 @@ Even when multiple transactions run **concurrently**, each transaction must beha
 > [!NOTE]
 > Managed by **Concurrency Control** (locks, MVCC, timestamps) — see [how isolation is achieved](#3-isolation--how-its-achieved).
 
+</details>
+
 ### 4. Durability — "Committed Data Survives Crashes"
+
+<details>
+<summary>Show answer</summary>
 
 Once a transaction is **committed**, its changes are **permanent** — even if the system crashes, loses power, or restarts.
 
@@ -8085,7 +10564,12 @@ Once a transaction is **committed**, its changes are **permanent** — even if t
 > [!NOTE]
 > Managed by **Write-Ahead Logging (WAL)** — changes are written to a log on disk BEFORE they're applied to the database. See [Durability in Databases](#durability-in-databases).
 
+</details>
+
 ### ACID Summary Table
+
+<details>
+<summary>Show answer</summary>
 
 | Property | Meaning | Ensures | Responsibility | Managed By (DBMS component) |
 |:---:|---------|---------|:---:|-----------|
@@ -8094,9 +10578,16 @@ Once a transaction is **committed**, its changes are **permanent** — even if t
 | **Isolation** | Transactions don't interfere | Concurrent = Serial result | DBMS | Concurrency Control Manager (Locks/MVCC) |
 | **Durability** | Committed = Permanent | Survives crashes | DBMS | Recovery Manager + WAL (Redo Log) |
 
+</details>
+
+</details>
+
 ---
 
 ## Transaction States
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [Gate Vidyalay — Transaction States in DBMS](https://www.gatevidyalay.com/transaction-states-in-dbms/)
 
@@ -8118,17 +10609,32 @@ A transaction goes through the following states during its lifecycle:
 
 ### Example State Transitions
 
+<details>
+<summary>Show answer</summary>
+
 ![Example state paths: success ends Committed; failure ends Aborted (restart or kill); failure during commit goes Partially Committed → Failed → Aborted](../svg/dbms/d129-transaction-state-examples.svg)
+
+</details>
+
+</details>
 
 ---
 
 ## Schedules & Serializability
 
+<details>
+<summary>Show answer</summary>
+
 How concurrent transactions are ordered (serial vs. concurrent schedules), how to tell whether an interleaving is safe (conflicting operations, conflict & view serializability, the precedence-graph test) and recoverability (recoverable, cascadeless, strict) are covered once, in [Types of Schedules in DBMS](#types-of-schedules-in-dbms).
+
+</details>
 
 ---
 
 ## Quick Summary
+
+<details>
+<summary>Show answer</summary>
 
 ![Transactions quick summary: ACID meanings, success/failure state paths, serial vs concurrent vs serializable schedules, conflict ⊂ view serializability and the precedence-graph test](../svg/dbms/d138-transactions-quick-summary.svg)
 
@@ -8137,10 +10643,17 @@ How concurrent transactions are ordered (serial vs. concurrent schedules), how t
 
 > **📌 The SQL statements that control a transaction** (`BEGIN TRANSACTION`, `COMMIT`, `ROLLBACK`, `SAVEPOINT`, `ROLLBACK TO`) are covered with worked examples in [COMMIT, ROLLBACK & SAVEPOINT — In Detail](#commit-rollback--savepoint--in-detail), right below.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # COMMIT, ROLLBACK & SAVEPOINT — In Detail
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [StudyTonight — TCL Commands in DBMS](https://www.studytonight.com/dbms/tcl-command.php)
 
@@ -8152,6 +10665,9 @@ These three TCL (Transaction Control Language) commands control the lifecycle of
 
 ## 1. COMMIT
 
+<details>
+<summary>Open section</summary>
+
 **Makes all changes permanent.** Once committed, the changes cannot be undone by `ROLLBACK`. The changes are now durable on disk and survive crashes.
 
 ```sql
@@ -8159,6 +10675,9 @@ COMMIT;
 ```
 
 ### Example — Bank Transfer
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 BEGIN TRANSACTION;
@@ -8184,9 +10703,16 @@ COMMIT;   -- Both changes are now PERMANENT
 > **After COMMIT:** Changes are permanent. Even if the system crashes right after, the data is safe.
 > Strictly, what reaches disk at `COMMIT` is the **redo log record** (`fsync`ed); the table pages themselves are written later in the background, and the log is replayed if a crash happens first. See [Durability in Databases](#durability-in-databases).
 
+</details>
+
+</details>
+
 ---
 
 ## 2. ROLLBACK
+
+<details>
+<summary>Open section</summary>
 
 **Undoes all changes** made since the `BEGIN TRANSACTION` (or since the last `COMMIT`). The database reverts to its previous consistent state.
 
@@ -8195,6 +10721,9 @@ ROLLBACK;
 ```
 
 ### Example — Failed Transfer
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 BEGIN TRANSACTION;
@@ -8221,9 +10750,16 @@ ROLLBACK;   -- Undo EVERYTHING — Alice gets her ₹500 back
 > **Without ROLLBACK:** Alice loses ₹500 but Bob never receives it — money vanishes!
 > **With ROLLBACK:** Alice's debit is undone — everything goes back to the original state.
 
+</details>
+
+</details>
+
 ---
 
 ## 3. SAVEPOINT
+
+<details>
+<summary>Open section</summary>
 
 Creates a **checkpoint** within a transaction. You can `ROLLBACK TO` a savepoint to undo only the changes made **after** that savepoint, while keeping earlier changes intact.
 
@@ -8234,6 +10770,9 @@ RELEASE SAVEPOINT savepoint_name;      -- Delete checkpoint (optional)
 ```
 
 ### Example — Partial Rollback
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 BEGIN TRANSACTION;
@@ -8268,7 +10807,12 @@ COMMIT;   -- Alice→Bob transfer is committed
 
 ![Savepoint timeline: BEGIN, steps 1-2, SAVEPOINT, steps 4-5 (error); ROLLBACK TO undoes 4-5 only, then COMMIT keeps steps 1-2](../svg/dbms/d141-savepoint-timeline.svg)
 
+</details>
+
 ### Example — Undo a Failed Step and Retry It
+
+<details>
+<summary>Show answer</summary>
 
 A savepoint also lets you retry just the step that failed, without redoing the work before it:
 
@@ -8291,7 +10835,12 @@ COMMIT;  -- make everything permanent
 
 ![Savepoint flow: BEGIN, debit A, SAVEPOINT, credit B errors, ROLLBACK TO SAVEPOINT undoes only the credit, retry credit, COMMIT](../svg/dbms/d137-savepoint-rollback-flow.svg)
 
+</details>
+
 ### Multiple Savepoints
+
+<details>
+<summary>Show answer</summary>
 
 You can create multiple savepoints within a single transaction:
 
@@ -8318,9 +10867,16 @@ COMMIT;   -- Only order #1 (Laptop) is saved!
 
 ![Multiple savepoints: Laptop kept; ROLLBACK TO sp1 undoes Mouse and Keyboard, ROLLBACK TO sp2 undoes only Keyboard](../svg/dbms/d142-multiple-savepoints.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## TCL Commands — Quick Reference
+
+<details>
+<summary>Show answer</summary>
 
 | Command | What It Does | Can Undo? |
 |---------|-------------|:---:|
@@ -8331,10 +10887,17 @@ COMMIT;   -- Only order #1 (Laptop) is saved!
 | `ROLLBACK TO name` | Undo changes back to checkpoint | ✅ Partial undo |
 | `RELEASE SAVEPOINT name` | Delete a savepoint | — |
 
+</details>
+
+</details>
+
 ---
 ---
 
 # How Each ACID Property Is Achieved — Deep Dive
+
+<details>
+<summary>Open section</summary>
 
 Each ACID property requires specific **mechanisms** in the DBMS to enforce it. Atomicity is covered in full here; consistency, isolation and durability each have a fuller home elsewhere in this file, linked from their sections below.
 
@@ -8342,7 +10905,13 @@ Each ACID property requires specific **mechanisms** in the DBMS to enforce it. A
 
 ## 1. Atomicity — How It's Achieved
 
+<details>
+<summary>Open section</summary>
+
 ### Mechanism: **Transaction Manager + Undo Log (Rollback Log)**
+
+<details>
+<summary>Show answer</summary>
 
 The DBMS maintains an **undo log** (also called rollback log) that records the **old values** of every data item before it's modified. If the transaction fails, the undo log is used to restore everything.
 
@@ -8354,7 +10923,12 @@ The DBMS maintains an **undo log** (also called rollback log) that records the *
 | Transaction fails | ROLLBACK → apply undo log in reverse order |
 | System crash during transaction | Recovery → apply undo log to undo partial changes |
 
+</details>
+
 ### Shadow Copy Scheme (Simple Implementation)
+
+<details>
+<summary>Show answer</summary>
 
 🔗 **Reference:** [Ashutosh Tripathi — Implementation of Atomicity and Durability using Shadow Copy](https://ashutoshtripathi.com/2017/11/27/implementation-of-atomicity-and-durability-using-shadow-copy/)
 
@@ -8372,15 +10946,27 @@ For small databases, **shadow copy** provides atomicity + durability in one sche
 > [!WARNING]
 > **Limitation:** Extremely inefficient for large databases (copies entire DB). Real systems use **Write-Ahead Logging (WAL)** instead.
 
+</details>
+
+</details>
+
 ---
 
 ## 2. Consistency — How It's Achieved
 
+<details>
+<summary>Show answer</summary>
+
 Consistency is a **shared responsibility**: the developer writes correct transaction logic and the DBMS enforces declared constraints (PK, FK, UNIQUE, NOT NULL, CHECK, triggers). The enforcement table, an example and the check flow are in [Consistency — The Guarantee](#consistency--the-guarantee), inside [❓ What Is Consistency and Integrity in DBMS?](#-what-is-consistency-and-integrity-in-dbms).
+
+</details>
 
 ---
 
 ## 3. Isolation — How It's Achieved
+
+<details>
+<summary>Show answer</summary>
 
 Isolation is the most complex ACID property. It is enforced by **concurrency control**, using three families of mechanisms:
 
@@ -8394,16 +10980,28 @@ Isolation is the most complex ACID property. It is enforced by **concurrency con
 
 > **📌 Full treatment:** [Concurrency Control in DBMS](#concurrency-control-in-dbms-ski) (lock types, compatibility matrix, 2PL, timestamp ordering, deadlocks) · [SQL Isolation Levels](#sql-isolation-levels) · [Locking & Concurrency Control in MySQL](#locking--concurrency-control-in-mysql).
 
+</details>
+
 ---
 
 ## 4. Durability — How It's Achieved
 
+<details>
+<summary>Show answer</summary>
+
 Durability is achieved with **Write-Ahead Logging (WAL) + a redo log**: every change is written to a durable log on disk before `COMMIT` returns, and replayed after a crash. Full walkthrough (commit path, crash at every point, recovery with REDO/UNDO, `fsync`, checkpoints, doublewrite, replication): [Durability in Databases](#durability-in-databases).
+
+</details>
+
+</details>
 
 ---
 ---
 
 # Durability in Databases
+
+<details>
+<summary>Open section</summary>
 
 Durability is the **D** in ACID. It guarantees that once a transaction is **committed**, its changes are **permanent** — they survive crashes, power failures, and restarts. The moment the database says "COMMIT successful", that data will still be there after a reboot, a crash, or a power cut.
 
@@ -8411,11 +11009,17 @@ Durability is the **D** in ACID. It guarantees that once a transaction is **comm
 
 ## Why Durability Is Hard
 
+<details>
+<summary>Open section</summary>
+
 The problem is simple: the fastest storage is RAM, but RAM is **volatile** — pull the power and everything in it vanishes instantly. Disk is **persistent** but slow. A naive database that only wrote to RAM would lose all committed data on every crash. A naive database that wrote to disk on every single operation would be unacceptably slow.
 
 Durability is the engineering challenge of making committed data survive on disk **without** making the database unbearably slow.
 
 ### Key Term — Dirty Page
+
+<details>
+<summary>Show answer</summary>
 
 The database never edits rows directly on disk. It reads data in fixed-size **pages** (16 KB in InnoDB) into RAM (the [buffer pool](#the-buffer-pool--how-data-actually-flows-between-disk-and-memory)) and changes them there.
 
@@ -8431,9 +11035,16 @@ The database never edits rows directly on disk. It reads data in fixed-size **pa
 
 > Full clean vs dirty comparison (eviction cost, page lifecycle diagram): [Buffer Pool → Clean vs Dirty](#clean-vs-dirty--the-important-pair).
 
+</details>
+
+</details>
+
 ---
 
 ## Mechanism 1: Write-Ahead Logging (WAL) — The Core
+
+<details>
+<summary>Open section</summary>
 
 The most important durability mechanism in every serious database (MySQL InnoDB, PostgreSQL, Oracle, SQL Server) is **Write-Ahead Logging (WAL)**.
 
@@ -8442,6 +11053,9 @@ The most important durability mechanism in every serious database (MySQL InnoDB,
 In one line: **the log is the truth; the data files are just a cache of the log that's allowed to lag behind.**
 
 ### The Happy Path — Step by Step
+
+<details>
+<summary>Show answer</summary>
 
 ![WAL commit happy path: change in RAM, write() to OS cache, fsync() to disk (durability point), COMMIT OK, page flushed later](../svg/dbms/d150-wal-commit-happy-path.svg)
 
@@ -8455,7 +11069,12 @@ What each step really means:
 | **[3]** | Server replies `COMMIT OK`. | The promise to the client — made *only* after [2]. |
 | **[4]** | Much later, the modified 16 KB data page is written to its real place in the data file. | Expensive random write — done lazily, in batches, off the commit path. |
 
+</details>
+
 ### ❓ Why Send "COMMIT OK" First and Write the Data Page Later?
+
+<details>
+<summary>Show answer</summary>
 
 It looks backwards — we tell the client "done" *before* the real table file on disk is updated. It's safe, and it's much faster.
 
@@ -8488,7 +11107,12 @@ One transaction can change many pages (the row + every index, or two accounts in
 
 **Trade-off:** recovery after a crash takes longer, because the log since the last checkpoint must be replayed. That's why checkpointing exists ([Mechanism 3](#mechanism-3-checkpointing)): it keeps the amount of log to replay bounded.
 
+</details>
+
 ### What If a Step Fails? — Crash at Every Point
+
+<details>
+<summary>Show answer</summary>
 
 ![Commit timeline split into NOT DURABLE YET ( 0  RAM,  1  write(),  2  fsync()) and DURABLE ( 3  OK sent,  4  page written), with crash points A–E](../svg/dbms/d153-wal-crash-points-timeline.svg)
 
@@ -8504,7 +11128,12 @@ One transaction can change many pages (the row + every index, or two accounts in
 
 **Note on B — why "either way":** if only the `mysqld` *process* crashed, the OS is still alive and its page cache will still flush the log to disk ⇒ the commit may survive. If the whole machine lost power, the OS cache is gone ⇒ the commit is lost. Both are fine, because no `OK` was sent.
 
+</details>
+
 ### ⚠️ The Tricky One: Crash C — "Did My Commit Succeed?"
+
+<details>
+<summary>Show answer</summary>
 
 The data is safe, but the client sees a network error and has **no idea** whether it committed.
 
@@ -8512,7 +11141,12 @@ The data is safe, but the client sees a network error and has **no idea** whethe
 
 **Fix (application side):** make writes **idempotent** — send a unique `request_id` / idempotency key with a `UNIQUE` constraint, or check whether the change already exists before retrying. WAL protects durability; it cannot protect you from a blind retry.
 
+</details>
+
 ### What If `fsync()` Itself Returns an Error? (No Crash)
+
+<details>
+<summary>Show answer</summary>
 
 Sometimes the disk reports an I/O error (`EIO`) instead of the machine crashing. The tempting fix — "just call `fsync()` again" — is **wrong**:
 
@@ -8521,7 +11155,12 @@ Sometimes the disk reports an I/O error (`EIO`) instead of the machine crashing.
 
 So modern databases treat an `fsync()` failure as **fatal**: PostgreSQL `PANIC`s and InnoDB aborts the server on purpose. On restart, recovery rebuilds state from the last good WAL. The client never received `OK`, so no promise was broken — this behaves exactly like crash **B**.
 
+</details>
+
 ### The One Rule That Makes All This Work — "Write-AHEAD"
+
+<details>
+<summary>Show answer</summary>
 
 > [!IMPORTANT]
 > **A data page may never be written to disk before the log records describing its changes are on disk.**
@@ -8532,7 +11171,12 @@ Every log record has a growing number, the **LSN** (Log Sequence Number), and ev
 
 This is why the log is "ahead". It also covers **uncommitted** dirty pages that get flushed early (to free buffer-pool memory): their undo information is already logged, so recovery can always roll them back.
 
+</details>
+
 ### Recovery on Restart — How the Log Is Replayed
+
+<details>
+<summary>Show answer</summary>
 
 ![Crash recovery flow: find checkpoint LSN → scan redo log until bad checksum → REDO → UNDO uncommitted → accept connections](../svg/dbms/d156-crash-recovery-redo-undo.svg)
 
@@ -8548,9 +11192,16 @@ This is why the log is "ahead". It also covers **uncommitted** dirty pages that 
 
 **Where the files live:** in MySQL ≤ 8.0.29 the redo log is `ib_logfile0` / `ib_logfile1` (sized by `innodb_log_file_size`); from 8.0.30 it lives in the `#innodb_redo/` directory (sized by `innodb_redo_log_capacity`). In PostgreSQL it's the `pg_wal/` directory.
 
+</details>
+
+</details>
+
 ---
 
 ## Mechanism 2: `fsync()` — Actually Getting to Disk
+
+<details>
+<summary>Open section</summary>
 
 Calling `write()` does **not** put your data on disk. It copies the bytes into a **kernel buffer (the OS page cache)** and returns immediately. The data is still in **volatile RAM** and may sit there for seconds before reaching physical disk; a power cut during that window loses the "written" data.
 
@@ -8558,15 +11209,28 @@ Calling `write()` does **not** put your data on disk. It copies the bytes into a
 
 ### The Layers a Write Must Cross
 
+<details>
+<summary>Show answer</summary>
+
 ![Layers a write crosses: database process, OS page cache (write()), disk write-back cache (fsync()), persistent media (FLUSH/FUA) that survives power loss](../svg/dbms/d216-fsync-write-layers.svg)
 
 `COMMIT` cannot return until the WAL record has reached the **bottom** layer. That is the entire cost of the **D** in ACID.
 
+</details>
+
 ### Without fsync vs With fsync
+
+<details>
+<summary>Show answer</summary>
 
 ![Without fsync a power loss erases a commit already acknowledged; with fsync the log record is on media and is replayed on restart](../svg/dbms/d217-commit-without-vs-with-fsync.svg)
 
+</details>
+
 ### Why fsync Is Expensive
+
+<details>
+<summary>Show answer</summary>
 
 | Storage | Typical `fsync` cost | Max durable commits/sec (no batching) |
 |---|---|---|
@@ -8576,7 +11240,12 @@ Calling `write()` does **not** put your data on disk. It copies the bytes into a
 
 It's a **synchronous stall** — the committing thread can do nothing while it waits. This one call is usually the hard ceiling on a database's write throughput.
 
+</details>
+
 ### Group Commit — Amortizing the Cost
+
+<details>
+<summary>Show answer</summary>
 
 Since the WAL is a single sequential file, many transactions' records sit adjacent in the log buffer. So the engine batches them into **one** `fsync`:
 
@@ -8584,7 +11253,12 @@ Since the WAL is a single sequential file, many transactions' records sit adjace
 
 Each transaction still waits for a real `fsync`, so durability is intact — the *cost* is just shared. This is why database write throughput can far exceed "1 ÷ fsync latency".
 
+</details>
+
 ### The Tuning Knobs (and What You Trade Away)
+
+<details>
+<summary>Show answer</summary>
 
 **MySQL / InnoDB — `innodb_flush_log_at_trx_commit`.** This is the single most important durability knob in MySQL:
 
@@ -8611,9 +11285,16 @@ SHOW synchronous_commit;                   -- PostgreSQL: on means fully durable
 > [!TIP]
 > **Interview soundbite:** "`write()` only reaches the OS page cache — it's not durable. `fsync()` forces those bytes through the kernel cache and the drive's write cache onto persistent media, and blocks until they're there. It's the most expensive operation in the commit path, which is why engines batch transactions into a single `fsync` via group commit, and why relaxing `innodb_flush_log_at_trx_commit` to 2 buys throughput at the cost of losing up to a second of committed transactions in a power failure."
 
+</details>
+
+</details>
+
 ---
 
 ## Mechanism 3: Checkpointing
+
+<details>
+<summary>Show answer</summary>
 
 The redo log is a **circular buffer** — it has a fixed size. As changes accumulate, older entries must be freed up. But you can only delete a redo log entry once the corresponding data page has been flushed to the actual data file on disk. That flush is called a **checkpoint**.
 
@@ -8623,9 +11304,14 @@ InnoDB continuously runs a **page cleaner thread** in the background that writes
 
 On crash recovery, InnoDB only needs to replay redo log entries *after* the last checkpoint — everything before is already in the data files.
 
+</details>
+
 ---
 
 ## Mechanism 4: Double Write Buffer — No Torn Pages
+
+<details>
+<summary>Show answer</summary>
 
 InnoDB writes data pages in **16 KB chunks**. But a crash could happen midway through writing a 16 KB page — leaving half the old data and half the new data on disk. This is called a **torn page** and it results in corruption that the redo log alone cannot fix (because the redo log assumes the original page is intact to apply changes on top of).
 
@@ -8635,9 +11321,14 @@ InnoDB solves this with the **double write buffer**:
 
 On crash recovery, if InnoDB finds a torn page in a data file, it copies the intact version from the doublewrite area and then applies the redo log on top of it. The page is repaired.
 
+</details>
+
 ---
 
 ## Mechanism 5: Replication — Cross-Machine Durability
+
+<details>
+<summary>Show answer</summary>
 
 All the above mechanisms protect a single machine. But what if the disk physically fails, or the whole server rack burns?
 
@@ -8651,24 +11342,39 @@ Each extra guarantee costs at least one network round trip per commit.
 
 > 📌 How replication actually works in MySQL (binlog → relay log → applier), read replicas, replication lag, read-your-own-writes and failover: [Replication in MySQL](#replication-in-mysql--read-replicas-lag--failover).
 
+</details>
+
 ---
 ## How It All Fits Together
+
+<details>
+<summary>Show answer</summary>
 
 ![Commit durability flow: redo append → fsync (single-machine durability) → replica ACK (cross-machine) → OK to client (guarantee moment) → background checkpoint via doublewrite](../svg/dbms/d158-durability-end-to-end-flow.svg)
 
 The moment the client receives `OK`, the transaction is durable at every configured level.
 
+</details>
+
 ---
 
 ## Battery-Backed Write Cache (BBWC)
+
+<details>
+<summary>Show answer</summary>
 
 There is one subtle trap: many disk controllers have an on-board write cache (RAM on the controller). A `fsync()` call may return "success" when the data is actually in the controller cache, not yet on the magnetic platter or NAND cells. A power failure at that moment still loses the data.
 
 A **battery-backed write cache (BBWC)** keeps this controller cache alive during power loss, flushing it when power returns. With BBWC, `fsync()` is both fast (hits controller RAM) and durable (battery guarantees it survives power loss). This is why enterprise servers have RAID controllers with battery units — it dramatically improves both durability and write throughput.
 
+</details>
+
 ---
 
 ## Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Mechanism | Protects Against |
 |-----------|-----------------|
@@ -8682,10 +11388,17 @@ A **battery-backed write cache (BBWC)** keeps this controller cache alive during
 > [!IMPORTANT]
 > **The guarantee:** Every `COMMIT` acknowledgment is a promise. The mechanisms above exist solely to ensure that promise is never broken.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # ❓ What Is Consistency and Integrity in DBMS?
+
+<details>
+<summary>Open section</summary>
 
 These two terms are constantly used interchangeably — but they mean different things. The cleanest way to separate them:
 
@@ -8701,9 +11414,15 @@ These two terms are constantly used interchangeably — but they mean different 
 
 ## Integrity — The Rules
 
+<details>
+<summary>Open section</summary>
+
 **Integrity** means the data in the database is **accurate, valid, and trustworthy**. It's enforced through **integrity constraints** — rules you declare at schema-design time.
 
 ### The Four Types of Integrity Constraints
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Rule | Enforced By | Example |
 |---|---|---|---|
@@ -8726,13 +11445,23 @@ CREATE TABLE employees (
 > [!IMPORTANT]
 > **Key point:** Integrity is about the **data at rest**. At any given moment, you can inspect the database and ask: "does every row obey every rule?" If yes → integrity holds.
 
+</details>
+
+</details>
+
 ---
 
 ## Consistency — The Guarantee
 
+<details>
+<summary>Open section</summary>
+
 **Consistency** (the **C** in ACID) means a transaction takes the database from **one valid state to another valid state**. It never leaves the database in a half-finished, rule-violating state.
 
 ### Example — Bank Transfer
+
+<details>
+<summary>Show answer</summary>
 
 The business rule (an integrity constraint): **the total money in the system must never change during a transfer.**
 
@@ -8743,7 +11472,12 @@ Consistency guarantees that **no observer ever sees the ₹1300 state as a commi
 > [!NOTE]
 > **Note the dependency:** Consistency isn't achieved alone — it rides on the other three ACID properties. **Atomicity** prevents half-done transactions, **Isolation** hides intermediate states from other transactions, and **Durability** ensures the valid final state survives a crash.
 
+</details>
+
 ### How It's Enforced — Application Logic + DBMS Constraints
+
+<details>
+<summary>Show answer</summary>
 
 Consistency is a **shared responsibility** — partly the developer's job, partly the DBMS's job.
 
@@ -8754,7 +11488,12 @@ Consistency is a **shared responsibility** — partly the developer's job, partl
 | **Triggers** | Auto-validate data on INSERT/UPDATE |
 | **Domain constraints** | Data type checks (INT, VARCHAR, etc.) |
 
+</details>
+
 ### Example — Constraints on an `accounts` Table
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- DBMS enforces these constraints automatically:
@@ -8778,9 +11517,16 @@ UPDATE accounts SET balance = -100 WHERE id = 1;
 
 ![Consistency check flow: transaction starts, executes, checks constraints; violation → ROLLBACK, no violation → COMMIT](../svg/dbms/d145-consistency-check-flow.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## Side-by-Side Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Integrity | Consistency |
 |---|---|---|
@@ -8796,9 +11542,14 @@ UPDATE accounts SET balance = -100 WHERE id = 1;
 > [!NOTE]
 > **The link between them:** Consistency is enforced **by** integrity constraints. If a transaction would leave the database violating any integrity constraint, the DBMS aborts and rolls it back — that rollback *is* consistency in action.
 
+</details>
+
 ---
 
 ## ⚠️ Gotcha — "Consistency" in ACID ≠ "Consistency" in CAP
+
+<details>
+<summary>Show answer</summary>
 
 This trips up almost everyone in system design interviews. Same word, completely different meanings:
 
@@ -8812,9 +11563,14 @@ This trips up almost everyone in system design interviews. Same word, completely
 
 ![ACID consistency (is the data valid? balance = -500 violates CHECK) vs CAP consistency (is it the same everywhere? Node A 800 vs Node B 1000)](../svg/dbms/d161-acid-vs-cap-consistency.svg)
 
+</details>
+
 ---
 
 ## Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Question | Answer |
 |---|---|
@@ -8826,10 +11582,17 @@ This trips up almost everyone in system design interviews. Same word, completely
 > [!TIP]
 > **Interview tip:** "Integrity is the *what* — the rules that define valid data, like a foreign key needing to reference a real row. Consistency is the *guarantee* that a transaction never leaves the database in a state where those rules are broken. And I'd flag that ACID consistency (data validity) is a completely different concept from CAP consistency (all replicas agreeing) — the shared name is purely coincidental."
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Types of Schedules in DBMS
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [GeeksforGeeks — Types of Schedules in DBMS](https://www.geeksforgeeks.org/types-of-schedules-in-dbms/)
 
@@ -8842,9 +11605,15 @@ A **schedule** is the chronological order in which operations (read/write) of mu
 
 ## Complete Schedule Taxonomy
 
+<details>
+<summary>Open section</summary>
+
 ![Schedule taxonomy tree: Serial vs Non-Serial; Non-Serial into Serializable (conflict, view) and Non-Serializable (recoverable or non-recoverable)](../svg/dbms/d189-schedule-taxonomy.svg)
 
 ### Reading the Tree — Two Separate Questions
+
+<details>
+<summary>Show answer</summary>
 
 Every schedule gets judged on **two independent questions**:
 
@@ -8856,7 +11625,12 @@ Every schedule gets judged on **two independent questions**:
 > [!IMPORTANT]
 > The tree hangs "Recoverable / Non-Recoverable" under Non-Serializable to keep the picture simple, but recoverability applies to **every** schedule, serializable or not. A schedule your database should actually allow needs **both**: serializable (correct result) **and** at least recoverable (safe abort). Real engines aim for conflict-serializable + strict.
 
+</details>
+
 ### Each Type in Plain Words
+
+<details>
+<summary>Show answer</summary>
 
 **Schedule.** The order in which the reads/writes of several concurrent transactions actually run. Inside one transaction the order never changes; only *how the transactions are interleaved* differs.
 
@@ -8887,9 +11661,16 @@ Every schedule gets judged on **two independent questions**:
 | **[Cascadeless](#4d-cascadeless-schedule--no-cascading-aborts)** ✅ | Transactions read **only committed** data | No cascading rollbacks: an abort only undoes itself. |
 | **[Strict](#4e-strict-schedule--strongest)** ✅ | No one reads **or overwrites** an item until the transaction that last wrote it has committed/aborted | Undo is trivial (just restore the old value). This is what strict 2PL produces and what real databases use. |
 
+</details>
+
+</details>
+
 ---
 
 ## 1. Serial Schedule
+
+<details>
+<summary>Show answer</summary>
 
 Transactions execute **one after another** with NO interleaving. Transaction T2 starts only after T1 finishes completely.
 
@@ -8904,9 +11685,14 @@ Transactions execute **one after another** with NO interleaving. Transaction T2 
 > [!NOTE]
 > For `n` transactions, there are `n!` possible serial schedules. For T1, T2, T3 → 3! = 6 possible serial orders.
 
+</details>
+
 ---
 
 ## 2. Non-Serial Schedule
+
+<details>
+<summary>Show answer</summary>
 
 Operations from different transactions are **interleaved** (also called a **concurrent** schedule). Fast, but could produce **incorrect results** if not managed properly, so it must be checked for correctness.
 
@@ -8917,15 +11703,23 @@ Operations from different transactions are **interleaved** (also called a **conc
 
 Non-serial schedules are divided into **serializable** and **non-serializable**.
 
+</details>
+
 ---
 
 ## 3. Serializable Schedule
+
+<details>
+<summary>Open section</summary>
 
 A non-serial (concurrent) schedule is **serializable** if it produces the **same result** as some serial schedule. Serializability is the **gold standard** for correctness: concurrent but correct.
 
 ![Serializability: S3 (interleaved T1, T2) is serializable if it produces the same result as serial S1 (T1 then T2) or S2 (T2 then T1)](../svg/dbms/d132-serializability-concept.svg)
 
 ### Types of Serializability
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Definition |
 |:---:|-----------|
@@ -8937,13 +11731,23 @@ A non-serial (concurrent) schedule is **serializable** if it produces the **same
 
 ![Conflict serializable schedules are a subset of view serializable schedules, but not vice versa](../svg/dbms/d193-conflict-in-view-serializable.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## 3a. Conflict Serializability
 
+<details>
+<summary>Open section</summary>
+
 A schedule is **conflict serializable** if it can be converted into a serial schedule by **swapping non-conflicting operations**.
 
 ### Conflicting Operations
+
+<details>
+<summary>Show answer</summary>
 
 Two operations **conflict** if ALL three conditions are met:
 
@@ -8960,13 +11764,23 @@ Two operations **conflict** if ALL three conditions are met:
 | Read(A) | Write(B) | ❌ | ❌ | Different items — no conflict |
 | Read(A) | Read(B) | ❌ | ❌ | Both reads AND different items — no conflict |
 
+</details>
+
 ### Non-Conflicting Operations Can Be Swapped
+
+<details>
+<summary>Show answer</summary>
 
 If two adjacent operations are **non-conflicting**, you can swap their order without changing the result. By repeatedly swapping, you can try to convert a concurrent schedule into a serial one.
 
 ![Swapping the non-conflicting T2 Read(B) and T1 Write(A) groups T1's ops first, giving serial T1 then T2, so S is conflict serializable](../svg/dbms/d134-swap-nonconflicting-ops.svg)
 
+</details>
+
 ### Testing with a Precedence Graph
+
+<details>
+<summary>Open section</summary>
 
 🔗 **References:** [GeeksforGeeks — Conflict Serializability in DBMS](https://www.geeksforgeeks.org/dbms/conflict-serializability-in-dbms/) · [Javatpoint — Conflict Serializable Schedule](https://www.javatpoint.com/dbms-conflict-serializable-schedule)
 
@@ -8979,17 +11793,37 @@ To test if a schedule is conflict-serializable, build a **precedence (dependency
 
 #### Example — No Cycle (Conflict Serializable)
 
+<details>
+<summary>Show answer</summary>
+
 ![Precedence graph example: interleaved schedule R1(A) W1(A) R2(A) R1(B) W2(A) W1(B) gives only edge T1 → T2, no cycle, so it is conflict serializable, equivalent to T1, T2](../svg/dbms/d135-precedence-graph-no-cycle.svg)
+
+</details>
 
 #### Example with a Cycle (NOT Serializable)
 
+<details>
+<summary>Show answer</summary>
+
 ![Precedence graph with a cycle: T1 → T2 (on A) and T2 → T1 (on B), so the schedule is NOT conflict serializable](../svg/dbms/d136-precedence-graph-cycle.svg)
+
+</details>
+
+</details>
+
+</details>
 
 ---
 
 ## 3b. View Serializability
 
+<details>
+<summary>Open section</summary>
+
 ### View Equivalence
+
+<details>
+<summary>Show answer</summary>
 
 Two schedules S and S' are **view equivalent** if all three conditions hold. A schedule S is **view serializable** if it is view equivalent to some serial schedule S'.
 
@@ -9002,9 +11836,16 @@ Two schedules S and S' are **view equivalent** if all three conditions hold. A s
 > [!IMPORTANT]
 > **Key insight:** View serializability is **less restrictive** than conflict serializability — some schedules that are NOT conflict-serializable may still be view-serializable. It allows more schedules, but is harder to test (NP-complete).
 
+</details>
+
+</details>
+
 ---
 
 ## Equivalence Schedules Summary
+
+<details>
+<summary>Show answer</summary>
 
 | Type | Definition | How to Check |
 |------|-----------|-------------|
@@ -9012,9 +11853,14 @@ Two schedules S and S' are **view equivalent** if all three conditions hold. A s
 | **View Equivalent** | Same initial reads, same read-from, same final writes | Check 3 conditions (complex) |
 | **Conflict Equivalent** | Same order of conflicting operations | Precedence graph (no cycle = ✅) |
 
+</details>
+
 ---
 
 ## 4. Non-Serializable Schedules
+
+<details>
+<summary>Open section</summary>
 
 Schedules that are NOT equivalent to any serial schedule. They may or may not be safe depending on their **recoverability**.
 
@@ -9023,6 +11869,9 @@ Schedules that are NOT equivalent to any serial schedule. They may or may not be
 
 ### 4a. Non-Recoverable Schedule ❌ (Must AVOID)
 
+<details>
+<summary>Show answer</summary>
+
 T2 reads T1's uncommitted data and **commits before T1**. If T1 later aborts, T2 has committed with invalid data — **cannot be undone**.
 
 ![Non-recoverable schedule: T2 reads T1's uncommitted value and commits before T1 aborts, which is irrecoverable](../svg/dbms/d194-non-recoverable-schedule.svg)
@@ -9030,7 +11879,12 @@ T2 reads T1's uncommitted data and **commits before T1**. If T1 later aborts, T2
 > [!WARNING]
 > Non-recoverable schedules must ALWAYS be avoided. If T1 aborts, we can't undo T2's commit.
 
+</details>
+
 ### 4b. Recoverable Schedule ✅
+
+<details>
+<summary>Show answer</summary>
 
 A transaction commits **only after all transactions it has read from** have committed: T2 commits **only after** T1 (the transaction it read from) has committed.
 
@@ -9039,7 +11893,12 @@ A transaction commits **only after all transactions it has read from** have comm
 > [!IMPORTANT]
 > **Rule:** If T2 reads data written by T1, then T1 must commit **before** T2.
 
+</details>
+
 ### 4c. Cascading Schedule (Recoverable but Risky)
+
+<details>
+<summary>Show answer</summary>
 
 Recoverable, but failure of one transaction causes a **chain of rollbacks** (cascade abort): if T1 rolls back and T2 read T1's data, T2 must also roll back; if T3 read T2's data, T3 rolls back too → **cascade**.
 
@@ -9048,7 +11907,12 @@ Recoverable, but failure of one transaction causes a **chain of rollbacks** (cas
 > [!NOTE]
 > Cascading aborts are expensive — they waste all the work done by dependent transactions.
 
+</details>
+
 ### 4d. Cascadeless Schedule ✅ (No Cascading Aborts)
+
+<details>
+<summary>Show answer</summary>
 
 Transactions **only read committed values**. If T1 writes X, T2 can read X only **after T1 commits**.
 
@@ -9057,7 +11921,12 @@ Transactions **only read committed values**. If T1 writes X, T2 can read X only 
 > [!IMPORTANT]
 > **Rule:** Dirty reads are completely eliminated → no cascading abort possible.
 
+</details>
+
 ### 4e. Strict Schedule ✅ (Strongest)
+
+<details>
+<summary>Show answer</summary>
 
 Neither **read NOR write** a data item until the transaction that last wrote it has committed or aborted.
 
@@ -9072,15 +11941,27 @@ Neither **read NOR write** a data item until the transaction that last wrote it 
 
 ![Cascadeless but not strict (T2 writes A before T1 commits, a dirty write) vs strict (T2 writes only after T1 commits)](../svg/dbms/d199-cascadeless-vs-strict.svg)
 
+</details>
+
+</details>
+
 ---
 
 ## Schedule Hierarchy (Venn Diagram)
 
+<details>
+<summary>Show answer</summary>
+
 ![Schedule hierarchy Venn: Serial within Strict within Cascadeless within Recoverable within All Schedules; Non-Recoverable lies outside Recoverable (avoid)](../svg/dbms/d200-schedule-hierarchy-venn.svg)
+
+</details>
 
 ---
 
 ## All Schedule Types at a Glance
+
+<details>
+<summary>Show answer</summary>
 
 | Schedule Type | Interleaved? | Correct? | Dirty Reads? | Dirty Writes? | Cascading Abort? |
 |:---:|:---:|:---:|:---:|:---:|:---:|
@@ -9092,9 +11973,14 @@ Neither **read NOR write** a data item until the transaction that last wrote it 
 | **Recoverable** | ✅ Yes | ✅ Recoverable | ⚠️ Possible | ⚠️ Possible | ⚠️ Possible |
 | **Non-Recoverable** | ✅ Yes | ❌ INVALID | ⚠️ Possible | ⚠️ Possible | N/A (broken) |
 
+</details>
+
 ---
 
 ## Quick Summary
+
+<details>
+<summary>Show answer</summary>
 
 ![Schedules quick summary: nested schedule hierarchy, conflict vs view serializability checks, lock protocols, Thomas' Write Rule](../svg/dbms/d209-schedules-quick-summary.svg)
 
@@ -9103,10 +11989,17 @@ Lock protocols and Thomas' Write Rule (also shown in this diagram) are covered u
 > [!TIP]
 > **Interview tip:** "What is the difference between Cascadeless and Strict schedules?" — Cascadeless prevents dirty reads (transactions read only committed data). Strict prevents both dirty reads AND dirty writes (no transaction reads OR writes data written by an uncommitted transaction). Strict ⊂ Cascadeless.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Concurrency Problems (Without Proper Isolation)
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [GeeksforGeeks — Concurrency Problems in DBMS Transactions](https://www.geeksforgeeks.org/dbms/concurrency-problems-in-dbms-transactions/)
 
@@ -9137,6 +12030,9 @@ When multiple transactions run concurrently WITHOUT proper isolation, these prob
 
 ## 1. Dirty Read (Reading Uncommitted Data)
 
+<details>
+<summary>Show answer</summary>
+
 Also called the **Temporary Update Problem**. Transaction T2 reads a value that T1 has modified but **NOT YET COMMITTED**. If T1 later rolls back, T2 has read data that never existed.
 
 ![Dirty read: T2 reads T1's uncommitted A = 500, T1 rolls back to 1000, T2 keeps using the wrong value](../svg/dbms/d162-dirty-read-schedule.svg)
@@ -9147,9 +12043,14 @@ Also called the **Temporary Update Problem**. Transaction T2 reads a value that 
 | 2 | | Read(A) = 500 | 500 | **Dirty Read!** |
 | 3 | ROLLBACK | | 1000 | T2 has stale data |
 
+</details>
+
 ---
 
 ## 2. Lost Update
+
+<details>
+<summary>Show answer</summary>
 
 Two transactions read the same value and update it independently. The **second write overwrites the first**, losing T1's update.
 
@@ -9165,9 +12066,14 @@ Two transactions read the same value and update it independently. The **second w
 > [!NOTE]
 > Expected: A = 1000 - 500 - 200 = **300**. Got: A = **800**. ₹500 lost!
 
+</details>
+
 ---
 
 ## 3. Incorrect Summary Problem
+
+<details>
+<summary>Show answer</summary>
 
 One transaction is computing an **aggregate** (SUM, COUNT, AVG) while another transaction is **modifying** the same records. The aggregate mixes old and new values.
 
@@ -9183,25 +12089,40 @@ One transaction is computing an **aggregate** (SUM, COUNT, AVG) while another tr
 > [!NOTE]
 > T2 read A's old value (100) but B's new value (250). The sum (650) is **wrong** — the correct total is 600.
 
+</details>
+
 ---
 
 ## 4. Non-Repeatable Read
+
+<details>
+<summary>Show answer</summary>
 
 T1 reads the same data item **twice**, but gets **different values** because T2 modified it in between.
 
 ![Non-repeatable read: T1 reads A = 1000, T2 writes 500 and commits, T1's second read returns 500](../svg/dbms/d164-non-repeatable-read-schedule.svg)
 
+</details>
+
 ---
 
 ## 5. Phantom Read
+
+<details>
+<summary>Show answer</summary>
 
 T1 reads a set of rows that satisfy a condition. T2 **inserts/deletes** rows. T1 re-reads and gets a **different number of rows**.
 
 ![Phantom read: T1's COUNT for dept CSE returns 3, T2 inserts Dave and commits, T1's re-count returns 4](../svg/dbms/d165-phantom-read-schedule.svg)
 
+</details>
+
 ---
 
 ## SQL Isolation Levels
+
+<details>
+<summary>Open section</summary>
 
 SQL defines **4 isolation levels** that control which concurrency problems are allowed:
 
@@ -9219,6 +12140,9 @@ SQL defines **4 isolation levels** that control which concurrency problems are a
 
 ### Setting Isolation Level
 
+<details>
+<summary>Show answer</summary>
+
 ```sql
 -- Set for current session (MySQL syntax)
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
@@ -9230,7 +12154,12 @@ START TRANSACTION;
 COMMIT;
 ```
 
+</details>
+
 ### Which Level to Use?
+
+<details>
+<summary>Show answer</summary>
 
 | Use Case | Recommended Level |
 |----------|:---:|
@@ -9248,10 +12177,19 @@ COMMIT;
 > [!TIP]
 > **Interview tip:** "What isolation level does your database use by default?" — MySQL (InnoDB) defaults to **REPEATABLE READ**. PostgreSQL defaults to **READ COMMITTED**. Oracle defaults to **READ COMMITTED**. SQL Server defaults to **READ COMMITTED**.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # Concurrency Control in DBMS SKI
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [Tutorialspoint — DBMS Concurrency Control](https://www.tutorialspoint.com/dbms/dbms_concurrency_control.htm)
 
@@ -9268,15 +12206,26 @@ The five problems concurrency control must prevent (Dirty Read, Lost Update, Inc
 
 ## Concurrency Control Protocols
 
+<details>
+<summary>Show answer</summary>
+
 ![Concurrency control protocols: lock-based (incl. Two-Phase Locking), timestamp-based, and optimistic concurrency control](../svg/dbms/d172-concurrency-control-protocols-tree.svg)
+
+</details>
 
 ---
 
 ## 1. Lock-Based Concurrency Control
 
+<details>
+<summary>Open section</summary>
+
 Transactions must acquire a **lock** on a data item before accessing it. The lock prevents other transactions from interfering.
 
 ### Lock Types
+
+<details>
+<summary>Show answer</summary>
 
 | Lock | Symbol | Allows | Usage |
 |:---:|:---:|---------|-------|
@@ -9284,7 +12233,12 @@ Transactions must acquire a **lock** on a data item before accessing it. The loc
 | **Exclusive Lock** (write lock) | X | Only one writer, blocks everyone | `UPDATE`, `DELETE` (write) |
 | **Binary Lock** | — | Only two states: **locked** or **unlocked** — no distinction between read and write | Theoretical/simplest model; too restrictive in practice because it blocks concurrent readers |
 
+</details>
+
 ### Lock Compatibility Matrix
+
+<details>
+<summary>Show answer</summary>
 
 | Request ↓ / Held → | No Lock | Shared (S) | Exclusive (X) |
 |:---:|:---:|:---:|:---:|
@@ -9306,17 +12260,32 @@ Transactions must acquire a **lock** on a data item before accessing it. The loc
   T2: X-Lock(A) ❌ WAIT   Only one writer at a time
 ```
 
+</details>
+
 ### Lock Upgrading & Downgrading
+
+<details>
+<summary>Show answer</summary>
 
 ![Lock upgrade (S-Lock → X-Lock, reader wants to write) and downgrade (X-Lock → S-Lock, writer done)](../svg/dbms/d173-lock-upgrade-downgrade.svg)
 
+</details>
+
 ### Lock-Based Protocol Types
+
+<details>
+<summary>Show answer</summary>
 
 ![Lock-based protocol types: Simplistic, Pre-Claiming, 2PL and Strict 2PL](../svg/dbms/d201-lock-based-protocol-types.svg)
 
 **Simplistic** and **Pre-Claiming** are described below; **2PL** and **Strict 2PL** are in [Two-Phase Locking](#2-two-phase-locking-2pl).
 
+</details>
+
 ### Simplistic Lock Protocol
+
+<details>
+<summary>Show answer</summary>
 
 Acquire lock on an item **before writing** it. Unlock **after** the write is done.
 
@@ -9325,7 +12294,12 @@ Acquire lock on an item **before writing** it. Unlock **after** the write is don
 > [!NOTE]
 > Very basic. Doesn't prevent all concurrency problems.
 
+</details>
+
 ### Pre-Claiming Lock Protocol
+
+<details>
+<summary>Show answer</summary>
 
 Before execution, the transaction requests **ALL locks it will need** at once.
 - If ALL locks are granted → execute the transaction → release all at end
@@ -9336,9 +12310,16 @@ Before execution, the transaction requests **ALL locks it will need** at once.
 > [!NOTE]
 > This is the same idea as **Conservative 2PL**. Its trade-offs (no deadlocks because it is all-or-nothing, but poor concurrency) are summarized under [Variants of 2PL](#variants-of-2pl).
 
+</details>
+
+</details>
+
 ---
 
 ## 2. Two-Phase Locking (2PL)
+
+<details>
+<summary>Open section</summary>
 
 The most widely used protocol. A transaction has **two phases**:
 
@@ -9349,14 +12330,27 @@ The most widely used protocol. A transaction has **two phases**:
 
 ### Example
 
+<details>
+<summary>Show answer</summary>
+
 ![Valid 2PL (acquire S(A), S(B), X(A) → lock point → release B, A) vs invalid schedule that acquires S-Lock(B) after releasing A](../svg/dbms/d175-two-phase-locking-example.svg)
 
+</details>
+
 ### Guarantees
+
+<details>
+<summary>Show answer</summary>
 
 > [!NOTE]
 > **2PL guarantees conflict serializability** — if all transactions follow 2PL, the resulting schedule is always equivalent to some serial schedule. ⚠️ Basic 2PL can still have **cascading aborts**, and ⚠️ **deadlocks** are possible.
 
+</details>
+
 ### Variants of 2PL
+
+<details>
+<summary>Show answer</summary>
 
 | Variant | Rule | Prevents |
 |---------|------|----------|
@@ -9373,13 +12367,23 @@ The most widely used protocol. A transaction has **two phases**:
 > [!NOTE]
 > **Strict 2PL:** ✅ Conflict serializable. ✅ **No cascading aborts** — it produces [strict schedules](#4e-strict-schedule--strongest). ⚠️ Deadlocks still possible.
 
+</details>
+
+</details>
+
 ---
 
 ## 3. Timestamp-Based Concurrency Control
 
+<details>
+<summary>Open section</summary>
+
 Each transaction gets a **unique timestamp** when it starts. The DBMS ensures transactions execute in **timestamp order** — older transactions have priority.
 
 ### The Three Timestamps (Notation)
+
+<details>
+<summary>Show answer</summary>
 
 | Short form | Full form | Meaning |
 |-----------|-----------|---------|
@@ -9392,7 +12396,12 @@ Each transaction carries one `TS`; each data item X carries its own `W-TS(X)` an
 > [!TIP]
 > **How to read the rules:** `TS(Ti) < W-TS(X)` means *"Ti is **older** than the transaction that last wrote X"*, i.e. Ti is arriving **too late**: a younger transaction has already touched X, so letting Ti act now would break timestamp order.
 
+</details>
+
 ### Rules
+
+<details>
+<summary>Show answer</summary>
 
 **Read Operation by Ti:**
 ![Timestamp ordering read rule: TS(Ti) < W-TS(X) → reject and restart; TS(Ti) ≥ W-TS(X) → allow and update R-TS(X)](../svg/dbms/d177-timestamp-ordering-read-rule.svg)
@@ -9400,14 +12409,24 @@ Each transaction carries one `TS`; each data item X carries its own `W-TS(X)` an
 **Write Operation by Ti:**
 ![Timestamp-ordering write rule: reject if TS(Ti) < R-TS(X) or TS(Ti) < W-TS(X), otherwise allow and set W-TS(X) = TS(Ti)](../svg/dbms/d178-timestamp-write-rule.svg)
 
+</details>
+
 ### Example
+
+<details>
+<summary>Show answer</summary>
 
 ![Timestamp ordering example: T1 and T2 read X (R-TS rises to 2), then T1's Write(X) is rejected since TS(T1)=1 < R-TS=2](../svg/dbms/d179-timestamp-ordering-example.svg)
 
 > [!NOTE]
 > **Advantage:** No locks → no deadlocks. **Disadvantage:** More rollbacks if conflicts are frequent.
 
+</details>
+
 ### Thomas' Write Rule
+
+<details>
+<summary>Show answer</summary>
 
 An **optimization** for timestamp-based protocols that avoids unnecessary rollbacks.
 
@@ -9426,13 +12445,23 @@ An **optimization** for timestamp-based protocols that avoids unnecessary rollba
 > [!IMPORTANT]
 > **Key point:** Thomas' Write Rule produces **view serializable** schedules (not necessarily conflict serializable).
 
+</details>
+
+</details>
+
 ---
 
 ## 4. Optimistic Concurrency Control (Validation-Based)
 
+<details>
+<summary>Open section</summary>
+
 Assumes conflicts are **rare**. Transactions execute freely without any locks or checks. Only at the **end** (validation phase), the system checks if any conflict occurred.
 
 ### Three Phases
+
+<details>
+<summary>Show answer</summary>
 
 ![Optimistic concurrency control: Read phase (local copies) to Validate phase (conflict? yes abort, no proceed) to Write phase (apply to database)](../svg/dbms/d180-occ-three-phases.svg)
 
@@ -9445,9 +12474,16 @@ Assumes conflicts are **rare**. Transactions execute freely without any locks or
 > [!TIP]
 > **Best for:** Systems where reads dominate and write conflicts are rare (e.g., read-heavy web apps).
 
+</details>
+
+</details>
+
 ---
 
 ## Deadlocks
+
+<details>
+<summary>Open section</summary>
 
 🔗 **References:** [GeeksforGeeks — Deadlock in DBMS](https://www.geeksforgeeks.org/deadlock-in-dbms/) · [Timestamp & Deadlock Prevention Schemes](https://www.geeksforgeeks.org/introduction-to-timestamp-and-deadlock-prevention-schemes-in-dbms/) · [Starvation in DBMS](https://www.geeksforgeeks.org/starvation-in-dbms/) · [Recovery from Deadlock](https://www.geeksforgeeks.org/recovery-from-deadlock-in-operating-system/)
 
@@ -9456,6 +12492,9 @@ A **deadlock** occurs when two or more transactions are **waiting for each other
 ![Deadlock: T1 holds A and waits for B, T2 holds B and waits for A, forming a circular wait](../svg/dbms/d181-deadlock-t1-t2.svg)
 
 ### The 4 Necessary Conditions
+
+<details>
+<summary>Show answer</summary>
 
 A deadlock can occur **only if all four hold simultaneously**. Break any one and deadlock becomes impossible — that's exactly what prevention schemes do.
 
@@ -9468,9 +12507,14 @@ A deadlock can occur **only if all four hold simultaneously**. Break any one and
 
 ![Breaking each deadlock condition: mutual exclusion via S locks/MVCC, hold-and-wait via pre-claiming, no-preemption via wound-wait, circular wait via lock ordering](../svg/dbms/d182-break-deadlock-conditions.svg)
 
+</details>
+
 ---
 
 ### Handling Deadlocks — Three Strategies
+
+<details>
+<summary>Show answer</summary>
 
 | Strategy | How It Works | When to use |
 |---|---|---|
@@ -9478,9 +12522,14 @@ A deadlock can occur **only if all four hold simultaneously**. Break any one and
 | **Detection & Recovery** | Let deadlocks happen, detect them with a wait-for graph, then abort a victim | The common choice in real databases (MySQL, PostgreSQL) |
 | **Timeout (avoidance)** | If a transaction waits longer than a threshold, assume deadlock and roll it back | Simple, no graph needed — but may kill innocent slow transactions |
 
+</details>
+
 ---
 
 ### Deadlock Detection — The Wait-For Graph (WFG)
+
+<details>
+<summary>Show answer</summary>
 
 1. Create a **node** for every active transaction.
 2. Draw an edge `Ti → Tj` if **Ti is waiting for a lock held by Tj**.
@@ -9492,9 +12541,14 @@ A deadlock can occur **only if all four hold simultaneously**. Break any one and
 > [!NOTE]
 > **How often to check?** Too frequent = CPU overhead. Too rare = transactions sit blocked longer. Real databases (e.g. InnoDB) check on lock-wait, and also have an overall `innodb_lock_wait_timeout` as a backstop.
 
+</details>
+
 ---
 
 ### Prevention Schemes (Timestamp-Based)
+
+<details>
+<summary>Show answer</summary>
 
 Each transaction gets a **timestamp** at start — a smaller timestamp means **older**. The scheme then decides who waits and who dies.
 
@@ -9516,9 +12570,14 @@ Each transaction gets a **timestamp** at start — a smaller timestamp means **o
 > [!NOTE]
 > **Why restart with the same timestamp?** Because it guarantees the transaction eventually becomes the oldest in the system, so it can no longer be the one chosen to die — this is what prevents indefinite starvation.
 
+</details>
+
 ---
 
 ### Deadlock Recovery
+
+<details>
+<summary>Show answer</summary>
 
 Once detected, the DBMS must break the cycle by aborting something.
 
@@ -9545,9 +12604,14 @@ Pick the transaction whose rollback is **cheapest**:
 
 If victim selection always picks the same transaction, that transaction may **never** finish. Guard against it by including the **rollback count in the cost function** — each time a transaction is victimized, its cost of being chosen again goes up, so eventually it is allowed to complete.
 
+</details>
+
 ---
 
 ### Starvation (Livelock)
+
+<details>
+<summary>Show answer</summary>
 
 **Starvation** is when a transaction waits indefinitely while others keep progressing. Unlike deadlock, nothing is *stuck in a cycle* — the victim is simply always passed over.
 
@@ -9566,9 +12630,16 @@ If victim selection always picks the same transaction, that transaction may **ne
 
 **Solutions:** FIFO lock queues (first-requested, first-granted), **aging** (a transaction's priority rises the longer it waits), capping rollback counts, and setting an upper bound on transaction lifetime.
 
+</details>
+
+</details>
+
 ---
 
 ## Advantages & Disadvantages of Concurrency Control
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Advantages | ❌ Disadvantages |
 |---|---|
@@ -9578,9 +12649,14 @@ If victim selection always picks the same transaction, that transaction may **ne
 | | Complexity in distributed systems |
 | | Locking reduces parallelism |
 
+</details>
+
 ---
 
 ## Complete Comparison — All Protocols
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Lock-Based (2PL) | Timestamp-Based | Optimistic (Validation) |
 |--------|:---:|:---:|:---:|
@@ -9594,10 +12670,17 @@ If victim selection always picks the same transaction, that transaction may **ne
 > [!TIP]
 > **Interview tip:** "How does your database handle concurrency?" — MySQL InnoDB uses **MVCC + 2PL**. PostgreSQL uses **MVCC + Serializable Snapshot Isolation (SSI)**. Oracle uses **MVCC**. SQL Server uses **Lock-based (2PL) with optional MVCC** (snapshot isolation). Understanding that real databases combine multiple techniques is key.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Locking & Concurrency Control in MySQL
+
+<details>
+<summary>Open section</summary>
 
 When multiple transactions try to read and update the same row at the same time, you can end up with **lost updates**, **dirty reads**, or **inconsistent data**. MySQL provides several mechanisms to handle this. Below are the main approaches, each illustrated with real-world examples from an **Inventory Management System** and a **Banking Transaction System**.
 
@@ -9605,9 +12688,15 @@ When multiple transactions try to read and update the same row at the same time,
 
 ## 1. Pessimistic Locking (`SELECT ... FOR UPDATE`)
 
+<details>
+<summary>Open section</summary>
+
 **How it works:** You explicitly lock the row(s) when you read them. Any other transaction that tries to read the same row with `FOR UPDATE` (or tries to update it) will **block and wait** until the first transaction commits or rolls back. This is called "pessimistic" because you assume a conflict *will* happen, so you lock preemptively.
 
 ### Inventory Example — Purchasing the Last Item
+
+<details>
+<summary>Show answer</summary>
 
 Two customers try to buy the last unit of a product at the same time.
 
@@ -9638,7 +12727,12 @@ ROLLBACK;
 
 **What happens without the lock?** Both transactions would read `quantity = 1` simultaneously, both would decrement it, and you'd end up with `quantity = -1` — selling stock you don't have.
 
+</details>
+
 ### Bank Example — Transferring Money Between Accounts
+
+<details>
+<summary>Open section</summary>
 
 Transfer $500 from Account A to Account B.
 
@@ -9667,6 +12761,9 @@ COMMIT;
 
 #### What are START TRANSACTION, COMMIT, and ROLLBACK?
 
+<details>
+<summary>Show answer</summary>
+
 Think of a **transaction** as a protective wrapper around a group of SQL statements that says: "Either **all** of these succeed together, or **none** of them happen."
 
 | Command | What it does |
@@ -9681,7 +12778,12 @@ Think of a **transaction** as a protective wrapper around a group of SQL stateme
 
 For `SAVEPOINT` and step-by-step examples of each command, see [COMMIT, ROLLBACK & SAVEPOINT — In Detail](#commit-rollback--savepoint--in-detail).
 
+</details>
+
 #### How to Achieve This in Spring Boot + JPA (Hibernate)
+
+<details>
+<summary>Show answer</summary>
 
 In a Spring application, you almost **never** write `START TRANSACTION` or `COMMIT` manually. Spring's `@Transactional` annotation handles it for you.
 
@@ -9793,7 +12895,12 @@ public void timeSensitiveOperation() { ... }
 | `OPTIMISTIC` | No SQL lock — checks `@Version` on flush | Low contention, retry-friendly scenarios |
 | `OPTIMISTIC_FORCE_INCREMENT` | No SQL lock — increments `@Version` even on read | Force a version bump to signal "this was touched" |
 
+</details>
+
 #### Common Mistakes to Avoid in Spring
+
+<details>
+<summary>Show answer</summary>
 
 | Mistake | Why It Fails | Fix |
 |---------|-------------|-----|
@@ -9811,15 +12918,27 @@ public void timeSensitiveOperation() { ... }
 - Risk of **deadlocks** if lock ordering is not consistent
 - Holding locks for long transactions hurts performance
 
+</details>
+
+</details>
+
+</details>
+
 ---
 
 ## 2. Optimistic Locking (Application-Level Version Check)
+
+<details>
+<summary>Open section</summary>
 
 **How it works:** You do **not** lock the row when reading. Instead, you include a `version` (or `updated_at` timestamp) column. When updating, you check that the version hasn't changed since you read it. If it has, someone else modified the row first — your update affects 0 rows, and you know to retry. This is called "optimistic" because you assume conflicts are **rare**.
 
 This is the application-level form of [Optimistic Concurrency Control](#4-optimistic-concurrency-control-validation-based).
 
 ### Inventory Example — Two Warehouse Staff Updating Stock
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Table structure
@@ -9856,7 +12975,12 @@ WHERE product_id = 101 AND version = 4;
 -- ✅ Affected rows = 1 → Success!
 ```
 
+</details>
+
 ### Bank Example — Concurrent Withdrawals
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- accounts (account_id, balance, version)
@@ -9894,13 +13018,23 @@ WHERE account_id = 1001 AND version = 5;
 - Under **high contention**, many retries can happen — worse performance than just locking
 - Application must handle the retry logic
 
+</details>
+
+</details>
+
 ---
 
 ## 3. Atomic Updates (No Explicit Lock Needed)
 
+<details>
+<summary>Open section</summary>
+
 **How it works:** Instead of reading a value into the application and then writing back a new value, you do the math **directly in the SQL statement**. Because a single `UPDATE` statement is atomic in InnoDB, MySQL internally acquires a row lock for the duration of that single statement, preventing a race condition — and you don't need to manage locks yourself.
 
 ### Inventory Example — Decrement Stock on Purchase
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- ❌ Bad: read-then-write race condition
@@ -9918,7 +13052,12 @@ WHERE product_id = 101 AND quantity >= 1;
 -- 0 → out of stock, no negative inventory possible
 ```
 
+</details>
+
 ### Bank Example — Atomic Withdrawal
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Single atomic statement: debit only if sufficient balance
@@ -9940,9 +13079,16 @@ WHERE account_id = 1001 AND balance >= 500;
 - Cannot handle complex business logic that requires reading multiple columns or rows before deciding what to write
 - You don't get the "before" value unless you use a follow-up `SELECT` or `RETURNING` (MySQL 8.1+)
 
+</details>
+
+</details>
+
 ---
 
 ## 4. `LOCK IN SHARE MODE` (Shared / Read Lock)
+
+<details>
+<summary>Show answer</summary>
 
 **How it works:** Similar to `FOR UPDATE`, but instead of an exclusive lock, it places a **shared lock**. Multiple transactions can hold a shared lock on the same row simultaneously (so concurrent reads are fine), but no transaction can **write** to that row until all shared locks are released.
 
@@ -9965,9 +13111,14 @@ COMMIT;
 
 **When to use:** When you need to ensure a row **exists and stays unchanged** while you do related work, but you don't need to modify that row yourself. It's lighter than `FOR UPDATE` because it doesn't block other readers.
 
+</details>
+
 ---
 
 ## 5. Isolation Levels
+
+<details>
+<summary>Show answer</summary>
 
 MySQL's InnoDB engine supports all four standard isolation levels, which control how much transactions "see" each other's uncommitted work. Choosing the right level is another way to manage concurrency. The level-vs-anomaly table, the `SET ... ISOLATION LEVEL` syntax and guidance on which level to pick are in [SQL Isolation Levels](#sql-isolation-levels). What is specific to InnoDB:
 
@@ -9975,9 +13126,14 @@ MySQL's InnoDB engine supports all four standard isolation levels, which control
 - **Phantoms under `REPEATABLE READ`:** InnoDB's `REPEATABLE READ` uses gap locks to prevent most phantom reads, making it safer than the SQL standard requires.
 - **`SERIALIZABLE`:** every `SELECT` automatically behaves like `LOCK IN SHARE MODE` (section 4 above).
 
+</details>
+
 ---
 
 ## Which Approach Should You Pick?
+
+<details>
+<summary>Open section</summary>
 
 | Scenario | Recommended Approach |
 |----------|---------------------|
@@ -9990,13 +13146,25 @@ MySQL's InnoDB engine supports all four standard isolation levels, which control
 
 ### General Rule of Thumb
 
+<details>
+<summary>Show answer</summary>
+
 > [!NOTE]
 > Start with **atomic updates** for simple operations. If the logic is too complex for a single statement, try **optimistic locking** first. Fall back to **pessimistic locking** (`FOR UPDATE`) only when contention is high and retries are too costly. Use **isolation levels** as a global safety net underneath all of these.
+
+</details>
+
+</details>
+
+</details>
 
 ---
 ---
 
 # What Is the Meaning of the Word "Relational" in RDBMS?
+
+<details>
+<summary>Show answer</summary>
 
 **Common misconception ❌:** "Relational means tables are related to each other via foreign keys/joins." That's not where the word comes from.
 
@@ -10017,10 +13185,15 @@ So "the `employees` relation" means the table itself — not its relationships t
 > [!TIP]
 > **Interview tip:** Lead with the correction — "It's commonly misunderstood as tables being related via foreign keys, but it actually comes from the mathematical term *relation* (a set of tuples over a Cartesian product of domains), which is also why relational databases support relational algebra."
 
+</details>
+
 ---
 ---
 
 # MySQL Query Pipeline — Parser, Precompiler & the Cost-Based Optimizer
+
+<details>
+<summary>Open section</summary>
 
 Before MySQL returns a single row, your SQL text goes through a fixed pipeline. Knowing the stages tells you **where** a problem lives: a syntax error dies in the parser, an "unknown column" dies in the preprocessor, and a slow-but-correct query is almost always an **optimizer** decision you disagree with.
 
@@ -10028,11 +13201,19 @@ Before MySQL returns a single row, your SQL text goes through a fixed pipeline. 
 
 ## The Whole Pipeline
 
+<details>
+<summary>Show answer</summary>
+
 ![MySQL query pipeline: connection, parser, preprocessor, cost-based optimizer, execution engine, storage engine, with where each error class dies](../svg/dbms/d210-mysql-query-pipeline.svg)
+
+</details>
 
 ---
 
 ## Stage 2 — The Parser
+
+<details>
+<summary>Show answer</summary>
 
 The parser does two mechanical jobs and nothing else:
 
@@ -10049,9 +13230,14 @@ SELCT * FROM users;
 --    Caught by the PARSER — 'SELCT' is not a valid token.
 ```
 
+</details>
+
 ---
 
 ## Stage 3 — The Preprocessor (the "precompiler" step)
+
+<details>
+<summary>Open section</summary>
 
 The preprocessor takes the parse tree and checks it against **reality**:
 
@@ -10078,6 +13264,9 @@ SELECT emial FROM users;
 > | **MySQL practical** | The **parse + preprocess phase**, and specifically **prepared statements** — where MySQL parses and plans a statement once, then executes it many times with different values. |
 
 ### Prepared Statements — "Precompile Once, Execute Many"
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- 1. PREPARE: parse + preprocess + plan ONCE, store as a handle
@@ -10119,13 +13308,23 @@ ResultSet rs = ps.executeQuery();
 - The plan is chosen at `PREPARE` time on some paths, so a plan that suits `country = 'IN'` (500M rows) may be reused for `country = 'MC'` (200 rows). This is the classic **parameter-sniffing** trade-off.
 - MySQL 8.0 **removed the query cache** entirely — prepared statements save *parsing*, not *result* reuse.
 
+</details>
+
+</details>
+
 ---
 
 ## Stage 4 — The Cost-Based Optimizer
 
+<details>
+<summary>Open section</summary>
+
 The optimizer's job: given one SQL statement, choose the **cheapest execution plan** among many equivalent ones. MySQL's optimizer is **cost-based**, not rule-based — it assigns a number to each candidate plan and picks the smallest.
 
 ### What the Optimizer Actually Decides
+
+<details>
+<summary>Show answer</summary>
 
 | Decision | Options It Weighs |
 |---|---|
@@ -10137,7 +13336,12 @@ The optimizer's job: given one SQL statement, choose the **cheapest execution pl
 | **Sort strategy** | Read in index order (free) vs an explicit `filesort` |
 | **Aggregation strategy** | Loose index scan vs temporary table |
 
+</details>
+
 ### How Cost Is Estimated
+
+<details>
+<summary>Show answer</summary>
 
 Cost is computed from **statistics**, not from your data itself:
 
@@ -10161,7 +13365,12 @@ SELECT * FROM information_schema.STATISTICS WHERE TABLE_NAME = 'orders';
 > [!WARNING]
 > Cardinality in InnoDB is **sampled and approximate**, not exact. That's why a stale-statistics table can suddenly get a terrible plan after a big data change — and why `ANALYZE TABLE` sometimes "magically fixes" a slow query.
 
+</details>
+
 ### Optimizer Rewrites (Transformations)
+
+<details>
+<summary>Show answer</summary>
 
 Before costing, the optimizer rewrites your query into an equivalent-but-friendlier form:
 
@@ -10176,11 +13385,21 @@ Before costing, the optimizer rewrites your query into an equivalent-but-friendl
 | **Multi-Range Read (MRR)** | Sorts row-IDs from an index before fetching, converting random I/O into sequential I/O |
 | **`ORDER BY` elimination** | If an index already returns rows in the requested order, skip the sort entirely |
 
+</details>
+
 ### Seeing the Plan
+
+<details>
+<summary>Show answer</summary>
 
 `EXPLAIN` shows the plan this optimizer picked; `EXPLAIN ANALYZE` runs it and adds actual rows and time. When **estimated** and **actual** rows differ by orders of magnitude, the optimizer costed the plan with bad statistics, which is the usual root cause of a bad plan. Sample tables, outputs and a step-by-step reading guide are in [EXPLAIN — Reading Query Execution Plans](#explain--reading-query-execution-plans).
 
+</details>
+
 ### Watching the Optimizer Think — `optimizer_trace`
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 SET optimizer_trace = 'enabled=on';
@@ -10191,7 +13410,12 @@ SET optimizer_trace = 'enabled=off';
 
 The trace is a JSON document listing every plan considered, the cost assigned to each, and **why** the rejected ones lost. This is the definitive answer to "why isn't it using my index?".
 
+</details>
+
 ### Overriding the Optimizer
+
+<details>
+<summary>Show answer</summary>
 
 Use these as a **last resort** — a hint you add today becomes a wrong hint after the data grows.
 
@@ -10210,7 +13434,12 @@ SELECT /*+ MAX_EXECUTION_TIME(1000) */ ...;   -- kill after 1s
 SET SESSION optimizer_switch = 'index_condition_pushdown=off';
 ```
 
+</details>
+
 ### ❓ Why Doesn't MySQL Use My Index?
+
+<details>
+<summary>Show answer</summary>
 
 | Cause | Fix |
 |---|---|
@@ -10222,9 +13451,16 @@ SET SESSION optimizer_switch = 'index_condition_pushdown=off';
 | **Leading-column violation** on a composite index | See [Leftmost-Prefix Rule](#leftmost-prefix-rule) |
 | **Leading wildcard** — `LIKE '%abc'` | Only `LIKE 'abc%'` can use a B+ tree; consider `FULLTEXT` |
 
+</details>
+
+</details>
+
 ---
 
 ## Quick-Fire Q&A
+
+<details>
+<summary>Show answer</summary>
 
 | Question | Answer |
 |---|---|
@@ -10239,10 +13475,17 @@ SET SESSION optimizer_switch = 'index_condition_pushdown=off';
 
 🔗 Next: [How to Optimize a SQL Query](#how-to-optimize-a-sql-query) turns these mechanics into a practical checklist.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # How to Optimize a SQL Query
+
+<details>
+<summary>Open section</summary>
 
 Query optimization means reducing the amount of data the database reads, joins, sorts, and returns. Start with evidence: inspect the execution plan before changing the query or adding an index.
 
@@ -10260,6 +13503,9 @@ LIMIT 20;
 
 ## Practical Checklist
 
+<details>
+<summary>Open section</summary>
+
 | Check | Why it helps | Example |
 |---|---|---|
 | Index filter and join columns | Lets the database find matching rows instead of scanning every row | `WHERE customer_id = ?`, `JOIN orders.customer_id = customers.id` |
@@ -10272,6 +13518,9 @@ LIMIT 20;
 | Keep table statistics current | The optimizer needs accurate row-count estimates | Run the database's `ANALYZE` or statistics maintenance command |
 
 ### Example: From Scan and Sort to Index Lookup
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Query: fetch a customer's newest paid orders
@@ -10291,10 +13540,19 @@ With this index, the database can navigate directly to the rows for one customer
 > [!TIP]
 > **Interview answer:** "I first use `EXPLAIN ANALYZE` to find the costly scan, join, or sort. Then I reduce rows and columns early, ensure predicates and join keys are indexed, design composite indexes for the query pattern, and re-check the actual plan. I avoid adding indexes blindly because every index increases write cost."
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # The Buffer Pool — How Data Actually Flows Between Disk and Memory
+
+<details>
+<summary>Open section</summary>
 
 The **buffer pool** is the database's in-memory cache of **disk pages**. It is the single most important performance structure in any DBMS, and the reason a query on a 500 GB table can return in a millisecond.
 
@@ -10316,7 +13574,13 @@ Asking for one 200-byte row still loads the whole 16 KB page — which is *good*
 
 ## Key Terms — Page, Frame, Dirty, Clean, Pinned
 
+<details>
+<summary>Open section</summary>
+
 ### Page (block)
+
+<details>
+<summary>Show answer</summary>
 
 A **page** is the **fixed-size unit of I/O** — the smallest chunk the database will ever read from or write to disk. Your table file is simply a long array of these pages, and a page holds many rows plus some bookkeeping:
 
@@ -10325,11 +13589,21 @@ A **page** is the **fixed-size unit of I/O** — the smallest chunk the database
 > [!NOTE]
 > There is **no such thing as reading one row from disk.** You read its page. Index nodes are pages too — a B+ tree is a tree *of pages*.
 
+</details>
+
 ### Frame
+
+<details>
+<summary>Show answer</summary>
 
 A **frame** is one page-sized slot **inside the buffer pool**. A buffer pool of 8 GB with 16 KB pages has ~524,000 frames. Each frame either sits empty or holds a copy of one disk page.
 
+</details>
+
 ### Clean vs Dirty — the important pair
+
+<details>
+<summary>Show answer</summary>
 
 The distinction is simply: **does the in-memory copy still match the on-disk copy?**
 
@@ -10342,11 +13616,21 @@ The distinction is simply: **does the in-memory copy still match the on-disk cop
 
 ![Buffer pool page lifecycle: read in as CLEAN, writes make it DIRTY, flush/checkpoint makes it clean; dirty pages must flush before eviction](../svg/dbms/d212-page-lifecycle-clean-dirty.svg)
 
+</details>
+
 ### Pinned page
+
+<details>
+<summary>Show answer</summary>
 
 While a query is actively reading or writing a page, the page is **pinned** (its pin/reference count is > 0) so the eviction algorithm cannot steal it mid-operation. Once the operation finishes the page is unpinned and becomes a candidate for eviction again.
 
+</details>
+
 ### Why these terms matter
+
+<details>
+<summary>Show answer</summary>
 
 | Concept | Consequence |
 |---|---|
@@ -10358,25 +13642,42 @@ While a query is actively reading or writing a page, the page is **pinned** (its
 > [!IMPORTANT]
 > **In one line:** a page is the unit of transfer; *dirty* means "changed in memory, not yet on disk"; *clean* means "memory and disk agree"; a checkpoint is what turns dirty pages back into clean ones.
 
+</details>
+
 ---
 
 ### The Whole Picture
+
+<details>
+<summary>Show answer</summary>
 
 ![Whole buffer pool picture: SQL layer, clean/dirty pages in RAM, misses loaded from disk, log buffer fsynced to WAL at COMMIT, dirty pages flushed later](../svg/dbms/d213-buffer-pool-whole-picture.svg)
 
 Two things to notice: **reads** come *up* into the pool, and a **commit** goes down the *log* path — never straight to the table file.
 
+</details>
+
+</details>
+
 ---
 
 ## The Read Path — Page Hit vs Page Miss
+
+<details>
+<summary>Show answer</summary>
 
 ![Read path: page hit served from RAM in ~100 ns vs page miss that evicts, reads the 16 KB page from disk (~100 µs SSD / ~10 ms HDD)](../svg/dbms/d214-read-path-hit-vs-miss.svg)
 
 A **page hit** is ~1,000× faster than a page miss on SSD. That ratio is the whole reason the buffer pool exists.
 
+</details>
+
 ---
 
 ## The Write Path — Why a Write Doesn't Touch the Table File
+
+<details>
+<summary>Show answer</summary>
 
 This is the part most people get wrong. `UPDATE` does **not** write to the table file on disk.
 
@@ -10392,9 +13693,14 @@ This is the part most people get wrong. `UPDATE` does **not** write to the table
 
 > **📌 `fsync()`** — what "written to disk" actually means, the layers a write must cross, why it's expensive, group commit and the durability tuning knobs — is covered once in [Mechanism 2: `fsync()` — Actually Getting to Disk](#mechanism-2-fsync--actually-getting-to-disk).
 
+</details>
+
 ---
 
 ## Why We Need It — The Latency Gap
+
+<details>
+<summary>Show answer</summary>
 
 | Operation | Typical latency | Relative |
 |---|---|---|
@@ -10408,9 +13714,14 @@ Three compounding reasons the buffer pool pays off:
 2. **Index pages stay resident** — a B+ tree's root and internal nodes are touched by *every* lookup. Keeping them in memory turns a 4-level index traversal from 4 disk reads into 1 (or 0).
 3. **Write batching** — random page writes are the most expensive thing a disk does. Deferring and coalescing them is what lets a DBMS sustain thousands of writes per second.
 
+</details>
+
 ---
 
 ## What If We Had No Buffer Pool?
+
+<details>
+<summary>Show answer</summary>
 
 Suppose every read and write went straight to disk:
 
@@ -10436,9 +13747,14 @@ Suppose every read and write went straight to disk:
 > [!IMPORTANT]
 > **Bottom line:** without a buffer pool, a database is just a slow file system. It's the component that makes the difference between "a query is a memory operation" and "a query is a disk operation."
 
+</details>
+
 ---
 
 ## Eviction — Which Page Gets Thrown Out?
+
+<details>
+<summary>Show answer</summary>
 
 The pool is finite, so when a new page must come in, an existing one must go. If the victim is **dirty**, it must be flushed to disk first; if **clean**, it can simply be dropped.
 
@@ -10450,9 +13766,14 @@ The pool is finite, so when a new page must come in, an existing one must go. If
 
 A one-off full scan's pages enter the old sublist, are never re-read, and get evicted from there — leaving the hot young pages untouched. PostgreSQL solves the same problem differently, with a clock-sweep algorithm and a small ring buffer for sequential scans.
 
+</details>
+
 ---
 
 ## Sizing & Monitoring
+
+<details>
+<summary>Show answer</summary>
 
 | Engine | Typical setting | Note |
 |---|---|---|
@@ -10471,10 +13792,17 @@ SHOW GLOBAL STATUS LIKE 'Innodb_buffer_pool_read%';
 > [!TIP]
 > **Interview answer:** "The buffer pool is the DBMS's cache of disk pages. Reads check it first — a hit is served from RAM in nanoseconds, a miss costs a physical page read. Writes modify the page in memory, marking it dirty, and durability comes from `fsync`ing the WAL at commit, not from writing the data page; dirty pages are flushed in the background at checkpoints. Without it every row access would be a disk I/O and throughput would drop by orders of magnitude. The main tuning knobs are its size and the eviction policy — InnoDB uses a midpoint-insertion LRU specifically so a full table scan can't evict the hot working set."
 
+</details>
+
+</details>
+
 ---
 ---
 
 # File System vs DBMS — Why Do We Need a DBMS at All?
+
+<details>
+<summary>Open section</summary>
 
 🔗 **References:** [Javatpoint — DBMS vs File System](https://www.javatpoint.com/dbms-vs-files-system) · [GeeksforGeeks — Need for DBMS](https://www.geeksforgeeks.org/need-for-dbms/)
 
@@ -10484,6 +13812,9 @@ This is the **very first question** in most DBMS interviews, and it's really ask
 
 ## The Setup — How the Pre-DBMS World Worked
 
+<details>
+<summary>Show answer</summary>
+
 Before DBMSs, applications stored data in **flat files** (`.txt`, `.csv`, binary records) managed directly by the operating system's file system. Every program had to open the file, parse the bytes, find its record, and write it back itself.
 
 Imagine a bank in the 1970s. Each department writes its own program and keeps its own file:
@@ -10492,11 +13823,19 @@ Imagine a bank in the 1970s. Each department writes its own program and keeps it
 
 Every one of the problems below falls out of this picture.
 
+</details>
+
 ---
 
 ## The 8 Problems with a Plain File System
 
+<details>
+<summary>Open section</summary>
+
 ### 1. Data Redundancy & Inconsistency
+
+<details>
+<summary>Show answer</summary>
 
 The same fact lives in multiple files, in different formats.
 
@@ -10504,7 +13843,12 @@ The same fact lives in multiple files, in different formats.
 
 Redundancy wastes space; worse, it guarantees **inconsistency** the moment one copy is updated and the others aren't. A DBMS solves this by **normalization** (store each fact once — see [Database Normalization](#database-normalization--1nf-2nf-3nf--bcnf)) and **foreign keys**.
 
+</details>
+
 ### 2. Difficulty in Accessing Data
+
+<details>
+<summary>Show answer</summary>
 
 A file system has **no query language**. Every new question needs a **new program**.
 
@@ -10516,11 +13860,21 @@ A file system has **no query language**. Every new question needs a **new progra
 
 The file system gives you *bytes*; a DBMS gives you a **declarative language** plus a **query optimizer** that figures out *how* to get the answer efficiently.
 
+</details>
+
 ### 3. Data Isolation (Scattered, Incompatible Data)
+
+<details>
+<summary>Show answer</summary>
 
 Data is spread across many files in many formats, so writing a program that combines them is painful — there's no `JOIN`. You'd hand-code the matching logic, and get it subtly wrong.
 
+</details>
+
 ### 4. Integrity Problems
+
+<details>
+<summary>Show answer</summary>
 
 Business rules like "balance must never go below zero" live **inside application code**. Add a second program that forgets the rule, and the data is corrupt. There's no way to state the constraint once, centrally.
 
@@ -10538,7 +13892,12 @@ CREATE TABLE accounts (
 
 A DBMS gives you domain, entity, referential, and key constraints — see [Integrity — The Rules](#integrity--the-rules).
 
+</details>
+
 ### 5. Atomicity Problems
+
+<details>
+<summary>Show answer</summary>
 
 A file system has **no transactions**. If the machine crashes halfway through a multi-step operation, you're left with a corrupt half-state.
 
@@ -10553,7 +13912,12 @@ A file system has **no transactions**. If the machine crashes halfway through a 
 
 A DBMS guarantees **all-or-nothing** via undo logs and `COMMIT`/`ROLLBACK` — see [ACID Properties](#acid-properties).
 
+</details>
+
 ### 6. Concurrent Access Anomalies
+
+<details>
+<summary>Show answer</summary>
 
 Multiple programs writing the same file at once corrupt each other's work. There's no locking, no isolation.
 
@@ -10561,7 +13925,12 @@ Multiple programs writing the same file at once corrupt each other's work. There
 
 A DBMS provides **locks, MVCC, and isolation levels** — see [Concurrency Control in DBMS](#concurrency-control-in-dbms-ski).
 
+</details>
+
 ### 7. Security & Access Control Problems
+
+<details>
+<summary>Show answer</summary>
 
 File-system permissions are **all-or-nothing per file**. If a clerk needs to read customer names, they get access to the whole file — salaries, account numbers and all. There's no way to say "this user may read these *columns* of these *rows*".
 
@@ -10574,13 +13943,25 @@ CREATE VIEW clerk_view AS SELECT name, city FROM customers WHERE branch = 'Pune'
 
 See [GRANT / REVOKE Privileges](#mysql-grant--revoke-privileges-detailed) and [SQL Views](#sql-views).
 
+</details>
+
 ### 8. No Backup, Recovery, or Crash Resilience
 
+<details>
+<summary>Show answer</summary>
+
 If a file is corrupted or a disk dies mid-write, you restore last night's copy and lose the day. A DBMS has **WAL, redo/undo logs, checkpoints, and point-in-time recovery** — see [Durability — How It's Achieved](#4-durability--how-its-achieved).
+
+</details>
+
+</details>
 
 ---
 
 ## File System vs DBMS — Side-by-Side Comparison
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | File System | DBMS |
 |---|---|---|
@@ -10599,9 +13980,14 @@ If a file is corrupted or a disk dies mid-write, you restore last night's copy a
 | **Setup cost & overhead** | ✅ Almost none | ⚠️ Server, schema design, tuning, licence |
 | **Best for** | Config, logs, media blobs, one-off scripts | Shared, structured, concurrently-updated business data |
 
+</details>
+
 ---
 
 ## When a File System Is Still the Right Choice
+
+<details>
+<summary>Show answer</summary>
 
 An honest answer here scores well in interviews — "always use a database" is not true.
 
@@ -10616,9 +14002,14 @@ An honest answer here scores well in interviews — "always use a database" is n
 > [!TIP]
 > **Important nuance:** a DBMS is **not an alternative to files — it's built on top of them.** MySQL stores InnoDB tablespaces as `.ibd` files; PostgreSQL keeps one file per relation. What the DBMS adds is the **layer of guarantees** (ACID, concurrency, constraints, query processing, recovery) over those raw files. Saying "a DBMS doesn't use files" is a common interview slip.
 
+</details>
+
 ---
 
 ## Quick-Fire Q&A
+
+<details>
+<summary>Show answer</summary>
 
 | Question | Answer |
 |---|---|
@@ -10634,10 +14025,17 @@ An honest answer here scores well in interviews — "always use a database" is n
 > [!TIP]
 > **Interview answer:** "A file system stores bytes; a DBMS stores *managed data*. Concretely, the file system gives me no transactions, no concurrency control, no declarative querying, and no way to enforce integrity centrally — so every application has to re-implement all of that, and any bug corrupts shared data. A DBMS centralizes those guarantees. I'd still use plain files for config, logs, and blobs, where none of those guarantees are worth the overhead — and it's worth remembering the DBMS itself is built on files."
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Replication in MySQL — Read Replicas, Lag & Failover
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [MySQL Docs — Replication](https://dev.mysql.com/doc/refman/8.0/en/replication.html) · [Semisynchronous Replication](https://dev.mysql.com/doc/refman/8.0/en/replication-semisync.html)
 
@@ -10658,6 +14056,9 @@ An honest answer here scores well in interviews — "always use a database" is n
 
 ## How MySQL Replication Works
 
+<details>
+<summary>Open section</summary>
+
 ![MySQL replication: the app sends writes to the source, which records each commit in its binary log; each replica's receiver (I/O) thread pulls binlog events into its relay log, and applier (SQL) threads replay them; reads go to replicas through a proxy](../svg/dbms/d233-mysql-replication-architecture.svg)
 
 1. **Source writes the binary log (binlog).** Every committed transaction is appended to the source's binlog as events.
@@ -10673,6 +14074,9 @@ An honest answer here scores well in interviews — "always use a database" is n
 | `MIXED` | Statement, switching to row when unsafe | Compromise; rarely chosen today |
 
 ### GTID — Global Transaction Identifier
+
+<details>
+<summary>Show answer</summary>
 
 A **GTID** is a unique ID that MySQL gives to **every committed transaction**. It's assigned on the source and **stays the same on every replica**.
 
@@ -10693,9 +14097,16 @@ Each server records what it has applied as a compact set of ranges: `SELECT @@GL
 
 **Enable:** `gtid_mode = ON` and `enforce_gtid_consistency = ON` in `my.cnf`.
 
+</details>
+
+</details>
+
 ---
 
 ## Async vs Semi-Sync vs Group Replication
+
+<details>
+<summary>Show answer</summary>
 
 The difference is **when the source tells the client "COMMIT OK"**:
 
@@ -10716,9 +14127,14 @@ The difference is **when the source tells the client "COMMIT OK"**:
 - **`AFTER_COMMIT` (older):** it commits first, then waits. Other sessions may briefly see data that a crash could still lose.
 - ⚠️ **Silent fallback:** if no replica ACKs within `rpl_semi_sync_source_timeout` (default **10 s**), the source **falls back to async** and keeps going. It switches back once a replica catches up. Monitor `Rpl_semi_sync_source_status`, or you may be running async without knowing it.
 
+</details>
+
 ---
 
 ## Read Replicas & Read/Write Splitting
+
+<details>
+<summary>Show answer</summary>
 
 Most apps read far more than they write, so add replicas and **route reads to them** (the right half of the diagram above):
 
@@ -10733,9 +14149,14 @@ Mark replicas `super_read_only = ON` so nothing writes to them by accident.
 > [!IMPORTANT]
 > Replicas scale **reads only**. Every replica still applies **every write**, so adding replicas does nothing for write throughput. For that you need [sharding](#sharding--splitting-one-database-across-many-servers).
 
+</details>
+
 ---
 
 ## ProxySQL — The MySQL-Aware Proxy
+
+<details>
+<summary>Open section</summary>
 
 **ProxySQL** is an open-source proxy that sits **between your application and your MySQL servers**. It speaks the MySQL protocol, so the app connects to ProxySQL (default port **6033**) exactly as if it were a MySQL server. ProxySQL then decides **which real server** each query goes to.
 
@@ -10744,6 +14165,9 @@ Unlike a plain TCP load balancer, it **understands SQL**: it looks at every quer
 ![ProxySQL: application connections arrive at ProxySQL on port 6033; query rules send writes and SELECT ... FOR UPDATE to the writer hostgroup (the source) and plain SELECTs to the reader hostgroup (replicas); a monitor module checks read_only and replication lag and moves servers between hostgroups; a connection pool multiplexes many app connections onto few backend connections](../svg/dbms/d239-proxysql-architecture.svg)
 
 ### What It Does
+
+<details>
+<summary>Show answer</summary>
 
 | Feature | What it means |
 |---|---|
@@ -10777,7 +14201,12 @@ LOAD MYSQL SERVERS TO RUNTIME;      SAVE MYSQL SERVERS TO DISK;
 LOAD MYSQL QUERY RULES TO RUNTIME;  SAVE MYSQL QUERY RULES TO DISK;
 ```
 
+</details>
+
 ### Benefits vs Drawbacks
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Benefits | ❌ Drawbacks |
 |---|---|
@@ -10788,7 +14217,12 @@ LOAD MYSQL QUERY RULES TO RUNTIME;  SAVE MYSQL QUERY RULES TO DISK;
 | Query caching, rewriting, firewall, per-query stats | Multiplexing is switched off for some sessions (open transactions, temp tables, session variables, `LAST_INSERT_ID()`) |
 | Changes apply live through the admin interface | Read-your-own-writes is still your problem unless you enable GTID causal reads |
 
+</details>
+
 ### ProxySQL vs HAProxy
+
+<details>
+<summary>Show answer</summary>
 
 **HAProxy** is a general-purpose, very fast load balancer for TCP and HTTP. In front of MySQL it works at the **TCP level (layer 4)**: it forwards connections without understanding the SQL inside them.
 
@@ -10807,9 +14241,16 @@ LOAD MYSQL QUERY RULES TO RUNTIME;  SAVE MYSQL QUERY RULES TO DISK;
 > [!TIP]
 > **Interview line:** "HAProxy balances **connections**; ProxySQL routes **queries**. For a MySQL source with replicas I'd use ProxySQL for automatic read/write splitting, connection pooling and lag-aware routing. HAProxy is great when I only need fast TCP load balancing and the app already knows where to send writes. MySQL Router is the third option, the official choice with InnoDB Cluster."
 
+</details>
+
+</details>
+
 ---
 
 ## Replication Lag
+
+<details>
+<summary>Show answer</summary>
 
 **Lag** = how far a replica's applied state is behind the source. Even "fast" async replication is usually milliseconds to seconds behind, and under load it can be minutes.
 
@@ -10832,9 +14273,14 @@ SHOW REPLICA STATUS\G
 
 `Seconds_Behind_Source` is approximate: it compares event timestamps and can read 0 while the receiver itself is behind. For accurate numbers, write a heartbeat row on the source every second and compare it on the replica (`pt-heartbeat`), or compare GTID sets.
 
+</details>
+
 ---
 
 ## The Read-Your-Own-Writes Problem
+
+<details>
+<summary>Show answer</summary>
 
 Lag turns into a **visible bug** when a user writes and then immediately reads:
 
@@ -10855,13 +14301,21 @@ Lag turns into a **visible bug** when a user writes and then immediately reads:
 
 **Related anomaly — time going backwards:** two reads from two replicas with different lag can show a newer value and then an older one. Fix it by **pinning a user's session to one replica** (monotonic reads).
 
+</details>
+
 ---
 
 ## Failover — When the Source Dies
 
+<details>
+<summary>Open section</summary>
+
 **Failover** = promoting a replica to be the new source and pointing everyone at it. It can be **manual** (a DBA runs the steps) or **automatic** (a tool detects the failure and does it in seconds).
 
 ### Candidate Master (Designated Failover Replica)
+
+<details>
+<summary>Show answer</summary>
 
 A **candidate master** is a replica **chosen in advance** to become the new source if the current one dies. The term comes from the failover tool MHA (`candidate_master=1`); other tools call it a *promotion rule* or *member weight*.
 
@@ -10891,7 +14345,12 @@ A **candidate master** is a replica **chosen in advance** to become the new sour
 | **Orchestrator** | Promotion rules per host: `prefer`, `neutral`, `prefer_not`, `must_not` |
 | **Group Replication** | `group_replication_member_weight` (0–100): the highest-weight healthy member wins the election |
 
+</details>
+
 ### How Failover Is Done — Step by Step
+
+<details>
+<summary>Show answer</summary>
 
 ![Failover: before, the app goes through ProxySQL to the source, with replica A (candidate master) and replica B replicating from it; the source crashes; after failover, replica A is promoted to source, replica B now replicates from A, ProxySQL routes writes to A, and the old source is fenced off](../svg/dbms/d240-failover-candidate-master.svg)
 
@@ -10918,7 +14377,12 @@ A **candidate master** is a replica **chosen in advance** to become the new sour
 
 **Typical timeline (automatic):** crash at **t = 0** → detected **~5–10 s** → promoted and replicas re-pointed **~15 s** → traffic switched **~20–30 s**. Applications should **retry** failed writes during that window.
 
+</details>
+
 ### Manual vs Automatic Failover
+
+<details>
+<summary>Show answer</summary>
 
 | | **Manual** | **Automatic** |
 |---|---|---|
@@ -10927,7 +14391,12 @@ A **candidate master** is a replica **chosen in advance** to become the new sour
 | **Risk** | Slow, but a human can spot false alarms | A false detection can trigger a needless failover, or split brain if fencing fails |
 | **Tools** | Runbook + the SQL above | Orchestrator, MHA (older), MySQL InnoDB Cluster (Group Replication + MySQL Router), managed cloud (Amazon RDS Multi-AZ, Aurora) |
 
+</details>
+
 ### What Can Go Wrong
+
+<details>
+<summary>Show answer</summary>
 
 | Risk | What happens | Prevention |
 |---|---|---|
@@ -10936,18 +14405,32 @@ A **candidate master** is a replica **chosen in advance** to become the new sour
 | **Errant transactions** | A replica has a GTID the new source doesn't (someone wrote to a replica) | `super_read_only` on every replica |
 | **Flapping** | A server that keeps going up and down triggers repeated failovers | Tools block a second automatic failover for a cool-down period |
 
+</details>
+
+</details>
+
 ---
 
 ## Interview Answer
+
+<details>
+<summary>Show answer</summary>
 
 > [!TIP]
 > **"How does MySQL replication work, and what problems does it bring?"**
 > "The source writes every committed transaction to its binlog. Each replica's receiver thread copies those events into a relay log, and applier threads replay them. By default it's asynchronous, so replicas lag and a source crash can lose the last transactions. Semi-sync waits for one replica to acknowledge receipt, and Group Replication waits for a majority. Read replicas scale reads but not writes, and lag causes read-your-own-writes bugs, which I'd fix by reading from the source right after a write or waiting for the write's GTID on the replica. On failover a tool like Orchestrator promotes the pre-chosen candidate master (or the most up-to-date replica by GTID), re-points the other replicas, and ProxySQL follows the new writer automatically. The old source is fenced to avoid split brain."
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Database Partitioning
+
+<details>
+<summary>Open section</summary>
 
 When a single table grows to hundreds of millions (or billions) of rows, or has dozens of columns with different access patterns, even well-indexed queries start to slow down — because the table simply doesn't fit efficiently into memory or disk I/O anymore. **Partitioning** is the strategy of splitting a large table into smaller, more manageable pieces.
 
@@ -10962,9 +14445,15 @@ There are two fundamentally different ways to partition a table:
 
 ## Vertical Partitioning
 
+<details>
+<summary>Open section</summary>
+
 Vertical partitioning means **splitting a table's columns** into two or more separate tables. Each resulting table has the **same number of rows** but **fewer columns**. The tables are linked by the same primary key so you can `JOIN` them back when needed.
 
 ### Why Do It?
+
+<details>
+<summary>Show answer</summary>
 
 Not all columns are accessed equally. In a typical `users` table, you might read `name` and `email` on every page load, but `bio` (a large `TEXT` column) and `profile_picture_url` only when someone visits a profile page. Keeping everything in one table means:
 
@@ -10972,7 +14461,12 @@ Not all columns are accessed equally. In a typical `users` table, you might read
 - **Buffer pool is wasted** — hot, small columns share pages with cold, large columns
 - **Full scans are slower** — even reading just `name` and `email` has to skip over the bulky `bio` column in every row
 
+</details>
+
 ### Example — E-Commerce Product Table
+
+<details>
+<summary>Show answer</summary>
 
 Suppose you have a single `products` table:
 
@@ -10994,7 +14488,12 @@ CREATE TABLE products (
 
 **Problem:** Every query that lists products (homepage, search results, category pages) reads just `name`, `price`, `category_id`, and `stock` — but InnoDB loads the **full row** including the heavy `description`, `specs_json`, and `warranty` columns. For 10 million products, this wastes enormous amounts of buffer pool memory.
 
+</details>
+
 ### After Vertical Partitioning
+
+<details>
+<summary>Show answer</summary>
 
 Split into two tables — **frequently accessed columns** and **rarely accessed columns**:
 
@@ -11024,7 +14523,12 @@ CREATE TABLE products_detail (
 
 ![Vertical partitioning: wide products table split into hot products_core and cold products_detail](../svg/dbms/d223-vertical-partitioning-tables.svg)
 
+</details>
+
 ### Query Patterns After Vertical Partitioning
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 -- Homepage / Search / Category listing — FAST (reads only the narrow core table)
@@ -11042,7 +14546,12 @@ JOIN products_detail d ON c.id = d.product_id
 WHERE c.id = 42;
 ```
 
+</details>
+
 ### When to Use Vertical Partitioning
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Use When | ❌ Avoid When |
 |---|---|
@@ -11051,13 +14560,23 @@ WHERE c.id = 42;
 | You want to fit hot data entirely in the buffer pool | The overhead of `JOIN`ing tables back is unacceptable (ultra-low-latency systems) |
 | Different columns have different security/access requirements | Table is small enough that row size doesn't matter |
 
+</details>
+
+</details>
+
 ---
 
 ## Horizontal Partitioning
 
+<details>
+<summary>Open section</summary>
+
 Horizontal partitioning means **splitting a table's rows** into multiple smaller tables (or partitions). Each partition has the **same columns** but holds only a **subset of the rows**. The split is done based on a **partition key** — a column (or expression) whose value determines which partition a row goes into.
 
 ### Why Do It?
+
+<details>
+<summary>Show answer</summary>
 
 When a table grows to hundreds of millions of rows:
 
@@ -11066,7 +14585,12 @@ When a table grows to hundreds of millions of rows:
 - **Maintenance operations are slow** — `ALTER TABLE`, `OPTIMIZE TABLE`, archiving old data take forever on a massive table
 - **Deleting old data is expensive** — `DELETE FROM orders WHERE order_date < '2020-01-01'` generates billions of undo log entries; dropping a partition is instant
 
+</details>
+
 ### Types of Horizontal Partitioning
+
+<details>
+<summary>Show answer</summary>
 
 | Type | How Rows Are Split | Best For |
 |---|---|---|
@@ -11075,7 +14599,12 @@ When a table grows to hundreds of millions of rows:
 | **Hash** | By hash of a column value (evenly distributes rows) | Uniform distribution when there's no natural range |
 | **Key** | Like hash but uses MySQL's internal hashing function | Simple even distribution |
 
+</details>
+
 ### Example — E-Commerce Orders Table (Range Partitioning by Date)
+
+<details>
+<summary>Show answer</summary>
 
 Suppose you have an `orders` table with 500 million rows spanning 5 years:
 
@@ -11091,7 +14620,12 @@ CREATE TABLE orders (
 -- 500 million rows, indexes are 40+ GB, queries are getting slow
 ```
 
+</details>
+
 ### After Horizontal Partitioning (Range by Year)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE orders (
@@ -11115,7 +14649,12 @@ CREATE TABLE orders (
 
 ![Horizontal partitioning: 500M-row orders table split by year into partitions p2021–p2025](../svg/dbms/d224-horizontal-partitioning-by-year.svg)
 
+</details>
+
 ### Partition Pruning — The Magic That Makes It Fast
+
+<details>
+<summary>Show answer</summary>
 
 When your query's `WHERE` clause includes the partition key, MySQL's optimizer automatically skips partitions that can't contain matching rows. This is called **partition pruning**.
 
@@ -11135,7 +14674,12 @@ EXPLAIN SELECT * FROM orders WHERE order_date BETWEEN '2025-01-01' AND '2025-01-
 **Without partitioning:** MySQL scans the index across all 500M rows.
 **With partitioning:** MySQL scans only the ~120M rows in the relevant partition — **4× less data**.
 
+</details>
+
 ### Other Partitioning Types — Examples
+
+<details>
+<summary>Show answer</summary>
 
 **List Partitioning (by country/region):**
 
@@ -11174,7 +14718,12 @@ CREATE TABLE sessions (
 -- Queries with WHERE user_id = ? only scan 1 of 8 partitions
 ```
 
+</details>
+
 ### Dropping Old Data — The Killer Feature
+
+<details>
+<summary>Show answer</summary>
 
 Without partitioning, deleting old data is brutal:
 
@@ -11188,7 +14737,12 @@ ALTER TABLE orders DROP PARTITION p2021;
 -- 80 million rows gone in milliseconds — it just deletes the partition's data file
 ```
 
+</details>
+
 ### When to Use Horizontal Partitioning
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Use When | ❌ Avoid When |
 |---|---|
@@ -11198,9 +14752,16 @@ ALTER TABLE orders DROP PARTITION p2021;
 | Time-series data: logs, events, orders, transactions | You need many unique indexes across all rows (unique constraints must include the partition key) |
 | Each partition can be maintained independently | The table is already fast enough with proper indexing |
 
+</details>
+
+</details>
+
 ---
 
 ## Vertical vs Horizontal Partitioning — Comparison
+
+<details>
+<summary>Open section</summary>
 
 | Aspect | Vertical Partitioning | Horizontal Partitioning |
 |---|---|---|
@@ -11215,6 +14776,9 @@ ALTER TABLE orders DROP PARTITION p2021;
 
 ### Can You Use Both Together?
 
+<details>
+<summary>Show answer</summary>
+
 **Yes.** In large-scale systems, it's common to combine both strategies:
 
 ![Combining both: orders split vertically into orders_core/orders_detail, then orders_core range-partitioned by year](../svg/dbms/d225-vertical-plus-horizontal-partitioning.svg)
@@ -11222,13 +14786,23 @@ ALTER TABLE orders DROP PARTITION p2021;
 > [!IMPORTANT]
 > **Key takeaway:** Vertical partitioning solves the **"too many columns"** problem (wide rows waste memory). Horizontal partitioning solves the **"too many rows"** problem (massive tables overwhelm indexes and I/O). Use them based on your bottleneck — or combine both when the table is both wide and tall.
 
+</details>
+
+</details>
+
 ---
 
 ## Partition-Based Data Retention (TTL Rotation)
 
+<details>
+<summary>Open section</summary>
+
 When your team drops partitions older than 7 days to delete old data, this process is called **Partition-Based Data Retention** or **TTL (Time-To-Live) Rotation**. It's a widely used pattern in production systems for managing time-series data like logs, events, metrics, sessions, and transactional records that don't need to be kept forever.
 
 ### What Is It?
+
+<details>
+<summary>Show answer</summary>
 
 Instead of running expensive `DELETE` queries to remove old rows, you:
 
@@ -11242,7 +14816,12 @@ The lifecycle looks like this:
 
 This forms a **sliding window** — at any given time, the table holds exactly 7 days of data.
 
+</details>
+
 ### Complete Working Example — 7-Day Retention
+
+<details>
+<summary>Show answer</summary>
 
 **Step 1: Create the table with daily partitions**
 
@@ -11326,7 +14905,12 @@ DELIMITER ;
 SET GLOBAL event_scheduler = ON;
 ```
 
+</details>
+
 ### What Happens Under the Hood
+
+<details>
+<summary>Show answer</summary>
 
 When you run `ALTER TABLE events DROP PARTITION p20250218`:
 
@@ -11336,7 +14920,12 @@ Compare this with a regular `DELETE`:
 
 ![DELETE under the hood: scan millions of rows, per-row undo/index/redo work, background purge, space not returned to the OS](../svg/dbms/d228-delete-rows-under-the-hood.svg)
 
+</details>
+
 ### DELETE vs DROP PARTITION — Side by Side
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | `DELETE WHERE date < X` | `DROP PARTITION` |
 |---|---|---|
@@ -11349,7 +14938,12 @@ Compare this with a regular `DELETE`:
 | **Impact on running queries** | Holds locks, can cause timeouts for concurrent operations | Brief metadata lock, negligible impact |
 | **Rollback possible?** | ✅ Yes — can `ROLLBACK` before `COMMIT` | ❌ No — DDL is auto-committed and irreversible |
 
+</details>
+
 ### Benefits of Partition-Based TTL Rotation
+
+<details>
+<summary>Show answer</summary>
 
 | Benefit | Explanation |
 |---|---|
@@ -11362,7 +14956,12 @@ Compare this with a regular `DELETE`:
 | **Natural data organization** | Queries filtering by date automatically benefit from partition pruning — even your regular `SELECT` queries get faster |
 | **Simple archival** | Before dropping, you can `SELECT INTO OUTFILE` from the partition to archive to cold storage (S3, HDFS, etc.) |
 
+</details>
+
 ### Demerits and Gotchas
+
+<details>
+<summary>Show answer</summary>
 
 | Demerit | Explanation |
 |---|---|
@@ -11375,7 +14974,12 @@ Compare this with a regular `DELETE`:
 | **ALTER TABLE is heavier** | Adding/modifying columns on a partitioned table is slower because MySQL must modify every partition's data file. Tools like `pt-online-schema-change` have partition-specific limitations |
 | **Query planner limitations** | Partition pruning only works when the `WHERE` clause directly references the partition key with constants or simple expressions. Complex expressions like `WHERE DATEDIFF(CURDATE(), created_at) > 7` may not trigger pruning — you should use `WHERE created_at < DATE_SUB(CURDATE(), INTERVAL 7 DAY)` instead |
 
+</details>
+
 ### Best Practices for Production TTL Rotation
+
+<details>
+<summary>Show answer</summary>
 
 1. **Always keep a `p_future` (or `MAXVALUE`) partition** — this is your safety net. If the cron job that creates new partitions fails, inserts still succeed (they land in `p_future`) instead of throwing errors
 
@@ -11402,13 +15006,23 @@ Compare this with a regular `DELETE`:
 
 6. **Use `RANGE` partitioning (not `HASH`)** — hash partitions can't be dropped selectively by date because rows are distributed by hash value, not by time. Only range (or list) partitioning allows you to drop a specific time window
 
+</details>
+
+</details>
+
 ---
 
 ## Partitioning vs Multiple Tables — Are They the Same?
 
+<details>
+<summary>Open section</summary>
+
 At first glance, partitioning looks identical to just creating separate tables (`events_day1`, `events_day2`, etc.). Both split data into smaller chunks. But they are **fundamentally different** — partitioning is managed **by MySQL internally**, while multiple tables are managed **by you** in your application code. This difference matters enormously.
 
 ### The Manual Approach (Multiple Tables)
+
+<details>
+<summary>Show answer</summary>
 
 Without partitioning, you'd create a new table for each day and route queries yourself:
 
@@ -11434,7 +15048,12 @@ SELECT * FROM events_20250220 WHERE event_type = 'click';
 DROP TABLE events_20250218;
 ```
 
+</details>
+
 ### The Partitioning Approach (MySQL Managed)
+
+<details>
+<summary>Show answer</summary>
 
 With partitioning, there's **one logical table** and MySQL handles everything behind the scenes:
 
@@ -11456,7 +15075,12 @@ AND created_at BETWEEN '2025-02-18' AND '2025-02-20';
 ALTER TABLE events DROP PARTITION p20250218;
 ```
 
+</details>
+
 ### Why Partitioning Is Better Than Multiple Tables
+
+<details>
+<summary>Show answer</summary>
 
 | Aspect | Multiple Tables (Manual) | Partitioning (MySQL Managed) |
 |---|---|---|
@@ -11471,7 +15095,12 @@ ALTER TABLE events DROP PARTITION p20250218;
 | **Tooling compatibility** | ❌ Monitoring, backup tools, migration tools all need to handle N tables. | ✅ All tools see one table — `mysqldump events`, `EXPLAIN SELECT`, etc. work as expected. |
 | **Dropping old data** | ✅ `DROP TABLE events_20250218` — equally fast. | ✅ `ALTER TABLE events DROP PARTITION p20250218` — equally fast. |
 
+</details>
+
 ### Example: The Pain of Multiple Tables in Real Code
+
+<details>
+<summary>Show answer</summary>
 
 Imagine you manually manage separate tables in a Spring Boot application:
 
@@ -11518,7 +15147,12 @@ public interface EventRepository extends JpaRepository<Event, Long> {
 }
 ```
 
+</details>
+
 ### When Multiple Tables Actually Make Sense
+
+<details>
+<summary>Show answer</summary>
 
 There are rare cases where separate tables are preferred over partitioning:
 
@@ -11532,10 +15166,19 @@ There are rare cases where separate tables are preferred over partitioning:
 > [!IMPORTANT]
 > **Bottom line:** Partitioning gives you the performance benefits of splitting data across smaller chunks **without** the application complexity of managing multiple tables. Your app queries one table, MySQL does the routing. Always prefer partitioning over manual table splitting unless you have a specific reason not to.
 
+</details>
+
+</details>
+
+</details>
+
 ---
 ---
 
 # Sharding — Splitting One Database Across Many Servers
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Quiz yourself after reading:** [Scalability question bank](../CoreConcepts/scalability-question-bank.md) (Q16, 17, 31, 32, 38, 47, 57) · [Consistent hashing question bank](../CoreConcepts/consistent-hashing-question-bank.md)
 
@@ -11547,6 +15190,9 @@ There are rare cases where separate tables are preferred over partitioning:
 
 ## Sharding vs Partitioning vs Replication
 
+<details>
+<summary>Show answer</summary>
+
 | | **[Partitioning](#database-partitioning)** | **Sharding** | **[Replication](#replication-in-mysql--read-replicas-lag--failover)** |
 |---|---|---|---|
 | **What it does** | Splits a table into pieces **inside one server** | Splits a table across **many servers** | **Copies** the whole data set to more servers |
@@ -11555,9 +15201,14 @@ There are rare cases where separate tables are preferred over partitioning:
 
 They're usually **combined**: each shard is a primary with its own replicas.
 
+</details>
+
 ---
 
 ## Benefits vs Drawbacks
+
+<details>
+<summary>Show answer</summary>
 
 | ✅ Benefits | ❌ Drawbacks |
 |---|---|
@@ -11572,9 +15223,14 @@ They're usually **combined**: each shard is a primary with its own replicas.
 > [!IMPORTANT]
 > **Rule of thumb:** sharding is the **last** step, not the first. Try, in order: fixing queries and indexes, a bigger server, read replicas and caching, then partitioning and archiving old data. Shard only when **writes or total data** outgrow one primary.
 
+</details>
+
 ---
 
 ## Sharding Strategies
+
+<details>
+<summary>Show answer</summary>
 
 ![Sharding strategies side by side: range (user_id 1–1M on shard 1, 1M–2M on shard 2), hash (hash(user_id) mod 4 picks the shard), and directory (a lookup table maps each key or tenant to a shard)](../svg/dbms/d237-sharding-strategies.svg)
 
@@ -11588,9 +15244,14 @@ They're usually **combined**: each shard is a primary with its own replicas.
 
 **Why plain `mod N` hurts:** going from 4 to 5 shards changes the result of `hash(key) mod N` for ~80% of keys, so almost all data moves. Consistent hashing, or hashing into a **fixed number of logical shards** (e.g. 1,024) mapped onto servers, keeps it to ~20%: you move whole logical shards, never individual rows.
 
+</details>
+
 ---
 
 ## Choosing the Shard Key
+
+<details>
+<summary>Show answer</summary>
 
 A good shard key:
 
@@ -11611,9 +15272,14 @@ A good shard key:
 
 For keys built from two columns (`user_id` + `order_id`), see [Multikey / Composite Sharding](#multikey--composite-sharding-eg-user_id--order_id) below.
 
+</details>
+
 ---
 
 ## Common Problems & Fixes
+
+<details>
+<summary>Show answer</summary>
 
 | Problem | Fix |
 |---|---|
@@ -11630,18 +15296,30 @@ For keys built from two columns (`user_id` + `order_id`), see [Multikey / Compos
 
 **Real-world tools:** Vitess (MySQL; used by YouTube and Slack), Citus (PostgreSQL), and databases that shard automatically: MongoDB, Cassandra, DynamoDB, CockroachDB.
 
+</details>
+
 ---
 
 ## Interview Answer
+
+<details>
+<summary>Show answer</summary>
 
 > [!TIP]
 > **"How would you shard this database?"**
 > "Only once writes or data size outgrow one primary. Indexes, a bigger box, replicas and caching come first. I'd pick a shard key that's in almost every query, has high cardinality and spreads load evenly. For orders that's `user_id`, so each user's data and transactions stay on one shard. I'd hash it into fixed logical shards so adding servers is easy, and give each shard its own replicas. The trade-offs are scatter-gather for queries without the key, no cross-shard joins or transactions (I'd use a lookup table or a Saga), and the need for globally unique IDs."
 
+</details>
+
+</details>
+
 ---
 ---
 
 # Multikey / Composite Sharding (e.g. `user_id` + `order_id`)
+
+<details>
+<summary>Open section</summary>
 
 **Sharding** splits one logical table across many physical databases or nodes. A **shard key** (or partition key) decides which node stores a row (basics, strategies and trade-offs: [Sharding](#sharding--splitting-one-database-across-many-servers)). **Multikey sharding** means the routing rule uses **more than one logical attribute** — often written as a composite such as `(user_id, order_id)` — but the critical detail is **how** those keys are combined: one column may define *which shard*, another may define *order within the shard*, or both may be hashed together (which changes query patterns completely).
 
@@ -11649,7 +15327,13 @@ For keys built from two columns (`user_id` + `order_id`), see [Multikey / Compos
 
 ## Two Different Meanings of "`user_id` + `order_id`"
 
+<details>
+<summary>Open section</summary>
+
 ### A) Good pattern — **Shard by `user_id` only**; `order_id` is local identity + sort key
+
+<details>
+<summary>Show answer</summary>
 
 All rows for a given user live on **one** shard. `order_id` (or `created_at`) is used for uniqueness and `ORDER BY`, not for picking the shard.
 
@@ -11670,7 +15354,12 @@ LIMIT 5;
 
 This is the usual design for an **order history** feature.
 
+</details>
+
 ### B) Risky pattern — **Shard by a function of both** (e.g. `hash(user_id, order_id)`)
+
+<details>
+<summary>Show answer</summary>
 
 Each *order* may land on a different shard even for the same user. No single shard has "all orders for user 42."
 
@@ -11688,9 +15377,16 @@ LIMIT 5;
 
 So **`user_id` + `order_id` in the shard function** is rarely what you want for **per-user lists**; it can make sense when your hot path is always **point lookups** by both keys (e.g. "fetch this exact order") and you accept expensive user-scoped scans.
 
+</details>
+
+</details>
+
 ---
 
 ## Example Schema on One Shard (same SQL shape everywhere)
+
+<details>
+<summary>Show answer</summary>
 
 ```sql
 CREATE TABLE orders (
@@ -11706,9 +15402,14 @@ CREATE TABLE orders (
 - **Shard by `user_id`:** Primary key and secondary index both start with `user_id` → efficient **single-shard** access for that user.
 - If the **physical** DB is sharded, the router adds `AND user_id = ?` so each query is sent to one node.
 
+</details>
+
 ---
 
 ## SQL Patterns After Sharding
+
+<details>
+<summary>Show answer</summary>
 
 | Need | Shard by `user_id` | Shard by `hash(user_id, order_id)` |
 |---|---|---|
@@ -11724,19 +15425,31 @@ CREATE TABLE orders (
 -- 2) SELECT * FROM orders WHERE user_id = ? AND order_id = 9001;  -- single shard
 ```
 
+</details>
+
 ---
 
 ## Practical Takeaways
+
+<details>
+<summary>Show answer</summary>
 
 1. **Align the shard key with your hottest queries.** For "my order history," that is almost always **`user_id` (or `tenant_id`)**, not `hash(user_id, order_id)`.
 2. **`user_id` + `order_id` as a composite primary key** is normal; it does **not** mean both must participate in the **shard** function.
 3. **Multikey sharding** that hashes both dimensions often optimizes **even spread** or **point reads** at the cost of **range/list queries** — document that trade-off in design reviews.
 4. **Scatter-gather** for "last N per user" is correct but costly; cap shard count impact with caching, a **per-user recent orders** cache, or a **CQRS** read model fed by events.
 
+</details>
+
+</details>
+
 ---
 ---
 
 # InnoDB Configuration Flags — Cheat Sheet
+
+<details>
+<summary>Open section</summary>
 
 🔗 **Reference:** [MySQL Docs — InnoDB Startup Options and System Variables](https://dev.mysql.com/doc/refman/8.0/en/innodb-parameters.html)
 
@@ -11763,6 +15476,9 @@ innodb_buffer_pool_size = 24G
 
 ## Memory & Buffer Pool
 
+<details>
+<summary>Show answer</summary>
+
 | Flag | Default | What it controls | When to change |
 |---|---|---|---|
 | `innodb_buffer_pool_size` | 128 MB | Size of the [buffer pool](#the-buffer-pool--how-data-actually-flows-between-disk-and-memory), the RAM cache of data and index pages. **The single most important flag** | Dedicated DB server: **50–75% of RAM**. Too small → constant disk reads ([sizing](#sizing--monitoring)) |
@@ -11774,9 +15490,14 @@ innodb_buffer_pool_size = 24G
 | `innodb_log_buffer_size` | 16 MB | RAM buffer for redo records before they're written to the redo log | Raise (64–256 MB) for big transactions or very high write rates |
 | `innodb_dedicated_server` 🔒 | OFF | Auto-sizes the buffer pool, redo log and flush method from the server's RAM | ON when MySQL is the only thing on the machine |
 
+</details>
+
 ---
 
 ## Durability & Logging
+
+<details>
+<summary>Show answer</summary>
 
 | Flag | Default | What it controls | When to change |
 |---|---|---|---|
@@ -11787,9 +15508,14 @@ innodb_buffer_pool_size = 24G
 | `innodb_flush_method` 🔒 | `fsync` (Linux) | How data files are written. `O_DIRECT` bypasses the OS page cache, so data isn't cached twice | Usually `O_DIRECT` on Linux with a large buffer pool |
 | `innodb_page_size` 🔒 | 16 KB | Size of every page | Only at instance creation; can't change later. Almost always leave it |
 
+</details>
+
 ---
 
 ## Flushing & I/O (Checkpointing)
+
+<details>
+<summary>Show answer</summary>
 
 | Flag | Default | What it controls | When to change |
 |---|---|---|---|
@@ -11802,9 +15528,14 @@ innodb_buffer_pool_size = 24G
 | `innodb_flush_neighbors` | 0 | Also flushes neighbouring dirty pages, which helps on HDDs | 0 for SSD; 1 only for spinning disks |
 | `innodb_read_io_threads` / `innodb_write_io_threads` 🔒 | 4 / 4 | Background threads for async reads and writes | Raise on fast storage with many cores |
 
+</details>
+
 ---
 
 ## Locking & Transactions
+
+<details>
+<summary>Show answer</summary>
 
 | Flag | Default | What it controls | When to change |
 |---|---|---|---|
@@ -11815,9 +15546,14 @@ innodb_buffer_pool_size = 24G
 | `innodb_print_all_deadlocks` | OFF | Writes **every** deadlock to the error log (normally only the last one is kept, in `SHOW ENGINE INNODB STATUS`) | Turn ON to investigate recurring deadlocks |
 | `innodb_autoinc_lock_mode` 🔒 | 2 | How `AUTO_INCREMENT` values are handed out. 2 ("interleaved") is fastest, but IDs from concurrent bulk inserts may interleave or have gaps | Keep 2 (needs row-based binlog, which is the default) |
 
+</details>
+
 ---
 
 ## Undo & Purge
+
+<details>
+<summary>Show answer</summary>
 
 | Flag | Default | What it controls | When to change |
 |---|---|---|---|
@@ -11826,9 +15562,14 @@ innodb_buffer_pool_size = 24G
 | `innodb_undo_log_truncate` | ON | Shrinks undo tablespaces once they grow too large | Keep ON |
 | `innodb_max_undo_log_size` | 1 GB | Size at which an undo tablespace gets truncated | Rarely |
 
+</details>
+
 ---
 
 ## Tables, Statistics & DDL
+
+<details>
+<summary>Show answer</summary>
 
 | Flag | Default | What it controls | When to change |
 |---|---|---|---|
@@ -11840,9 +15581,14 @@ innodb_buffer_pool_size = 24G
 | `innodb_stats_auto_recalc` | ON | Recalculates statistics automatically after about 10% of a table's rows change | Keep ON; run `ANALYZE TABLE` after big loads |
 | `innodb_online_alter_log_max_size` | 128 MB | Buffer for concurrent writes during an online `ALTER TABLE` ([online DDL](#-what-happens-internally-when-we-run-an-alter-query-does-it-lock-the-table)); if it fills, the `ALTER` fails | Raise for long `ALTER`s on busy tables |
 
+</details>
+
 ---
 
 ## Example — A Dedicated 32 GB MySQL Server
+
+<details>
+<summary>Show answer</summary>
 
 ```ini
 [mysqld]
@@ -11860,4 +15606,8 @@ transaction_isolation          = READ-COMMITTED   # only if the app doesn't rely
 
 > [!TIP]
 > **Interview line:** "The flags I'd check first are `innodb_buffer_pool_size` (about 70% of RAM on a dedicated server, so the working set is cached), `innodb_flush_log_at_trx_commit = 1` with `sync_binlog = 1` for full durability, `innodb_redo_log_capacity` big enough to avoid checkpoint stalls, and `innodb_io_capacity` matched to the SSD. Then `innodb_lock_wait_timeout` and the isolation level to match how the app handles contention."
+
+</details>
+
+</details>
 
