@@ -1,0 +1,125 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="370" viewBox="0 0 900 370" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Sharding strategies</title>
+  <desc>Three strategies side by side. Range: user_id 1–1M goes to shard 1, 1M–2M to shard 2, 2M–3M to shard 3, and new users all land on the last shard, making it a hot shard. Hash: hash(user_id) mod 4 picks shard 0 to 3, spreading keys evenly. Directory: a lookup table maps tenant_A and tenant_B to S1 and the big tenant_C to S3; flexible, but every request needs an extra lookup.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="899" height="369" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ================= RANGE ================= -->
+  <rect x="24" y="24" width="270" height="322" rx="10" fill="#1c2128" fill-opacity=".5" stroke="#30363d"/>
+  <text x="40" y="50" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">RANGE</text>
+  <text x="278" y="50" fill="#8b949e" font-size="12" text-anchor="end">by key range</text>
+  <line x1="24" y1="62" x2="294" y2="62" stroke="#21262d"/>
+
+  <rect x="40" y="84" width="130" height="38" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="105" y="108" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">user_id 1–1M</text>
+  <line x1="170" y1="103" x2="196" y2="103" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="200" y="84" width="78" height="38" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="239" y="108" fill="#e6edf3" font-size="13" text-anchor="middle">Shard 1</text>
+
+  <rect x="40" y="136" width="130" height="38" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="105" y="160" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">user_id 1M–2M</text>
+  <line x1="170" y1="155" x2="196" y2="155" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="200" y="136" width="78" height="38" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="239" y="160" fill="#e6edf3" font-size="13" text-anchor="middle">Shard 2</text>
+
+  <rect x="40" y="188" width="130" height="38" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="105" y="212" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">user_id 2M–3M</text>
+  <line x1="170" y1="207" x2="196" y2="207" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="200" y="188" width="78" height="38" rx="8" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-width="1.8"/>
+  <text x="239" y="212" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle">Shard 3</text>
+
+  <line x1="239" y1="254" x2="239" y2="230" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <rect x="40" y="256" width="238" height="56" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="56" y="279" fill="#ff7b72" font-size="13" font-weight="600">⚠ new users all land here</text>
+  <text x="56" y="300" fill="#ff7b72" font-size="13" font-weight="700">→ hot shard</text>
+
+  <!-- ================= HASH ================= -->
+  <rect x="314" y="24" width="270" height="322" rx="10" fill="#1c2128" fill-opacity=".5" stroke="#30363d"/>
+  <text x="330" y="50" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">HASH</text>
+  <text x="568" y="50" fill="#8b949e" font-size="12" text-anchor="end">by hash of the key</text>
+  <line x1="314" y1="62" x2="584" y2="62" stroke="#21262d"/>
+
+  <rect x="359" y="76" width="180" height="32" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="449" y="97" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">hash(user_id) mod 4</text>
+
+  <path d="M449,108 V118 H340 V275" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="340" y1="143" x2="352" y2="143" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="340" y1="187" x2="352" y2="187" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="340" y1="231" x2="352" y2="231" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="340" y1="275" x2="352" y2="275" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <rect x="356" y="127" width="212" height="32" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="370" y="148" fill="#e6edf3" font-size="13">Shard 0</text>
+  <rect x="436" y="137" width="80" height="12" rx="3" fill="#3fb950" fill-opacity=".55"/>
+  <text x="554" y="148" fill="#56d364" font-size="12" text-anchor="end">25%</text>
+
+  <rect x="356" y="171" width="212" height="32" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="370" y="192" fill="#e6edf3" font-size="13">Shard 1</text>
+  <rect x="436" y="181" width="80" height="12" rx="3" fill="#3fb950" fill-opacity=".55"/>
+  <text x="554" y="192" fill="#56d364" font-size="12" text-anchor="end">25%</text>
+
+  <rect x="356" y="215" width="212" height="32" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="370" y="236" fill="#e6edf3" font-size="13">Shard 2</text>
+  <rect x="436" y="225" width="80" height="12" rx="3" fill="#3fb950" fill-opacity=".55"/>
+  <text x="554" y="236" fill="#56d364" font-size="12" text-anchor="end">25%</text>
+
+  <rect x="356" y="259" width="212" height="32" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="370" y="280" fill="#e6edf3" font-size="13">Shard 3</text>
+  <rect x="436" y="269" width="80" height="12" rx="3" fill="#3fb950" fill-opacity=".55"/>
+  <text x="554" y="280" fill="#56d364" font-size="12" text-anchor="end">25%</text>
+
+  <rect x="384" y="308" width="130" height="24" rx="12" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="449" y="324" fill="#56d364" font-size="12.5" font-weight="700" text-anchor="middle">✓ even spread</text>
+
+  <!-- ================= DIRECTORY ================= -->
+  <rect x="604" y="24" width="270" height="322" rx="10" fill="#1c2128" fill-opacity=".5" stroke="#30363d"/>
+  <text x="620" y="50" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">DIRECTORY</text>
+  <text x="858" y="50" fill="#8b949e" font-size="12" text-anchor="end">lookup table</text>
+  <line x1="604" y1="62" x2="874" y2="62" stroke="#21262d"/>
+
+  <!-- table -->
+  <rect x="616" y="80" width="166" height="146" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="616" y="80" width="166" height="26" rx="8" fill="#21262d"/>
+  <rect x="616" y="96" width="166" height="10" fill="#21262d"/>
+  <text x="626" y="98" fill="#8b949e" font-size="12" font-weight="700">key</text>
+  <text x="762" y="98" fill="#8b949e" font-size="12" font-weight="700" text-anchor="middle">shard</text>
+  <line x1="742" y1="80" x2="742" y2="226" stroke="#30363d"/>
+  <line x1="616" y1="136" x2="782" y2="136" stroke="#21262d"/>
+  <line x1="616" y1="166" x2="782" y2="166" stroke="#21262d"/>
+  <line x1="616" y1="196" x2="782" y2="196" stroke="#21262d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">
+    <text x="626" y="125" fill="#79c0ff">tenant_A</text>
+    <text x="762" y="125" fill="#e6edf3" text-anchor="middle">S1</text>
+    <text x="626" y="155" fill="#79c0ff">tenant_B</text>
+    <text x="762" y="155" fill="#e6edf3" text-anchor="middle">S1</text>
+    <text x="626" y="185" fill="#d2a8ff">tenant_C (big)</text>
+    <text x="762" y="185" fill="#e6edf3" text-anchor="middle">S3</text>
+    <text x="626" y="215" fill="#8b949e">…</text>
+    <text x="762" y="215" fill="#8b949e" text-anchor="middle">…</text>
+  </g>
+
+  <!-- shards -->
+  <rect x="814" y="104" width="48" height="44" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="838" y="131" fill="#e6edf3" font-size="13" text-anchor="middle">S1</text>
+  <rect x="814" y="156" width="48" height="30" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="838" y="176" fill="#e6edf3" font-size="13" text-anchor="middle">S2</text>
+  <rect x="814" y="194" width="48" height="44" rx="8" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".8"/>
+  <text x="838" y="221" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle">S3</text>
+
+  <line x1="782" y1="121" x2="810" y2="121" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="782" y1="151" x2="810" y2="136" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="782" y1="181" x2="810" y2="212" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <text x="745" y="256" fill="#8b949e" font-size="12" text-anchor="middle">a big tenant can get its own shard</text>
+
+  <rect x="652" y="308" width="174" height="24" rx="12" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="739" y="324" font-size="12.5" font-weight="700" text-anchor="middle"><tspan fill="#56d364">flexible</tspan><tspan fill="#8b949e"> · </tspan><tspan fill="#e3b341">extra lookup</tspan></text>
+</svg>

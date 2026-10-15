@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="604" viewBox="0 0 900 604" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Async vs semi-sync vs Group Replication commit</title>
+  <desc>Three commit timelines across client, source and replica lanes. Async: the source commits and returns COMMIT OK immediately; the replica gets the events later, so loss is possible. Semi-sync (AFTER_SYNC): the source writes the binlog, sends it to a replica, the replica writes its relay log and ACKs, then the source commits and returns OK; received is not applied. Group Replication: the source proposes, a majority of members agree and certify, then OK.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="arrD" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#484f58"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="603" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="852" height="170" rx="10" fill="#1c2128" fill-opacity=".35" stroke="#30363d"/>
+  <text x="40" y="51" fill="#e6edf3" font-size="14" font-weight="700">ASYNCHRONOUS (default)</text>
+  <rect x="747" y="36" width="113" height="22" rx="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="803.5" y="51" fill="#ff7b72" font-size="12" font-weight="600" text-anchor="middle">loss possible</text>
+  <rect x="668" y="36" width="71" height="22" rx="11" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="703.5" y="51" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle">no wait</text>
+  <text x="40" y="90" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CLIENT</text>
+  <line x1="150" y1="86" x2="860" y2="86" stroke="#30363d" stroke-dasharray="3 5"/>
+  <text x="40" y="132" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SOURCE</text>
+  <line x1="150" y1="128" x2="860" y2="128" stroke="#30363d" stroke-dasharray="3 5"/>
+  <text x="40" y="174" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REPLICA(S)</text>
+  <line x1="150" y1="170" x2="860" y2="170" stroke="#30363d" stroke-dasharray="3 5"/>
+  <circle cx="180" cy="86" r="4" fill="#8b949e"/>
+  <line x1="180" y1="90" x2="180" y2="113" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="188" y="111" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <rect x="160" y="115" width="198" height="26" rx="7" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="259.0" y="133" fill="#e6edf3" font-size="13" text-anchor="middle">commit (InnoDB + binlog)</text>
+  <line x1="338" y1="115" x2="338" y2="92" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <circle cx="338" cy="86" r="5" fill="#3fb950"/>
+  <text x="350" y="91" fill="#56d364" font-size="13" font-weight="700">COMMIT OK</text>
+  <path d="M358,128 L418,128 L508,157" fill="none" stroke="#484f58" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrD)"/>
+  <text x="470" y="146" fill="#8b949e" font-size="12" data-nocheck="1">later</text>
+  <rect x="488" y="157" width="149" height="26" rx="7" fill="#161b22" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="562.5" y="175" fill="#8b949e" font-size="13" text-anchor="middle">relay log → apply</text>
+  <rect x="24" y="208" width="852" height="170" rx="10" fill="#1c2128" fill-opacity=".35" stroke="#30363d"/>
+  <text x="40" y="235" fill="#e6edf3" font-size="14" font-weight="700">SEMI-SYNC (AFTER_SYNC)</text>
+  <rect x="600" y="220" width="260" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="730.0" y="235" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">no loss if ACKing replica promoted</text>
+  <rect x="528" y="220" width="64" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="560.0" y="235" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">+1 RTT</text>
+  <text x="40" y="274" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CLIENT</text>
+  <line x1="150" y1="270" x2="860" y2="270" stroke="#30363d" stroke-dasharray="3 5"/>
+  <text x="40" y="316" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SOURCE</text>
+  <line x1="150" y1="312" x2="860" y2="312" stroke="#30363d" stroke-dasharray="3 5"/>
+  <text x="40" y="358" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REPLICA(S)</text>
+  <line x1="150" y1="354" x2="860" y2="354" stroke="#30363d" stroke-dasharray="3 5"/>
+  <circle cx="180" cy="270" r="4" fill="#8b949e"/>
+  <line x1="180" y1="274" x2="180" y2="297" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="188" y="295" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <rect x="160" y="299" width="114" height="26" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="217.0" y="317" fill="#e6edf3" font-size="13" text-anchor="middle">write binlog</text>
+  <line x1="260" y1="325" x2="304" y2="339" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="240" y="342" fill="#8b949e" font-size="12" data-nocheck="1">send</text>
+  <rect x="294" y="341" width="135" height="26" rx="7" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="361.5" y="359" fill="#e6edf3" font-size="13" text-anchor="middle">write relay log</text>
+  <line x1="415" y1="341" x2="469" y2="327" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="481" y="341" fill="#56d364" font-size="12" font-weight="700" data-nocheck="1">ACK</text>
+  <line x1="274" y1="312" x2="459" y2="312" stroke="#d29922" stroke-width="3" stroke-dasharray="6 4"/>
+  <text x="366.5" y="302" fill="#e3b341" font-size="12" text-anchor="middle">waits for ACK</text>
+  <rect x="459" y="299" width="135" height="26" rx="7" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="526.5" y="317" fill="#e6edf3" font-size="13" text-anchor="middle">commit (InnoDB)</text>
+  <line x1="574" y1="299" x2="574" y2="276" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <circle cx="574" cy="270" r="5" fill="#3fb950"/>
+  <text x="586" y="275" fill="#56d364" font-size="13" font-weight="700">COMMIT OK</text>
+  <rect x="614" y="341" width="121" height="26" rx="7" fill="#161b22" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="674.5" y="359" fill="#8b949e" font-size="13" text-anchor="middle">apply (later)</text>
+  <text x="521.5" y="359" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">⚠ received ≠ applied</text>
+  <rect x="24" y="392" width="852" height="170" rx="10" fill="#1c2128" fill-opacity=".35" stroke="#30363d"/>
+  <text x="40" y="419" fill="#e6edf3" font-size="14" font-weight="700">GROUP REPLICATION (InnoDB Cluster)</text>
+  <rect x="642" y="404" width="218" height="22" rx="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="751.0" y="419" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">no loss while majority alive</text>
+  <rect x="542" y="404" width="92" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="588.0" y="419" fill="#e3b341" font-size="12" font-weight="600" text-anchor="middle">+consensus</text>
+  <text x="40" y="458" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CLIENT</text>
+  <line x1="150" y1="454" x2="860" y2="454" stroke="#30363d" stroke-dasharray="3 5"/>
+  <text x="40" y="500" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SOURCE</text>
+  <line x1="150" y1="496" x2="860" y2="496" stroke="#30363d" stroke-dasharray="3 5"/>
+  <text x="40" y="542" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">MEMBERS</text>
+  <line x1="150" y1="538" x2="860" y2="538" stroke="#30363d" stroke-dasharray="3 5"/>
+  <circle cx="180" cy="454" r="4" fill="#8b949e"/>
+  <line x1="180" y1="458" x2="180" y2="481" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="188" y="479" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">COMMIT</text>
+  <rect x="160" y="483" width="79" height="26" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="199.5" y="501" fill="#e6edf3" font-size="13" text-anchor="middle">propose</text>
+  <line x1="225" y1="509" x2="269" y2="523" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="259" y="525" width="254" height="26" rx="7" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="386.0" y="543" fill="#e6edf3" font-size="13" text-anchor="middle">majority agree + certify (Paxos)</text>
+  <line x1="499" y1="525" x2="553" y2="511" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <line x1="239" y1="496" x2="543" y2="496" stroke="#d29922" stroke-width="3" stroke-dasharray="6 4"/>
+  <text x="391.0" y="486" fill="#e3b341" font-size="12" text-anchor="middle">waits for consensus</text>
+  <rect x="543" y="483" width="72" height="26" rx="7" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="579.0" y="501" fill="#e6edf3" font-size="13" text-anchor="middle">commit</text>
+  <line x1="595" y1="483" x2="595" y2="460" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <circle cx="595" cy="454" r="5" fill="#3fb950"/>
+  <text x="607" y="459" fill="#56d364" font-size="13" font-weight="700">COMMIT OK</text>
+  <rect x="635" y="525" width="156" height="26" rx="7" fill="#161b22" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="713.0" y="543" fill="#8b949e" font-size="13" text-anchor="middle">others apply async</text>
+  <text x="24" y="588" fill="#8b949e" font-size="12">⚠ Semi-sync silently falls back to async if no replica ACKs within <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">rpl_semi_sync_source_timeout</tspan> (default 10 s).</text>
+</svg>

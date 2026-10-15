@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="512" viewBox="0 0 900 512" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>MySQL replication architecture</title>
+  <desc>The app sends writes (INSERT, UPDATE, DELETE) to the source, which appends every commit to its binary log. Each replica's receiver (I/O) thread pulls binlog events into a local relay log, and 4 applier (SQL) threads replay them into the replica's tables. Reads (SELECT) go from the app through a proxy (ProxySQL / MySQL Router) to the replicas.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrO" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/>
+    </marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="899" height="511" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- App -->
+  <rect x="380" y="24" width="140" height="46" rx="9" fill="#1c2128" stroke="#8b949e"/>
+  <text x="450" y="52" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">App</text>
+
+  <!-- write path -->
+  <path d="M380,47 H124 V136" fill="none" stroke="#f0883e" stroke-width="2" marker-end="url(#arrO)"/>
+  <text x="252" y="38" fill="#ffa657" font-size="12" font-weight="700" text-anchor="middle">writes: <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="400">INSERT / UPDATE / DELETE</tspan></text>
+
+  <!-- read path -->
+  <path d="M520,47 H780 V258" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+  <text x="650" y="38" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">reads: <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="400">SELECT</tspan></text>
+
+  <!-- SOURCE -->
+  <rect x="24" y="140" width="200" height="214" rx="10" fill="#f0883e" fill-opacity=".07" stroke="#f0883e" stroke-opacity=".7"/>
+  <text x="40" y="164" fill="#ffa657" font-size="12" font-weight="700" letter-spacing="1.5">SOURCE</text>
+  <text x="40" y="182" fill="#8b949e" font-size="12">primary, takes all writes</text>
+  <rect x="40" y="196" width="168" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="124" y="219" fill="#e6edf3" font-size="13" text-anchor="middle">tables (InnoDB)</text>
+  <line x1="124" y1="232" x2="124" y2="266" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="134" y="254" fill="#8b949e" font-size="12">each commit</text>
+  <rect x="40" y="270" width="168" height="66" rx="8" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="124" y="294" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">binary log (binlog)</text>
+  <text x="124" y="314" fill="#56d4dd" font-size="12" text-anchor="middle">appended as events</text>
+  <text x="124" y="329" fill="#8b949e" font-size="11" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ROW format · GTIDs</text>
+
+  <!-- binlog fan-out -->
+  <path d="M208,303 H256" fill="none" stroke="#8b949e" stroke-width="1.8"/>
+  <path d="M256,156 V340" fill="none" stroke="#8b949e" stroke-width="1.8"/>
+  <path d="M256,156 H294" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#arr)"/>
+  <path d="M256,340 H294" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="248" y="248" fill="#8b949e" font-size="12" text-anchor="middle" transform="rotate(-90 248 248)" data-nocheck="1">binlog events</text>
+
+  <!-- REPLICA 1 -->
+  <rect x="284" y="96" width="340" height="162" rx="10" fill="#1c2128" fill-opacity=".6" stroke="#30363d"/>
+  <text x="300" y="120" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REPLICA 1</text>
+  <rect x="298" y="134" width="116" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="356" y="152" fill="#e6edf3" font-size="13" text-anchor="middle">receiver (I/O)</text>
+  <text x="356" y="170" fill="#8b949e" font-size="12" text-anchor="middle">thread</text>
+  <line x1="414" y1="156" x2="430" y2="156" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="434" y="138" width="92" height="36" rx="8" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="480" y="161" fill="#e6edf3" font-size="13" text-anchor="middle">relay log</text>
+  <line x1="480" y1="174" x2="480" y2="196" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="404" y="200" width="132" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="470" y="218" fill="#e6edf3" font-size="13" text-anchor="middle">applier (SQL)</text>
+  <text x="470" y="236" fill="#8b949e" font-size="12" text-anchor="middle">threads ×4</text>
+  <line x1="536" y1="222" x2="548" y2="222" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="552" y="204" width="60" height="36" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="582" y="227" fill="#e6edf3" font-size="13" text-anchor="middle">tables</text>
+
+  <!-- REPLICA 2 -->
+  <rect x="284" y="280" width="340" height="162" rx="10" fill="#1c2128" fill-opacity=".6" stroke="#30363d"/>
+  <text x="300" y="304" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REPLICA 2</text>
+  <rect x="298" y="318" width="116" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="356" y="336" fill="#e6edf3" font-size="13" text-anchor="middle">receiver (I/O)</text>
+  <text x="356" y="354" fill="#8b949e" font-size="12" text-anchor="middle">thread</text>
+  <line x1="414" y1="340" x2="430" y2="340" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="434" y="322" width="92" height="36" rx="8" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="480" y="345" fill="#e6edf3" font-size="13" text-anchor="middle">relay log</text>
+  <line x1="480" y1="358" x2="480" y2="380" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="404" y="384" width="132" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="470" y="402" fill="#e6edf3" font-size="13" text-anchor="middle">applier (SQL)</text>
+  <text x="470" y="420" fill="#8b949e" font-size="12" text-anchor="middle">threads ×4</text>
+  <line x1="536" y1="406" x2="548" y2="406" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="552" y="388" width="60" height="36" rx="8" fill="#1c2128" stroke="#8b949e"/>
+  <text x="582" y="411" fill="#e6edf3" font-size="13" text-anchor="middle">tables</text>
+
+  <!-- PROXY -->
+  <rect x="684" y="262" width="192" height="104" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="780" y="288" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Proxy</text>
+  <text x="780" y="308" fill="#c9d1d9" font-size="12" text-anchor="middle">(ProxySQL / MySQL Router)</text>
+  <text x="780" y="330" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT → replicas</text>
+  <text x="780" y="350" fill="#8b949e" font-size="12" text-anchor="middle">health-checks the nodes</text>
+
+  <!-- read fan-out -->
+  <path d="M684,314 H652" fill="none" stroke="#58a6ff" stroke-width="2"/>
+  <path d="M652,222 V406" fill="none" stroke="#58a6ff" stroke-width="2"/>
+  <path d="M652,222 H616" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+  <path d="M652,406 H616" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+
+  <!-- legend -->
+  <line x1="24" y1="472" x2="876" y2="472" stroke="#21262d"/>
+  <line x1="24" y1="492" x2="52" y2="492" stroke="#f0883e" stroke-width="2"/>
+  <text x="60" y="496" fill="#c9d1d9" font-size="12">writes</text>
+  <line x1="112" y1="492" x2="140" y2="492" stroke="#58a6ff" stroke-width="2"/>
+  <text x="148" y="496" fill="#c9d1d9" font-size="12">reads</text>
+  <line x1="196" y1="492" x2="224" y2="492" stroke="#8b949e" stroke-width="2"/>
+  <text x="232" y="496" fill="#c9d1d9" font-size="12">replication (binlog events)</text>
+  <text x="876" y="496" fill="#8b949e" font-size="12" text-anchor="end">Replicas scale reads only: every replica still applies every write.</text>
+</svg>

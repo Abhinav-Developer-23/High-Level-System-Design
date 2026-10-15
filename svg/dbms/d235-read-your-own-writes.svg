@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="468" viewBox="0 0 920 468" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Read-your-own-writes problem</title>
+  <desc>(1) The user saves the new name Alicia; the UPDATE goes to the source, which replies Saved. (2) The page reloads and the SELECT goes to a replica that is 2 seconds behind, which still returns the old name Alice. The replication stream from the source arrives at the replica 2 seconds late. Fix: read from the source for N seconds after a write, or use WAIT_FOR_EXECUTED_GTID_SET on the replica.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f85149"/>
+    </marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d29922"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="919" height="467" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- step headers -->
+  <circle cx="162" cy="40" r="11" fill="#1c2128" stroke="#8b949e"/>
+  <text x="162" y="44" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="182" y="45" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WRITE</text>
+  <circle cx="492" cy="40" r="11" fill="#1c2128" stroke="#8b949e"/>
+  <text x="492" y="44" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="512" y="45" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">READ (PAGE RELOAD)</text>
+
+  <!-- lanes -->
+  <text x="24" y="94" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">USER</text>
+  <text x="24" y="204" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SOURCE</text>
+  <text x="24" y="314" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REPLICA</text>
+  <text x="24" y="332" fill="#e3b341" font-size="12" font-weight="600">2 s behind</text>
+  <line x1="140" y1="90" x2="896" y2="90" stroke="#30363d" stroke-dasharray="3 5"/>
+  <line x1="140" y1="200" x2="896" y2="200" stroke="#30363d" stroke-dasharray="3 5"/>
+  <line x1="140" y1="310" x2="896" y2="310" stroke="#30363d" stroke-dasharray="3 5"/>
+
+  <!-- step 1 -->
+  <rect x="150" y="75" width="190" height="30" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="245" y="95" fill="#e6edf3" font-size="13" text-anchor="middle">saves new name “Alicia”</text>
+  <line x1="180" y1="105" x2="180" y2="178" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="188" y="148" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE</text>
+
+  <rect x="150" y="182" width="260" height="46" rx="9" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="166" y="201" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPDATE users SET name='Alicia'</text>
+  <text x="166" y="220" fill="#56d364" font-size="12" font-weight="600">✓ committed on the source</text>
+
+  <line x1="380" y1="182" x2="380" y2="97" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <circle cx="380" cy="90" r="5" fill="#3fb950"/>
+  <text x="392" y="95" fill="#56d364" font-size="13" font-weight="700">“Saved!”</text>
+
+  <!-- replication, arriving late -->
+  <line x1="410" y1="205" x2="790" y2="292" stroke="#d29922" stroke-width="2" stroke-dasharray="7 5" marker-end="url(#arrA)"/>
+  <text x="604" y="238" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle" data-nocheck="1">lag 2 s</text>
+
+  <!-- step 2 -->
+  <rect x="480" y="75" width="120" height="30" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="540" y="95" fill="#e6edf3" font-size="13" text-anchor="middle">page reload</text>
+  <line x1="510" y1="105" x2="510" y2="290" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="518" y="148" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT</text>
+
+  <rect x="480" y="294" width="210" height="32" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="585" y="315" fill="#e6edf3" font-size="13" text-anchor="middle">still has old name “Alice”</text>
+
+  <line x1="670" y1="294" x2="670" y2="97" stroke="#f85149" stroke-width="2" marker-end="url(#arrR)"/>
+  <circle cx="670" cy="90" r="5" fill="#f85149"/>
+  <text x="682" y="95" fill="#ff7b72" font-size="13" font-weight="700">✗ returns old name “Alice”</text>
+  <text x="682" y="114" fill="#8b949e" font-size="12">user thinks the save failed</text>
+  <text x="678" y="148" fill="#ff7b72" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">'Alice'</text>
+
+  <!-- late arrival -->
+  <rect x="716" y="294" width="176" height="32" rx="8" fill="#1c2128" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="804" y="315" fill="#c9d1d9" font-size="13" text-anchor="middle">applies → “Alicia” (late)</text>
+
+  <!-- time axis -->
+  <line x1="140" y1="354" x2="896" y2="354" stroke="#30363d"/>
+  <line x1="410" y1="348" x2="410" y2="360" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="790" y1="348" x2="790" y2="360" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="410" y="376" fill="#8b949e" font-size="12" text-anchor="middle">t (committed)</text>
+  <text x="790" y="376" fill="#8b949e" font-size="12" text-anchor="middle">t + 2 s (applied)</text>
+  <text x="890" y="376" fill="#8b949e" font-size="12" text-anchor="end">time →</text>
+
+  <!-- fix strip -->
+  <rect x="24" y="398" width="872" height="46" rx="10" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="44" y="426" fill="#c9d1d9" font-size="13"><tspan fill="#56d364" font-weight="700">Fix:</tspan> read from the source for N s after a write  ·  or <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12">WAIT_FOR_EXECUTED_GTID_SET</tspan> on the replica (then fall back to the source on timeout)</text>
+</svg>

@@ -112,6 +112,11 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
    - [Approach 3 — Cursor-Based / Keyset](#approach-3-cursor-based--keyset-pagination-the-right-way)
 7. [❓ What is the N+1 Query Problem and How to Solve It?](#-what-is-the-n1-query-problem-and-how-to-solve-it)
 8. [Instance, Schema & Sub-Schema in DBMS](#instance-schema--sub-schema-in-dbms)
+   - [Instance (Database State)](#instance-database-state)
+   - [Schema (Database Design / Blueprint)](#schema-database-design--blueprint)
+   - [Sub-Schema (External Schema / View)](#sub-schema-external-schema--view)
+   - [Three-Schema Architecture (ANSI/SPARC)](#three-schema-architecture-ansisparc)
+   - [Data Independence — Logical vs Physical](#data-independence--logical-vs-physical)
 9. [Referential Integrity & Foreign Key Actions (ON DELETE / ON UPDATE)](#referential-integrity--foreign-key-actions-on-delete--on-update)
    - [What Is Referential Integrity?](#what-is-referential-integrity)
    - [Example — Departments & Employees](#example--departments--employees)
@@ -306,13 +311,28 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
     - [The 8 Problems with a Plain File System](#the-8-problems-with-a-plain-file-system)
     - [Side-by-Side Comparison](#file-system-vs-dbms--side-by-side-comparison)
     - [When a File System Is Still the Right Choice](#when-a-file-system-is-still-the-right-choice)
-40. [Database Partitioning](#database-partitioning)
+40. [Replication in MySQL — Read Replicas, Lag & Failover](#replication-in-mysql--read-replicas-lag--failover)
+    - [How MySQL Replication Works](#how-mysql-replication-works)
+    - [Async vs Semi-Sync vs Group Replication](#async-vs-semi-sync-vs-group-replication)
+    - [Read Replicas & Read/Write Splitting](#read-replicas--readwrite-splitting)
+    - [Replication Lag](#replication-lag)
+    - [The Read-Your-Own-Writes Problem](#the-read-your-own-writes-problem)
+    - [Failover — When the Source Dies](#failover--when-the-source-dies)
+    - [Interview Answer](#interview-answer)
+41. [Database Partitioning](#database-partitioning)
     - [Vertical Partitioning](#vertical-partitioning)
     - [Horizontal Partitioning](#horizontal-partitioning)
     - [Vertical vs Horizontal Partitioning — Comparison](#vertical-vs-horizontal-partitioning--comparison)
     - [Partition-Based Data Retention (TTL Rotation)](#partition-based-data-retention-ttl-rotation)
     - [Partitioning vs Multiple Tables — Are They the Same?](#partitioning-vs-multiple-tables--are-they-the-same)
-41. [Multikey / Composite Sharding (e.g. `user_id` + `order_id`)](#multikey--composite-sharding-eg-user_id--order_id)
+42. [Sharding — Splitting One Database Across Many Servers](#sharding--splitting-one-database-across-many-servers)
+    - [Sharding vs Partitioning vs Replication](#sharding-vs-partitioning-vs-replication)
+    - [Benefits vs Drawbacks](#benefits-vs-drawbacks)
+    - [Sharding Strategies](#sharding-strategies)
+    - [Choosing the Shard Key](#choosing-the-shard-key)
+    - [Common Problems & Fixes](#common-problems--fixes)
+    - [Interview Answer](#interview-answer-1)
+43. [Multikey / Composite Sharding (e.g. `user_id` + `order_id`)](#multikey--composite-sharding-eg-user_id--order_id)
     - [Two Different Meanings of "`user_id` + `order_id`"](#two-different-meanings-of-user_id--order_id)
     - [Example Schema on One Shard (same SQL shape everywhere)](#example-schema-on-one-shard-same-sql-shape-everywhere)
     - [SQL Patterns After Sharding](#sql-patterns-after-sharding)
@@ -2180,7 +2200,7 @@ A **schema** is the **overall structure or design** of the database. It defines 
 |--|---------------|-----------------|
 | **Concerned with** | Data structure — tables, columns, types, constraints | Storage — how data is stored on disk |
 | **Visible to** | Users, application developers | Database administrators, DBMS internals |
-| **Can be changed without affecting apps?** | ❌ Changes may break applications | ✅ Can be modified independently |
+| **Can be changed without affecting apps?** | ⚠️ Often breaks applications, unless views absorb the change ([logical data independence](#data-independence--logical-vs-physical)) | ✅ Can be modified independently ([physical data independence](#data-independence--logical-vs-physical)) |
 
 - The DBMS provides **DDL (Data Definition Language)** to define the logical schema
 - The **physical schema is hidden** behind the logical schema — it can be changed (e.g., adding an index, changing storage engine) without affecting application programs
@@ -2200,6 +2220,68 @@ A **sub-schema** is a **subset of the schema** — it defines what portion of th
 - The HR app can see salary and SSN, but the manager app cannot
 - This provides **security** (hide sensitive data) and **simplicity** (show only relevant data)
 
+---
+
+## Three-Schema Architecture (ANSI/SPARC)
+
+The three ideas above (the physical schema, the logical schema and sub-schemas) are the three **levels** of the classic **three-schema architecture** (ANSI/SPARC, 1975). Its goal is to separate *how users see data* from *how it's logically organised* from *how it's physically stored*, so that a change at one level doesn't ripple into the others.
+
+![Three-schema architecture: several external views on top, mapped to one conceptual (logical) schema, mapped to one internal (physical) schema stored on disk; physical data independence sits between conceptual and internal, logical data independence between external and conceptual](../svg/dbms/d229-three-schema-architecture.svg)
+
+| Level | Also called | Describes | How many | In MySQL terms |
+|---|---|---|---|---|
+| **External** (top) | View level, [sub-schema](#sub-schema-external-schema--view) | What **one user group / app** is allowed to see | **Many**, one per user group | `VIEW`s, column-level `GRANT`s |
+| **Conceptual** (middle) | Logical level, [logical schema](#types-of-schema) | **All** entities, attributes, relationships and constraints of the whole database | **One** | `CREATE TABLE` definitions, keys, FKs, `CHECK`s |
+| **Internal** (bottom) | Physical level, [physical schema](#types-of-schema) | **How** it's stored: files, pages, record format, indexes, partitions | **One** | InnoDB clustered B+ tree, `.ibd` files, 16 KB pages, secondary indexes, row format, compression |
+
+Between the levels sit two **mappings**, maintained by the DBMS:
+
+- **External ↔ Conceptual mapping:** how each view's columns are computed from the real tables (e.g. a view's `SELECT … JOIN …`).
+- **Conceptual ↔ Internal mapping:** how each table and column is laid out in storage (which file, which index, which page format).
+
+Users and applications only ever talk to the **external** (or conceptual) level. The mappings are what let the lower levels change underneath them.
+
+---
+
+## Data Independence — Logical vs Physical
+
+**Data independence** = you can change the schema at one level **without having to change the level above it** (and so without rewriting applications). It comes in two kinds:
+
+| | **Physical data independence** | **Logical data independence** |
+|---|---|---|
+| **Change made at** | Internal (physical) level | Conceptual (logical) level |
+| **Must NOT affect** | The conceptual schema, i.e. table definitions and queries | External views, i.e. applications |
+| **Absorbed by** | Conceptual ↔ Internal mapping | External ↔ Conceptual mapping (views) |
+| **Examples** | Add or drop an index · change row format or compression · partition a table · move data to SSD or another tablespace · rebuild the table | Add a column · split one table into two · merge tables · rename a column behind a view |
+| **What apps notice** | Nothing, except speed | Nothing, **if** a view preserves the old shape |
+| **How easy?** | ✅ Easy, and fully supported. This is what DBMSs are built for | ⚠️ Harder: apps depend directly on table and column names |
+
+**Physical independence in practice:** `CREATE INDEX idx_email ON users(email);` changes only the internal level. Every existing query keeps working unchanged. It just gets faster.
+
+**Logical independence in practice:** split `employees` for security, and keep the old shape alive with a view so applications don't change:
+
+```sql
+-- Before: employees(emp_id, name, dept, salary, ssn)
+RENAME TABLE employees TO employees_core;
+CREATE TABLE employees_private (PRIMARY KEY (emp_id))
+    AS SELECT emp_id, salary, ssn FROM employees_core;
+ALTER TABLE employees_core DROP COLUMN salary, DROP COLUMN ssn;
+
+-- The external mapping: a view with the OLD name and OLD columns
+CREATE VIEW employees AS
+SELECT c.emp_id, c.name, c.dept, p.salary, p.ssn
+FROM   employees_core c
+JOIN   employees_private p USING (emp_id);
+```
+
+Every `SELECT … FROM employees` keeps working. (Writes through a join view are limited; see [rules for updatable views](#4-rules-for-updatable-views).)
+
+> [!WARNING]
+> **Logical independence has limits.** `SELECT *` silently changes shape when you add a column, and **dropping** a column that an app reads can't be hidden by any view. That's why logical independence is "partial" in practice, while physical independence is close to complete.
+
+> [!TIP]
+> **Interview answer:** "The three-schema architecture separates external views, the conceptual schema and the internal storage, with a mapping between each pair. That gives **physical data independence**: I can add an index or repartition a table without touching queries. It also gives **logical data independence**: I can restructure tables and keep old views so apps don't change. Physical independence is easy and almost complete; logical is harder because apps depend on table and column names."
+
 ### Quick Summary
 
 | Concept | What It Is | Analogy |
@@ -2207,6 +2289,8 @@ A **sub-schema** is a **subset of the schema** — it defines what portion of th
 | **Instance** | Snapshot of data at a moment in time | A photo of the building right now |
 | **Schema** | Structure/blueprint of the database | The architectural plan of the building |
 | **Sub-schema** | A user's partial view of the schema | A window showing only some rooms |
+| **Three-schema architecture** | External views → conceptual schema → internal storage, linked by mappings | Windows → floor plan → bricks and plumbing |
+| **Data independence** | Changing one level without breaking the level above | Rewiring the walls without changing the floor plan (physical), or changing the floor plan while keeping the windows (logical) |
 
 ---
 ---
@@ -8546,20 +8630,19 @@ On crash recovery, if InnoDB finds a torn page in a data file, it copies the int
 
 ## Mechanism 5: Replication — Cross-Machine Durability
 
-All the above mechanisms protect a single machine. But what if the disk physically fails? Or the entire server rack burns?
+All the above mechanisms protect a single machine. But what if the disk physically fails, or the whole server rack burns?
 
-**Replication** solves this by keeping copies of the data on separate machines:
+**Replication** keeps copies of the data on other machines. For durability, the question is **when the primary says "COMMIT OK" relative to the replicas**:
 
-| Type | How It Works | Durability |
-|------|-------------|------------|
-| **Asynchronous** | Primary commits, replica catches up later | Possible data loss if primary dies before replica syncs |
-| **Semi-synchronous** | Primary waits for at least one replica to *acknowledge receipt* | Very small window of data loss |
-| **Synchronous** | Commit is only acknowledged after replica has written to its own redo log | Zero data loss even on total primary hardware failure |
+- **Asynchronous:** OK immediately, so a primary crash can lose the last few transactions.
+- **Semi-synchronous:** OK after a replica confirms it *received* the change, so no loss if that replica takes over.
+- **Group Replication:** OK after a *majority* agrees, so no loss while a majority survives.
 
-MySQL Group Replication and Galera Cluster offer synchronous replication. The trade-off is slightly higher commit latency, since the primary must wait for a network round trip to the replica.
+Each extra guarantee costs at least one network round trip per commit.
+
+> 📌 How replication actually works in MySQL (binlog → relay log → applier), read replicas, replication lag, read-your-own-writes and failover: [Replication in MySQL](#replication-in-mysql--read-replicas-lag--failover).
 
 ---
-
 ## How It All Fits Together
 
 ![Commit durability flow: redo append → fsync (single-machine durability) → replica ACK (cross-machine) → OK to client (guarantee moment) → background checkpoint via doublewrite](../svg/dbms/d158-durability-end-to-end-flow.svg)
@@ -10545,6 +10628,164 @@ An honest answer here scores well in interviews — "always use a database" is n
 ---
 ---
 
+# Replication in MySQL — Read Replicas, Lag & Failover
+
+🔗 **Reference:** [MySQL Docs — Replication](https://dev.mysql.com/doc/refman/8.0/en/replication.html) · [Semisynchronous Replication](https://dev.mysql.com/doc/refman/8.0/en/replication-semisync.html)
+
+**Replication** = keeping copies of the same data on several MySQL servers. One server, the **source** (primary), takes the writes; the **replicas** copy every change. (MySQL 8.0.22+ says *source/replica*; older docs say *master/slave*.)
+
+| Why replicate? | How replicas help |
+|---|---|
+| **High availability** | If the source dies, promote a replica (**failover**) |
+| **Read scaling** | Send `SELECT`s to replicas; the source handles only writes |
+| **Durability** | Data survives the loss of a whole machine ([Mechanism 5](#mechanism-5-replication--cross-machine-durability)) |
+| **Offloading** | Run backups, reports and analytics on a replica, not on the source |
+| **Geography** | Put a replica near users in another region for fast local reads |
+
+> [!WARNING]
+> **Replication is not a backup.** A `DROP TABLE` or a bad `DELETE` on the source is faithfully replicated to every replica within milliseconds. You still need real backups with point-in-time recovery.
+
+---
+
+## How MySQL Replication Works
+
+![MySQL replication: the app sends writes to the source, which records each commit in its binary log; each replica's receiver (I/O) thread pulls binlog events into its relay log, and applier (SQL) threads replay them; reads go to replicas through a proxy](../svg/dbms/d233-mysql-replication-architecture.svg)
+
+1. **Source writes the binary log (binlog).** Every committed transaction is appended to the source's binlog as events.
+2. **Replica's receiver thread** (the "I/O thread") connects to the source, pulls new binlog events and writes them to a local **relay log**.
+3. **Replica's applier threads** (the "SQL threads") read the relay log and **replay** the changes on the replica's own tables. MySQL 8.0.27+ uses **4 parallel applier workers** by default (`replica_parallel_workers`) and keeps the source's commit order.
+
+**Binlog formats** — what gets shipped:
+
+| Format | Ships | Trade-off |
+|---|---|---|
+| `ROW` (**default** since 5.7.7) | The **changed rows** (before/after images) | Exact and safe. Big for mass updates (`UPDATE` of 1M rows = 1M row events) |
+| `STATEMENT` | The **SQL text** | Small, but unsafe for non-deterministic SQL (`NOW()`, `UUID()`, `LIMIT` without `ORDER BY`) |
+| `MIXED` | Statement, switching to row when unsafe | Compromise; rarely chosen today |
+
+**GTIDs (Global Transaction IDs):** each transaction gets a unique ID `source_uuid:sequence` (e.g. `3e11fa47-…:1-1000`). A replica tracks *which* transactions it has applied instead of a binlog file + offset, which makes failover and re-pointing replicas much simpler (`SOURCE_AUTO_POSITION = 1`).
+
+---
+
+## Async vs Semi-Sync vs Group Replication
+
+The difference is **when the source tells the client "COMMIT OK"**:
+
+![Commit timelines: async returns OK right after the local commit; semi-sync (AFTER_SYNC) waits for one replica to acknowledge it received and stored the event in its relay log; Group Replication waits for a majority of members to certify the transaction](../svg/dbms/d234-async-semisync-group-commit.svg)
+
+| | **Asynchronous** (default) | **Semi-synchronous** | **Group Replication** (InnoDB Cluster) |
+|---|---|---|---|
+| **Source waits for** | Nothing | ≥1 replica to confirm it **received** the events and wrote them to its relay log (**not** applied) | A **majority** of members to agree (Paxos-based) on the transaction's order and certify it |
+| **Extra commit latency** | None | +1 network round trip | +1 consensus round trip |
+| **Data loss if the source dies** | ⚠️ Possible: transactions committed but not yet shipped | ✅ None, **if** the acknowledging replica is promoted | ✅ None, as long as a majority survives |
+| **Replica can still lag?** | Yes | **Yes**: "received" ≠ "applied" | Yes: other members apply asynchronously |
+| **Failover** | External tool (Orchestrator, etc.) or manual | External tool | **Automatic** primary election inside the group |
+| **Minimum setup** | 1 source + 1 replica | 1 source + ≥1 replica | 3 members (tolerates 1 failure) |
+
+**Semi-sync details that interviewers like:**
+
+- **`AFTER_SYNC` (default, "lossless"):** the source waits for the replica's ACK *before* committing in InnoDB. No other client can see a change that might be lost.
+- **`AFTER_COMMIT` (older):** it commits first, then waits. Other sessions may briefly see data that a crash could still lose.
+- ⚠️ **Silent fallback:** if no replica ACKs within `rpl_semi_sync_source_timeout` (default **10 s**), the source **falls back to async** and keeps going. It switches back once a replica catches up. Monitor `Rpl_semi_sync_source_status`, or you may be running async without knowing it.
+
+---
+
+## Read Replicas & Read/Write Splitting
+
+Most apps read far more than they write, so add replicas and **route reads to them** (the right half of the diagram above):
+
+| Where the routing happens | How |
+|---|---|
+| **Application** | Two connection pools / datasources: `writeDb` → source, `readDb` → replicas |
+| **Proxy** | ProxySQL / MySQL Router split by query type (`SELECT` → replicas) and health-check the nodes |
+| **Driver** | Some drivers support "read-only" connections that go to replicas |
+
+Mark replicas `super_read_only = ON` so nothing writes to them by accident.
+
+> [!IMPORTANT]
+> Replicas scale **reads only**. Every replica still applies **every write**, so adding replicas does nothing for write throughput. For that you need [sharding](#sharding--splitting-one-database-across-many-servers).
+
+---
+
+## Replication Lag
+
+**Lag** = how far a replica's applied state is behind the source. Even "fast" async replication is usually milliseconds to seconds behind, and under load it can be minutes.
+
+| Common cause | Why it lags | Fix |
+|---|---|---|
+| **One huge transaction** (`DELETE` of 10M rows) | Replays on the replica for as long as it ran on the source, and transactions queued behind it wait | Batch large writes (`… LIMIT 10000` in a loop) |
+| **Big `ALTER TABLE`** | Replays on the replica after it finished on the source | Online schema tools ([gh-ost / pt-osc](#production-tools-for-zero-downtime-alter)) |
+| **Too little apply parallelism** | One applier can't keep up with many concurrent writers on the source | Raise `replica_parallel_workers` |
+| **Weak replica / heavy queries on it** | Reports compete with the applier for CPU and I/O | Same-size hardware; separate reporting replica |
+| **Network** (cross-region) | Events take longer to arrive | Expect it; design reads around it |
+
+**Measuring it:**
+
+```sql
+SHOW REPLICA STATUS\G
+--  Replica_IO_Running: Yes      ← receiver thread alive?
+--  Replica_SQL_Running: Yes     ← applier alive?
+--  Seconds_Behind_Source: 3     ← rough lag (NULL = applier not running!)
+```
+
+`Seconds_Behind_Source` is approximate: it compares event timestamps and can read 0 while the receiver itself is behind. For accurate numbers, write a heartbeat row on the source every second and compare it on the replica (`pt-heartbeat`), or compare GTID sets.
+
+---
+
+## The Read-Your-Own-Writes Problem
+
+Lag turns into a **visible bug** when a user writes and then immediately reads:
+
+![Read-your-own-writes: the user updates their name; the write goes to the source; the next page load reads from a replica that is 2 seconds behind and shows the old name](../svg/dbms/d235-read-your-own-writes.svg)
+
+1. User changes their display name → `UPDATE users …` goes to the **source** → "Saved!"
+2. The page reloads → `SELECT … FROM users` goes to a **replica** that is 2 s behind.
+3. The user sees the **old name** and thinks the save failed.
+
+**Fixes**, from simplest to most precise:
+
+| Fix | How it works | Trade-off |
+|---|---|---|
+| **Read from the source after writing** | For N seconds after a user's write (timestamp in session/cookie), send *that user's* reads to the source | Simple; extra load on the source |
+| **Critical reads always go to the source** | E.g. "my profile", "my order status", checkout | Only the important paths pay the cost |
+| **Wait for my GTID on the replica** | After the write, remember its GTID; before reading, run `SELECT WAIT_FOR_EXECUTED_GTID_SET('<gtid>', 1);` on the replica (returns once applied, or times out after 1 s → fall back to the source) | Exact; needs plumbing. ProxySQL can do it automatically ("GTID causal reads") |
+| **Group Replication consistency** | `SET SESSION group_replication_consistency = 'BEFORE';` makes a read wait until the member has applied everything before it | Built in; adds latency to those reads |
+
+**Related anomaly — time going backwards:** two reads from two replicas with different lag can show a newer value and then an older one. Fix it by **pinning a user's session to one replica** (monotonic reads).
+
+---
+
+## Failover — When the Source Dies
+
+**Failover** = promoting a replica to be the new source and pointing everyone at it.
+
+1. **Detect** the failure. Use several observers, so a network blip isn't mistaken for a dead server.
+2. **Pick the best replica**: the one with the most complete GTID set (fewest missing transactions).
+3. **Let it apply** everything in its relay log.
+4. **Promote** it: `SET GLOBAL super_read_only = OFF; SET GLOBAL read_only = OFF;`
+5. **Re-point the other replicas** to it: `CHANGE REPLICATION SOURCE TO SOURCE_HOST='new', SOURCE_AUTO_POSITION=1; START REPLICA;`
+6. **Redirect the application**: proxy config, virtual IP or DNS.
+7. **Fence the old source**, so that if it comes back it can't accept writes.
+
+| Risk | What happens | Prevention |
+|---|---|---|
+| **Data loss (async)** | Transactions the old source committed but never shipped are gone after promotion | Semi-sync or Group Replication |
+| **Split brain** | Old source wakes up and both nodes accept writes → divergent data | Fencing (power off / revoke its network), `super_read_only` on start, majority-based tools |
+| **Errant transactions** | A replica has a GTID the new source doesn't (someone wrote to a replica) | `super_read_only` on every replica |
+
+**Tools:** Orchestrator (async/semi-sync topologies), MySQL InnoDB Cluster (Group Replication + MySQL Router: automatic), and managed cloud services (Amazon RDS Multi-AZ, Aurora) that do it for you. Typical failover time is seconds to about a minute. Plan for clients to retry.
+
+---
+
+## Interview Answer
+
+> [!TIP]
+> **"How does MySQL replication work, and what problems does it bring?"**
+> "The source writes every committed transaction to its binlog. Each replica's receiver thread copies those events into a relay log, and applier threads replay them. By default it's asynchronous, so replicas lag and a source crash can lose the last transactions. Semi-sync waits for one replica to acknowledge receipt, and Group Replication waits for a majority. Read replicas scale reads but not writes, and lag causes read-your-own-writes bugs, which I'd fix by reading from the source right after a write or waiting for the write's GTID on the replica. On failover you promote the most up-to-date replica using GTIDs and fence the old source to avoid split brain."
+
+---
+---
+
 # Database Partitioning
 
 When a single table grows to hundreds of millions (or billions) of rows, or has dozens of columns with different access patterns, even well-indexed queries start to slow down — because the table simply doesn't fit efficiently into memory or disk I/O anymore. **Partitioning** is the strategy of splitting a large table into smaller, more manageable pieces.
@@ -11133,9 +11374,115 @@ There are rare cases where separate tables are preferred over partitioning:
 ---
 ---
 
+# Sharding — Splitting One Database Across Many Servers
+
+🔗 **Quiz yourself after reading:** [Scalability question bank](../CoreConcepts/scalability-question-bank.md) (Q16, 17, 31, 32, 38, 47, 57) · [Consistent hashing question bank](../CoreConcepts/consistent-hashing-question-bank.md)
+
+**Sharding** splits the rows of one logical table across **many independent database servers** (shards). Each shard holds only a slice of the data, and all shards share the **same schema**. A **shard key** (e.g. `user_id`) decides which shard a row lives on, and a router (your app, a proxy like Vitess, or the database itself) sends each query to the right shard.
+
+![Sharding overview: the application asks a router which shard owns user_id 42; users are split across shard 1, shard 2 and shard 3, each a primary with its own replica, all with the same schema but different rows](../svg/dbms/d236-sharding-overview.svg)
+
+---
+
+## Sharding vs Partitioning vs Replication
+
+| | **[Partitioning](#database-partitioning)** | **Sharding** | **[Replication](#replication-in-mysql--read-replicas-lag--failover)** |
+|---|---|---|---|
+| **What it does** | Splits a table into pieces **inside one server** | Splits a table across **many servers** | **Copies** the whole data set to more servers |
+| **Each node holds** | (one server holds all pieces) | A **different slice** of the rows | The **same** rows |
+| **Scales** | Query speed (pruning), easy deletes | **Writes + storage + reads** | **Reads** only |
+
+They're usually **combined**: each shard is a primary with its own replicas.
+
+---
+
+## Benefits vs Drawbacks
+
+| ✅ Benefits | ❌ Drawbacks |
+|---|---|
+| **Scales writes**: each shard's primary takes only its share of the writes. Replicas can't do this | **Much more complexity**: routing, many servers, more failure modes |
+| **Scales storage**: data bigger than any single machine can still fit | **Queries without the shard key** must ask every shard (**scatter-gather**): slower and costlier |
+| **Smaller data per server**: indexes and the working set fit in RAM, so queries get faster | **No cross-shard JOINs**: rows you want to join may live on different servers |
+| **Fault isolation**: one shard down affects only its slice of users, not everyone | **No cross-shard ACID transactions**: need workarounds (Sagas, 2PC) |
+| **Data placement**: e.g. EU users on EU servers for latency or data-residency law | **Unique constraints and auto-increment IDs** only work per shard |
+| **Cheaper hardware**: many normal servers instead of one huge one | **Uneven load (hot shards)** and **resharding** (moving data later) are painful |
+| | **Operations multiply**: backups, monitoring and schema changes across every shard |
+
+> [!IMPORTANT]
+> **Rule of thumb:** sharding is the **last** step, not the first. Try, in order: fixing queries and indexes, a bigger server, read replicas and caching, then partitioning and archiving old data. Shard only when **writes or total data** outgrow one primary.
+
+---
+
+## Sharding Strategies
+
+![Sharding strategies side by side: range (user_id 1–1M on shard 1, 1M–2M on shard 2), hash (hash(user_id) mod 4 picks the shard), and directory (a lookup table maps each key or tenant to a shard)](../svg/dbms/d237-sharding-strategies.svg)
+
+| Strategy | How the shard is picked | ✅ Good | ❌ Bad |
+|---|---|---|---|
+| **Range** | Key ranges: `1–1M → shard 1`, `1M–2M → shard 2` | Fast range queries on the key | **Hot shard** when keys keep growing (all new rows hit the last range) |
+| **Hash** | `hash(key) mod N` | **Even** spread | Range queries hit every shard; adding a shard moves most keys |
+| **Consistent hashing** | Keys and shards on a hash ring | Adding a shard moves only **~1/N** of the keys | Slightly more complex ([deep dive](../CoreConcepts/consistent-hashing-question-bank.md)) |
+| **Directory** | A lookup table maps `key → shard` | Fully flexible (e.g. a big customer on its own shard) | Extra lookup per request; the directory must never go down |
+| **Geo** | By region: `EU users → EU shard` | Low latency, data-residency laws | Regions differ a lot in size |
+
+**Why plain `mod N` hurts:** going from 4 to 5 shards changes the result of `hash(key) mod N` for ~80% of keys, so almost all data moves. Consistent hashing, or hashing into a **fixed number of logical shards** (e.g. 1,024) mapped onto servers, keeps it to ~20%: you move whole logical shards, never individual rows.
+
+---
+
+## Choosing the Shard Key
+
+A good shard key:
+
+1. **Appears in almost every query** (`WHERE user_id = ?`), so the query goes to **one** shard.
+2. **Has high cardinality** (millions of values; `country` or `status` won't do).
+3. **Spreads rows and traffic evenly**.
+4. **Keeps related data together** (a user's orders, items and payments on one shard → local joins and transactions).
+5. **Never changes** (changing it means moving the row).
+
+**Example: an e-commerce `orders` table**
+
+| Candidate | Verdict | Why |
+|---|---|---|
+| `user_id` | ✅ Best default | "My orders" hits one shard; a user's data stays together |
+| `order_id` (hashed) | ⚠️ | Even spread, but "all orders of user 42" asks every shard |
+| `created_at` | ❌ | All new orders go to one shard → hot shard |
+| `country` | ❌ | Few values, very skewed |
+
+For keys built from two columns (`user_id` + `order_id`), see [Multikey / Composite Sharding](#multikey--composite-sharding-eg-user_id--order_id) below.
+
+---
+
+## Common Problems & Fixes
+
+| Problem | Fix |
+|---|---|
+| **Query without the shard key** (e.g. find user by email) | Add the key to the query, or keep a small global lookup table (`email → user_id`) |
+| **JOIN across shards** | Shard related tables by the same key; copy small reference tables (countries, currencies) to every shard |
+| **Transaction across shards** | Design so one business action stays on one shard; otherwise a **Saga** (local steps + undo steps) or 2PC |
+| **Unique values across shards** (email) | A global uniqueness table, written first |
+| **Unique IDs** | Snowflake-style IDs or UUID v7 instead of `AUTO_INCREMENT` ([trade-offs](#uuid-vs-auto-increment-integer-as-primary-key)) |
+| **Hot shard / hot key** (celebrity, giant tenant) | Hash instead of range; move that key to its own shard; cache its reads |
+| **Shards fill up** | Reshard: copy data to new shards, stream ongoing changes, then switch routing. Tools like Vitess automate this |
+| **Reports over all data** | Copy data into a data warehouse and run analytics there |
+
+![Scatter-gather: a query without the shard key (top 10 latest orders across all users) is sent to every shard, each returns its own top 10, and the router merges and re-sorts them to produce the final top 10](../svg/dbms/d238-scatter-gather.svg)
+
+**Real-world tools:** Vitess (MySQL; used by YouTube and Slack), Citus (PostgreSQL), and databases that shard automatically: MongoDB, Cassandra, DynamoDB, CockroachDB.
+
+---
+
+## Interview Answer
+
+> [!TIP]
+> **"How would you shard this database?"**
+> "Only once writes or data size outgrow one primary. Indexes, a bigger box, replicas and caching come first. I'd pick a shard key that's in almost every query, has high cardinality and spreads load evenly. For orders that's `user_id`, so each user's data and transactions stay on one shard. I'd hash it into fixed logical shards so adding servers is easy, and give each shard its own replicas. The trade-offs are scatter-gather for queries without the key, no cross-shard joins or transactions (I'd use a lookup table or a Saga), and the need for globally unique IDs."
+
+---
+---
+
 # Multikey / Composite Sharding (e.g. `user_id` + `order_id`)
 
-**Sharding** splits one logical table across many physical databases or nodes. A **shard key** (or partition key) decides which node stores a row. **Multikey sharding** means the routing rule uses **more than one logical attribute** — often written as a composite such as `(user_id, order_id)` — but the critical detail is **how** those keys are combined: one column may define *which shard*, another may define *order within the shard*, or both may be hashed together (which changes query patterns completely).
+**Sharding** splits one logical table across many physical databases or nodes. A **shard key** (or partition key) decides which node stores a row (basics, strategies and trade-offs: [Sharding](#sharding--splitting-one-database-across-many-servers)). **Multikey sharding** means the routing rule uses **more than one logical attribute** — often written as a composite such as `(user_id, order_id)` — but the critical detail is **how** those keys are combined: one column may define *which shard*, another may define *order within the shard*, or both may be hashed together (which changes query patterns completely).
 
 ---
 

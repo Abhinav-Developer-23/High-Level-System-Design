@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="820" height="470" viewBox="0 0 820 470" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Scatter-gather query</title>
+  <desc>The router receives "Top 10 latest orders" with no shard key, so it sends the query to shard 1, 2 and 3. Each shard returns its own top 10. The router merges and re-sorts them, keeps the top 10, and returns the result. Latency equals the slowest shard, and load grows with the number of shards.</desc>
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/>
+    </marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="819" height="469" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- App -->
+  <rect x="340" y="24" width="140" height="44" rx="9" fill="#1c2128" stroke="#8b949e"/>
+  <text x="410" y="51" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">App</text>
+
+  <!-- request in -->
+  <line x1="385" y1="68" x2="385" y2="116" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+  <text x="373" y="90" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="end">Top 10 latest orders</text>
+  <text x="373" y="108" fill="#ff7b72" font-size="12" text-anchor="end">(no shard key)</text>
+
+  <!-- result out -->
+  <line x1="435" y1="120" x2="435" y2="72" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <text x="447" y="99" fill="#56d364" font-size="13" font-weight="600">final top 10</text>
+
+  <!-- Router -->
+  <rect x="250" y="120" width="320" height="76" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="410" y="146" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Router</text>
+  <rect x="290" y="158" width="240" height="26" rx="6" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".55"/>
+  <text x="410" y="176" fill="#56d364" font-size="13" font-weight="600" text-anchor="middle">merge + re-sort → keep top 10</text>
+
+  <!-- scatter (out) -->
+  <line x1="300" y1="196" x2="132" y2="296" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="398" y1="196" x2="398" y2="296" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+  <line x1="520" y1="196" x2="688" y2="296" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+
+  <!-- gather (back) -->
+  <line x1="172" y1="300" x2="330" y2="200" stroke="#39c5cf" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrT)"/>
+  <line x1="422" y1="300" x2="422" y2="200" stroke="#39c5cf" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrT)"/>
+  <line x1="648" y1="300" x2="490" y2="200" stroke="#39c5cf" stroke-width="2" stroke-dasharray="6 4" marker-end="url(#arrT)"/>
+
+  <!-- shards -->
+  <rect x="60" y="300" width="180" height="58" rx="10" fill="#1c2128" stroke="#8b949e"/>
+  <text x="150" y="324" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Shard 1</text>
+  <text x="150" y="345" fill="#56d4dd" font-size="12" text-anchor="middle">returns its top 10</text>
+
+  <rect x="320" y="300" width="180" height="58" rx="10" fill="#1c2128" stroke="#8b949e"/>
+  <text x="410" y="324" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Shard 2</text>
+  <text x="410" y="345" fill="#56d4dd" font-size="12" text-anchor="middle">returns its top 10</text>
+
+  <rect x="580" y="300" width="180" height="58" rx="10" fill="#1c2128" stroke="#8b949e"/>
+  <text x="670" y="324" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Shard 3</text>
+  <text x="670" y="345" fill="#56d4dd" font-size="12" text-anchor="middle">returns its top 10</text>
+
+  <!-- amber note -->
+  <rect x="210" y="378" width="400" height="28" rx="14" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".65"/>
+  <text x="410" y="397" fill="#e3b341" font-size="13" font-weight="600" text-anchor="middle">⚠ latency = slowest shard · load grows with #shards</text>
+
+  <!-- legend -->
+  <line x1="24" y1="426" x2="796" y2="426" stroke="#21262d"/>
+  <line x1="24" y1="448" x2="52" y2="448" stroke="#58a6ff" stroke-width="2"/>
+  <text x="60" y="452" fill="#c9d1d9" font-size="12">same query sent to every shard</text>
+  <line x1="262" y1="448" x2="290" y2="448" stroke="#39c5cf" stroke-width="2" stroke-dasharray="6 4"/>
+  <text x="298" y="452" fill="#c9d1d9" font-size="12">each shard's top 10 back</text>
+  <text x="796" y="452" fill="#8b949e" font-size="12" text-anchor="end">3 shards × 10 rows → router keeps 10</text>
+</svg>

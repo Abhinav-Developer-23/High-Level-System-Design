@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Three-schema architecture (ANSI/SPARC)</title>
+  <desc>Three external views (HR app, Manager app, Payroll) map through the External-Conceptual mapping to one conceptual (logical) schema, which maps through the Conceptual-Internal mapping to one internal (physical) schema stored on disk. Logical data independence spans external to conceptual; physical data independence spans conceptual to internal.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/>
+    </marker>
+  </defs>
+
+  <rect x="0.5" y="0.5" width="899" height="539" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- level labels -->
+  <text x="24" y="60" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EXTERNAL</text>
+  <text x="24" y="78" fill="#8b949e" font-size="12">view level</text>
+  <text x="24" y="94" fill="#8b949e" font-size="12">many, one per app</text>
+
+  <text x="24" y="220" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CONCEPTUAL</text>
+  <text x="24" y="238" fill="#8b949e" font-size="12">logical level</text>
+  <text x="24" y="254" fill="#8b949e" font-size="12">exactly one</text>
+
+  <text x="24" y="380" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">INTERNAL</text>
+  <text x="24" y="398" fill="#8b949e" font-size="12">physical level</text>
+  <text x="24" y="414" fill="#8b949e" font-size="12">exactly one</text>
+
+  <line x1="24" y1="112" x2="136" y2="112" stroke="#21262d"/>
+  <line x1="24" y1="272" x2="136" y2="272" stroke="#21262d"/>
+
+  <!-- external views -->
+  <rect x="150" y="40" width="156" height="46" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="228" y="68" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">HR app view</text>
+  <rect x="317" y="40" width="156" height="46" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="395" y="68" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Manager app view</text>
+  <rect x="484" y="40" width="156" height="46" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="562" y="68" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Payroll view</text>
+
+  <line x1="228" y1="86" x2="228" y2="124" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="395" y1="86" x2="395" y2="124" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="562" y1="86" x2="562" y2="124" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- mapping band 1 -->
+  <rect x="150" y="128" width="490" height="34" rx="8" fill="#21262d" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="395" y="150" fill="#c9d1d9" font-size="13" text-anchor="middle"><tspan font-weight="600" fill="#e6edf3">External ↔ Conceptual mapping</tspan><tspan fill="#8b949e" font-size="12">  · view definitions (</tspan><tspan fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">SELECT … JOIN …</tspan><tspan fill="#8b949e" font-size="12">)</tspan></text>
+
+  <line x1="395" y1="162" x2="395" y2="186" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- conceptual -->
+  <rect x="150" y="190" width="490" height="76" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="395" y="214" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">CONCEPTUAL (LOGICAL) SCHEMA</text>
+  <text x="395" y="236" fill="#c9d1d9" font-size="13" text-anchor="middle">all tables, columns, keys, constraints</text>
+  <text x="395" y="256" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">CREATE TABLE … · PKs · FKs · CHECKs</text>
+
+  <line x1="395" y1="266" x2="395" y2="290" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- mapping band 2 -->
+  <rect x="150" y="294" width="490" height="34" rx="8" fill="#21262d" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="395" y="316" fill="#c9d1d9" font-size="13" text-anchor="middle"><tspan font-weight="600" fill="#e6edf3">Conceptual ↔ Internal mapping</tspan><tspan fill="#8b949e" font-size="12">  · which file, which index, which page format</tspan></text>
+
+  <line x1="395" y1="328" x2="395" y2="352" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- internal -->
+  <rect x="150" y="356" width="490" height="76" rx="10" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="395" y="380" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">INTERNAL (PHYSICAL) SCHEMA</text>
+  <text x="395" y="402" fill="#c9d1d9" font-size="13" text-anchor="middle">files, pages, indexes, partitions</text>
+  <text x="395" y="422" fill="#56d4dd" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B+ trees · .ibd files · 16 KB pages · row format</text>
+
+  <line x1="395" y1="432" x2="395" y2="454" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- disk -->
+  <path d="M305,470 L305,504 A90,12 0 0 0 485,504 L485,470" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".7"/>
+  <ellipse cx="395" cy="470" rx="90" ry="12" fill="#1c2128" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="395" y="499" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle">disk / storage</text>
+
+  <!-- brackets -->
+  <path d="M662,63 H676 V225 H662" fill="none" stroke="#d29922" stroke-width="2"/>
+  <text x="690" y="124" fill="#e3b341" font-size="14" font-weight="700">Logical data</text>
+  <text x="690" y="142" fill="#e3b341" font-size="14" font-weight="700">independence</text>
+  <text x="690" y="164" fill="#8b949e" font-size="12">change tables; views keep</text>
+  <text x="690" y="180" fill="#8b949e" font-size="12">apps working · ⚠ harder</text>
+
+  <path d="M662,233 H676 V392 H662" fill="none" stroke="#3fb950" stroke-width="2"/>
+  <text x="690" y="292" fill="#56d364" font-size="14" font-weight="700">Physical data</text>
+  <text x="690" y="310" fill="#56d364" font-size="14" font-weight="700">independence</text>
+  <text x="690" y="332" fill="#8b949e" font-size="12">change storage; queries</text>
+  <text x="690" y="348" fill="#8b949e" font-size="12">unchanged · ✓ easy</text>
+</svg>
