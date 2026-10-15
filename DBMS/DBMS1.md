@@ -378,6 +378,139 @@ LIMIT 3;
 | Runs | Before grouping | After grouping |
 | Example | `WHERE salary > 50000` | `HAVING AVG(salary) > 50000` |
 
+#### 🎯 Query showing the difference
+
+Sample `employees` data (assume the `salary` column added in the `ALTER` example above). The coloured squares are just a legend so you can follow each department through the examples: 🟦 Engineering · 🟩 Sales · 🟨 HR
+
+| first_name | department | salary |
+|:-----------|:-----------|-------:|
+| Asha | 🟦 Engineering | 80,000 |
+| Ben  | 🟦 Engineering | 60,000 |
+| Chen | 🟦 Engineering | 40,000 |
+| Dia  | 🟩 Sales       | 55,000 |
+| Eli  | 🟩 Sales       | 30,000 |
+| Fay  | 🟩 Sales       | 35,000 |
+| Gus  | 🟨 HR          | 45,000 |
+| Hana | 🟨 HR          | 48,000 |
+
+> 🟢 **Green (`+`) = kept** &nbsp;·&nbsp; 🔴 **Red (`-`) = filtered out**
+
+---
+
+##### 🟢 1. `WHERE` — filters **rows**, *before* grouping
+
+```sql
+SELECT department, COUNT(*) AS emp_count
+FROM employees
+WHERE salary > 50000          -- each ROW is checked on its own salary
+GROUP BY department;
+```
+
+What `WHERE` does to each row:
+
+```diff
++ Asha | Engineering | 80000   ✅ kept
++ Ben  | Engineering | 60000   ✅ kept
+- Chen | Engineering | 40000   ❌ not > 50000
++ Dia  | Sales       | 55000   ✅ kept
+- Eli  | Sales       | 30000   ❌ not > 50000
+- Fay  | Sales       | 35000   ❌ not > 50000
+- Gus  | HR          | 45000   ❌ not > 50000
+- Hana | HR          | 48000   ❌ not > 50000
+```
+
+**Result** — the 3 surviving rows are grouped and counted:
+
+| department | emp_count |
+|:-----------|----------:|
+| 🟦 Engineering | 2 |
+| 🟩 Sales | 1 |
+
+💡 HR vanishes completely — none of its *rows* passed the filter.
+
+---
+
+##### 🔵 2. `HAVING` — filters **groups**, *after* grouping
+
+```sql
+SELECT department, AVG(salary) AS avg_salary
+FROM employees
+GROUP BY department
+HAVING AVG(salary) > 50000;   -- the condition is on the GROUP's average
+```
+
+All 8 rows are grouped first, *then* `HAVING` judges each group as a whole:
+
+```diff
++ Engineering | AVG = 60000 | (80000, 60000, 40000)   ✅ kept
+- Sales       | AVG = 40000 | (55000, 30000, 35000)   ❌ not > 50000
+- HR          | AVG = 46500 | (45000, 48000)          ❌ not > 50000
+```
+
+**Result:**
+
+| department | avg_salary |
+|:-----------|-----------:|
+| 🟦 Engineering | 60,000 |
+
+💡 No individual row was removed — Chen's 40,000 still counted towards Engineering's average. Whole groups were dropped instead.
+
+---
+
+##### 🟣 3. Both together — the usual real-world pattern
+
+```sql
+SELECT department, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
+FROM employees
+WHERE salary > 40000          -- step 1: drop low-paid ROWS
+GROUP BY department           -- step 2: group what is left
+HAVING COUNT(*) >= 2;         -- step 3: drop small GROUPS
+```
+
+How the data shrinks at each step:
+
+```
+ 8 rows ──WHERE salary > 40000──▶ 5 rows ──GROUP BY──▶ 3 groups ──HAVING COUNT(*) >= 2──▶ 2 groups
+         (Chen, Eli, Fay out)             (🟦 2 · 🟩 1 · 🟨 2)       (🟩 Sales out: only 1)
+```
+
+**Result:**
+
+| department | emp_count | avg_salary |
+|:-----------|----------:|-----------:|
+| 🟦 Engineering | 2 | 70,000 |
+| 🟨 HR | 2 | 46,500 |
+
+💡 `WHERE` removed Chen, Eli and Fay **row by row**. After grouping, `HAVING` removed Sales **as a group** (only Dia was left, so count = 1).
+
+---
+
+##### 🔴 4. The classic mistake — aggregate inside `WHERE`
+
+```sql
+SELECT department, AVG(salary)
+FROM employees
+WHERE AVG(salary) > 50000     -- ❌ ERROR 1111: Invalid use of group function
+GROUP BY department;
+```
+
+> ⛔ `WHERE` runs *before* `GROUP BY`, so no group (and therefore no `AVG`) exists yet. **Fix:** move the aggregate condition to `HAVING`.
+
+---
+
+##### 📊 At a glance
+
+| | 🟢 `WHERE` | 🔵 `HAVING` |
+|:--|:--|:--|
+| Looks at | one **row** at a time | one whole **group** at a time |
+| Runs | ⏪ before `GROUP BY` | ⏩ after `GROUP BY` |
+| Aggregates (`AVG`, `COUNT`…) | ❌ not allowed | ✅ allowed |
+| Typical condition | `salary > 50000` | `AVG(salary) > 50000` |
+| Effect on group math | rows removed **change** the aggregates | aggregates are computed **first**, unchanged |
+| Speed | ⚡ shrinks data early, can use indexes | 🐢 works on already-grouped data |
+
+> 📌 **Rule of thumb:** a condition about a **single row's column value** → `WHERE`. A condition about an **aggregate over a group** (`COUNT`, `SUM`, `AVG`, `MIN`, `MAX`) → `HAVING`. Prefer `WHERE` whenever possible. `HAVING department = 'Sales'` is legal in MySQL but filters later than needed.
+
 > **📌 Deeper DQL topics — each now has its own top-level section further down in this file:**
 > - [❓ MySQL Pagination — OFFSET/LIMIT vs Cursor-Based (Keyset) Pagination](#-mysql-pagination--offsetlimit-vs-cursor-based-keyset-pagination) — deferred joins, keyset pagination, and the API cursor contract
 > - [❓ What is the N+1 Query Problem and How to Solve It?](#-what-is-the-n1-query-problem-and-how-to-solve-it) — JOINs, `IN` batching, and ORM eager loading
@@ -9773,23 +9906,194 @@ The most important durability mechanism in every serious database (MySQL InnoDB,
 
 **The idea:** Before you modify the actual data page on disk, you first write a description of the change to a **sequential log file** (the redo log). Only after that log entry is safely on disk do you acknowledge the commit to the client.
 
+In one line: **the log is the truth; the data files are just a cache of the log that's allowed to lag behind.**
+
+### The Happy Path — Step by Step
+
 ```
-Client → COMMIT
-            ↓
-  1. Append redo log entry (sequential write — fast)
-            ↓
-  2. fsync() the redo log (force to physical disk)
-            ↓
-  3. ✅ Return "COMMIT OK" to client
-            ↓
-  4. (Later, in background) Write actual data pages to disk
+ CLIENT                        DATABASE SERVER                          WHERE IT LIVES
+   │
+   │  BEGIN;
+   │  UPDATE accounts SET balance = balance - 100 WHERE id = 1;
+   │ ─────────────────────────▶ [0] Apply the change IN MEMORY only
+   │                                 • modify data page in Buffer Pool    RAM
+   │                                 • add redo record to Log Buffer      RAM
+   │
+   │  COMMIT;
+   │ ─────────────────────────▶ [1] write() redo records + COMMIT mark
+   │                                 to the redo log file                 RAM (OS page cache!)
+   │                                          │
+   │                                          ▼
+   │                             [2] fsync() the redo log                 DISK ✔
+   │                          ═══════════ DURABILITY POINT ═══════════
+   │                                          │
+   │         "COMMIT OK"                      ▼
+   │ ◀───────────────────────── [3] Acknowledge the client
+   │
+   │                             [4] LATER (seconds to minutes):
+   │                                 background page cleaner writes the
+   │                                 dirty data page to the .ibd file     DISK
 ```
 
-**Why this works for crash recovery:** If the server crashes after step 3 but before step 4, the redo log is already on disk. On restart, InnoDB replays the redo log entries and applies the committed changes to the data files. The client's data is never lost.
+What each step really means:
 
-**Why sequential writes matter:** The redo log is always *appended* to — sequential writes are dramatically faster than random writes on both HDDs and SSDs. This is why WAL doesn't destroy performance: instead of an expensive random write to a data page, you do a cheap sequential append to the log.
+| Step | What happens | Why it's there |
+|------|-------------|----------------|
+| **[0]** | The row is changed in the **buffer pool** (in-memory copy of the page). A redo record ("page 42, offset 100: 500 → 400") goes into the in-memory **log buffer**. | Reads and writes hit RAM — fast. Nothing is durable yet. |
+| **[1]** | `write()` copies the log buffer into the redo log file. ⚠️ This only reaches the **OS page cache**, which is still RAM. | Hands the bytes to the OS. |
+| **[2]** | `fsync()` forces the OS to push those bytes onto the physical disk and waits until the disk confirms. | **This is the moment the transaction becomes durable.** |
+| **[3]** | Server replies `COMMIT OK`. | The promise to the client — made *only* after [2]. |
+| **[4]** | Much later, the modified 16 KB data page is written to its real place in the data file. | Expensive random write — done lazily, in batches, off the commit path. |
 
-In MySQL InnoDB, the redo log files are `ib_logfile0` and `ib_logfile1` (configurable via `innodb_log_file_size`).
+### ❓ Why Send "COMMIT OK" First and Write the Data Page Later?
+
+It looks backwards — we tell the client "done" *before* the real table file on disk is updated. It's safe, and it's much faster.
+
+**1. It's already safe — the log alone is enough to rebuild the page.**
+After [2], the redo log on disk says exactly *"page 42, offset 100: change 500 → 400"*. If the server crashes before [4], recovery reads that line and redoes the change (crash **D** below). Writing the data page at commit would save nothing that isn't already saved. It would just be a second copy.
+
+**2. Writing the log is cheap; writing data pages is expensive.**
+
+```
+ Commit with WAL (what DBs do)            Commit writing data pages directly
+ ─────────────────────────────            ──────────────────────────────────
+ append ~100 bytes to END of 1 file       write a full 16 KB page for the row
+ → 1 sequential write                     + 16 KB for EVERY index page touched
+                                            (PK, idx_email, idx_city, ...)
+                                          → 3–5+ random writes all over the disk
+
+ ~0.1–1 ms on SSD                         several ms; far slower on HDD
+```
+
+So you'd write ~16 KB per page just to change a few bytes, and seek to random places on the disk to do it.
+
+**3. Deferring lets the DB batch many changes into one write.**
+A hot page (a popular product's stock row, or the last page of an auto-increment index) may be modified 1,000 times in a minute.
+
+```
+ Write page at every commit:   1,000 commits → 1,000 × 16 KB page writes
+ Write page later (WAL):       1,000 commits → 1,000 tiny log appends
+                                              + 1 page write when it's flushed
+```
+
+Many commits can also share a single `fsync()` of the log (**group commit**), so 50 concurrent commits may cost one disk flush instead of 50.
+
+**4. It's the only way to make multi-page changes all-or-nothing.**
+One transaction can change many pages (the row + every index, or two accounts in a transfer). If you wrote them directly and crashed halfway, some pages would be new and some old: a **corrupted, inconsistent** database. With WAL, the log either contains the COMMIT record or it doesn't, so the transaction either happened completely or not at all.
+
+| | Write data pages at commit | WAL: log at commit, pages later |
+|---|---|---|
+| Disk I/O per commit | Many **random** 16 KB writes | One small **sequential** append |
+| Hot page changed 1,000× | 1,000 page writes | 1 page write (+ 1,000 tiny log appends) |
+| Crash halfway through commit | Some pages new, some old → **corrupt** | COMMIT record present or not → **all or nothing** |
+| Commit latency | High | Low |
+| Durable after OK? | Yes | Yes, the log is replayed on restart |
+
+**Trade-off:** recovery after a crash takes longer, because the log since the last checkpoint must be replayed. That's why checkpointing exists ([Mechanism 3](#mechanism-3-checkpointing)): it keeps the amount of log to replay bounded.
+
+### What If a Step Fails? — Crash at Every Point
+
+```
+                 NOT DURABLE YET                     ║            DURABLE
+  ◀─────────────────────────────────────────────────▶║◀───────────────────────────────▶
+                                                     ║
+  ──[0]──────────────[1]──────────────[2]────────────╫─────────[3]─────────[4]──────▶ time
+  change in RAM      write() to       fsync()        ║         "OK" sent   data page
+                     OS cache         in progress    ║         to client   written
+           ▲                  ▲                      ║    ▲              ▲       ▲
+           ✗A                 ✗B                     ║    ✗C             ✗D      ✗E
+```
+
+| Crash | What's on disk at the moment of crash | What recovery does on restart | What the client saw | Data lost? |
+|:---:|---|---|---|---|
+| **A** — after [0], before [1] | Nothing about this transaction (it only existed in RAM) | Nothing to do — no COMMIT record in the log ⇒ transaction never happened | Error / connection dropped. **No OK.** | ✅ No — DB never promised anything |
+| **B** — after `write()`, before `fsync()` finishes | Maybe nothing, maybe part of the log, maybe all of it | Scans the log; if the COMMIT record is missing or its block fails the **checksum** (half-written), it's ignored ⇒ transaction **rolled back** | Error / connection dropped. **No OK.** | ✅ No — never promised. ⚠️ Outcome can go either way (see note below) |
+| **C** — after `fsync()`, before client receives OK | Full redo log incl. COMMIT record | **REDO** replays it ⇒ transaction **committed** | Connection dropped. **No OK!** | ✅ No — but client *doesn't know* it succeeded ⚠️ |
+| **D** — after OK, before data page flush | Redo log ✔, data file still has the **old** page | **REDO** replays the log onto the old page ⇒ page becomes new | `COMMIT OK` | ✅ No — this is exactly what WAL is for |
+| **E** — midway through writing the 16 KB data page | Redo log ✔, data page is **torn** (half old, half new) | Restore a clean copy of the page from the **doublewrite buffer**, then REDO on top | `COMMIT OK` | ✅ No — see [Mechanism 4](#mechanism-4-double-write-buffer--no-torn-pages) |
+
+**The guarantee in one sentence:** *if the client got `OK`, the change survives (D, E). If the client didn't get `OK`, the DB is allowed to keep it or drop it (A, B, C) — and the client must cope with not knowing.*
+
+**Note on B — why "either way":** if only the `mysqld` *process* crashed, the OS is still alive and its page cache will still flush the log to disk ⇒ the commit may survive. If the whole machine lost power, the OS cache is gone ⇒ the commit is lost. Both are fine, because no `OK` was sent.
+
+### ⚠️ The Tricky One: Crash C — "Did My Commit Succeed?"
+
+The data is safe, but the client sees a network error and has **no idea** whether it committed.
+
+```
+Client                         DB
+  │── COMMIT (debit ₹100) ────▶│  fsync() ✔  → committed on disk
+  │                            │  💥 crash before sending OK
+  │◀──── connection reset ─────│
+  │
+  │  Client thinks: "failed, let me retry"
+  │── COMMIT (debit ₹100) ────▶│  committed AGAIN  → ₹200 debited ❌
+```
+
+**Fix (application side):** make writes **idempotent** — send a unique `request_id` / idempotency key with a `UNIQUE` constraint, or check whether the change already exists before retrying. WAL protects durability; it cannot protect you from a blind retry.
+
+### What If `fsync()` Itself Returns an Error? (No Crash)
+
+Sometimes the disk reports an I/O error (`EIO`) instead of the machine crashing. The tempting fix — "just call `fsync()` again" — is **wrong**:
+
+- On Linux, after a failed writeback the kernel may **drop the dirty pages and mark them clean**. A second `fsync()` then returns *success* even though the data never reached disk.
+- This was discovered in PostgreSQL in 2018 (nicknamed **"fsyncgate"**).
+
+So modern databases treat an `fsync()` failure as **fatal**: PostgreSQL `PANIC`s and InnoDB aborts the server on purpose. On restart, recovery rebuilds state from the last good WAL. The client never received `OK`, so no promise was broken — this behaves exactly like crash **B**.
+
+### The One Rule That Makes All This Work — "Write-AHEAD"
+
+> **A data page may never be written to disk before the log records describing its changes are on disk.**
+
+Every log record has a growing number, the **LSN** (Log Sequence Number), and every data page remembers the LSN of the last change applied to it. Before the page cleaner writes a page in step [4], it checks:
+
+```
+page_LSN ≤ flushed_log_LSN ?   yes → safe to write the page
+                               no  → flush the log first, then write the page
+```
+
+This is why the log is "ahead". It also covers **uncommitted** dirty pages that get flushed early (to free buffer-pool memory): their undo information is already logged, so recovery can always roll them back.
+
+### Recovery on Restart — How the Log Is Replayed
+
+```
+ Server restarts after a crash
+              │
+              ▼
+ ┌─────────────────────────────────────────────┐
+ │ 1. Find the last CHECKPOINT LSN             │  everything before it is already
+ │                                             │  safely in the data files
+ └─────────────────────────────────────────────┘
+              │
+              ▼
+ ┌─────────────────────────────────────────────┐
+ │ 2. Scan the redo log forward from there     │  a torn / half-written tail
+ │    STOP at the first block with a bad       │  = never happened  (crash B)
+ │    checksum                                 │
+ └─────────────────────────────────────────────┘
+              │
+              ▼
+ ┌─────────────────────────────────────────────┐
+ │ 3. REDO: for each record                    │  brings every page up to date
+ │      page_LSN < record_LSN → apply it       │  (crash C, D, E)
+ │      otherwise             → skip (already  │
+ │                              on disk)       │
+ └─────────────────────────────────────────────┘
+              │
+              ▼
+ ┌─────────────────────────────────────────────┐
+ │ 4. UNDO: roll back every transaction that   │  removes half-done work
+ │    has no COMMIT record                     │  (crash A, B)
+ └─────────────────────────────────────────────┘
+              │
+              ▼
+   Accept connections — every transaction that
+   was ACKed with "OK" is present, nothing else is
+```
+
+(InnoDB actually opens for connections after step 3 and runs step 4 in a background thread; rows still being rolled back stay locked until it finishes.)
+
+**Where the files live:** in MySQL ≤ 8.0.29 the redo log is `ib_logfile0` / `ib_logfile1` (sized by `innodb_log_file_size`); from 8.0.30 it lives in the `#innodb_redo/` directory (sized by `innodb_redo_log_capacity`). In PostgreSQL it's the `pg_wal/` directory.
 
 ---
 
