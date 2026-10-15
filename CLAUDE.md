@@ -31,3 +31,4 @@ Keep MySQL console output / EXPLAIN result sets as code blocks. They're not diag
 
 - Many files have CRLF line endings. Preserve them when rewriting a file.
 - Git has no user identity configured in WSL. Pass it with `git -c user.name=… -c user.email=…`, matching earlier commits.
+- WSL git has no GitHub credentials. Push with Windows git, which uses the Windows credential manager: `"/mnt/c/Program Files/Git/cmd/git.exe" -C 'C:\MyProjects\High-Level-System-Design' push origin main`.
