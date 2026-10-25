@@ -1,0 +1,117 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="516" viewBox="0 0 900 516" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Filter vs interceptor</title>
+  <desc>Left: nested layers of a request, outermost to innermost. Servlet container (Tomcat) holds the Filter chain (RequestIdFilter, CorsFilter, Spring Security FilterChainProxy): Servlet API, runs for every request (static files, other servlets too), can wrap or replace request / response. Inside it the DispatcherServlet, where Spring MVC starts; @RestControllerAdvice only sees exceptions thrown inside here. Inside that the Interceptors: preHandle() on the way in, postHandle() and afterCompletion() on the way out; Spring MVC, knows the handler method and its annotations, only requests that reach Spring MVC. Core: the @RestController method. An exception thrown in a filter never reaches @RestControllerAdvice. Right: order with 2 filters and 2 interceptors: 1 Filter A (before), 2 Filter B (before), 3 DispatcherServlet, 4 Interceptor 1 preHandle, 5 Interceptor 2 preHandle, 6 Controller method, 7 Interceptor 2 postHandle, 8 Interceptor 1 postHandle, 9 Interceptor 2 afterCompletion, 10 Interceptor 1 afterCompletion, 11 Filter B (after), 12 Filter A (after). The way out runs in reverse order.</desc>
+  <defs>
+    <marker id="a_red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a_purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="515" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- Servlet container -->
+  <rect x="24" y="24" width="564" height="468" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="47" fill="#e6edf3" font-size="14" font-weight="600">Servlet container (Tomcat)</text>
+
+  <!-- Filter chain -->
+  <rect x="40" y="62" width="532" height="360" rx="10" fill="#f0883e" fill-opacity="0.06" stroke="#f0883e" stroke-opacity="0.6"/>
+  <text x="56" y="85" fill="#ffa657" font-size="14" font-weight="600">Filter chain</text>
+  <rect x="56" y="97" width="132" height="24" rx="12" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <text x="122" y="113.5" fill="#ffa657" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">RequestIdFilter</text>
+  <rect x="198" y="97" width="96" height="24" rx="12" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <text x="246" y="113.5" fill="#ffa657" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">CorsFilter</text>
+  <rect x="304" y="97" width="252" height="24" rx="12" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <text x="430" y="113.5" fill="#ffa657" font-size="12" text-anchor="middle">Spring Security <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(FilterChainProxy)</tspan></text>
+  <text x="56" y="143" fill="#c9d1d9" font-size="12.5"><tspan fill="#e6edf3" font-weight="600">Servlet API</tspan> · runs for every request (static files, other servlets too)</text>
+  <text x="56" y="162" fill="#c9d1d9" font-size="12.5">can wrap or replace request / response</text>
+
+  <!-- DispatcherServlet: amber dashed outline = @RestControllerAdvice scope -->
+  <rect x="54" y="176" width="504" height="234" rx="11" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <rect x="60" y="182" width="492" height="222" rx="9" fill="#58a6ff" fill-opacity="0.10" stroke="#58a6ff" stroke-opacity="0.8"/>
+  <text x="76" y="205" fill="#79c0ff" font-size="13.5" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DispatcherServlet</text>
+  <text x="232" y="205" fill="#8b949e" font-size="12.5">Spring MVC starts here</text>
+
+  <!-- Interceptors -->
+  <rect x="74" y="218" width="464" height="150" rx="9" fill="#bc8cff" fill-opacity="0.08" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <text x="88" y="240" fill="#d2a8ff" font-size="14" font-weight="600">Interceptors</text>
+  <text x="182" y="240" fill="#8b949e" font-size="12.5">Spring MVC</text>
+  <text x="88" y="259" fill="#c9d1d9" font-size="12">knows the handler method + annotations · only requests that reach Spring MVC</text>
+
+  <rect x="88" y="296" width="100" height="24" rx="12" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.8"/>
+  <text x="138" y="312.5" fill="#d2a8ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">preHandle()</text>
+  <text x="138" y="338" fill="#8b949e" font-size="11.5" text-anchor="middle">on the way in</text>
+
+  <line x1="188" y1="308" x2="212" y2="308" stroke="#bc8cff" stroke-width="1.6" marker-end="url(#a_purple)"/>
+
+  <rect x="214" y="276" width="140" height="64" rx="9" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950" stroke-opacity="0.8"/>
+  <text x="284" y="303" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@RestController</text>
+  <text x="284" y="322" fill="#e6edf3" font-size="13" text-anchor="middle">method</text>
+
+  <line x1="354" y1="288" x2="378" y2="288" stroke="#bc8cff" stroke-width="1.6" marker-end="url(#a_purple)"/>
+
+  <rect x="380" y="276" width="144" height="24" rx="12" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.8"/>
+  <text x="452" y="292.5" fill="#d2a8ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">postHandle()</text>
+  <line x1="452" y1="300" x2="452" y2="312" stroke="#bc8cff" stroke-width="1.6" marker-end="url(#a_purple)"/>
+  <rect x="380" y="314" width="144" height="24" rx="12" fill="#bc8cff" fill-opacity="0.14" stroke="#bc8cff" stroke-opacity="0.8"/>
+  <text x="452" y="330.5" fill="#d2a8ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">afterCompletion()</text>
+  <text x="452" y="356" fill="#8b949e" font-size="11.5" text-anchor="middle">on the way out</text>
+
+  <text x="76" y="391" fill="#e3b341" font-size="12.5"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">@RestControllerAdvice</tspan> only sees exceptions thrown inside here</text>
+
+  <!-- Red note pointing at the filter layer -->
+  <line x1="306" y1="442" x2="306" y2="424" stroke="#f85149" stroke-width="1.8" marker-end="url(#a_red)"/>
+  <rect x="40" y="442" width="532" height="34" rx="8" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.75"/>
+  <text x="306" y="464" fill="#ff7b72" font-size="13" text-anchor="middle"><tspan font-weight="700">✗</tspan> exception thrown in a filter → never reaches <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">@RestControllerAdvice</tspan></text>
+
+  <!-- Order column -->
+  <rect x="604" y="24" width="272" height="468" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="620" y="48" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ORDER</text>
+  <text x="676" y="48" fill="#8b949e" font-size="12.5">· 2 filters, 2 interceptors</text>
+  <rect x="616" y="66" width="248" height="26" rx="7" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.55"/>
+  <circle cx="632" cy="79" r="9" fill="#f0883e" fill-opacity=".22" stroke="#f0883e"/>
+  <text x="632" y="83" fill="#ffa657" font-size="11" font-weight="700" text-anchor="middle">1</text>
+  <text x="650" y="83.5" fill="#e6edf3" font-size="12.5">Filter A<tspan fill="#8b949e"> (before)</tspan></text>
+  <rect x="616" y="99" width="248" height="26" rx="7" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.55"/>
+  <circle cx="632" cy="112" r="9" fill="#f0883e" fill-opacity=".22" stroke="#f0883e"/>
+  <text x="632" y="116" fill="#ffa657" font-size="11" font-weight="700" text-anchor="middle">2</text>
+  <text x="650" y="116.5" fill="#e6edf3" font-size="12.5">Filter B<tspan fill="#8b949e"> (before)</tspan></text>
+  <rect x="616" y="132" width="248" height="26" rx="7" fill="#58a6ff" fill-opacity="0.1" stroke="#58a6ff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="145" r="9" fill="#58a6ff" fill-opacity=".22" stroke="#58a6ff"/>
+  <text x="632" y="149" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle">3</text>
+  <text x="650" y="149.5" fill="#e6edf3" font-size="12.5"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12">DispatcherServlet</tspan></text>
+  <rect x="616" y="165" width="248" height="26" rx="7" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="178" r="9" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="632" y="182" fill="#d2a8ff" font-size="11" font-weight="700" text-anchor="middle">4</text>
+  <text x="650" y="182.5" fill="#e6edf3" font-size="12.5">Interceptor 1 <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#d2a8ff" font-size="12">preHandle</tspan></text>
+  <rect x="616" y="198" width="248" height="26" rx="7" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="211" r="9" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="632" y="215" fill="#d2a8ff" font-size="11" font-weight="700" text-anchor="middle">5</text>
+  <text x="650" y="215.5" fill="#e6edf3" font-size="12.5">Interceptor 2 <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#d2a8ff" font-size="12">preHandle</tspan></text>
+  <rect x="616" y="231" width="248" height="26" rx="7" fill="#3fb950" fill-opacity="0.1" stroke="#3fb950" stroke-opacity="0.55"/>
+  <circle cx="632" cy="244" r="9" fill="#3fb950" fill-opacity=".22" stroke="#3fb950"/>
+  <text x="632" y="248" fill="#56d364" font-size="11" font-weight="700" text-anchor="middle">6</text>
+  <text x="650" y="248.5" fill="#e6edf3" font-size="12.5"><tspan fill="#56d364">Controller method</tspan></text>
+  <rect x="616" y="264" width="248" height="26" rx="7" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="277" r="9" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="632" y="281" fill="#d2a8ff" font-size="11" font-weight="700" text-anchor="middle">7</text>
+  <text x="650" y="281.5" fill="#e6edf3" font-size="12.5">Interceptor 2 <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#d2a8ff" font-size="12">postHandle</tspan></text>
+  <rect x="616" y="297" width="248" height="26" rx="7" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="310" r="9" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="632" y="314" fill="#d2a8ff" font-size="11" font-weight="700" text-anchor="middle">8</text>
+  <text x="650" y="314.5" fill="#e6edf3" font-size="12.5">Interceptor 1 <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#d2a8ff" font-size="12">postHandle</tspan></text>
+  <rect x="616" y="330" width="248" height="26" rx="7" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="343" r="9" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="632" y="347" fill="#d2a8ff" font-size="11" font-weight="700" text-anchor="middle">9</text>
+  <text x="650" y="347.5" fill="#e6edf3" font-size="12.5">Interceptor 2 <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#d2a8ff" font-size="12">afterCompletion</tspan></text>
+  <rect x="616" y="363" width="248" height="26" rx="7" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.55"/>
+  <circle cx="632" cy="376" r="9" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="632" y="380" fill="#d2a8ff" font-size="10.5" font-weight="700" text-anchor="middle">10</text>
+  <text x="650" y="380.5" fill="#e6edf3" font-size="12.5">Interceptor 1 <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#d2a8ff" font-size="12">afterCompletion</tspan></text>
+  <rect x="616" y="396" width="248" height="26" rx="7" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.55"/>
+  <circle cx="632" cy="409" r="9" fill="#f0883e" fill-opacity=".22" stroke="#f0883e"/>
+  <text x="632" y="413" fill="#ffa657" font-size="10.5" font-weight="700" text-anchor="middle">11</text>
+  <text x="650" y="413.5" fill="#e6edf3" font-size="12.5">Filter B<tspan fill="#8b949e"> (after)</tspan></text>
+  <rect x="616" y="429" width="248" height="26" rx="7" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.55"/>
+  <circle cx="632" cy="442" r="9" fill="#f0883e" fill-opacity=".22" stroke="#f0883e"/>
+  <text x="632" y="446" fill="#ffa657" font-size="10.5" font-weight="700" text-anchor="middle">12</text>
+  <text x="650" y="446.5" fill="#e6edf3" font-size="12.5">Filter A<tspan fill="#8b949e"> (after)</tspan></text>
+  <text x="740" y="476" fill="#8b949e" font-size="12" text-anchor="middle">the way out runs in reverse order</text>
+</svg>

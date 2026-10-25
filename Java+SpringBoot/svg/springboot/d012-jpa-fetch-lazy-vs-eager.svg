@@ -1,0 +1,87 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="656" viewBox="0 0 920 656" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>JPA FetchType EAGER vs LAZY</title>
+  <desc>Entity Order with fields @ManyToOne Customer customer and @OneToMany List&lt;OrderItem&gt; items. Left, FetchType.EAGER: orderRepository.findById(1) runs select o.*, c.* from orders o left join customer c on c.id = o.customer_id where o.id = 1, so the customer is loaded every time, even if you never use it. orderRepository.findAll() runs select * from orders plus N times select * from customer where id = ?: N+1 queries even though you never touched customer. EAGER can't be switched off per query. Right, FetchType.LAZY: orderRepository.findById(1) runs select * from orders where id = 1. order.getCustomer() returns a Customer proxy where only the id is known, no SQL yet. customer.getName() while the session is open runs select * from customer where id = ?: loaded only when used. The same call after the session closed throws LazyInitializationException. Defaults: @ManyToOne / @OneToOne are EAGER, @OneToMany / @ManyToMany are LAZY. Best practice: LAZY everywhere plus JOIN FETCH or @EntityGraph when a use case needs the data.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="919" height="655" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- entity strip -->
+  <rect x="24" y="20" width="872" height="66" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="44" y="46" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ENTITY</text>
+  <text x="44" y="70" fill="#e6edf3" font-size="15" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order</text>
+  <line x1="150" y1="32" x2="150" y2="74" stroke="#30363d"/>
+  <text x="172" y="47" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#d2a8ff">@ManyToOne</tspan>&#160;&#160;<tspan fill="#79c0ff">Customer</tspan> customer</text>
+  <text x="172" y="69" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#d2a8ff">@OneToMany</tspan>&#160;&#160;<tspan fill="#79c0ff">List&lt;OrderItem&gt;</tspan> items</text>
+
+  <!-- ===== LEFT: EAGER ===== -->
+  <rect x="24" y="102" width="430" height="482" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M34,102 H444 A10,10 0 0 1 454,112 V136 H24 V112 A10,10 0 0 1 34,102 Z" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="42" y="124" fill="#e3b341" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">FetchType.EAGER</text>
+
+  <rect x="40" y="152" width="232" height="26" rx="6" fill="#161b22" stroke="#484f58"/>
+  <text x="52" y="169.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">orderRepository.findById(1)</text>
+  <line x1="60" y1="178" x2="60" y2="202" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="40" y="202" width="398" height="86" rx="8" fill="#161b22" stroke="#30363d"/>
+  <g font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#e6edf3">
+    <text x="56" y="223">select o.*, <tspan fill="#e3b341">c.*</tspan> from orders o</text>
+    <text x="56" y="241" fill="#e3b341">left join customer c</text>
+    <text x="56" y="259" fill="#e3b341">&#160;&#160;on c.id = o.customer_id</text>
+    <text x="56" y="277">where o.id = 1</text>
+  </g>
+  <text x="40" y="310" fill="#e3b341" font-size="13">customer loaded every time, even if you never use it</text>
+
+  <line x1="40" y1="334" x2="438" y2="334" stroke="#21262d"/>
+
+  <rect x="40" y="352" width="216" height="26" rx="6" fill="#161b22" stroke="#484f58"/>
+  <text x="52" y="369.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">orderRepository.findAll()</text>
+  <line x1="60" y1="378" x2="60" y2="402" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="40" y="402" width="398" height="58" rx="8" fill="#161b22" stroke="#30363d"/>
+  <g font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#e6edf3">
+    <text x="56" y="424">select * from orders</text>
+    <text x="56" y="446"><tspan fill="#ff7b72" font-weight="700">N ×</tspan> select * from customer where id = ?</text>
+  </g>
+  <rect x="40" y="476" width="398" height="32" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="54" y="497" fill="#ff7b72" font-size="13">✗  N+1 queries even though you never touched customer</text>
+  <text x="40" y="536" fill="#8b949e" font-size="12.5">can't be switched off per query</text>
+
+  <!-- ===== RIGHT: LAZY ===== -->
+  <rect x="466" y="102" width="430" height="482" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M476,102 H886 A10,10 0 0 1 896,112 V136 H466 V112 A10,10 0 0 1 476,102 Z" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="484" y="124" fill="#56d364" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">FetchType.LAZY</text>
+
+  <rect x="482" y="152" width="232" height="26" rx="6" fill="#161b22" stroke="#484f58"/>
+  <text x="494" y="169.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">orderRepository.findById(1)</text>
+  <line x1="502" y1="178" x2="502" y2="202" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="482" y="202" width="398" height="32" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="498" y="223" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">select * from orders where id = 1</text>
+
+  <line x1="482" y1="250" x2="880" y2="250" stroke="#21262d"/>
+
+  <rect x="482" y="264" width="172" height="26" rx="6" fill="#161b22" stroke="#484f58"/>
+  <text x="494" y="281.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">order.getCustomer()</text>
+  <line x1="502" y1="290" x2="502" y2="312" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="482" y="312" width="398" height="50" rx="8" fill="none" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3" stroke-dasharray="5 3"/>
+  <text x="498" y="333" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" font-weight="700" fill="#e6edf3">Customer</tspan> <tspan font-weight="600" fill="#e6edf3">proxy</tspan> · only the id is known</text>
+  <text x="498" y="352" fill="#8b949e" font-size="12">no SQL yet</text>
+
+  <rect x="482" y="378" width="164" height="26" rx="6" fill="#161b22" stroke="#484f58"/>
+  <text x="494" y="395.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">customer.getName()</text>
+  <text x="658" y="395.5" fill="#c9d1d9" font-size="13">while the session is open</text>
+  <line x1="502" y1="404" x2="502" y2="426" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="482" y="426" width="398" height="32" rx="8" fill="#161b22" stroke="#30363d"/>
+  <text x="498" y="447" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">select * from customer where id = ?</text>
+  <text x="482" y="482" fill="#56d364" font-size="13" font-weight="600">✓  loaded only when used</text>
+
+  <line x1="482" y1="498" x2="880" y2="498" stroke="#21262d"/>
+
+  <text x="482" y="522" fill="#c9d1d9" font-size="13">the same call after the session closed</text>
+  <line x1="502" y1="530" x2="502" y2="548" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <rect x="482" y="548" width="264" height="26" rx="13" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".85"/>
+  <text x="614" y="565.5" fill="#ff7b72" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">✗ LazyInitializationException</text>
+
+  <!-- footer -->
+  <text x="24" y="612" fill="#8b949e" font-size="12.5">defaults:  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">@ManyToOne / @OneToOne</tspan> → <tspan fill="#e3b341" font-weight="700">EAGER</tspan>  ·  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">@OneToMany / @ManyToMany</tspan> → <tspan fill="#56d364" font-weight="700">LAZY</tspan></text>
+  <text x="24" y="636" fill="#8b949e" font-size="12.5">best practice: <tspan fill="#56d364" font-weight="700">LAZY</tspan> everywhere + <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">JOIN FETCH</tspan> / <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">@EntityGraph</tspan> when a use case needs the data</text>
+</svg>

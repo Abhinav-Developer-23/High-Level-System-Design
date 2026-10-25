@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="454" viewBox="0 0 900 454" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Stereotype annotation hierarchy</title>
+  <desc>@Component is the generic Spring-managed bean, picked up by component scan. @Service, @Repository and @Controller are meta-annotated with @Component. @Service: layer business logic; extra behaviour none, a label for readers and AOP pointcuts. @Repository: layer data access; extra behaviour exception translation to DataAccessException. @Controller: layer web; handler methods registered with DispatcherServlet. Under @Controller, @RestController = @Controller + @ResponseBody, so return values are written as JSON. @Configuration, @RestControllerAdvice and @ControllerAdvice are @Component too.</desc>
+  <rect x="0.5" y="0.5" width="899" height="453" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- root -->
+  <rect x="230" y="24" width="440" height="64" rx="10" fill="#1c2128" stroke="#8b949e" stroke-opacity=".8"/>
+  <text x="450" y="50" fill="#e6edf3" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Component</text>
+  <text x="450" y="73" fill="#c9d1d9" font-size="13" text-anchor="middle">generic Spring-managed bean · picked up by component scan</text>
+
+  <!-- tree edges -->
+  <line x1="450" y1="88" x2="450" y2="122" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="156" y1="122" x2="744" y2="122" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="156" y1="122" x2="156" y2="150" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="450" y1="122" x2="450" y2="150" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="744" y1="122" x2="744" y2="150" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="462" y="111" fill="#8b949e" font-size="12" font-style="italic">meta-annotated with <tspan font-style="normal" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Component</tspan></text>
+
+  <!-- @Service -->
+  <rect x="24" y="150" width="264" height="160" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".6"/>
+  <path d="M34,150 H278 A10,10 0 0 1 288,160 V188 H24 V160 A10,10 0 0 1 34,150 Z" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="156" y="175" fill="#79c0ff" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Service</text>
+  <text x="40" y="211" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.2">LAYER</text>
+  <text x="40" y="230" fill="#e6edf3" font-size="13.5">business logic</text>
+  <text x="40" y="257" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.2">EXTRA BEHAVIOUR</text>
+  <text x="40" y="277" fill="#c9d1d9" font-size="13">none · a label for readers</text>
+  <text x="40" y="295" fill="#c9d1d9" font-size="13">and AOP pointcuts</text>
+
+  <!-- @Repository -->
+  <rect x="318" y="150" width="264" height="160" rx="10" fill="#1c2128" stroke="#39c5cf" stroke-opacity=".6"/>
+  <path d="M328,150 H572 A10,10 0 0 1 582,160 V188 H318 V160 A10,10 0 0 1 328,150 Z" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="450" y="175" fill="#56d4dd" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Repository</text>
+  <text x="334" y="211" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.2">LAYER</text>
+  <text x="334" y="230" fill="#e6edf3" font-size="13.5">data access</text>
+  <text x="334" y="257" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.2">EXTRA BEHAVIOUR</text>
+  <text x="334" y="277" fill="#c9d1d9" font-size="13">exception translation →</text>
+  <text x="334" y="295" fill="#56d4dd" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">DataAccessException</text>
+
+  <!-- @Controller -->
+  <rect x="612" y="150" width="264" height="160" rx="10" fill="#1c2128" stroke="#f0883e" stroke-opacity=".6"/>
+  <path d="M622,150 H866 A10,10 0 0 1 876,160 V188 H612 V160 A10,10 0 0 1 622,150 Z" fill="#f0883e" fill-opacity=".14" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="744" y="175" fill="#ffa657" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Controller</text>
+  <text x="628" y="211" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.2">LAYER</text>
+  <text x="628" y="230" fill="#e6edf3" font-size="13.5">web</text>
+  <text x="628" y="257" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.2">EXTRA BEHAVIOUR</text>
+  <text x="628" y="277" fill="#c9d1d9" font-size="13">handler methods registered</text>
+  <text x="628" y="295" fill="#c9d1d9" font-size="13">with <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#ffa657">DispatcherServlet</tspan></text>
+
+  <!-- @RestController -->
+  <line x1="744" y1="310" x2="744" y2="340" stroke="#8b949e" stroke-width="1.5"/>
+  <rect x="612" y="340" width="264" height="90" rx="10" fill="#1c2128" stroke="#f0883e" stroke-opacity=".6"/>
+  <path d="M622,340 H866 A10,10 0 0 1 876,350 V374 H612 V350 A10,10 0 0 1 622,340 Z" fill="#f0883e" fill-opacity=".14" stroke="#f0883e" stroke-opacity=".6"/>
+  <text x="744" y="363" fill="#ffa657" font-size="15" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@RestController</text>
+  <text x="628" y="397" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">= @Controller + @ResponseBody</text>
+  <text x="628" y="417" fill="#c9d1d9" font-size="13">return values written as JSON</text>
+
+  <!-- footer note -->
+  <rect x="24" y="356" width="558" height="58" rx="8" fill="none" stroke="#484f58" stroke-dasharray="4 3"/>
+  <text x="40" y="380" fill="#8b949e" font-size="12.5"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">@Configuration</tspan>, <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">@RestControllerAdvice</tspan> and <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">@ControllerAdvice</tspan></text>
+  <text x="40" y="400" fill="#8b949e" font-size="12.5">are <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">@Component</tspan> too</text>
+</svg>

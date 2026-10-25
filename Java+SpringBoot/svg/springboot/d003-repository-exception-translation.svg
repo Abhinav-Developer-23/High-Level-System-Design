@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="500" viewBox="0 0 960 500" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>@Repository exception translation</title>
+  <desc>Same call in both panels: UserService calls UserRepository.findByEmail(), which calls EntityManager.getSingleResult(), which throws NoResultException. Left, plain class without @Repository: the exception travels up unchanged, so the service must catch jakarta.persistence.NoResultException and is now tied to JPA. Right, with @Repository: a proxy created by PersistenceExceptionTranslationPostProcessor wraps the repository and converts the exception into EmptyResultDataAccessException, so the service catches DataAccessException: the same exception types for JPA, JDBC, Mongo and others. Other examples: duplicate key becomes DataIntegrityViolationException, lock timeout becomes PessimisticLockingFailureException.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="959" height="499" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="20" width="448" height="428" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M34,20 H462 A10,10 0 0 1 472,30 V64 H24 V30 A10,10 0 0 1 34,20 Z" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="42" y="48" fill="#ff7b72" font-size="14" font-weight="700">✗  Plain class (no <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13.5">@Repository</tspan>)</text>
+  <rect x="40" y="84" width="416" height="64" rx="9" fill="#161b22" stroke="#484f58"/>
+  <text x="56" y="108" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserService</text>
+  <text x="56" y="132" fill="#ff7b72" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">catch (jakarta.persistence.NoResultException)</text>
+  <line x1="114" y1="148" x2="114" y2="232" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="124" y="194" fill="#8b949e" font-size="12">calls</text>
+  <rect x="52" y="234" width="124" height="46" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="114" y="253" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserRepository</text>
+  <text x="114" y="271" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">.findByEmail()</text>
+  <line x1="114" y1="280" x2="114" y2="322" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="38" y="324" width="152" height="46" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="114" y="343" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">EntityManager</text>
+  <text x="114" y="361" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">.getSingleResult()</text>
+  <line x1="190" y1="347" x2="276" y2="347" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <text x="233" y="340" fill="#ff7b72" font-size="12" text-anchor="middle">throws</text>
+  <rect x="278" y="334" width="152" height="26" rx="13" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".85"/>
+  <text x="354" y="351.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">NoResultException</text>
+  <line x1="408" y1="334" x2="408" y2="150" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <text x="398" y="315" fill="#ff7b72" font-size="12.5" text-anchor="end">travels up unchanged</text>
+  <rect x="40" y="390" width="416" height="38" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="56" y="414" fill="#e3b341" font-size="13" font-weight="600">⚠  service is now tied to JPA</text>
+  <rect x="488" y="20" width="448" height="428" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M498,20 H926 A10,10 0 0 1 936,30 V64 H488 V30 A10,10 0 0 1 498,20 Z" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="506" y="48" fill="#56d364" font-size="14" font-weight="700">✓  <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13.5">@Repository</tspan></text>
+  <rect x="504" y="84" width="416" height="64" rx="9" fill="#161b22" stroke="#484f58"/>
+  <text x="520" y="108" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserService</text>
+  <text x="520" y="132" fill="#56d364" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">catch (DataAccessException)</text>
+  <line x1="578" y1="148" x2="578" y2="170" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="588" y="164" fill="#8b949e" font-size="12">calls</text>
+  <rect x="504" y="172" width="416" height="122" rx="9" fill="#58a6ff" fill-opacity=".06" stroke="#58a6ff" stroke-opacity=".75" stroke-dasharray="5 3"/>
+  <text x="520" y="193" fill="#79c0ff" font-size="12.5" font-weight="700">proxy ·</text>
+  <text x="520" y="211" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">PersistenceExceptionTranslationPostProcessor</text>
+  <line x1="578" y1="216" x2="578" y2="232" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="516" y="234" width="124" height="46" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="578" y="253" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserRepository</text>
+  <text x="578" y="271" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">.findByEmail()</text>
+  <line x1="578" y1="280" x2="578" y2="322" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="502" y="324" width="152" height="46" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="578" y="343" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">EntityManager</text>
+  <text x="578" y="361" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">.getSingleResult()</text>
+  <line x1="654" y1="347" x2="740" y2="347" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <text x="697" y="340" fill="#ff7b72" font-size="12" text-anchor="middle">throws</text>
+  <rect x="742" y="334" width="152" height="26" rx="13" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".85"/>
+  <text x="818" y="351.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">NoResultException</text>
+  <line x1="872" y1="334" x2="872" y2="272" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <rect x="656" y="244" width="238" height="26" rx="13" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".85"/>
+  <text x="775" y="261.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">EmptyResultDataAccessException</text>
+  <line x1="872" y1="244" x2="872" y2="150" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="862" y="315" fill="#56d364" font-size="12.5" text-anchor="end">converted by the proxy</text>
+  <rect x="504" y="390" width="416" height="38" rx="8" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="520" y="414" fill="#56d364" font-size="13" font-weight="600">✓  same exception types for JPA, JDBC, Mongo…</text>
+  <text x="24" y="477" fill="#8b949e" font-size="12.5">other examples:  duplicate key → <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">DataIntegrityViolationException</tspan>  ·  lock timeout → <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">PessimisticLockingFailureException</tspan></text>
+</svg>

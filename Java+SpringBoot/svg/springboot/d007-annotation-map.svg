@@ -1,0 +1,120 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="620" viewBox="0 0 960 620" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Top 10 annotations in a typical app</title>
+  <desc>Where the top 10 Spring Boot annotations live in a typical app. Request flow left to right: HTTP POST /orders goes to @RestController OrderController (2) with @PostMapping("/orders") (3) and @RequestBody, @PathVariable, @RequestParam (4); then @Service OrderService (5) with @Transactional (9); then @Repository OrderRepository (5); then the database. All three layers use constructor injection, @Autowired implied (6). When the service throws an exception it goes to the @RestControllerAdvice + @ExceptionHandler class (10), which returns a 404 / 409 JSON error to the client. At startup: @SpringBootApplication on the main class (1), @Configuration + @Bean for extra beans such as RestClient (7), @Value / @ConfigurationProperties to read application.yml (8).</desc>
+  <defs>
+    <marker id="a_blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a_green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a_red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a_amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a_purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a_teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a_orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="a_gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="959" height="619" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REQUEST FLOW  ·  POST /orders</text>
+  <rect x="24" y="66" width="94" height="80" rx="9" fill="#161b22" stroke="#484f58"/>
+  <text x="71" y="100" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">HTTP</text>
+  <text x="71" y="120" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">POST /orders</text>
+  <rect x="142" y="52" width="230" height="280" rx="10" fill="#f0883e" fill-opacity="0.05" stroke="#f0883e" stroke-opacity="0.55"/>
+  <rect x="154" y="64" width="150" height="24" rx="12.0" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <circle cx="167" cy="76.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="80.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">2</text>
+  <text x="182" y="80.5" fill="#ffa657" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@RestController</text>
+  <text x="156" y="114" fill="#e6edf3" font-size="14" font-weight="600">OrderController</text>
+  <line x1="154" y1="128" x2="360" y2="128" stroke="#30363d"/>
+  <line x1="154" y1="264" x2="360" y2="264" stroke="#30363d"/>
+  <text x="156" y="285" fill="#8b949e" font-size="12">constructor injection</text>
+  <rect x="154" y="296" width="113" height="24" rx="12.0" fill="#8b949e" fill-opacity="0.1" stroke="#8b949e" stroke-opacity="0.6" stroke-dasharray="3 3"/>
+  <circle cx="167" cy="308.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="312.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">6</text>
+  <text x="182" y="312.5" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Autowired</text>
+  <text x="275" y="312.5" fill="#8b949e" font-size="12">implied</text>
+  <rect x="396" y="52" width="190" height="280" rx="10" fill="#58a6ff" fill-opacity="0.05" stroke="#58a6ff" stroke-opacity="0.55"/>
+  <rect x="408" y="64" width="98" height="24" rx="12.0" fill="#58a6ff" fill-opacity="0.1" stroke="#58a6ff" stroke-opacity="0.6"/>
+  <circle cx="421" cy="76.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="421" y="80.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">5</text>
+  <text x="436" y="80.5" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Service</text>
+  <text x="410" y="114" fill="#e6edf3" font-size="14" font-weight="600">OrderService</text>
+  <line x1="408" y1="128" x2="574" y2="128" stroke="#30363d"/>
+  <line x1="408" y1="264" x2="574" y2="264" stroke="#30363d"/>
+  <text x="410" y="285" fill="#8b949e" font-size="12">constructor injection</text>
+  <rect x="408" y="296" width="113" height="24" rx="12.0" fill="#8b949e" fill-opacity="0.1" stroke="#8b949e" stroke-opacity="0.6" stroke-dasharray="3 3"/>
+  <circle cx="421" cy="308.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="421" y="312.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">6</text>
+  <text x="436" y="312.5" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Autowired</text>
+  <text x="529" y="312.5" fill="#8b949e" font-size="12">implied</text>
+  <rect x="610" y="52" width="190" height="280" rx="10" fill="#39c5cf" fill-opacity="0.05" stroke="#39c5cf" stroke-opacity="0.55"/>
+  <rect x="622" y="64" width="120" height="24" rx="12.0" fill="#39c5cf" fill-opacity="0.1" stroke="#39c5cf" stroke-opacity="0.6"/>
+  <circle cx="635" cy="76.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="635" y="80.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">5</text>
+  <text x="650" y="80.5" fill="#56d4dd" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Repository</text>
+  <text x="624" y="114" fill="#e6edf3" font-size="14" font-weight="600">OrderRepository</text>
+  <line x1="622" y1="128" x2="788" y2="128" stroke="#30363d"/>
+  <line x1="622" y1="264" x2="788" y2="264" stroke="#30363d"/>
+  <text x="624" y="285" fill="#8b949e" font-size="12">constructor injection</text>
+  <rect x="622" y="296" width="113" height="24" rx="12.0" fill="#8b949e" fill-opacity="0.1" stroke="#8b949e" stroke-opacity="0.6" stroke-dasharray="3 3"/>
+  <circle cx="635" cy="308.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="635" y="312.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">6</text>
+  <text x="650" y="312.5" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Autowired</text>
+  <text x="743" y="312.5" fill="#8b949e" font-size="12">implied</text>
+  <rect x="154" y="140" width="208" height="24" rx="12.0" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <circle cx="167" cy="152.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="156.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">3</text>
+  <text x="182" y="156.5" fill="#ffa657" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@PostMapping("/orders")</text>
+  <rect x="154" y="172" width="128" height="24" rx="12.0" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <circle cx="167" cy="184.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="188.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">4</text>
+  <text x="182" y="188.5" fill="#ffa657" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@RequestBody</text>
+  <rect x="154" y="202" width="135" height="24" rx="12.0" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <circle cx="167" cy="214.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="218.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">4</text>
+  <text x="182" y="218.5" fill="#ffa657" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@PathVariable</text>
+  <rect x="154" y="232" width="135" height="24" rx="12.0" fill="#f0883e" fill-opacity="0.1" stroke="#f0883e" stroke-opacity="0.6"/>
+  <circle cx="167" cy="244.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="248.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">4</text>
+  <text x="182" y="248.5" fill="#ffa657" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@RequestParam</text>
+  <rect x="408" y="140" width="142" height="24" rx="12.0" fill="#bc8cff" fill-opacity="0.1" stroke="#bc8cff" stroke-opacity="0.6"/>
+  <circle cx="421" cy="152.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="421" y="156.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">9</text>
+  <text x="436" y="156.5" fill="#d2a8ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Transactional</text>
+  <path d="M832,74 V144 A48,9 0 0 0 928,144 V74" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".75"/>
+  <ellipse cx="880" cy="74" rx="48" ry="9" fill="#1c2128" stroke="#39c5cf" stroke-opacity=".75"/>
+  <text x="880" y="118" fill="#56d4dd" font-size="13.5" font-weight="600" text-anchor="middle">Database</text>
+  <line x1="118" y1="106" x2="140" y2="106" stroke="#8b949e" stroke-width="1.8" marker-end="url(#a_gray)"/>
+  <line x1="372" y1="106" x2="394" y2="106" stroke="#8b949e" stroke-width="1.8" marker-end="url(#a_gray)"/>
+  <line x1="586" y1="106" x2="608" y2="106" stroke="#8b949e" stroke-width="1.8" marker-end="url(#a_gray)"/>
+  <line x1="800" y1="106" x2="831" y2="106" stroke="#8b949e" stroke-width="1.8" marker-end="url(#a_gray)"/>
+  <rect x="142" y="382" width="230" height="92" rx="10" fill="#f85149" fill-opacity="0.08" stroke="#f85149" stroke-opacity="0.7"/>
+  <rect x="154" y="396" width="193" height="24" rx="12.0" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6"/>
+  <circle cx="167" cy="408.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="167" y="412.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">10</text>
+  <text x="182" y="412.5" fill="#ff7b72" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@RestControllerAdvice</text>
+  <text x="166" y="439" fill="#8b949e" font-size="13">+</text>
+  <rect x="180" y="426" width="164" height="24" rx="12.0" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6"/>
+  <circle cx="193" cy="438.0" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="193" y="442.0" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">10</text>
+  <text x="208" y="442.5" fill="#ff7b72" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@ExceptionHandler</text>
+  <path d="M491,332 V428 H374" fill="none" stroke="#f85149" stroke-width="1.8" stroke-dasharray="6 4" marker-end="url(#a_red)"/>
+  <text x="501" y="364" fill="#ff7b72" font-size="12.5" font-weight="600">exception</text>
+  <path d="M142,428 H52 V148" fill="none" stroke="#f85149" stroke-width="1.8" marker-end="url(#a_red)"/>
+  <text x="60" y="242" fill="#ff7b72" font-size="12.5" font-weight="700">404 / 409</text>
+  <text x="60" y="260" fill="#c9d1d9" font-size="12">JSON error</text>
+  <rect x="24" y="500" width="912" height="96" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="524" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">AT STARTUP</text>
+  <rect x="40" y="534" width="230" height="50" rx="8" fill="#161b22" stroke="#30363d"/>
+  <circle cx="58" cy="551" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="58" y="555" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">1</text>
+  <text x="74" y="555" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@SpringBootApplication</text>
+  <text x="74" y="574" fill="#8b949e" font-size="12">main class</text>
+  <rect x="282" y="534" width="280" height="50" rx="8" fill="#161b22" stroke="#30363d"/>
+  <circle cx="300" cy="551" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="300" y="555" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">7</text>
+  <text x="316" y="555" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Configuration + @Bean</text>
+  <text x="316" y="574" fill="#8b949e" font-size="12">extra beans, e.g. RestClient</text>
+  <rect x="574" y="534" width="346" height="50" rx="8" fill="#161b22" stroke="#30363d"/>
+  <circle cx="592" cy="551" r="8.5" fill="#d29922" fill-opacity=".22" stroke="#d29922"/>
+  <text x="592" y="555" fill="#e3b341" font-size="11" font-weight="700" text-anchor="middle">8</text>
+  <text x="608" y="555" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Value / @ConfigurationProperties</text>
+  <text x="608" y="574" fill="#8b949e" font-size="12">read application.yml</text>
+</svg>

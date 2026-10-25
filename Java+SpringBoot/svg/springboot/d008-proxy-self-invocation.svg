@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="478" viewBox="0 0 900 478" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Proxy self-invocation</title>
+  <desc>Why this.method() skips @Transactional and @Async. The caller (OrderController) holds a proxy (CGLIB subclass) of OrderService, whose steps are: begin transaction, call target, commit / rollback. The target is the real OrderService object with two methods: placeOrder() (no annotation) and @Transactional saveOrder(). Path 1: caller calls saveOrder() through the proxy, so the transaction is applied. Path 2: caller calls placeOrder() through the proxy, which has no advice and passes straight through; inside the target, this.saveOrder() goes directly to saveOrder, not through the proxy, so there is no transaction: the call never leaves the object. Fixes: move saveOrder() to another bean, inject self lazily, or use TransactionTemplate. Same for @Async, @Cacheable, @Retryable. Proxies only see calls that come from outside the object; private methods are never intercepted.</desc>
+  <defs>
+    <marker id="a_blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="a_green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="a_red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="a_amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="a_purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="a_teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="a_orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+    <marker id="a_gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="477" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="24" width="130" height="300" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="89" y="52" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Caller</text>
+  <text x="89" y="71" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">OrderController</text>
+  <rect x="55" y="99" width="68" height="24" rx="12.0" fill="#3fb950" fill-opacity="0.1" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="67" y="115.5" fill="#56d364" font-size="12">Path 1</text>
+  <rect x="55" y="263" width="68" height="24" rx="12.0" fill="#f85149" fill-opacity="0.1" stroke="#f85149" stroke-opacity="0.6"/>
+  <text x="67" y="279.5" fill="#ff7b72" font-size="12">Path 2</text>
+  <rect x="254" y="24" width="220" height="300" rx="10" fill="#58a6ff" fill-opacity="0.05" stroke="#58a6ff" stroke-opacity="0.7" stroke-dasharray="6 4"/>
+  <text x="364.0" y="52" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Proxy</text>
+  <text x="364.0" y="71" fill="#8b949e" font-size="12" text-anchor="middle">(CGLIB subclass)</text>
+  <rect x="270" y="96" width="188" height="30" rx="7" fill="#3fb950" fill-opacity="0.1" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="364.0" y="116" fill="#e6edf3" font-size="13" text-anchor="middle">begin transaction</text>
+  <rect x="270" y="142" width="188" height="30" rx="7" fill="#3fb950" fill-opacity="0.1" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="364.0" y="162" fill="#e6edf3" font-size="13" text-anchor="middle">call target</text>
+  <rect x="270" y="188" width="188" height="30" rx="7" fill="#3fb950" fill-opacity="0.1" stroke="#3fb950" stroke-opacity="0.6"/>
+  <text x="364.0" y="208" fill="#e6edf3" font-size="13" text-anchor="middle">commit / rollback</text>
+  <line x1="364.0" y1="126" x2="364.0" y2="140" stroke="#3fb950" stroke-width="1.5" marker-end="url(#a_green)"/>
+  <line x1="364.0" y1="172" x2="364.0" y2="186" stroke="#3fb950" stroke-width="1.5" marker-end="url(#a_green)"/>
+  <rect x="270" y="246" width="188" height="58" rx="7" fill="#161b22" stroke="#484f58"/>
+  <text x="364.0" y="270" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle">no advice:</text>
+  <text x="364.0" y="289" fill="#c9d1d9" font-size="13" text-anchor="middle">passes straight through</text>
+  <rect x="524" y="24" width="352" height="300" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="542" y="52" fill="#e6edf3" font-size="14" font-weight="600">Target:</text>
+  <text x="542" y="71" fill="#c9d1d9" font-size="13">real OrderService object</text>
+  <rect x="542" y="130" width="176" height="54" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff" stroke-opacity="0.8"/>
+  <text x="556" y="151" fill="#d2a8ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Transactional</text>
+  <text x="556" y="171" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">saveOrder()</text>
+  <rect x="542" y="250" width="176" height="50" rx="8" fill="#161b22" stroke="#484f58"/>
+  <text x="556" y="271" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">placeOrder()</text>
+  <text x="556" y="290" fill="#8b949e" font-size="12">no annotation</text>
+  <line x1="154" y1="111" x2="268" y2="111" stroke="#3fb950" stroke-width="1.8" marker-end="url(#a_green)"/>
+  <text x="204" y="103" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">saveOrder()</text>
+  <line x1="458" y1="157" x2="540" y2="157" stroke="#3fb950" stroke-width="1.8" marker-end="url(#a_green)"/>
+  <text x="734" y="152" fill="#56d364" font-size="13" font-weight="700">✓ transaction</text>
+  <text x="734" y="170" fill="#56d364" font-size="13" font-weight="700">applied</text>
+  <line x1="154" y1="275" x2="268" y2="275" stroke="#f85149" stroke-width="1.8" marker-end="url(#a_red)"/>
+  <text x="204" y="267" fill="#ff7b72" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">placeOrder()</text>
+  <line x1="458" y1="275" x2="540" y2="275" stroke="#f85149" stroke-width="1.8" marker-end="url(#a_red)"/>
+  <line x1="568" y1="250" x2="568" y2="186" stroke="#f85149" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a_red)"/>
+  <text x="580" y="213" fill="#ff7b72" font-size="12.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">this.saveOrder()</text>
+  <text x="580" y="231" fill="#8b949e" font-size="12">not through the proxy</text>
+  <text x="734" y="257" fill="#ff7b72" font-size="13" font-weight="700">✗ no transaction:</text>
+  <text x="734" y="276" fill="#c9d1d9" font-size="12.5">the call never</text>
+  <text x="734" y="294" fill="#c9d1d9" font-size="12.5">leaves the object</text>
+  <rect x="24" y="344" width="852" height="110" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="368" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">FIXES</text>
+  <text x="40" y="390" fill="#c9d1d9" font-size="13">move <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">saveOrder()</tspan> to another bean  ·  inject self lazily  ·  or use <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">TransactionTemplate</tspan></text>
+  <line x1="40" y1="404" x2="860" y2="404" stroke="#30363d"/>
+  <text x="40" y="424" fill="#8b949e" font-size="12.5">same for <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">@Async</tspan>, <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">@Cacheable</tspan>, <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">@Retryable</tspan></text>
+  <text x="40" y="443" fill="#8b949e" font-size="12.5">proxies only see calls that come from outside the object  ·  private methods are never intercepted</text>
+</svg>
