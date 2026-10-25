@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="524" viewBox="0 0 900 524" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Event loop walkthrough, step 6 of 6</title>
+  <desc>~2000 ms later the second timer fires and its callback runs last. Timer expires, callback goes to the queue, then to the stack. Nothing is left pending, so the process exits.</desc>
+  <defs>
+    <marker id="aDim" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#484f58"/></marker>
+    <marker id="aBlue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="aGreen" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="aAmber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="523" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="20" width="96" height="24" rx="12" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="72" y="36.5" fill="#79c0ff" font-size="12" font-weight="700" letter-spacing="1.2" text-anchor="middle">STEP 6 / 6</text>
+  <text x="134" y="37" fill="#e6edf3" font-size="15" font-weight="600">~2000 ms later the second timer fires and its callback runs last</text>
+  <line x1="24" y1="58" x2="876" y2="58" stroke="#21262d"/>
+  <rect x="24" y="72" width="320" height="262" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <circle cx="42" cy="88" r="5" fill="#ff5f56"/>
+  <circle cx="58" cy="88" r="5" fill="#ffbd2e"/>
+  <circle cx="74" cy="88" r="5" fill="#27c93f"/>
+  <text x="334" y="92" fill="#8b949e" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">app.js</text>
+  <text x="52" y="116" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <text x="64" y="116" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">console</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'Starting&#160;up'</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="52" y="136" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <text x="52" y="156" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+  <text x="64" y="156" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#d2a8ff">setTimeout</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">)</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">=></tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">{</tspan></text>
+  <rect x="25" y="162" width="318" height="20" fill="#d29922" fill-opacity=".14"/>
+  <rect x="25" y="162" width="3" height="20" fill="#d29922"/>
+  <text x="52" y="176" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4</text>
+  <text x="64" y="176" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#e6edf3">console</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'Two&#160;seconds!'</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="52" y="196" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5</text>
+  <text x="64" y="196" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">}</tspan><tspan fill="#e6edf3">,</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#79c0ff">2000</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="52" y="216" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6</text>
+  <text x="52" y="236" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">7</text>
+  <text x="64" y="236" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#d2a8ff">setTimeout</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">)</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">=></tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">{</tspan></text>
+  <text x="52" y="256" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">8</text>
+  <text x="64" y="256" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#e6edf3">console</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'Zero&#160;seconds!'</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="52" y="276" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">9</text>
+  <text x="64" y="276" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">}</tspan><tspan fill="#e6edf3">,</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#79c0ff">0</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="52" y="296" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">10</text>
+  <text x="52" y="316" fill="#6e7681" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">11</text>
+  <text x="64" y="316" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">console</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'Finishing&#160;up'</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <rect x="24" y="352" width="320" height="124" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <text x="40" y="374" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TERMINAL OUTPUT</text>
+  <text x="40" y="398" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">$</text>
+  <text x="56" y="398" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Starting&#160;up</text>
+  <text x="40" y="418" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">$</text>
+  <text x="56" y="418" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Finishing&#160;up</text>
+  <text x="40" y="438" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">$</text>
+  <text x="56" y="438" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Zero&#160;seconds!</text>
+  <text x="40" y="458" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">$</text>
+  <text x="56" y="458" fill="#56d364" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Two&#160;seconds!</text>
+  <text x="328" y="458" fill="#56d364" font-size="12" text-anchor="end">← printed now</text>
+  <rect x="368" y="72" width="260" height="228" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="498" y="96" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">CALL STACK</text>
+  <text x="498" y="114" fill="#6e7681" font-size="11.5" text-anchor="middle">(V8 · one thread)</text>
+  <rect x="382" y="256" width="232" height="32" rx="7" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".75"/>
+  <text x="498" y="276.5" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">timer&#160;cb&#160;(2000&#160;ms)</text>
+  <rect x="382" y="216" width="232" height="32" rx="7" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".75"/>
+  <text x="498" y="236.5" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">console.log('Two&#160;seconds!')</text>
+  <rect x="672" y="72" width="204" height="228" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="774" y="96" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">NODE APIs</text>
+  <text x="774" y="114" fill="#6e7681" font-size="11.5" text-anchor="middle">(libuv · timers, I/O)</text>
+  <text x="774" y="210" fill="#6e7681" font-size="13" font-style="italic" text-anchor="middle">(empty)</text>
+  <line x1="630" y1="186" x2="668" y2="186" stroke="#484f58" stroke-width="1.5" marker-end="url(#aDim)"/>
+  <line x1="774" y1="302" x2="774" y2="352" stroke="#3fb950" stroke-width="2" marker-end="url(#aGreen)"/>
+  <line x1="560" y1="354" x2="560" y2="304" stroke="#3fb950" stroke-width="2" marker-end="url(#aGreen)"/>
+  <rect x="380" y="314" width="148" height="30" rx="15" fill="#3fb950" fill-opacity=".12" stroke="#3fb950"/>
+  <path d="M 409 322 A 8 8 0 1 1 401 329" fill="none" stroke="#56d364" stroke-width="2" marker-end="url(#aGreen)"/>
+  <text x="423" y="334" fill="#56d364" font-size="14" font-weight="600">Event Loop</text>
+  <text x="572" y="333" fill="#56d364" font-size="12">stack empty → push</text>
+  <rect x="368" y="356" width="508" height="120" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="384" y="380" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CALLBACK QUEUE</text>
+  <text x="860" y="380" fill="#6e7681" font-size="11.5" text-anchor="end">FIFO · runs only when stack is empty</text>
+  <text x="622" y="428" fill="#6e7681" font-size="13" font-style="italic" text-anchor="middle">(empty)</text>
+  <text x="24" y="504" fill="#c9d1d9" font-size="13"><tspan fill="#8b949e" font-weight="700">Why: </tspan>Timer expires, callback goes to the queue, then to the stack. Nothing is left pending, so the process exits.</text>
+</svg>

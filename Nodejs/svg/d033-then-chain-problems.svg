@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Problems with .then chains</title>
+  <desc>A .then chain where a later step needs user from the first step fails with user is not defined; the usual fix nests the .then calls again. The async/await version keeps every value in scope. Four problems: earlier values, forgotten return, loops and ifs, .catch placement, each fixed by await.</desc>
+  <rect x="0.5" y="0.5" width="899" height="499" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="38" fill="#ff7b72" font-size="14" font-weight="700">✗ .then chain: step 3 needs user from step 1</text>
+  <rect x="24" y="50" width="418" height="250" rx="10" fill="#0d1117" stroke="#f85149" stroke-opacity=".55"/>
+  <text x="40" y="76" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#d2a8ff">getUser</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">id</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="40" y="96" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">then</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">=></tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#d2a8ff">getOrders</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#e6edf3">id</tspan><tspan fill="#e6edf3">)</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <rect x="25" y="102" width="414" height="20" fill="#f85149" fill-opacity=".12"/><rect x="25" y="102" width="3" height="20" fill="#f85149"/>
+  <text x="40" y="116" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">then</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">orders</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">=></tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#d2a8ff">sendEmail</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">,</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">orders</tspan><tspan fill="#e6edf3">)</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="40" y="136" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#8b949e">//&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;&#160;✗&#160;user&#160;is&#160;not&#160;defined</tspan></text>
+  <text x="40" y="176" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#8b949e">//&#160;the&#160;usual&#160;fix:&#160;nest&#160;→&#160;the&#160;pyramid&#160;is&#160;back</tspan></text>
+  <text x="40" y="196" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#d2a8ff">getUser</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">id</tspan><tspan fill="#e6edf3">)</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">then</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">=></tspan></text>
+  <text x="40" y="216" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#d2a8ff">getOrders</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#e6edf3">id</tspan><tspan fill="#e6edf3">)</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#d2a8ff">then</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">orders</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">=></tspan></text>
+  <text x="40" y="236" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;&#160;&#160;</tspan><tspan fill="#d2a8ff">sendEmail</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">,</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">orders</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="40" y="256" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="40" y="276" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#e6edf3">)</tspan></text>
+
+  <text x="458" y="38" fill="#56d364" font-size="14" font-weight="700">✓ async/await: same steps</text>
+  <rect x="458" y="50" width="418" height="250" rx="10" fill="#0d1117" stroke="#3fb950" stroke-opacity=".55"/>
+  <text x="474" y="76" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#ff7b72">const</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">&#160;&#160;&#160;</tspan><tspan fill="#e6edf3">=</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">await</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#d2a8ff">getUser</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">id</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="474" y="96" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#ff7b72">const</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">orders</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">=</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#ff7b72">await</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#d2a8ff">getOrders</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">.</tspan><tspan fill="#e6edf3">id</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="474" y="116" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#ff7b72">await</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#d2a8ff">sendEmail</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#e6edf3">user</tspan><tspan fill="#e6edf3">,</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#e6edf3">orders</tspan><tspan fill="#e6edf3">)</tspan></text>
+  <text x="474" y="156" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#8b949e">//&#160;every&#160;earlier&#160;value&#160;stays&#160;in&#160;scope,</tspan></text>
+  <text x="474" y="176" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#8b949e">//&#160;no&#160;nesting,&#160;reads&#160;top&#160;to&#160;bottom</tspan></text>
+
+  <text x="24" y="324" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WHAT'S STILL HARD WITH .THEN CHAINS</text>
+  <rect x="24" y="336" width="201" height="116" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="360" fill="#e3b341" font-size="13.5" font-weight="600">1 · Earlier values</text>
+  <text x="38" y="384" fill="#c9d1d9" font-size="12.5">each .then only sees</text>
+  <text x="38" y="402" fill="#c9d1d9" font-size="12.5">the previous result</text>
+  <text x="38" y="434" fill="#56d364" font-size="12.5" font-weight="600">✓ await: all in scope</text>
+  <rect x="241" y="336" width="201" height="116" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="255" y="360" fill="#e3b341" font-size="13.5" font-weight="600">2 · Forgotten return</text>
+  <text x="255" y="384" fill="#c9d1d9" font-size="12.5">no return → next step gets</text>
+  <text x="255" y="402" fill="#c9d1d9" font-size="12.5">undefined and doesn't wait</text>
+  <text x="255" y="434" fill="#56d364" font-size="12.5" font-weight="600">✓ await: nothing to forget</text>
+  <rect x="458" y="336" width="201" height="116" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="472" y="360" fill="#e3b341" font-size="13.5" font-weight="600">3 · Loops and ifs</text>
+  <text x="472" y="384" fill="#c9d1d9" font-size="12.5">a loop turns into</text>
+  <text x="472" y="402" fill="#c9d1d9" font-size="12.5">recursion over .then</text>
+  <text x="472" y="434" fill="#56d364" font-size="12.5" font-weight="600">✓ await: plain for / if</text>
+  <rect x="675" y="336" width="201" height="116" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="689" y="360" fill="#e3b341" font-size="13.5" font-weight="600">4 · .catch placement</text>
+  <text x="689" y="384" fill="#c9d1d9" font-size="12.5">one .catch covers every</text>
+  <text x="689" y="402" fill="#c9d1d9" font-size="12.5">step above it</text>
+  <text x="689" y="434" fill="#56d364" font-size="12.5" font-weight="600">✓ await: try/catch per step</text>
+
+  <text x="24" y="484" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan>Promises fixed callback hell, but .then chains are still callbacks. async/await makes the same promises read like normal code.</text>
+</svg>

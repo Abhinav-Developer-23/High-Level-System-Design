@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="688" viewBox="0 0 900 688" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>libuv event loop phases</title>
+  <desc>After app.js runs, the loop cycles through timers, pending callbacks, idle/prepare, poll, check and close callbacks. Microtasks are drained after every callback. If work is still pending the loop goes round again, otherwise the process exits.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="687" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- start -->
+  <rect x="80" y="28" width="260" height="44" rx="10" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="210" y="55" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">Run app.js (all sync code)</text>
+  <text x="376" y="48" fill="#c9d1d9" font-size="13">Your whole script runs once, top to bottom, before the loop starts.</text>
+  <text x="376" y="66" fill="#8b949e" font-size="12">It only <tspan fill="#e6edf3">registers</tspan> timers, I/O and listeners. Their callbacks run later, in the phases below.</text>
+
+  <!-- connectors with microtask pills -->
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="210" y1="72" x2="210" y2="106" marker-end="url(#arr)"/>
+    <line x1="210" y1="154" x2="210" y2="182" marker-end="url(#arr)"/>
+    <line x1="210" y1="230" x2="210" y2="258" marker-end="url(#arr)"/>
+    <line x1="210" y1="306" x2="210" y2="334" marker-end="url(#arr)"/>
+    <line x1="210" y1="382" x2="210" y2="410" marker-end="url(#arr)"/>
+    <line x1="210" y1="458" x2="210" y2="486" marker-end="url(#arr)"/>
+    <line x1="210" y1="534" x2="210" y2="562" marker-end="url(#arr)"/>
+  </g>
+  <g font-size="11" font-weight="600" fill="#d2a8ff" text-anchor="middle">
+    <rect x="152" y="79" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="93">drain microtasks</text>
+    <rect x="152" y="158" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="172">drain microtasks</text>
+    <rect x="152" y="234" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="248">drain microtasks</text>
+    <rect x="152" y="310" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="324">drain microtasks</text>
+    <rect x="152" y="386" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="400">drain microtasks</text>
+    <rect x="152" y="462" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="476">drain microtasks</text>
+    <rect x="152" y="538" width="116" height="20" rx="10" fill="#1e1a2e" stroke="#bc8cff" stroke-opacity=".7"/><text x="210" y="552">drain microtasks</text>
+  </g>
+
+  <!-- 1 timers -->
+  <rect x="80" y="108" width="260" height="46" rx="10" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="96" y="136" fill="#8b949e" font-size="12" font-family="Cascadia Code, Consolas, monospace">1</text>
+  <text x="210" y="136" fill="#e3b341" font-size="15" font-weight="600" text-anchor="middle">timers</text>
+  <text x="376" y="126" fill="#c9d1d9" font-size="13">Runs callbacks of timers whose time is up.</text>
+  <text x="376" y="145" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">setTimeout(cb, ms) · setInterval(cb, ms)</text>
+
+  <!-- 2 pending -->
+  <rect x="80" y="184" width="260" height="46" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="96" y="212" fill="#8b949e" font-size="12" font-family="Cascadia Code, Consolas, monospace">2</text>
+  <text x="210" y="212" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">pending callbacks</text>
+  <text x="376" y="202" fill="#c9d1d9" font-size="13">I/O callbacks deferred from the previous iteration.</text>
+  <text x="376" y="221" fill="#8b949e" font-size="12">e.g. some TCP errors such as <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff">ECONNREFUSED</tspan></text>
+
+  <!-- 3 idle -->
+  <rect x="80" y="260" width="260" height="46" rx="10" fill="#1c2128" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="96" y="288" fill="#8b949e" font-size="12" font-family="Cascadia Code, Consolas, monospace">3</text>
+  <text x="210" y="288" fill="#8b949e" font-size="15" font-weight="600" text-anchor="middle">idle, prepare</text>
+  <text x="376" y="288" fill="#8b949e" font-size="13">Internal to libuv. None of your callbacks run here.</text>
+
+  <!-- 4 poll -->
+  <rect x="80" y="336" width="260" height="46" rx="10" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".85" stroke-width="1.5"/>
+  <text x="96" y="364" fill="#8b949e" font-size="12" font-family="Cascadia Code, Consolas, monospace">4</text>
+  <text x="210" y="364" fill="#56d4dd" font-size="15" font-weight="700" text-anchor="middle">poll</text>
+  <text x="376" y="350" fill="#c9d1d9" font-size="13">Gets new I/O events and runs their callbacks. <tspan fill="#56d4dd" font-weight="600">The heart of the loop.</tspan></text>
+  <text x="376" y="368" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">fs.readFile cb · socket 'data' · http request</text>
+  <text x="376" y="386" fill="#8b949e" font-size="12">If nothing else is due, the thread <tspan fill="#e6edf3">blocks here</tspan> waiting for I/O (until the next timer).</text>
+
+  <!-- 5 check -->
+  <rect x="80" y="412" width="260" height="46" rx="10" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="96" y="440" fill="#8b949e" font-size="12" font-family="Cascadia Code, Consolas, monospace">5</text>
+  <text x="210" y="440" fill="#79c0ff" font-size="15" font-weight="600" text-anchor="middle">check</text>
+  <text x="376" y="430" fill="#c9d1d9" font-size="13">Runs <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff">setImmediate</tspan> callbacks, right after poll.</text>
+  <text x="376" y="449" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">setImmediate(cb)</text>
+
+  <!-- 6 close -->
+  <rect x="80" y="488" width="260" height="46" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="96" y="516" fill="#8b949e" font-size="12" font-family="Cascadia Code, Consolas, monospace">6</text>
+  <text x="210" y="516" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">close callbacks</text>
+  <text x="376" y="506" fill="#c9d1d9" font-size="13">Runs <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff">'close'</tspan> handlers of things closed abruptly.</text>
+  <text x="376" y="525" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">socket.on('close', cb)</text>
+
+  <!-- decision -->
+  <rect x="80" y="564" width="260" height="42" rx="21" fill="#1c2128" stroke="#8b949e"/>
+  <text x="210" y="590" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Any work still pending?</text>
+
+  <!-- loop back (yes) -->
+  <polyline points="80,585 44,585 44,131 76,131" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="50" y="578" fill="#56d364" font-size="12" font-weight="700">yes</text>
+  <text x="52" y="354" fill="#56d364" font-size="12" font-weight="600" data-nocheck="1" transform="rotate(-90 52 354)" text-anchor="middle">next iteration ("tick")</text>
+
+  <!-- exit (no) -->
+  <line x1="340" y1="585" x2="372" y2="585" stroke="#f85149" stroke-width="1.8" marker-end="url(#arrR)"/>
+  <text x="380" y="580" fill="#ff7b72" font-size="13" font-weight="600">no → process exits</text>
+  <text x="380" y="598" fill="#8b949e" font-size="12">no timers, open sockets, or pending requests left</text>
+
+  <!-- notes -->
+  <line x1="24" y1="620" x2="876" y2="620" stroke="#21262d"/>
+  <text x="24" y="644" fill="#c9d1d9" font-size="13"><tspan fill="#d2a8ff" font-weight="700">drain microtasks</tspan> = run every <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff">process.nextTick</tspan> callback, then every resolved Promise callback. Since Node 11 this</text>
+  <text x="24" y="664" fill="#c9d1d9" font-size="13">happens after <tspan font-weight="700" fill="#e6edf3">each</tspan> callback (each timer, each immediate), not only between phases.</text>
+</svg>

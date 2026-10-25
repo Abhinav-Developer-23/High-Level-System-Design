@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="444" viewBox="0 0 900 444" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>CPU task on the main thread vs in a worker</title>
+  <desc>Top: a 4 second CPU task on the main thread makes a health check wait about 3 seconds. Bottom: the same task runs in a worker thread on another core, the main thread answers health checks immediately and receives the result at about 4 seconds.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="443" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ===== panel A ===== -->
+  <rect x="24" y="20" width="852" height="146" rx="10" fill="#f85149" fill-opacity=".04" stroke="#f85149" stroke-opacity=".5"/>
+  <text x="40" y="44" fill="#ff7b72" font-size="14" font-weight="700">✗ CPU-heavy task on the main thread</text>
+
+  <rect x="36" y="56" width="828" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="48" y="83" fill="#e6edf3" font-size="13.5" font-weight="600">Main thread</text>
+  <rect x="184" y="63" width="512" height="30" rx="6" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".85"/>
+  <text x="440" y="83" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle">resize image · ~4 s of CPU · nothing else runs</text>
+  <rect x="704" y="63" width="70" height="30" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="739" y="83" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">/health</text>
+
+  <rect x="36" y="108" width="828" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="48" y="135" fill="#e6edf3" font-size="13.5" font-weight="600">Requests</text>
+  <line x1="392" y1="130" x2="700" y2="130" stroke="#f85149" stroke-dasharray="4 4" stroke-opacity=".7"/>
+  <rect x="300" y="117" width="92" height="26" rx="6" fill="#161b22" stroke="#f85149"/>
+  <text x="346" y="135" fill="#ff7b72" font-size="12" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">GET /health</text>
+  <text x="712" y="135" fill="#ff7b72" font-size="12.5">answered ~3 s late</text>
+
+  <!-- ===== panel B ===== -->
+  <rect x="24" y="178" width="852" height="196" rx="10" fill="#3fb950" fill-opacity=".04" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="40" y="202" fill="#56d364" font-size="14" font-weight="700">✓ Same task in a worker thread</text>
+
+  <rect x="36" y="214" width="828" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="48" y="241" fill="#e6edf3" font-size="13.5" font-weight="600">Main thread</text>
+  <rect x="184" y="221" width="46" height="30" rx="6" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff" stroke-opacity=".85"/>
+  <text x="207" y="241" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle">post</text>
+  <rect x="300" y="221" width="70" height="30" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="335" y="241" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">/health</text>
+  <rect x="450" y="221" width="70" height="30" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="485" y="241" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">/health</text>
+  <rect x="704" y="221" width="70" height="30" rx="6" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff" stroke-opacity=".85"/>
+  <text x="739" y="241" fill="#79c0ff" font-size="12" font-weight="600" text-anchor="middle">result</text>
+  <text x="604" y="241" fill="#8b949e" font-size="12" text-anchor="middle">free / idle</text>
+
+  <rect x="36" y="266" width="828" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="48" y="293" fill="#e6edf3" font-size="13.5" font-weight="600">Worker thread</text>
+  <rect x="232" y="273" width="464" height="30" rx="6" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".85"/>
+  <text x="464" y="293" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle">resize image · ~4 s on another CPU core</text>
+  <line x1="704" y1="288" x2="734" y2="288" stroke="#3fb950" stroke-width="1.6"/>
+  <line x1="734" y1="288" x2="734" y2="256" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
+  <text x="746" y="293" fill="#56d364" font-size="12">postMessage(result)</text>
+
+  <rect x="36" y="318" width="828" height="44" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="48" y="345" fill="#e6edf3" font-size="13.5" font-weight="600">Requests</text>
+  <rect x="300" y="327" width="92" height="26" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="346" y="345" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">GET /health</text>
+  <rect x="450" y="327" width="92" height="26" rx="6" fill="#161b22" stroke="#3fb950"/>
+  <text x="496" y="345" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">GET /health</text>
+  <text x="556" y="345" fill="#56d364" font-size="12.5">✓ both answered right away</text>
+
+  <!-- axis -->
+  <line x1="184" y1="392" x2="866" y2="392" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="184" y1="387" x2="184" y2="397" stroke="#8b949e" stroke-width="1.5"/>
+  <line x1="700" y1="387" x2="700" y2="397" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="184" y="412" fill="#8b949e" font-size="12" text-anchor="middle">0 s</text>
+  <text x="700" y="412" fill="#8b949e" font-size="12" text-anchor="middle">≈ 4 s</text>
+
+  <text x="24" y="434" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan>the worker doesn't make the task faster. It keeps the main thread free, so everything else stays fast.</text>
+</svg>

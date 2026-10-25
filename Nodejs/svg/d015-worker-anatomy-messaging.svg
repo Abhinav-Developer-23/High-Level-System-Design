@@ -1,0 +1,70 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="452" viewBox="0 0 900 452" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Main thread and worker: separate worlds, joined by messages</title>
+  <desc>The main thread and a worker each have their own V8 isolate, heap and event loop. They talk only through postMessage over a message channel. Data can be copied (structured clone, default), transferred (ArrayBuffer ownership moves, zero-copy) or shared (SharedArrayBuffer with Atomics).</desc>
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="451" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- main thread -->
+  <rect x="24" y="24" width="300" height="200" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="40" y="50" fill="#79c0ff" font-size="15" font-weight="600">Main thread</text>
+  <g font-size="13" fill="#c9d1d9">
+    <rect x="40" y="62" width="268" height="28" rx="6" fill="#1c2128" stroke="#30363d"/><text x="52" y="81">V8 isolate #1</text>
+    <rect x="40" y="96" width="268" height="28" rx="6" fill="#1c2128" stroke="#30363d"/><text x="52" y="115">heap: its own objects</text>
+    <rect x="40" y="130" width="268" height="28" rx="6" fill="#1c2128" stroke="#30363d"/><text x="52" y="149">event loop #1</text>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">
+    <text x="40" y="186">worker.postMessage(data)</text>
+    <text x="40" y="206">worker.on('message', fn)</text>
+  </g>
+
+  <!-- worker -->
+  <rect x="576" y="24" width="300" height="200" rx="10" fill="#3fb950" fill-opacity=".07" stroke="#3fb950" stroke-opacity=".75"/>
+  <text x="592" y="50" fill="#56d364" font-size="15" font-weight="600">Worker thread</text>
+  <g font-size="13" fill="#c9d1d9">
+    <rect x="592" y="62" width="268" height="28" rx="6" fill="#1c2128" stroke="#30363d"/><text x="604" y="81">V8 isolate #2</text>
+    <rect x="592" y="96" width="268" height="28" rx="6" fill="#1c2128" stroke="#30363d"/><text x="604" y="115">heap: separate memory</text>
+    <rect x="592" y="130" width="268" height="28" rx="6" fill="#1c2128" stroke="#30363d"/><text x="604" y="149">event loop #2</text>
+  </g>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#56d364">
+    <text x="592" y="186">parentPort.on('message', fn)</text>
+    <text x="592" y="206">parentPort.postMessage(result)</text>
+  </g>
+
+  <!-- channel -->
+  <text x="450" y="50" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">MESSAGE CHANNEL</text>
+  <text x="450" y="94" fill="#79c0ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">postMessage(data)</text>
+  <line x1="330" y1="104" x2="570" y2="104" stroke="#58a6ff" stroke-width="2" marker-end="url(#arrB)"/>
+  <text x="450" y="146" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">postMessage(result)</text>
+  <line x1="570" y1="156" x2="330" y2="156" stroke="#3fb950" stroke-width="2" marker-end="url(#arrG)"/>
+  <text x="450" y="192" fill="#8b949e" font-size="12" text-anchor="middle">no shared variables:</text>
+  <text x="450" y="210" fill="#8b949e" font-size="12" text-anchor="middle">each side has its own memory</text>
+
+  <!-- three ways -->
+  <text x="24" y="258" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">3 WAYS TO SEND DATA</text>
+
+  <rect x="24" y="270" width="272" height="132" rx="10" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="40" y="296" fill="#e3b341" font-size="14" font-weight="600">1 · Copy <tspan fill="#8b949e" font-weight="400" font-size="12">(default)</tspan></text>
+  <text x="40" y="320" fill="#79c0ff" font-size="12" font-family="Cascadia Code, Consolas, monospace">postMessage(obj)</text>
+  <text x="40" y="342" fill="#c9d1d9" font-size="13">structured clone: a deep copy</text>
+  <text x="40" y="366" fill="#56d364" font-size="13">✓ simple and safe</text>
+  <text x="40" y="388" fill="#e3b341" font-size="13">⚠ slow for big data (MBs)</text>
+
+  <rect x="314" y="270" width="272" height="132" rx="10" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="330" y="296" fill="#79c0ff" font-size="14" font-weight="600">2 · Transfer</text>
+  <text x="330" y="320" fill="#79c0ff" font-size="12" font-family="Cascadia Code, Consolas, monospace">postMessage(buf, [buf])</text>
+  <text x="330" y="342" fill="#c9d1d9" font-size="13">ownership moves, zero-copy</text>
+  <text x="330" y="366" fill="#56d364" font-size="13">✓ fast for big ArrayBuffers</text>
+  <text x="330" y="388" fill="#e3b341" font-size="13">⚠ sender can't use buf anymore</text>
+
+  <rect x="604" y="270" width="272" height="132" rx="10" fill="#bc8cff" fill-opacity=".08" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="620" y="296" fill="#d2a8ff" font-size="14" font-weight="600">3 · Share</text>
+  <text x="620" y="320" fill="#79c0ff" font-size="12" font-family="Cascadia Code, Consolas, monospace">new SharedArrayBuffer(n)</text>
+  <text x="620" y="342" fill="#c9d1d9" font-size="13">both threads see the same bytes</text>
+  <text x="620" y="366" fill="#56d364" font-size="13">✓ no copying at all</text>
+  <text x="620" y="388" fill="#e3b341" font-size="13">⚠ use Atomics to avoid races</text>
+
+  <text x="24" y="434" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Rule: </tspan>a worker can't read the main thread's variables. Everything goes through messages (or a SharedArrayBuffer).</text>
+</svg>

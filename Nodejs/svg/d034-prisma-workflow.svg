@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="368" viewBox="0 0 900 368" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>How Prisma works</title>
+  <desc>schema.prisma is the single source of truth. prisma migrate dev turns it into SQL migrations that create or alter tables. prisma generate turns it into a type-safe Prisma Client. Your code calls the client, which sends parameterized SQL to the database through a driver adapter.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="367" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- schema -->
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SOURCE OF TRUTH</text>
+  <rect x="24" y="50" width="250" height="262" rx="10" fill="#0d1117" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="40" y="74" fill="#d2a8ff" font-size="13" font-weight="600" font-family="Cascadia Code, Consolas, monospace">schema.prisma</text>
+  <g font-size="13" fill="#c9d1d9">
+    <text x="40" y="110">✓ models (tables): User, Post</text>
+    <text x="40" y="138">✓ fields and their types</text>
+    <text x="40" y="166">✓ ids, unique fields, defaults</text>
+    <text x="40" y="194">✓ relations: a User has Posts</text>
+    <text x="40" y="222">✓ which database to use</text>
+  </g>
+  <text x="40" y="270" fill="#8b949e" font-size="12">tables, columns, types and</text>
+  <text x="40" y="288" fill="#8b949e" font-size="12">relations in one readable file</text>
+
+  <!-- migrate -->
+  <rect x="330" y="62" width="230" height="96" rx="10" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="346" y="88" fill="#e3b341" font-size="15" font-weight="600">Prisma Migrate</text>
+  <text x="346" y="110" fill="#c9d1d9" font-size="12.5">writes SQL migration files</text>
+  <text x="346" y="130" fill="#c9d1d9" font-size="12.5">versioned, applied in order</text>
+  <text x="346" y="148" fill="#8b949e" font-size="12">commit them to git</text>
+  <line x1="274" y1="110" x2="326" y2="110" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="300" y="100" fill="#8b949e" font-size="11" text-anchor="middle" data-nocheck="1">migrate</text>
+
+  <!-- generate -->
+  <rect x="330" y="214" width="230" height="98" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="346" y="240" fill="#79c0ff" font-size="15" font-weight="600">Prisma Client</text>
+  <text x="346" y="262" fill="#c9d1d9" font-size="12.5">generated, fully typed API</text>
+  <text x="346" y="282" fill="#c9d1d9" font-size="12.5">a method for every model</text>
+  <text x="346" y="300" fill="#8b949e" font-size="12">autocomplete for every field</text>
+  <line x1="274" y1="262" x2="326" y2="262" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="300" y="252" fill="#8b949e" font-size="11" text-anchor="middle" data-nocheck="1">generate</text>
+
+  <!-- database -->
+  <path d="M640 74 a118 14 0 0 1 236 0 v104 a118 14 0 0 1 -236 0 z" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8"/>
+  <path d="M640 74 a118 14 0 0 0 236 0" fill="none" stroke="#39c5cf" stroke-opacity=".8"/>
+  <text x="758" y="116" fill="#56d4dd" font-size="15" font-weight="600" text-anchor="middle">Database</text>
+  <text x="758" y="138" fill="#c9d1d9" font-size="12.5" text-anchor="middle">PostgreSQL · MySQL · SQLite</text>
+  <text x="758" y="156" fill="#c9d1d9" font-size="12.5" text-anchor="middle">SQL Server · CockroachDB …</text>
+  <line x1="560" y1="110" x2="636" y2="110" stroke="#d29922" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="598" y="100" fill="#e3b341" font-size="11" text-anchor="middle" data-nocheck="1">CREATE / ALTER</text>
+
+  <!-- your code -->
+  <rect x="640" y="226" width="236" height="86" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="656" y="252" fill="#e6edf3" font-size="15" font-weight="600">Your code</text>
+  <text x="656" y="274" fill="#c9d1d9" font-size="12.5">Express route, service, job…</text>
+  <text x="656" y="296" fill="#c9d1d9" font-size="12.5">calls the client methods</text>
+  <line x1="638" y1="270" x2="564" y2="270" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#arrB)"/>
+  <text x="600" y="260" fill="#79c0ff" font-size="11" text-anchor="middle" data-nocheck="1">calls</text>
+
+  <!-- client -> db -->
+  <path d="M520 214 C 520 190, 600 196, 650 182" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="572" y="206" fill="#56d364" font-size="11" text-anchor="middle" data-nocheck="1">safe SQL</text>
+
+  <text x="24" y="346" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan>you change the schema once; Prisma generates both the database changes and the typed client from it.</text>
+</svg>

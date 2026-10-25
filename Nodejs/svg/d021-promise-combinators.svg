@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="574" viewBox="0 0 900 574" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Promise.all vs allSettled vs race vs any</title>
+  <desc>Three promises on a 0 to 800 ms axis: A rejects at 200 ms, B fulfills with 'b' at 300 ms, C fulfills with 'c' at 800 ms. Promise.all rejects at 200 ms with A's error. Promise.allSettled fulfills at 800 ms with every outcome. Promise.race rejects at 200 ms because A settles first. Promise.any fulfills at 300 ms with 'b'.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="573" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">INPUT PROMISES</text>
+  <text x="876" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="end">TIME →</text>
+
+  <!-- input lanes -->
+  <rect x="24" y="52" width="852" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="98" width="852" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="144" width="852" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+
+  <text x="24" y="212" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WHAT EACH COMBINATOR GIVES YOU</text>
+
+  <!-- result rows -->
+  <rect x="24" y="226" width="852" height="58" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="290" width="852" height="58" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="354" width="852" height="58" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <rect x="24" y="418" width="852" height="58" rx="8" fill="#1c2128" stroke="#30363d"/>
+
+  <!-- guides at 200, 300, 800 ms -->
+  <g stroke="#8b949e" stroke-opacity=".35" stroke-dasharray="3 4">
+    <line x1="436" y1="52" x2="436" y2="492"/>
+    <line x1="506" y1="52" x2="506" y2="492"/>
+    <line x1="856" y1="52" x2="856" y2="492"/>
+  </g>
+
+  <!-- A -->
+  <text x="38" y="77" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A</text>
+  <text x="58" y="77" fill="#8b949e" font-size="12">rejects at 200 ms</text>
+  <rect x="296" y="60" width="140" height="24" rx="6" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".85"/>
+  <text x="366" y="77" fill="#8b949e" font-size="12" text-anchor="middle">pending</text>
+  <text x="446" y="77" fill="#ff7b72" font-size="12" font-weight="700">✗ <tspan font-weight="400" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Error('A failed')</tspan></text>
+
+  <!-- B -->
+  <text x="38" y="123" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B</text>
+  <text x="58" y="123" fill="#8b949e" font-size="12">fulfills at 300 ms</text>
+  <rect x="296" y="106" width="210" height="24" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="401" y="123" fill="#8b949e" font-size="12" text-anchor="middle">pending</text>
+  <text x="516" y="123" fill="#56d364" font-size="12" font-weight="700">✓ <tspan font-weight="400" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">'b'</tspan></text>
+
+  <!-- C -->
+  <text x="38" y="169" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C</text>
+  <text x="58" y="169" fill="#8b949e" font-size="12">fulfills at 800 ms</text>
+  <rect x="296" y="152" width="560" height="24" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="576" y="169" fill="#8b949e" font-size="12" text-anchor="middle">pending</text>
+  <text x="846" y="169" fill="#56d364" font-size="12" font-weight="700" text-anchor="end">✓ <tspan font-weight="400" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">'c'</tspan></text>
+
+  <!-- row 1: all -->
+  <text x="38" y="251" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Promise.all([A,B,C])</text>
+  <text x="38" y="271" fill="#8b949e" font-size="12">fails fast on the first rejection</text>
+  <line x1="296" y1="246" x2="427" y2="246" stroke="#484f58" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="436" cy="246" r="9" fill="#f85149" fill-opacity=".25" stroke="#f85149"/>
+  <text x="436" y="250" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">✗</text>
+  <text x="296" y="273" fill="#c9d1d9" font-size="12.5"><tspan fill="#ff7b72" font-weight="700">rejects at 200 ms</tspan> → <tspan fill="#ff7b72" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">Error('A failed')</tspan><tspan fill="#8b949e"> · B and C results are ignored</tspan></text>
+
+  <!-- row 2: allSettled -->
+  <text x="38" y="315" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Promise.allSettled([A,B,C])</text>
+  <text x="38" y="335" fill="#8b949e" font-size="12">waits for all, never rejects</text>
+  <line x1="296" y1="310" x2="847" y2="310" stroke="#484f58" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="856" cy="310" r="9" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/>
+  <text x="856" y="314" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">✓</text>
+  <text x="296" y="337" fill="#c9d1d9" font-size="12.5"><tspan fill="#56d364" font-weight="700">fulfills at 800 ms</tspan> → <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#e6edf3">[{<tspan fill="#ff7b72">rejected</tspan>, A failed}, {<tspan fill="#56d364">fulfilled</tspan>, 'b'}, {<tspan fill="#56d364">fulfilled</tspan>, 'c'}]</tspan></text>
+
+  <!-- row 3: race -->
+  <text x="38" y="379" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Promise.race([A,B,C])</text>
+  <text x="38" y="399" fill="#8b949e" font-size="12">first to SETTLE wins, even a failure</text>
+  <line x1="296" y1="374" x2="427" y2="374" stroke="#484f58" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="436" cy="374" r="9" fill="#f85149" fill-opacity=".25" stroke="#f85149"/>
+  <text x="436" y="378" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">✗</text>
+  <text x="296" y="401" fill="#c9d1d9" font-size="12.5"><tspan fill="#ff7b72" font-weight="700">rejects at 200 ms</tspan> → <tspan fill="#ff7b72" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">Error('A failed')</tspan><tspan fill="#8b949e"> · A settled first</tspan></text>
+
+  <!-- row 4: any -->
+  <text x="38" y="443" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Promise.any([A,B,C])</text>
+  <text x="38" y="463" fill="#8b949e" font-size="12">first to FULFILL wins</text>
+  <line x1="296" y1="438" x2="497" y2="438" stroke="#484f58" stroke-width="2" stroke-dasharray="4 4"/>
+  <circle cx="506" cy="438" r="9" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/>
+  <text x="506" y="442" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">✓</text>
+  <text x="296" y="465" fill="#c9d1d9" font-size="12.5"><tspan fill="#56d364" font-weight="700">fulfills at 300 ms</tspan> → <tspan fill="#56d364" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">'b'</tspan><tspan fill="#8b949e"> · rejects with </tspan><tspan fill="#ff7b72" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">AggregateError</tspan><tspan fill="#8b949e"> only if all fail</tspan></text>
+
+  <!-- axis -->
+  <line x1="296" y1="496" x2="870" y2="496" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="296" y1="491" x2="296" y2="501"/>
+    <line x1="436" y1="491" x2="436" y2="501"/>
+    <line x1="506" y1="491" x2="506" y2="501"/>
+    <line x1="856" y1="491" x2="856" y2="501"/>
+  </g>
+  <g fill="#8b949e" font-size="12" text-anchor="middle">
+    <text x="296" y="518">0 ms</text>
+    <text x="436" y="518">200 ms</text>
+    <text x="506" y="518">300 ms</text>
+    <text x="856" y="518">800 ms</text>
+  </g>
+
+  <text x="24" y="554" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan><tspan font-weight="700" fill="#e6edf3">all</tspan> = everything must succeed · <tspan font-weight="700" fill="#e6edf3">allSettled</tspan> = I want every outcome · <tspan font-weight="700" fill="#e6edf3">race</tspan> = first to finish · <tspan font-weight="700" fill="#e6edf3">any</tspan> = first success</text>
+</svg>

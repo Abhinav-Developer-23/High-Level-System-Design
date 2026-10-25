@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="412" viewBox="0 0 900 412" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Why TypeScript</title>
+  <desc>With JavaScript a typo such as quantity instead of qty is only found at runtime, often by a user, and silently gives NaN. With TypeScript the editor and tsc flag it while you type, so it's fixed before the code runs. tsc type-checks .ts files, strips the types and outputs plain .js that Node or the browser runs; types exist only at compile time.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="411" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WHEN IS THE BUG FOUND?</text>
+
+  <!-- JS lane -->
+  <rect x="24" y="50" width="852" height="70" rx="10" fill="#f85149" fill-opacity=".05" stroke="#f85149" stroke-opacity=".5"/>
+  <text x="40" y="80" fill="#ff7b72" font-size="14" font-weight="700">JavaScript</text>
+  <text x="40" y="100" fill="#8b949e" font-size="12">no types</text>
+  <g font-size="13">
+    <rect x="170" y="66" width="150" height="38" rx="8" fill="#1c2128" stroke="#30363d"/><text x="245" y="90" fill="#e6edf3" text-anchor="middle">write code</text>
+    <rect x="350" y="66" width="150" height="38" rx="8" fill="#1c2128" stroke="#30363d"/><text x="425" y="90" fill="#e6edf3" text-anchor="middle">deploy and run</text>
+    <rect x="530" y="66" width="330" height="38" rx="8" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".8"/><text x="695" y="90" fill="#ff7b72" font-weight="600" text-anchor="middle">✗ a user hits it: total shows NaN</text>
+  </g>
+  <line x1="320" y1="85" x2="346" y2="85" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="500" y1="85" x2="526" y2="85" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- TS lane -->
+  <rect x="24" y="132" width="852" height="70" rx="10" fill="#3fb950" fill-opacity=".05" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="40" y="162" fill="#56d364" font-size="14" font-weight="700">TypeScript</text>
+  <text x="40" y="182" fill="#8b949e" font-size="12">typed</text>
+  <g font-size="13">
+    <rect x="170" y="148" width="150" height="38" rx="8" fill="#1c2128" stroke="#30363d"/><text x="245" y="172" fill="#e6edf3" text-anchor="middle">write code</text>
+    <rect x="350" y="148" width="250" height="38" rx="8" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".8"/><text x="475" y="172" fill="#56d364" font-weight="600" text-anchor="middle">✓ editor underlines the typo</text>
+    <rect x="630" y="148" width="230" height="38" rx="8" fill="#1c2128" stroke="#30363d"/><text x="745" y="172" fill="#e6edf3" text-anchor="middle">fix it, then deploy</text>
+  </g>
+  <line x1="320" y1="167" x2="346" y2="167" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="600" y1="167" x2="626" y2="167" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- pipeline -->
+  <text x="24" y="240" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">HOW TYPESCRIPT RUNS</text>
+  <rect x="24" y="252" width="160" height="78" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="104" y="284" fill="#79c0ff" font-size="15" font-weight="600" text-anchor="middle">.ts files</text>
+  <text x="104" y="306" fill="#c9d1d9" font-size="12.5" text-anchor="middle">code + types</text>
+
+  <rect x="230" y="252" width="250" height="78" rx="10" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".8"/>
+  <text x="355" y="278" fill="#d2a8ff" font-size="15" font-weight="600" text-anchor="middle">tsc (the compiler)</text>
+  <text x="355" y="300" fill="#c9d1d9" font-size="12.5" text-anchor="middle">1 · type-check: report errors</text>
+  <text x="355" y="319" fill="#c9d1d9" font-size="12.5" text-anchor="middle">2 · strip the types</text>
+
+  <rect x="526" y="252" width="160" height="78" rx="10" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="606" y="284" fill="#e3b341" font-size="15" font-weight="600" text-anchor="middle">.js files</text>
+  <text x="606" y="306" fill="#c9d1d9" font-size="12.5" text-anchor="middle">plain JavaScript</text>
+
+  <rect x="732" y="252" width="144" height="78" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="804" y="284" fill="#e6edf3" font-size="15" font-weight="600" text-anchor="middle">Node / browser</text>
+  <text x="804" y="306" fill="#c9d1d9" font-size="12.5" text-anchor="middle">runs the JS</text>
+
+  <line x1="184" y1="291" x2="226" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="480" y1="291" x2="522" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="686" y1="291" x2="728" y2="291" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <text x="24" y="360" fill="#c9d1d9" font-size="13">Types exist <tspan font-weight="700" fill="#e6edf3">only at compile time</tspan>. At runtime there is no TypeScript, just JavaScript.</text>
+  <text x="24" y="392" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan>TypeScript moves a whole class of bugs from "found in production" to "found while typing".</text>
+</svg>

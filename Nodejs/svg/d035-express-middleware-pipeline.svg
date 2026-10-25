@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="378" viewBox="0 0 900 378" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Express middleware pipeline</title>
+  <desc>A request passes through middleware in registration order: express.json, cors, a logger, an auth check, then the route handler, each calling next() to continue. The handler sends the response. Auth can end the chain early with 401. If a handler throws or calls next(err), Express skips to the error-handling middleware with four arguments, which sends a 500.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="377" rx="14" fill="#161b22" stroke="#30363d"/>
+  <g transform="translate(0,-74)">
+
+  <!-- response path -->
+  <polyline points="767,166 767,118 64,118 64,162" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <rect x="330" y="107" width="240" height="22" rx="11" fill="#161b22"/>
+  <text x="450" y="123" fill="#56d364" font-size="12.5" font-weight="600" text-anchor="middle">200 · res.json(user) → response</text>
+
+  <!-- client -->
+  <rect x="24" y="166" width="80" height="80" rx="10" fill="#1c2128" stroke="#8b949e" stroke-opacity=".7"/>
+  <text x="64" y="202" fill="#e6edf3" font-size="13.5" font-weight="600" text-anchor="middle">Client</text>
+  <text x="64" y="221" fill="#8b949e" font-size="11.5" text-anchor="middle">GET /users/7</text>
+
+  <!-- middleware boxes -->
+  <g font-size="12.5">
+    <rect x="128" y="166" width="112" height="80" rx="10" fill="#1c2128" stroke="#30363d"/>
+    <text x="184" y="196" fill="#79c0ff" font-family="Cascadia Code, Consolas, monospace" font-size="12" text-anchor="middle">express.json()</text>
+    <text x="184" y="216" fill="#c9d1d9" text-anchor="middle">body → req.body</text>
+    <text x="184" y="234" fill="#8b949e" font-size="11.5" text-anchor="middle">built-in</text>
+
+    <rect x="262" y="166" width="112" height="80" rx="10" fill="#1c2128" stroke="#30363d"/>
+    <text x="318" y="196" fill="#79c0ff" font-family="Cascadia Code, Consolas, monospace" font-size="12" text-anchor="middle">cors()</text>
+    <text x="318" y="216" fill="#c9d1d9" text-anchor="middle">CORS headers</text>
+    <text x="318" y="234" fill="#8b949e" font-size="11.5" text-anchor="middle">third-party</text>
+
+    <rect x="396" y="166" width="112" height="80" rx="10" fill="#1c2128" stroke="#30363d"/>
+    <text x="452" y="196" fill="#79c0ff" font-family="Cascadia Code, Consolas, monospace" font-size="12" text-anchor="middle">morgan()</text>
+    <text x="452" y="216" fill="#c9d1d9" text-anchor="middle">logs the request</text>
+    <text x="452" y="234" fill="#8b949e" font-size="11.5" text-anchor="middle">third-party</text>
+
+    <rect x="530" y="166" width="112" height="80" rx="10" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".7"/>
+    <text x="586" y="196" fill="#e3b341" font-family="Cascadia Code, Consolas, monospace" font-size="12" text-anchor="middle">auth</text>
+    <text x="586" y="216" fill="#c9d1d9" text-anchor="middle">checks token,</text>
+    <text x="586" y="234" fill="#c9d1d9" text-anchor="middle">sets req.user</text>
+
+    <rect x="664" y="166" width="206" height="80" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+    <text x="767" y="190" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle">route handler</text>
+    <text x="767" y="210" fill="#79c0ff" font-family="Cascadia Code, Consolas, monospace" font-size="12" text-anchor="middle">GET /users/:id</text>
+    <text x="767" y="230" fill="#c9d1d9" text-anchor="middle">loads user, sends response</text>
+  </g>
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="104" y1="206" x2="124" y2="206" marker-end="url(#arr)"/>
+    <line x1="240" y1="206" x2="258" y2="206" marker-end="url(#arr)"/>
+    <line x1="374" y1="206" x2="392" y2="206" marker-end="url(#arr)"/>
+    <line x1="508" y1="206" x2="526" y2="206" marker-end="url(#arr)"/>
+    <line x1="642" y1="206" x2="660" y2="206" marker-end="url(#arr)"/>
+  </g>
+  <g fill="#8b949e" font-size="11" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">
+    <text x="251" y="262">next()</text><text x="385" y="262">next()</text><text x="519" y="262">next()</text><text x="653" y="262">next()</text>
+  </g>
+
+  <!-- auth fails -->
+  <line x1="586" y1="246" x2="586" y2="300" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <rect x="468" y="304" width="176" height="62" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="556" y="328" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle">no token → 401</text>
+  <text x="556" y="350" fill="#c9d1d9" font-size="12" text-anchor="middle">responds, no next()</text>
+
+  <!-- error path -->
+  <line x1="767" y1="246" x2="767" y2="300" stroke="#f85149" stroke-width="1.6" marker-end="url(#arrR)"/>
+  <text x="777" y="280" fill="#ff7b72" font-size="11.5" data-nocheck="1">throw / next(err)</text>
+  <rect x="664" y="304" width="206" height="62" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="767" y="328" fill="#ff7b72" font-size="13" font-weight="600" text-anchor="middle">errorHandler → 500</text>
+  <text x="767" y="350" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, Consolas, monospace">(err, req, res, next)</text>
+
+  <!-- legend -->
+  <text x="24" y="324" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">A MIDDLEWARE CAN</text>
+  <text x="24" y="346" fill="#c9d1d9" font-size="12.5">✓ change req / res</text>
+  <text x="24" y="366" fill="#c9d1d9" font-size="12.5">✓ call next() to continue</text>
+  <text x="24" y="386" fill="#c9d1d9" font-size="12.5">✓ end it with a response</text>
+  <text x="200" y="346" fill="#c9d1d9" font-size="12.5">✓ next(err) to jump</text>
+  <text x="200" y="366" fill="#c9d1d9" font-size="12.5">   to the error handler</text>
+  <text x="200" y="386" fill="#e3b341" font-size="12.5">⚠ do neither → request hangs</text>
+
+  <text x="24" y="428" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan>an Express app is a list of middleware functions run in order. Routes are just middleware that send a response.</text>
+  </g>
+</svg>

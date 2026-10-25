@@ -4096,6 +4096,20 @@ CREATE INDEX idx_student_dept ON students(dept);
 
 **Yes — for `PRIMARY KEY`, `UNIQUE`, and `FOREIGN KEY`. Not for anything else.**
 
+### Key vs Index — Not the Same Thing
+
+<details>
+<summary>Show answer</summary>
+
+Conceptually they're different. MySQL just **enforces** most keys by building an index, which is why they get confused.
+
+| | **Key** | **Index** |
+|---|---|---|
+| **What it is** | A **logical rule**: which column(s) identify a row or link tables | A **physical data structure** (a B+ tree) that makes lookups fast |
+| **Purpose** | Correctness: uniqueness, identity, relationships | Speed: avoid scanning the whole table |
+| **Level** | Logical / [conceptual schema](#three-schema-architecture-ansisparc) | Physical / internal schema |
+| **Examples** | Primary, unique, foreign, candidate, super key | `CREATE INDEX idx_email ON users(email)` |
+
 First, a naming trap: in MySQL DDL, **`KEY` is literally a synonym for `INDEX`**. These two lines are the same statement:
 
 ```sql
@@ -4104,6 +4118,8 @@ INDEX idx_name (name)   -- identical
 ```
 
 So "key" inside `CREATE TABLE` *is* an index declaration — there's nothing to build separately.
+
+</details>
 
 ### What Creates an Index vs What Doesn't
 
@@ -4116,6 +4132,7 @@ So "key" inside `CREATE TABLE` *is* an index declaration — there's nothing to 
 | `UNIQUE` / `UNIQUE KEY` | ✅ | A secondary index. MySQL has **no** unique constraint without an index — the index is *how* uniqueness is enforced |
 | `FOREIGN KEY` | ✅ | InnoDB **auto-creates** an index on the child column if none exists. The parent column must already have one (usually its PK), or MySQL rejects the constraint |
 | `KEY` / `INDEX` | ✅ | The explicit form |
+| Candidate / super / alternate key | ❌ | Design concepts only. A column gets an index only if you actually declare it `PRIMARY KEY` or `UNIQUE` |
 | `CHECK` | ❌ | Constraint only, no structure |
 | `NOT NULL`, `DEFAULT` | ❌ | Column attributes, no structure |
 | A plain column | ❌ | Nothing |
@@ -4177,7 +4194,7 @@ You **always** have a clustered index. The only question is whether *you* chose 
 This is exactly why `SELECT id FROM products ORDER BY price, id` shows `Using index` with only `INDEX(price)` declared — and therefore why the [deferred join](#approach-2-deferred-join-keep-offsetlimit-just-make-it-fast) works.
 
 > [!TIP]
-> **Interview tip:** "Is a key the same as an index?" — **No.** A *key* is a logical constraint (this identifies a row / this must be unique / this references another table). An *index* is a physical B+ Tree structure. MySQL happens to implement most key constraints *using* an index, which is why they're conflated — but you can have an index with no constraint (`INDEX(name)`), and in relational theory a key with no index (`name` as a secondary key).
+> **Interview tip:** "Is a key the same as an index?" — **No.** A *key* is a logical constraint (this identifies a row / this must be unique / this references another table). An *index* is a physical B+ Tree structure. MySQL **enforces** `PRIMARY`, `UNIQUE` and `FOREIGN` keys by building indexes, which is why they get confused, and in MySQL syntax the word `KEY` is literally a synonym for `INDEX`. MySQL happens to implement most key constraints *using* an index, which is why they're conflated — but you can have an index with no constraint (`INDEX(name)`), and in relational theory a key with no index (`name` as a secondary key).
 
 </details>
 
@@ -14216,6 +14233,41 @@ LOAD MYSQL QUERY RULES TO RUNTIME;  SAVE MYSQL QUERY RULES TO DISK;
 | **Follows failover automatically** via the `read_only` flag | **Doesn't do the promotion itself**: it only re-routes. You still need Orchestrator, MHA or Group Replication to promote a replica |
 | Query caching, rewriting, firewall, per-query stats | Multiplexing is switched off for some sessions (open transactions, temp tables, session variables, `LAST_INSERT_ID()`) |
 | Changes apply live through the admin interface | Read-your-own-writes is still your problem unless you enable GTID causal reads |
+
+</details>
+
+### Protecting MySQL from Connection Storms
+
+<details>
+<summary>Show answer</summary>
+
+**Scenario:** a buggy or misconfigured client opens **1,000 connections**. Without a proxy, MySQL creates 1,000 threads, or starts rejecting everyone with "Too many connections" once it hits `max_connections`. With ProxySQL in front, those 1,000 connections land on **ProxySQL**, and MySQL only ever sees a small, capped pool.
+
+| Layer | Setting | Protection |
+|---|---|---|
+| **Per MySQL server** | `mysql_servers.max_connections` (default 1000) | Hard cap on connections ProxySQL opens **to each server**. MySQL can never get more, however many clients connect. **This is the key protection** |
+| **Per user** | `mysql_users.max_connections` (default 10000) | Caps client connections for **one user**. The noisy app hits its own limit and gets errors; other apps keep working |
+| **Global** | `mysql-max_connections` (default 2048) | Total client connections ProxySQL itself accepts |
+| **Queue, don't fail** | `mysql-connect_timeout_server_max` (default 10 s) | When a server's pool is full, the query **waits** for a free connection and errors only after the timeout |
+| **Throttle / block** | Query rules: `delay`, `timeout`, `error_msg` | Slow down, time out or reject a specific user's or query's traffic |
+
+```sql
+UPDATE mysql_servers SET max_connections = 100 WHERE hostname = 'db-source';   -- MySQL sees at most 100
+UPDATE mysql_users   SET max_connections = 200 WHERE username = 'report_app';  -- noisy app capped at 200
+LOAD MYSQL SERVERS TO RUNTIME;  LOAD MYSQL USERS TO RUNTIME;
+SAVE MYSQL SERVERS TO DISK;     SAVE MYSQL USERS TO DISK;
+```
+
+> [!WARNING]
+> **Pinning is the catch.** Multiplexing only works while a client doesn't need "its own" backend connection. Open **transactions**, **temp tables**, **session variables** or `LAST_INSERT_ID()` pin a backend connection to that client. A client holding hundreds of open transactions can use up the pool. MySQL is still capped by `mysql_servers.max_connections`, but other clients wait in the queue. Keep transactions short.
+
+| 1,000 client connections | Plain MySQL | Behind ProxySQL |
+|---|---|---|
+| MySQL sees | 1,000 threads (or errors past `max_connections`) | A capped pool, e.g. 20–100 |
+| When the limit is hit | Immediate "Too many connections" for everyone | Request **queues**; errors only after the timeout, and only for the noisy user if per-user limits are set |
+| Per-user isolation | `MAX_USER_CONNECTIONS` per account | Per user **and** per backend server |
+
+> PostgreSQL has the same problem, made worse by **one process per connection**. There the standard fix is **PgBouncer** in transaction-pooling mode, plus per-role `CONNECTION LIMIT`s.
 
 </details>
 

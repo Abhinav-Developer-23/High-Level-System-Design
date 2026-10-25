@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="540" viewBox="0 0 900 540" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Node.js architecture</title>
+  <desc>Your code calls Node core modules, which go through C++ bindings into V8 (call stack and heap, runs JS) and libuv (event loop, thread pool, OS async I/O). JS and the event loop share one main thread.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="539" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- your code -->
+  <rect x="24" y="24" width="852" height="48" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="42" y="53" fill="#e6edf3" font-size="15" font-weight="600">Your code</text>
+  <text x="858" y="53" fill="#79c0ff" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">app.js · npm packages · callbacks / promises / async-await</text>
+  <line x1="450" y1="72" x2="450" y2="90" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- core modules -->
+  <rect x="24" y="92" width="852" height="58" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="117" fill="#e6edf3" font-size="14.5" font-weight="600">Core modules</text>
+  <text x="42" y="136" fill="#8b949e" font-size="12">written in JavaScript</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9" text-anchor="middle">
+    <rect x="300" y="109" width="34" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="317" y="125">fs</text>
+    <rect x="342" y="109" width="50" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="367" y="125">http</text>
+    <rect x="400" y="109" width="42" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="421" y="125">net</text>
+    <rect x="450" y="109" width="64" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="482" y="125">timers</text>
+    <rect x="522" y="109" width="64" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="554" y="125">crypto</text>
+    <rect x="594" y="109" width="50" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="619" y="125">zlib</text>
+    <rect x="652" y="109" width="42" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="673" y="125">dns</text>
+    <rect x="702" y="109" width="64" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="734" y="125">events</text>
+    <rect x="774" y="109" width="84" height="24" rx="12" fill="#21262d" stroke="#30363d"/><text x="816" y="125">stream …</text>
+  </g>
+  <line x1="450" y1="150" x2="450" y2="168" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- bindings -->
+  <rect x="24" y="170" width="852" height="36" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="193" fill="#e6edf3" font-size="14" font-weight="600">Node bindings <tspan fill="#8b949e" font-weight="400">(C++)</tspan></text>
+  <text x="858" y="193" fill="#8b949e" font-size="12" text-anchor="end">glue that turns a JS call like fs.readFile() into a V8 / libuv call</text>
+  <line x1="230" y1="206" x2="230" y2="224" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="670" y1="206" x2="670" y2="224" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- V8 -->
+  <rect x="24" y="226" width="412" height="196" rx="10" fill="#bc8cff" fill-opacity=".08" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="42" y="252" fill="#d2a8ff" font-size="15" font-weight="600">V8 engine <tspan fill="#8b949e" font-weight="400" font-size="12">(C++, from Chrome)</tspan></text>
+  <text x="42" y="272" fill="#8b949e" font-size="12">parses, JIT-compiles and runs your JavaScript</text>
+
+  <rect x="42" y="290" width="180" height="116" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="58" y="314" fill="#e6edf3" font-size="14" font-weight="600">Call Stack</text>
+  <text x="58" y="336" fill="#c9d1d9" font-size="12">runs one function</text>
+  <text x="58" y="354" fill="#c9d1d9" font-size="12">at a time (LIFO)</text>
+  <rect x="58" y="368" width="100" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="108" y="383" fill="#e3b341" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">MAIN THREAD</text>
+
+  <rect x="238" y="290" width="180" height="116" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="254" y="314" fill="#e6edf3" font-size="14" font-weight="600">Heap</text>
+  <text x="254" y="336" fill="#c9d1d9" font-size="12">objects, closures,</text>
+  <text x="254" y="354" fill="#c9d1d9" font-size="12">arrays, strings</text>
+  <text x="254" y="384" fill="#8b949e" font-size="12">garbage-collected</text>
+
+  <!-- libuv -->
+  <rect x="464" y="226" width="412" height="196" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".6"/>
+  <text x="482" y="252" fill="#56d4dd" font-size="15" font-weight="600">libuv <tspan fill="#8b949e" font-weight="400" font-size="12">(C library)</tspan></text>
+  <text x="482" y="272" fill="#8b949e" font-size="12">the event loop + all async I/O</text>
+
+  <rect x="480" y="290" width="120" height="116" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="492" y="314" fill="#e6edf3" font-size="14" font-weight="600">Event Loop</text>
+  <text x="492" y="336" fill="#c9d1d9" font-size="12">picks the next</text>
+  <text x="492" y="354" fill="#c9d1d9" font-size="12">ready callback</text>
+  <rect x="490" y="368" width="100" height="22" rx="11" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="540" y="383" fill="#e3b341" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">MAIN THREAD</text>
+
+  <rect x="610" y="290" width="120" height="116" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="622" y="314" fill="#e6edf3" font-size="14" font-weight="600">Thread Pool</text>
+  <text x="622" y="336" fill="#c9d1d9" font-size="12">4 threads default</text>
+  <text x="622" y="354" fill="#c9d1d9" font-size="12">fs, dns.lookup,</text>
+  <text x="622" y="372" fill="#c9d1d9" font-size="12">crypto, zlib</text>
+  <text x="622" y="394" fill="#8b949e" font-size="11">worker threads (C)</text>
+
+  <rect x="740" y="290" width="120" height="116" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="752" y="314" fill="#e6edf3" font-size="14" font-weight="600">OS async I/O</text>
+  <text x="752" y="336" fill="#c9d1d9" font-size="12">epoll · kqueue ·</text>
+  <text x="752" y="354" fill="#c9d1d9" font-size="12">IOCP</text>
+  <text x="752" y="372" fill="#c9d1d9" font-size="12">sockets, http</text>
+  <text x="752" y="394" fill="#8b949e" font-size="11">no extra threads</text>
+
+  <!-- OS -->
+  <line x1="670" y1="422" x2="670" y2="440" stroke="#8b949e" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <rect x="24" y="442" width="852" height="40" rx="10" fill="#21262d" stroke="#30363d"/>
+  <text x="42" y="467" fill="#e6edf3" font-size="14" font-weight="600">Operating system <tspan fill="#8b949e" font-weight="400" font-size="12" dx="8">files · network · DNS · clocks</tspan></text>
+
+  <!-- key point -->
+  <text x="24" y="514" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">⚠ One thread: </tspan>your JS (call stack) and the event loop take turns on the same main thread. Only I/O work leaves it.</text>
+</svg>

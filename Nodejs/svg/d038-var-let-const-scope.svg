@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="440" viewBox="0 0 900 440" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>var vs let vs const</title>
+  <desc>Left: nested scopes. A var declared inside an if block is visible in the whole function; let and const declared there are visible only inside the block. Right: comparison of scope, hoisting, redeclare, reassign, initialization and the global property for var, let and const.</desc>
+  <rect x="0.5" y="0.5" width="899" height="439" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WHERE EACH ONE IS VISIBLE</text>
+
+  <!-- function scope -->
+  <rect x="24" y="50" width="380" height="330" rx="12" fill="#d29922" fill-opacity=".05" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="40" y="76" fill="#e3b341" font-size="14" font-weight="600">function scope</text>
+  <text x="40" y="94" fill="#8b949e" font-size="12">the whole function body</text>
+
+  <!-- block -->
+  <rect x="56" y="112" width="316" height="150" rx="10" fill="#58a6ff" fill-opacity=".06" stroke="#58a6ff" stroke-opacity=".75"/>
+  <text x="72" y="136" fill="#79c0ff" font-size="14" font-weight="600">block scope</text>
+  <text x="72" y="154" fill="#8b949e" font-size="12">inside an if / for / { }</text>
+  <g font-size="13" font-family="Cascadia Code, Consolas, monospace" text-anchor="middle">
+    <rect x="72" y="170" width="88" height="30" rx="7" fill="#d29922" fill-opacity=".16" stroke="#d29922"/><text x="116" y="190" fill="#e3b341">var a</text>
+    <rect x="170" y="170" width="88" height="30" rx="7" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/><text x="214" y="190" fill="#79c0ff">let b</text>
+    <rect x="268" y="170" width="88" height="30" rx="7" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/><text x="312" y="190" fill="#79c0ff">const c</text>
+  </g>
+  <text x="72" y="226" fill="#c9d1d9" font-size="12.5">inside the block: a ✓  b ✓  c ✓</text>
+  <text x="72" y="246" fill="#8b949e" font-size="12">all three were declared here</text>
+
+  <text x="40" y="294" fill="#c9d1d9" font-size="13">after the block, still in the function:</text>
+  <text x="40" y="318" fill="#56d364" font-size="13" font-weight="600">a ✓  <tspan fill="#8b949e" font-weight="400">var leaks out of the block</tspan></text>
+  <text x="40" y="342" fill="#ff7b72" font-size="13" font-weight="600">b ✗  c ✗  <tspan fill="#8b949e" font-weight="400">ReferenceError: not defined</tspan></text>
+  <text x="40" y="366" fill="#8b949e" font-size="12">outside the function: none of them</text>
+
+  <!-- grid -->
+  <text x="430" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">COMPARISON</text>
+  <rect x="430" y="50" width="446" height="330" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <g font-size="13.5" font-weight="700" font-family="Cascadia Code, Consolas, monospace" text-anchor="middle">
+    <text x="672" y="76" fill="#e3b341">var</text><text x="752" y="76" fill="#79c0ff">let</text><text x="832" y="76" fill="#79c0ff">const</text>
+  </g>
+  <line x1="430" y1="88" x2="876" y2="88" stroke="#30363d"/>
+  <g font-size="12.5" fill="#c9d1d9">
+    <text x="446" y="116">Scope</text>
+    <text x="446" y="160">Used before its line</text>
+    <text x="446" y="204">Redeclare in same scope</text>
+    <text x="446" y="248">Reassign</text>
+    <text x="446" y="292">Must initialize</text>
+    <text x="446" y="336">Top-level: global property</text>
+  </g>
+  <g stroke="#21262d"><line x1="442" y1="132" x2="864" y2="132"/><line x1="442" y1="176" x2="864" y2="176"/><line x1="442" y1="220" x2="864" y2="220"/><line x1="442" y1="264" x2="864" y2="264"/><line x1="442" y1="308" x2="864" y2="308"/></g>
+  <g font-size="12.5" text-anchor="middle">
+    <text x="672" y="116" fill="#e3b341">function</text><text x="752" y="116" fill="#79c0ff">block</text><text x="832" y="116" fill="#79c0ff">block</text>
+    <text x="672" y="160" fill="#e3b341">undefined</text><text x="752" y="160" fill="#ff7b72">Error (TDZ)</text><text x="832" y="160" fill="#ff7b72">Error (TDZ)</text>
+    <text x="672" y="204" fill="#e3b341">✓ allowed</text><text x="752" y="204" fill="#56d364">✗ error</text><text x="832" y="204" fill="#56d364">✗ error</text>
+    <text x="672" y="248" fill="#c9d1d9">✓</text><text x="752" y="248" fill="#c9d1d9">✓</text><text x="832" y="248" fill="#56d364">✗ error</text>
+    <text x="672" y="292" fill="#c9d1d9">no</text><text x="752" y="292" fill="#c9d1d9">no</text><text x="832" y="292" fill="#c9d1d9">yes</text>
+    <text x="672" y="336" fill="#e3b341">yes (scripts)</text><text x="752" y="336" fill="#c9d1d9">no</text><text x="832" y="336" fill="#c9d1d9">no</text>
+  </g>
+  <text x="446" y="366" fill="#8b949e" font-size="12">amber = surprising behaviour · green ✗ = a helpful error</text>
+
+  <text x="24" y="420" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Rule of thumb: </tspan>const by default, let when the value must change, var never in new code.</text>
+</svg>

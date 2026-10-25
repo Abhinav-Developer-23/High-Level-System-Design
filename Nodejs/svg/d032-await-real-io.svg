@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="690" viewBox="0 0 900 690" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>What await does with real I/O</title>
+  <desc>getConfig runs until it hits await on fs.promises.readFile and returns a pending promise. The main thread is then free to log line 2 and serve other work while the libuv thread pool reads the file. When the read finishes, the poll phase fulfills the promise and the rest of getConfig runs as a microtask, logging line 3. Output order: 1, 2, 3.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="689" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <text x="24" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CODE</text>
+  <text x="600" y="38" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">OUTPUT</text>
+
+  <!-- code -->
+  <rect x="24" y="52" width="556" height="176" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <rect x="25" y="105" width="555" height="20" fill="#d29922" fill-opacity=".12"/>
+  <rect x="25" y="105" width="3" height="20" fill="#d29922"/>
+  <rect x="25" y="127" width="555" height="20" fill="#bc8cff" fill-opacity=".12"/>
+  <rect x="25" y="127" width="3" height="20" fill="#bc8cff"/>
+  <rect x="25" y="193" width="555" height="20" fill="#3fb950" fill-opacity=".10"/>
+  <rect x="25" y="193" width="3" height="20" fill="#3fb950"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">
+    <text x="40" y="76"><tspan fill="#ff7b72">async&#160;function</tspan><tspan fill="#e6edf3">&#160;</tspan><tspan fill="#d2a8ff">getConfig</tspan><tspan fill="#e6edf3">()&#160;{</tspan></text>
+    <text x="40" y="98"><tspan fill="#e6edf3">&#160;&#160;console.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'1: reading file'</tspan><tspan fill="#e6edf3">)</tspan></text>
+    <text x="40" y="120"><tspan fill="#e6edf3">&#160;&#160;</tspan><tspan fill="#ff7b72">const</tspan><tspan fill="#e6edf3">&#160;text&#160;=&#160;</tspan><tspan fill="#ff7b72">await</tspan><tspan fill="#e6edf3">&#160;fs.promises.</tspan><tspan fill="#d2a8ff">readFile</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'config.json'</tspan><tspan fill="#e6edf3">,&#160;</tspan><tspan fill="#a5d6ff">'utf8'</tspan><tspan fill="#e6edf3">)</tspan></text>
+    <text x="40" y="142"><tspan fill="#e6edf3">&#160;&#160;console.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'3: got'</tspan><tspan fill="#e6edf3">,&#160;text.length,&#160;</tspan><tspan fill="#a5d6ff">'chars'</tspan><tspan fill="#e6edf3">)</tspan></text>
+    <text x="40" y="164"><tspan fill="#e6edf3">}</tspan></text>
+    <text x="40" y="186"><tspan fill="#d2a8ff">getConfig</tspan><tspan fill="#e6edf3">()</tspan></text>
+    <text x="40" y="208"><tspan fill="#e6edf3">console.</tspan><tspan fill="#d2a8ff">log</tspan><tspan fill="#e6edf3">(</tspan><tspan fill="#a5d6ff">'2: main thread is free'</tspan><tspan fill="#e6edf3">)</tspan></text>
+  </g>
+  <!-- code badges -->
+  <g font-size="11.5" font-weight="700" text-anchor="middle">
+    <circle cx="556" cy="115" r="9" fill="#d29922" fill-opacity=".25" stroke="#d29922"/><text x="556" y="119" fill="#e3b341">1</text>
+    <circle cx="556" cy="137" r="9" fill="#bc8cff" fill-opacity=".25" stroke="#bc8cff"/><text x="556" y="141" fill="#d2a8ff">5</text>
+    <circle cx="556" cy="203" r="9" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/><text x="556" y="207" fill="#56d364">2</text>
+  </g>
+
+  <!-- output -->
+  <rect x="600" y="52" width="276" height="90" rx="10" fill="#0d1117" stroke="#30363d"/>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#e6edf3">
+    <text x="616" y="78">1: reading file</text>
+    <text x="616" y="102">2: main thread is free</text>
+    <text x="616" y="126">3: got N chars</text>
+  </g>
+  <text x="600" y="168" fill="#c9d1d9" font-size="13">Order: <tspan font-weight="700" fill="#56d364">1, 2, 3</tspan></text>
+  <text x="600" y="190" fill="#8b949e" font-size="12">2 prints before 3: at the await,</text>
+  <text x="600" y="208" fill="#8b949e" font-size="12">getConfig() gave the thread back.</text>
+
+  <text x="24" y="258" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WHO IS BUSY</text>
+  <text x="876" y="258" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="end">TIME →</text>
+
+  <!-- lanes -->
+  <rect x="24" y="270" width="852" height="66" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="300" fill="#e6edf3" font-size="13.5" font-weight="600">Main thread</text>
+  <text x="38" y="318" fill="#8b949e" font-size="12">runs your JS</text>
+
+  <rect x="24" y="344" width="852" height="48" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="373" fill="#e6edf3" font-size="13.5" font-weight="600">libuv thread pool</text>
+
+  <rect x="24" y="400" width="852" height="66" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="430" fill="#e6edf3" font-size="13.5" font-weight="600">Event loop</text>
+  <text x="38" y="448" fill="#8b949e" font-size="12">phases + microtasks</text>
+
+  <!-- main thread blocks -->
+  <rect x="180" y="279" width="210" height="48" rx="6" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff" stroke-opacity=".85"/>
+  <text x="222" y="299" fill="#79c0ff" font-size="13" font-weight="600"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">getConfig()</tspan> until await</text>
+  <text x="222" y="317" fill="#c9d1d9" font-size="12">returns a pending promise</text>
+
+  <rect x="396" y="279" width="214" height="48" rx="6" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+  <text x="436" y="299" fill="#56d364" font-size="13" font-weight="600">log 2 + other requests</text>
+  <text x="436" y="317" fill="#c9d1d9" font-size="12">/ callbacks · thread is FREE</text>
+
+  <rect x="616" y="279" width="62" height="48" rx="6" fill="none" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="647" y="307" fill="#8b949e" font-size="12.5" text-anchor="middle">idle</text>
+
+  <rect x="684" y="279" width="182" height="48" rx="6" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".85"/>
+  <text x="724" y="299" fill="#d2a8ff" font-size="13" font-weight="600">getConfig resumes</text>
+  <text x="724" y="317" fill="#c9d1d9" font-size="12">after await → log 3</text>
+
+  <!-- thread pool -->
+  <rect x="390" y="354" width="288" height="28" rx="6" fill="#39c5cf" fill-opacity=".16" stroke="#39c5cf" stroke-opacity=".85"/>
+  <text x="430" y="373" fill="#56d4dd" font-size="13" font-weight="600">read <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12">config.json</tspan><tspan font-weight="400" fill="#8b949e" font-size="12"> · off the main thread</tspan></text>
+
+  <!-- event loop -->
+  <rect x="180" y="409" width="284" height="48" rx="6" fill="none" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="322" y="437" fill="#8b949e" font-size="12.5" text-anchor="middle">keeps turning: timers, other I/O</text>
+
+  <rect x="470" y="409" width="208" height="48" rx="6" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="508" y="429" fill="#e3b341" font-size="12.5" font-weight="600">poll phase: read done</text>
+  <text x="508" y="447" fill="#c9d1d9" font-size="12">→ promise fulfilled</text>
+
+  <rect x="684" y="409" width="182" height="48" rx="6" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="775" y="429" fill="#d2a8ff" font-size="12.5" font-weight="600" text-anchor="middle">microtask: run the</text>
+  <text x="775" y="447" fill="#c9d1d9" font-size="12" text-anchor="middle">rest of getConfig</text>
+
+  <!-- arrows -->
+  <line x1="394" y1="327" x2="394" y2="352" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="672" y1="382" x2="672" y2="407" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
+  <line x1="826" y1="409" x2="826" y2="330" stroke="#bc8cff" stroke-width="1.6" marker-end="url(#arrP)"/>
+
+  <!-- badges in lanes -->
+  <g font-size="11.5" font-weight="700" text-anchor="middle">
+    <circle cx="202" cy="303" r="10" fill="#d29922" fill-opacity=".25" stroke="#d29922"/><text x="202" y="307" fill="#e3b341">1</text>
+    <circle cx="416" cy="303" r="10" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/><text x="416" y="307" fill="#56d364">2</text>
+    <circle cx="410" cy="368" r="10" fill="#39c5cf" fill-opacity=".25" stroke="#39c5cf"/><text x="410" y="372" fill="#56d4dd">3</text>
+    <circle cx="490" cy="433" r="10" fill="#d29922" fill-opacity=".25" stroke="#d29922"/><text x="490" y="437" fill="#e3b341">4</text>
+    <circle cx="704" cy="303" r="10" fill="#bc8cff" fill-opacity=".25" stroke="#bc8cff"/><text x="704" y="307" fill="#d2a8ff">5</text>
+  </g>
+
+  <!-- axis -->
+  <line x1="180" y1="484" x2="868" y2="484" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="180" y1="479" x2="180" y2="489"/>
+    <line x1="393" y1="479" x2="393" y2="489"/>
+    <line x1="681" y1="479" x2="681" y2="489"/>
+  </g>
+  <g fill="#8b949e" font-size="12" text-anchor="middle">
+    <text x="180" y="506">start</text>
+    <text x="393" y="506">await hit</text>
+    <text x="681" y="506">read done</text>
+  </g>
+
+  <!-- legend -->
+  <line x1="24" y1="524" x2="876" y2="524" stroke="#21262d"/>
+  <text x="24" y="550" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">KEY MOMENTS</text>
+  <g font-size="11.5" font-weight="700" text-anchor="middle">
+    <circle cx="34" cy="571" r="10" fill="#d29922" fill-opacity=".25" stroke="#d29922"/><text x="34" y="575" fill="#e3b341">1</text>
+    <circle cx="34" cy="595" r="10" fill="#3fb950" fill-opacity=".25" stroke="#3fb950"/><text x="34" y="599" fill="#56d364">2</text>
+    <circle cx="34" cy="619" r="10" fill="#39c5cf" fill-opacity=".25" stroke="#39c5cf"/><text x="34" y="623" fill="#56d4dd">3</text>
+    <circle cx="480" cy="571" r="10" fill="#d29922" fill-opacity=".25" stroke="#d29922"/><text x="480" y="575" fill="#e3b341">4</text>
+    <circle cx="480" cy="595" r="10" fill="#bc8cff" fill-opacity=".25" stroke="#bc8cff"/><text x="480" y="599" fill="#d2a8ff">5</text>
+  </g>
+  <g fill="#c9d1d9" font-size="13">
+    <text x="52" y="576"><tspan fill="#e6edf3" font-weight="600">await hit:</tspan> getConfig pauses, returns a pending promise</text>
+    <text x="52" y="600"><tspan fill="#e6edf3" font-weight="600">main thread runs other code</tspan> (no blocking)</text>
+    <text x="52" y="624"><tspan fill="#e6edf3" font-weight="600">thread pool</tspan> reads the file</text>
+    <text x="498" y="576"><tspan fill="#e6edf3" font-weight="600">poll phase:</tspan> read finished, promise fulfilled</text>
+    <text x="498" y="600"><tspan fill="#e6edf3" font-weight="600">continuation runs as a microtask:</tspan> line after await</text>
+  </g>
+
+  <text x="24" y="656" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Key point: </tspan><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#ff7b72">await</tspan> pauses only this async function, never the thread.</text>
+  <text x="24" y="676" fill="#c9d1d9" font-size="13">The rest of the function becomes a callback that runs when the promise settles.</text>
+</svg>

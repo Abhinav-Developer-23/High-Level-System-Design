@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Threads inside one Node.js process</title>
+  <desc>One node process contains the main thread (your JS and the event loop), optional worker threads (also run your JS, in parallel), the libuv thread pool and V8 helper threads (C++ only). Network I/O goes to the OS kernel. JS is single-threaded by default, Node is multithreaded internally, and you can opt into parallel JS with worker_threads.</desc>
+  <rect x="0.5" y="0.5" width="899" height="499" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- process outline -->
+  <rect x="24" y="24" width="852" height="306" rx="12" fill="none" stroke="#484f58" stroke-dasharray="7 5"/>
+  <rect x="40" y="14" width="300" height="22" rx="11" fill="#161b22"/>
+  <text x="48" y="30" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ONE PROCESS:  <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff" letter-spacing="0">node app.js</tspan></text>
+
+  <!-- main thread -->
+  <rect x="44" y="52" width="264" height="168" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="60" y="78" fill="#79c0ff" font-size="15" font-weight="600">Main thread</text>
+  <rect x="188" y="63" width="108" height="22" rx="11" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="242" y="78" fill="#56d364" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">RUNS YOUR JS</text>
+  <text x="60" y="106" fill="#c9d1d9" font-size="13">V8 isolate: call stack + heap</text>
+  <text x="60" y="128" fill="#c9d1d9" font-size="13">the event loop</text>
+  <text x="60" y="150" fill="#c9d1d9" font-size="13">all callbacks, all your app code</text>
+  <text x="60" y="180" fill="#8b949e" font-size="12">always exactly <tspan fill="#e6edf3" font-weight="600">one</tspan></text>
+  <text x="60" y="200" fill="#8b949e" font-size="12">this is the "single thread"</text>
+
+  <!-- workers -->
+  <rect x="324" y="52" width="264" height="168" rx="10" fill="#3fb950" fill-opacity=".07" stroke="#3fb950" stroke-opacity=".7" stroke-dasharray="6 4"/>
+  <text x="340" y="78" fill="#56d364" font-size="15" font-weight="600">Worker threads</text>
+  <rect x="468" y="63" width="108" height="22" rx="11" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="522" y="78" fill="#56d364" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">RUNS YOUR JS</text>
+  <text x="340" y="106" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">new Worker('task.js')</text>
+  <text x="340" y="128" fill="#c9d1d9" font-size="13">each: own isolate, heap,</text>
+  <text x="340" y="150" fill="#c9d1d9" font-size="13">and its own event loop</text>
+  <text x="340" y="180" fill="#8b949e" font-size="12"><tspan fill="#e6edf3" font-weight="600">0 by default</tspan>, you create them</text>
+  <text x="340" y="200" fill="#8b949e" font-size="12">true parallel JS on other cores</text>
+
+  <!-- libuv pool -->
+  <rect x="604" y="52" width="256" height="168" rx="10" fill="#39c5cf" fill-opacity=".08" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="620" y="78" fill="#56d4dd" font-size="15" font-weight="600">libuv thread pool</text>
+  <rect x="772" y="63" width="76" height="22" rx="11" fill="#8b949e" fill-opacity=".14" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="810" y="78" fill="#c9d1d9" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">C++ ONLY</text>
+  <text x="620" y="106" fill="#c9d1d9" font-size="13">4 threads by default</text>
+  <text x="620" y="128" fill="#c9d1d9" font-size="13">fs, dns.lookup, crypto, zlib</text>
+  <text x="620" y="150" fill="#c9d1d9" font-size="13">shared by main + all workers</text>
+  <text x="620" y="180" fill="#8b949e" font-size="12">never runs JavaScript</text>
+  <text x="620" y="200" fill="#8b949e" font-size="12">(see section 7 above)</text>
+
+  <!-- V8 helpers -->
+  <rect x="44" y="236" width="400" height="76" rx="10" fill="#bc8cff" fill-opacity=".07" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="60" y="262" fill="#d2a8ff" font-size="15" font-weight="600">V8 helper threads</text>
+  <rect x="356" y="247" width="76" height="22" rx="11" fill="#8b949e" fill-opacity=".14" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="394" y="262" fill="#c9d1d9" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">C++ ONLY</text>
+  <text x="60" y="290" fill="#c9d1d9" font-size="13">garbage collection, JIT compiling in the background</text>
+
+  <!-- kernel -->
+  <rect x="460" y="236" width="400" height="76" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="476" y="262" fill="#e6edf3" font-size="15" font-weight="600">Network I/O <tspan fill="#8b949e" font-weight="400" font-size="12">(not a thread)</tspan></text>
+  <text x="476" y="290" fill="#c9d1d9" font-size="13">handed to the OS kernel: epoll · kqueue · IOCP</text>
+
+  <!-- answer -->
+  <text x="24" y="362" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SO, CAN NODE.JS BE MULTITHREADED?</text>
+  <rect x="24" y="374" width="276" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="400" fill="#e6edf3" font-size="14" font-weight="600">Your JS, by default</text>
+  <text x="40" y="424" fill="#c9d1d9" font-size="13">single-threaded: one main</text>
+  <text x="40" y="444" fill="#c9d1d9" font-size="13">thread runs all of it</text>
+  <text x="40" y="466" fill="#ff7b72" font-size="13" font-weight="600">✗ no parallel JS</text>
+
+  <rect x="312" y="374" width="276" height="104" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="328" y="400" fill="#e6edf3" font-size="14" font-weight="600">Node itself</text>
+  <text x="328" y="424" fill="#c9d1d9" font-size="13">always multithreaded inside</text>
+  <text x="328" y="444" fill="#c9d1d9" font-size="13">(libuv pool, V8 helpers)</text>
+  <text x="328" y="466" fill="#e3b341" font-size="13" font-weight="600">⚠ but not for your JS</text>
+
+  <rect x="600" y="374" width="276" height="104" rx="10" fill="#3fb950" fill-opacity=".08" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="616" y="400" fill="#e6edf3" font-size="14" font-weight="600">You, if you opt in</text>
+  <text x="616" y="424" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff" font-size="12">worker_threads</tspan> = threads</text>
+  <text x="616" y="444" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff" font-size="12">cluster</tspan> / <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff" font-size="12">child_process</tspan> = processes</text>
+  <text x="616" y="466" fill="#56d364" font-size="13" font-weight="600">✓ real parallel JS</text>
+</svg>

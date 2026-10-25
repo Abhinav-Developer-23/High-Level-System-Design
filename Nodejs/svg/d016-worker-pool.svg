@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="352" viewBox="0 0 900 352" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Worker pool</title>
+  <desc>Request handlers on the main thread submit tasks with await pool.run(task). Tasks wait in a FIFO queue; a pool of workers sized to the CPU core count takes the next task when free; results come back and resolve the Promise on the main thread. Workers are started once and reused because creating one costs tens of milliseconds and several MB.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="351" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- main -->
+  <rect x="24" y="24" width="220" height="180" rx="10" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="40" y="50" fill="#79c0ff" font-size="15" font-weight="600">Main thread</text>
+  <text x="40" y="76" fill="#c9d1d9" font-size="13">your request handlers</text>
+  <text x="40" y="102" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">await pool.run(task)</text>
+  <text x="40" y="128" fill="#c9d1d9" font-size="13">gets back a Promise</text>
+  <text x="40" y="160" fill="#56d364" font-size="13">✓ never blocked by</text>
+  <text x="40" y="180" fill="#56d364" font-size="13">   the CPU work</text>
+
+  <line x1="244" y1="114" x2="268" y2="114" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- queue -->
+  <rect x="272" y="24" width="150" height="180" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="347" y="48" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">TASK QUEUE</text>
+  <g font-family="Cascadia Code, Consolas, monospace" font-size="12" text-anchor="middle">
+    <rect x="288" y="62" width="118" height="28" rx="6" fill="#2b2111" stroke="#d29922"/><text x="347" y="81" fill="#e3b341">task 5</text>
+    <rect x="288" y="98" width="118" height="28" rx="6" fill="#2b2111" stroke="#d29922"/><text x="347" y="117" fill="#e3b341">task 6</text>
+    <rect x="288" y="134" width="118" height="28" rx="6" fill="#2b2111" stroke="#d29922"/><text x="347" y="153" fill="#e3b341">task 7</text>
+  </g>
+  <text x="347" y="188" fill="#8b949e" font-size="12" text-anchor="middle">waits for a free worker</text>
+
+  <line x1="422" y1="114" x2="446" y2="114" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- pool -->
+  <rect x="450" y="24" width="426" height="180" rx="10" fill="#bc8cff" fill-opacity=".07" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="466" y="50" fill="#d2a8ff" font-size="15" font-weight="600">Worker pool <tspan fill="#8b949e" font-weight="400" font-size="12">size = CPU cores (here 4)</tspan></text>
+  <g font-size="12.5">
+    <rect x="466" y="62" width="394" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+    <text x="478" y="81" fill="#8b949e">Worker 1</text><text x="556" y="81" fill="#e6edf3" font-family="Cascadia Code, Consolas, monospace" font-size="12">task 1 · resize image</text>
+    <rect x="466" y="96" width="394" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+    <text x="478" y="115" fill="#8b949e">Worker 2</text><text x="556" y="115" fill="#e6edf3" font-family="Cascadia Code, Consolas, monospace" font-size="12">task 2 · parse big JSON</text>
+    <rect x="466" y="130" width="394" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+    <text x="478" y="149" fill="#8b949e">Worker 3</text><text x="556" y="149" fill="#e6edf3" font-family="Cascadia Code, Consolas, monospace" font-size="12">task 3 · hash password</text>
+    <rect x="466" y="164" width="394" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+    <text x="478" y="183" fill="#8b949e">Worker 4</text><text x="556" y="183" fill="#e6edf3" font-family="Cascadia Code, Consolas, monospace" font-size="12">task 4 · build PDF</text>
+  </g>
+  <g font-size="11" font-weight="700" fill="#d2a8ff" text-anchor="middle" letter-spacing=".6">
+    <rect x="806" y="68" width="46" height="16" rx="8" fill="#bc8cff" fill-opacity=".2"/><text x="829" y="80">BUSY</text>
+    <rect x="806" y="102" width="46" height="16" rx="8" fill="#bc8cff" fill-opacity=".2"/><text x="829" y="114">BUSY</text>
+    <rect x="806" y="136" width="46" height="16" rx="8" fill="#bc8cff" fill-opacity=".2"/><text x="829" y="148">BUSY</text>
+    <rect x="806" y="170" width="46" height="16" rx="8" fill="#bc8cff" fill-opacity=".2"/><text x="829" y="182">BUSY</text>
+  </g>
+
+  <!-- result back -->
+  <polyline points="663,204 663,236 134,236 134,208" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arrG)"/>
+  <text x="400" y="256" fill="#56d364" font-size="12.5" text-anchor="middle">result → postMessage → the Promise resolves on the main thread</text>
+
+  <!-- note -->
+  <line x1="24" y1="276" x2="876" y2="276" stroke="#21262d"/>
+  <text x="24" y="302" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Why a pool? </tspan>Starting a Worker costs roughly tens of ms and several MB (a whole new V8 isolate).</text>
+  <text x="24" y="324" fill="#c9d1d9" font-size="13">Start N workers once and reuse them. N ≈ <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff" font-size="12">os.availableParallelism()</tspan>. Libraries such as <tspan font-family="Cascadia Code, Consolas, monospace" fill="#79c0ff" font-size="12">piscina</tspan> do this for you.</text>
+</svg>
