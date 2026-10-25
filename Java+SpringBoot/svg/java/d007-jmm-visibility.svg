@@ -1,0 +1,93 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="404" viewBox="0 0 920 404" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>JMM visibility with and without volatile</title>
+  <desc>Without volatile: thread 1 on core 1 runs while (running) { } and keeps reading running = true (stale) from its own cache, while thread 2 on core 2 has running = false in its cache from stop(); the write never reaches thread 1, so it never sees false and loops forever (the JIT may hoist the read). With volatile: thread 2 writes running = false, the write goes to main memory, thread 1's next read fetches it and the loop stops; happens-before: volatile write to later read. Simplified picture: the JMM is defined by happens-before, not by caches.</desc>
+  <defs>
+    <marker id="arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="arr-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="919" height="403" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ===================== LEFT: without volatile ===================== -->
+  <rect x="24" y="24" width="428" height="338" rx="10" fill="none" stroke="#f85149" stroke-opacity=".55"/>
+  <path d="M24,60 V34 a10,10 0 0 1 10,-10 H442 a10,10 0 0 1 10,10 V60 Z" fill="#f85149" fill-opacity=".14"/>
+  <line x1="24" y1="60" x2="452" y2="60" stroke="#f85149" stroke-opacity=".55"/>
+  <text x="40" y="47" fill="#ff7b72" font-size="15" font-weight="700">Without volatile</text>
+  <text x="436" y="47" fill="#8b949e" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">boolean running</text>
+
+  <!-- core 1 -->
+  <rect x="40" y="76" width="168" height="142" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="54" y="98" fill="#e6edf3" font-size="13.5" font-weight="600">Thread 1 <tspan fill="#8b949e" font-weight="400" font-size="12">· Core 1</tspan></text>
+  <rect x="50" y="110" width="148" height="26" rx="6" fill="#21262d" stroke="#30363d"/>
+  <text x="124" y="127" fill="#79c0ff" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">while (running) { }</text>
+  <rect x="50" y="148" width="148" height="60" rx="6" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".75"/>
+  <text x="60" y="165" fill="#8b949e" font-size="11.5">cache</text>
+  <text x="60" y="183" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running = true</text>
+  <text x="60" y="200" fill="#ff7b72" font-size="12" font-weight="600">(stale)</text>
+
+  <!-- core 2 -->
+  <rect x="268" y="76" width="168" height="142" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="282" y="98" fill="#e6edf3" font-size="13.5" font-weight="600">Thread 2 <tspan fill="#8b949e" font-weight="400" font-size="12">· Core 2</tspan></text>
+  <rect x="278" y="110" width="148" height="26" rx="6" fill="#21262d" stroke="#30363d"/>
+  <text x="352" y="127" fill="#79c0ff" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">stop()</text>
+  <rect x="278" y="148" width="148" height="60" rx="6" fill="#21262d" stroke="#484f58"/>
+  <text x="288" y="165" fill="#8b949e" font-size="11.5">cache</text>
+  <text x="288" y="183" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running = false</text>
+  <text x="288" y="200" fill="#8b949e" font-size="12">from <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">stop()</tspan></text>
+
+  <!-- crossed write -->
+  <line x1="268" y1="178" x2="210" y2="178" stroke="#f85149" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#arr-red)"/>
+  <text x="238" y="170" fill="#ff7b72" font-size="15" font-weight="700" text-anchor="middle" data-nocheck="1">✗</text>
+  <text x="238" y="197" fill="#ff7b72" font-size="11.5" text-anchor="middle" data-nocheck="1">not seen</text>
+
+  <!-- main memory -->
+  <line x1="124" y1="218" x2="124" y2="254" stroke="#484f58" stroke-width="1.5"/>
+  <line x1="352" y1="218" x2="352" y2="254" stroke="#484f58" stroke-width="1.5"/>
+  <rect x="100" y="254" width="276" height="48" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="238" y="273" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Main memory</text>
+  <text x="238" y="291" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running</text>
+
+  <text x="238" y="328" fill="#ff7b72" font-size="13" font-weight="700" text-anchor="middle">✗ never sees false · loops forever</text>
+  <text x="238" y="347" fill="#8b949e" font-size="12" text-anchor="middle">(JIT may hoist the read)</text>
+
+  <!-- ===================== RIGHT: with volatile ===================== -->
+  <rect x="468" y="24" width="428" height="338" rx="10" fill="none" stroke="#3fb950" stroke-opacity=".55"/>
+  <path d="M468,60 V34 a10,10 0 0 1 10,-10 H886 a10,10 0 0 1 10,10 V60 Z" fill="#3fb950" fill-opacity=".14"/>
+  <line x1="468" y1="60" x2="896" y2="60" stroke="#3fb950" stroke-opacity=".55"/>
+  <text x="484" y="47" fill="#56d364" font-size="15" font-weight="700">With volatile</text>
+  <text x="880" y="47" fill="#8b949e" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">volatile boolean running</text>
+
+  <!-- core 1 -->
+  <rect x="484" y="76" width="168" height="142" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="498" y="98" fill="#e6edf3" font-size="13.5" font-weight="600">Thread 1 <tspan fill="#8b949e" font-weight="400" font-size="12">· Core 1</tspan></text>
+  <rect x="494" y="110" width="148" height="26" rx="6" fill="#21262d" stroke="#30363d"/>
+  <text x="568" y="127" fill="#79c0ff" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">while (running) { }</text>
+  <rect x="494" y="148" width="148" height="60" rx="6" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".75"/>
+  <text x="504" y="165" fill="#8b949e" font-size="11.5">cache</text>
+  <text x="504" y="183" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running = false</text>
+  <text x="504" y="200" fill="#56d364" font-size="12" font-weight="600">✓ sees false</text>
+
+  <!-- core 2 -->
+  <rect x="712" y="76" width="168" height="142" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="726" y="98" fill="#e6edf3" font-size="13.5" font-weight="600">Thread 2 <tspan fill="#8b949e" font-weight="400" font-size="12">· Core 2</tspan></text>
+  <rect x="722" y="110" width="148" height="26" rx="6" fill="#21262d" stroke="#30363d"/>
+  <text x="796" y="127" fill="#79c0ff" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running = false</text>
+  <rect x="722" y="148" width="148" height="60" rx="6" fill="#21262d" stroke="#484f58"/>
+  <text x="732" y="165" fill="#8b949e" font-size="11.5">cache</text>
+  <text x="732" y="183" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running = false</text>
+  <text x="732" y="200" fill="#8b949e" font-size="12">volatile write</text>
+
+  <!-- arrows via main memory -->
+  <line x1="796" y1="218" x2="796" y2="252" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <text x="788" y="241" fill="#56d364" font-size="12" text-anchor="end">① write</text>
+  <line x1="568" y1="254" x2="568" y2="220" stroke="#3fb950" stroke-width="1.8" marker-end="url(#arr-green)"/>
+  <text x="576" y="241" fill="#56d364" font-size="12">② next read fetches it</text>
+  <rect x="544" y="254" width="276" height="48" rx="8" fill="#3fb950" fill-opacity=".08" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="682" y="273" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Main memory</text>
+  <text x="682" y="291" fill="#56d364" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">running = false</text>
+
+  <text x="682" y="328" fill="#56d364" font-size="13" font-weight="700" text-anchor="middle">✓ loop stops</text>
+  <text x="682" y="347" fill="#c9d1d9" font-size="12.5" text-anchor="middle"><tspan fill="#79c0ff" font-weight="600">happens-before:</tspan> volatile write → later read</text>
+
+  <!-- footer -->
+  <text x="40" y="386" fill="#8b949e" font-size="12">Simplified picture: the JMM is defined by happens-before, not by caches</text>
+</svg>

@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="712" viewBox="0 0 840 712" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Leak investigation flow</title>
+  <desc>Flow chart. 1 Confirm the trend: is heap after GC rising (jvm_gc_live_data_size_bytes, GC log)? 2 Decision, heap or native: compare heap-after-GC with process RSS. If the heap is flat but RSS grows it is a native leak: use NMT VM.native_memory summary.diff, direct buffer metrics, thread count and thread dumps. If the heap grows it is a heap leak: 3 class histogram diff (jcmd pid GC.class_histogram twice, see which class grows), 4 heap dump (jcmd pid GC.heap_dump, pod out of rotation), 5 Eclipse MAT (Leak Suspects, Dominator Tree, Path to GC Roots), 6 find the allocating code (JFR OldObjectSample, async-profiler --live flame graph), 7 fix and verify with a soak test: heap after GC stays flat.</desc>
+  <defs><marker id="a-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker><marker id="a-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="a-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="a-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker></defs>
+  <rect x="0.5" y="0.5" width="839" height="711" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="32" y="24" width="480" height="62" rx="9" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".75"/>
+  <circle cx="56" cy="48" r="11" fill="#58a6ff" fill-opacity=".18" stroke="#58a6ff"/>
+  <text x="56" y="52.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle">1</text>
+  <text x="78" y="53" fill="#e6edf3" font-size="14.5" font-weight="600">Confirm the trend</text>
+  <text x="78" y="73" fill="#c9d1d9" font-size="12.5">heap after GC rising? <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">jvm_gc_live_data_size_bytes</tspan> · GC log</text>
+  <line x1="272" y1="86" x2="272" y2="116" stroke="#8b949e" stroke-width="1.8" marker-end="url(#a-gray)"/>
+  <polygon points="272,118 448,170 272,222 96,170" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".85"/>
+  <circle cx="56" cy="170" r="11" fill="#d29922" fill-opacity=".18" stroke="#d29922"/>
+  <text x="56" y="174.5" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle">2</text>
+  <text x="272" y="167" fill="#e6edf3" font-size="14.5" font-weight="600" text-anchor="middle">Heap or native?</text>
+  <text x="272" y="186" fill="#8b949e" font-size="12" text-anchor="middle">compare heap-after-GC vs process RSS</text>
+  <rect x="540" y="108" width="276" height="124" rx="9" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8"/>
+  <text x="554" y="132" fill="#56d4dd" font-size="13.5" font-weight="700">Heap flat, RSS grows</text>
+  <text x="554" y="151" fill="#56d4dd" font-size="13.5" font-weight="700">→ native leak</text>
+  <line x1="554" y1="162" x2="802" y2="162" stroke="#39c5cf" stroke-opacity=".3"/>
+  <text x="554" y="180" fill="#c9d1d9" font-size="12.5">NMT <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">VM.native_memory summary.diff</tspan></text>
+  <text x="554" y="200" fill="#c9d1d9" font-size="12.5">direct buffer metrics</text>
+  <text x="554" y="220" fill="#c9d1d9" font-size="12.5">thread count / thread dump</text>
+  <line x1="448" y1="170" x2="538" y2="170" stroke="#39c5cf" stroke-width="1.8" marker-end="url(#a-teal)"/>
+  <line x1="272" y1="222" x2="272" y2="264" stroke="#bc8cff" stroke-width="1.8" marker-end="url(#a-purple)"/>
+  <text x="284" y="249" fill="#d2a8ff" font-size="12.5" font-weight="700">Heap grows → heap leak</text>
+  <rect x="32" y="266" width="480" height="62" rx="9" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".75"/>
+  <circle cx="56" cy="290" r="11" fill="#bc8cff" fill-opacity=".18" stroke="#bc8cff"/>
+  <text x="56" y="294.5" fill="#d2a8ff" font-size="12.5" font-weight="700" text-anchor="middle">3</text>
+  <text x="78" y="295" fill="#e6edf3" font-size="14.5" font-weight="600">Class histogram diff</text>
+  <text x="78" y="315" fill="#c9d1d9" font-size="12.5"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">jcmd &lt;pid&gt; GC.class_histogram</tspan> twice → which class grows</text>
+  <line x1="272" y1="328" x2="272" y2="354" stroke="#bc8cff" stroke-width="1.8" marker-end="url(#a-purple)"/>
+  <rect x="32" y="356" width="480" height="62" rx="9" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".75"/>
+  <circle cx="56" cy="380" r="11" fill="#bc8cff" fill-opacity=".18" stroke="#bc8cff"/>
+  <text x="56" y="384.5" fill="#d2a8ff" font-size="12.5" font-weight="700" text-anchor="middle">4</text>
+  <text x="78" y="385" fill="#e6edf3" font-size="14.5" font-weight="600">Heap dump</text>
+  <text x="78" y="405" fill="#c9d1d9" font-size="12.5"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">jcmd &lt;pid&gt; GC.heap_dump</tspan> (pod out of rotation)</text>
+  <line x1="272" y1="418" x2="272" y2="444" stroke="#bc8cff" stroke-width="1.8" marker-end="url(#a-purple)"/>
+  <rect x="32" y="446" width="480" height="62" rx="9" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".75"/>
+  <circle cx="56" cy="470" r="11" fill="#bc8cff" fill-opacity=".18" stroke="#bc8cff"/>
+  <text x="56" y="474.5" fill="#d2a8ff" font-size="12.5" font-weight="700" text-anchor="middle">5</text>
+  <text x="78" y="475" fill="#e6edf3" font-size="14.5" font-weight="600">Eclipse MAT</text>
+  <text x="78" y="495" fill="#c9d1d9" font-size="12.5">Leak Suspects → Dominator Tree → Path to GC Roots</text>
+  <line x1="272" y1="508" x2="272" y2="534" stroke="#bc8cff" stroke-width="1.8" marker-end="url(#a-purple)"/>
+  <rect x="32" y="536" width="480" height="62" rx="9" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".75"/>
+  <circle cx="56" cy="560" r="11" fill="#bc8cff" fill-opacity=".18" stroke="#bc8cff"/>
+  <text x="56" y="564.5" fill="#d2a8ff" font-size="12.5" font-weight="700" text-anchor="middle">6</text>
+  <text x="78" y="565" fill="#e6edf3" font-size="14.5" font-weight="600">Find the allocating code</text>
+  <text x="78" y="585" fill="#c9d1d9" font-size="12.5">JFR <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">OldObjectSample</tspan> · async-profiler <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">--live</tspan> flame graph</text>
+  <line x1="272" y1="598" x2="272" y2="624" stroke="#3fb950" stroke-width="1.8" marker-end="url(#a-green)"/>
+  <rect x="32" y="626" width="480" height="62" rx="9" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".75"/>
+  <circle cx="56" cy="650" r="11" fill="#3fb950" fill-opacity=".18" stroke="#3fb950"/>
+  <text x="56" y="654.5" fill="#56d364" font-size="12.5" font-weight="700" text-anchor="middle">7</text>
+  <text x="78" y="655" fill="#e6edf3" font-size="14.5" font-weight="600">Fix + verify</text>
+  <text x="78" y="675" fill="#c9d1d9" font-size="12.5">soak test, heap after GC stays flat</text>
+</svg>

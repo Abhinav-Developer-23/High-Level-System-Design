@@ -1,0 +1,97 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="560" viewBox="0 0 900 560" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+<title>CopyOnWriteArrayList copy on add</title>
+<desc>Three steps. 1, before: the volatile array reference points to [A, B, C]; a reader or iterator reads it with no lock. 2, writer add(D): takes synchronized (lock), copies the whole array into a new array [A, B, C, D] with D added, an O(n) copy. 3, after: the array reference now points to [A, B, C, D], published by one volatile write; the iterator that started earlier still reads the old array [A, B, C] as a snapshot and never throws ConcurrentModificationException; the old array becomes garbage when no reader uses it. Footer: reads far more than writes is great (listeners); write-heavy or large lists are bad (copies and garbage).</desc>
+<defs>
+<marker id="mg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+<marker id="ma" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+<marker id="mb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+<marker id="mn" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+<marker id="mr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+</defs>
+<rect x="0.5" y="0.5" width="899" height="559" rx="14" fill="#161b22" stroke="#30363d"/>
+<rect x="24" y="24" width="852" height="96" rx="10" fill="#1c2128" fill-opacity=".55" stroke="#30363d"/>
+<circle cx="50" cy="52" r="13" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff" stroke-opacity=".8"/>
+<text x="50" y="57" fill="#79c0ff" font-size="13" font-weight="700" text-anchor="middle">1</text>
+<text x="72" y="57" fill="#e6edf3" font-size="14.5" font-weight="600">Before</text>
+<rect x="220" y="54" width="140" height="34" rx="8" fill="#1c2128" stroke="#8b949e" stroke-opacity=".9"/>
+<text x="234" y="76" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">volatile <tspan fill="#79c0ff" font-size="13">array</tspan></text>
+<line x1="360" y1="71.0" x2="397" y2="71.0" stroke="#8b949e" stroke-width="1.6" marker-end="url(#mn)"/>
+<rect x="400" y="54" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="422.0" y="76" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A</text>
+<rect x="444" y="54" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="466.0" y="76" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B</text>
+<rect x="488" y="54" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="510.0" y="76" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C</text>
+<rect x="650" y="54" width="170" height="34" rx="8" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".85"/>
+<text x="735.0" y="76" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle">reader / iterator</text>
+<line x1="650" y1="71.0" x2="535" y2="71.0" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#mb)"/>
+<text x="591.0" y="62" fill="#79c0ff" font-size="12.5" font-weight="600" text-anchor="middle">no lock</text>
+<text x="400" y="110" fill="#8b949e" font-size="12">get(), size(), contains(), for-each read the current array</text>
+<rect x="24" y="136" width="852" height="124" rx="10" fill="#1c2128" fill-opacity=".55" stroke="#30363d"/>
+<circle cx="50" cy="164" r="13" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".8"/>
+<text x="50" y="169" fill="#e3b341" font-size="13" font-weight="700" text-anchor="middle">2</text>
+<text x="72" y="169" fill="#e6edf3" font-size="14.5" font-weight="600">Writer:</text>
+<text x="129" y="169" fill="#e3b341" font-size="13.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">add(D)</text>
+<rect x="210" y="175" width="172" height="24" rx="12" fill="#d29922" fill-opacity=".16" stroke="#d29922" stroke-opacity=".85"/>
+<path d="M225,184 V181 a3,3 0 0 1 6,0 V184" fill="none" stroke="#d29922" stroke-width="1.6"/>
+<rect x="222" y="184" width="12" height="9" rx="2" fill="#d29922" fill-opacity=".35" stroke="#d29922" stroke-width="1.2"/>
+<text x="240" y="191.5" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">synchronized (lock)</text>
+<text x="210" y="220" fill="#8b949e" font-size="12">writers take turns</text>
+<rect x="400" y="170" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="422.0" y="192" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A</text>
+<rect x="444" y="170" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="466.0" y="192" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B</text>
+<rect x="488" y="170" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="510.0" y="192" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C</text>
+<text x="400" y="164" fill="#8b949e" font-size="12">current array</text>
+<line x1="536" y1="187.0" x2="646" y2="187.0" stroke="#d29922" stroke-width="1.8" marker-end="url(#ma)"/>
+<text x="591.0" y="178" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle">O(n) copy</text>
+<rect x="650" y="170" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="672.0" y="192" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A</text>
+<rect x="694" y="170" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="716.0" y="192" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B</text>
+<rect x="738" y="170" width="44" height="34" fill="#1c2128" stroke="#8b949e"/>
+<text x="760.0" y="192" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C</text>
+<rect x="782" y="170" width="44" height="34" fill="#3fb950" fill-opacity=".30" stroke="#3fb950"/>
+<text x="804.0" y="192" fill="#56d364" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">D</text>
+<text x="650" y="164" fill="#8b949e" font-size="12">new array</text>
+<text x="400" y="226" fill="#c9d1d9" font-size="12.5">copy the <tspan font-weight="700">whole</tspan> array (<tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12">Arrays.copyOf</tspan>), then put <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#56d364" font-size="12">D</tspan> into the copy</text>
+<rect x="24" y="276" width="852" height="192" rx="10" fill="#1c2128" fill-opacity=".55" stroke="#30363d"/>
+<circle cx="50" cy="304" r="13" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".8"/>
+<text x="50" y="309" fill="#56d364" font-size="13" font-weight="700" text-anchor="middle">3</text>
+<text x="72" y="309" fill="#e6edf3" font-size="14.5" font-weight="600">After</text>
+<rect x="220" y="306" width="140" height="34" rx="8" fill="#1c2128" stroke="#3fb950" stroke-opacity=".9"/>
+<text x="234" y="328" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">volatile <tspan fill="#79c0ff" font-size="13">array</tspan></text>
+<line x1="360" y1="323.0" x2="397" y2="323.0" stroke="#3fb950" stroke-width="1.8" marker-end="url(#mg)"/>
+<rect x="400" y="306" width="44" height="34" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".8"/>
+<text x="422.0" y="328" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A</text>
+<rect x="444" y="306" width="44" height="34" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".8"/>
+<text x="466.0" y="328" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B</text>
+<rect x="488" y="306" width="44" height="34" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".8"/>
+<text x="510.0" y="328" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C</text>
+<rect x="532" y="306" width="44" height="34" fill="#3fb950" fill-opacity=".30" stroke="#3fb950"/>
+<text x="554.0" y="328" fill="#56d364" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">D</text>
+<text x="594" y="328" fill="#56d364" font-size="12.5" font-weight="600">published by one volatile write</text>
+<text x="220" y="360" fill="#8b949e" font-size="12">new readers see A, B, C, D</text>
+<rect x="220" y="384" width="140" height="34" rx="8" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".85"/>
+<text x="290.0" y="406" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle">iterator</text>
+<text x="220" y="436" fill="#8b949e" font-size="12">started before add(D)</text>
+<line x1="360" y1="401.0" x2="397" y2="401.0" stroke="#58a6ff" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#mb)"/>
+<rect x="400" y="384" width="44" height="34" fill="#161b22" stroke="#6e7681" stroke-dasharray="4 3"/>
+<text x="422.0" y="406" fill="#8b949e" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">A</text>
+<rect x="444" y="384" width="44" height="34" fill="#161b22" stroke="#6e7681" stroke-dasharray="4 3"/>
+<text x="466.0" y="406" fill="#8b949e" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">B</text>
+<rect x="488" y="384" width="44" height="34" fill="#161b22" stroke="#6e7681" stroke-dasharray="4 3"/>
+<text x="510.0" y="406" fill="#8b949e" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">C</text>
+<text x="400" y="378" fill="#8b949e" font-size="12">old array</text>
+<text x="550" y="396" fill="#79c0ff" font-size="12.5" font-weight="600">snapshot: keeps reading the old array,</text>
+<text x="550" y="414" fill="#79c0ff" font-size="12.5" font-weight="600">never CME</text>
+<text x="400" y="458" fill="#e3b341" font-size="12.5">old array becomes garbage when no reader uses it</text>
+<line x1="24" y1="488" x2="876" y2="488" stroke="#21262d"/>
+<circle cx="40" cy="515.5" r="9" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+<text x="40" y="520" fill="#56d364" font-size="11.5" font-weight="700" text-anchor="middle">✓</text>
+<text x="58" y="520" fill="#c9d1d9" font-size="13">reads ≫ writes → great (listeners)</text>
+<circle cx="450" cy="515.5" r="9" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+<text x="450" y="520" fill="#ff7b72" font-size="11.5" font-weight="700" text-anchor="middle">✗</text>
+<text x="468" y="520" fill="#c9d1d9" font-size="13">write-heavy or large → bad (copies + garbage)</text>
+</svg>

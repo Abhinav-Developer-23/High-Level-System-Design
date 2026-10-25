@@ -1,0 +1,158 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="662" viewBox="0 0 900 662" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>HashMap internal structure</title>
+  <desc>The put pipeline: put("apple", 10) calls key.hashCode() (93029210), spreads the high bits with h ^ (h &gt;&gt;&gt; 16) (93030097), picks the bucket index with (n - 1) &amp; hash (93030097 &amp; 15 = 1), and since bucket 1 is empty a new Node goes there. Below, a table of 16 buckets, most empty. Bucket 0 holds a linked list of three colliding nodes "Aa" = 1, "BB" = 2, "C#" = 7, all with hashCode 2112, told apart with equals(). Bucket 1 holds the single node "apple" = 10. Bucket 9 is a red-black tree of 9 nodes: a bucket with more than 8 entries in a table of at least 64 buckets becomes a tree, O(log n); at 6 or fewer entries after a resize it turns back into a list. A zoomed node shows its fields hash, key, value, next. Footer: capacity 16, load factor 0.75, resize after 12 entries.</desc>
+  <defs><marker id="m-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker><marker id="m-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="m-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="m-gr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="661" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">PUT PIPELINE</text>
+  <rect x="24" y="50" width="150" height="34" rx="17" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="99.0" y="72" text-anchor="middle" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">put("apple", 10)</text>
+  <line x1="176" y1="67" x2="206" y2="67" stroke="#8b949e" stroke-width="1.6" marker-end="url(#m-g)"/>
+  <rect x="208" y="50" width="130" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="273.0" y="72" text-anchor="middle" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">key.hashCode()</text>
+  <line x1="340" y1="67" x2="370" y2="67" stroke="#8b949e" stroke-width="1.6" marker-end="url(#m-g)"/>
+  <rect x="372" y="50" width="138" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="441.0" y="72" text-anchor="middle" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">h ^ (h &gt;&gt;&gt; 16)</text>
+  <line x1="512" y1="67" x2="542" y2="67" stroke="#8b949e" stroke-width="1.6" marker-end="url(#m-g)"/>
+  <rect x="544" y="50" width="130" height="34" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="609.0" y="72" text-anchor="middle" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(n - 1) &amp; hash</text>
+  <line x1="676" y1="67" x2="706" y2="67" stroke="#8b949e" stroke-width="1.6" marker-end="url(#m-g)"/>
+  <rect x="708" y="50" width="168" height="34" rx="8" fill="#3fb950" fill-opacity=".12" stroke="#3fb950"/>
+  <text x="792.0" y="72" text-anchor="middle" fill="#56d364" font-size="14" font-weight="600">bucket 1 <tspan fill="#8b949e" font-weight="400" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">table[1]</tspan></text>
+  <text x="273" y="104" text-anchor="middle" fill="#8b949e" font-size="12">String hash</text>
+  <text x="273" y="122" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">93029210</text>
+  <text x="441" y="104" text-anchor="middle" fill="#8b949e" font-size="12">spread high bits</text>
+  <text x="441" y="122" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">93030097</text>
+  <text x="609" y="104" text-anchor="middle" fill="#8b949e" font-size="12">bucket index</text>
+  <text x="609" y="122" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">93030097 &amp; 15 = 1</text>
+  <text x="792" y="104" text-anchor="middle" fill="#8b949e" font-size="12">empty bucket</text>
+  <text x="792" y="122" text-anchor="middle" fill="#56d364" font-size="12">→ new Node here</text>
+  <line x1="24" y1="142" x2="876" y2="142" stroke="#21262d"/>
+  <text x="24" y="166" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TABLE · n = 16</text>
+  <text x="46" y="193" text-anchor="end" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">0</text>
+  <rect x="56" y="176" width="48" height="26" fill="#1c2128" stroke="#8b949e" stroke-opacity=".7"/>
+  <text x="46" y="219" text-anchor="end" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <rect x="56" y="202" width="48" height="26" fill="#1c2128" stroke="#8b949e" stroke-opacity=".7"/>
+  <text x="46" y="245" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <rect x="56" y="228" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="271" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+  <rect x="56" y="254" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="297" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4</text>
+  <rect x="56" y="280" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="323" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5</text>
+  <rect x="56" y="306" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="349" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6</text>
+  <rect x="56" y="332" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="375" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">7</text>
+  <rect x="56" y="358" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="401" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">8</text>
+  <rect x="56" y="384" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="427" text-anchor="end" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">9</text>
+  <rect x="56" y="410" width="48" height="26" fill="#1c2128" stroke="#8b949e" stroke-opacity=".7"/>
+  <text x="46" y="453" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">10</text>
+  <rect x="56" y="436" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="479" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">11</text>
+  <rect x="56" y="462" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="505" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">12</text>
+  <rect x="56" y="488" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="531" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">13</text>
+  <rect x="56" y="514" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="557" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">14</text>
+  <rect x="56" y="540" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <text x="46" y="583" text-anchor="end" fill="#6e7681" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">15</text>
+  <rect x="56" y="566" width="48" height="26" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+  <circle cx="80" cy="189" r="3.5" fill="#c9d1d9"/>
+  <circle cx="80" cy="215" r="3.5" fill="#c9d1d9"/>
+  <circle cx="80" cy="423" r="3.5" fill="#c9d1d9"/>
+  <line x1="83" y1="189" x2="128" y2="189" stroke="#d29922" stroke-width="1.5" marker-end="url(#m-a)"/>
+  <rect x="130" y="178" width="170" height="22" rx="4" fill="#1c2128" stroke="#d29922"/>
+  <text x="155.0" y="193.5" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2112</text>
+  <line x1="180" y1="178" x2="180" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="205.0" y="193.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"Aa"</text>
+  <line x1="230" y1="178" x2="230" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="245.0" y="193.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+  <line x1="260" y1="178" x2="260" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <circle cx="280.0" cy="189" r="3" fill="#c9d1d9"/>
+  <line x1="280" y1="189" x2="326" y2="189" stroke="#d29922" stroke-width="1.5" marker-end="url(#m-a)"/>
+  <rect x="328" y="178" width="170" height="22" rx="4" fill="#1c2128" stroke="#d29922"/>
+  <text x="353.0" y="193.5" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2112</text>
+  <line x1="378" y1="178" x2="378" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="403.0" y="193.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"BB"</text>
+  <line x1="428" y1="178" x2="428" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="443.0" y="193.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+  <line x1="458" y1="178" x2="458" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <circle cx="478.0" cy="189" r="3" fill="#c9d1d9"/>
+  <line x1="478" y1="189" x2="524" y2="189" stroke="#d29922" stroke-width="1.5" marker-end="url(#m-a)"/>
+  <rect x="526" y="178" width="170" height="22" rx="4" fill="#1c2128" stroke="#d29922"/>
+  <text x="551.0" y="193.5" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2112</text>
+  <line x1="576" y1="178" x2="576" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="601.0" y="193.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"C#"</text>
+  <line x1="626" y1="178" x2="626" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="641.0" y="193.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">7</text>
+  <line x1="656" y1="178" x2="656" y2="200" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="676.0" y="193.5" text-anchor="middle" fill="#6e7681" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">null</text>
+  <line x1="83" y1="215" x2="128" y2="215" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#m-b)"/>
+  <rect x="130" y="204" width="206" height="22" rx="4" fill="#1c2128" stroke="#58a6ff"/>
+  <text x="166.0" y="219.5" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">93030097</text>
+  <line x1="202" y1="204" x2="202" y2="226" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="234.0" y="219.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"apple"</text>
+  <line x1="266" y1="204" x2="266" y2="226" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="281.0" y="219.5" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">10</text>
+  <line x1="296" y1="204" x2="296" y2="226" stroke="#58a6ff" stroke-opacity=".6"/>
+  <text x="316.0" y="219.5" text-anchor="middle" fill="#6e7681" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">null</text>
+  <text x="350" y="219" fill="#8b949e" font-size="12">single node: the entry just put</text>
+  <text x="130" y="252" fill="#e3b341" font-size="13">collision: same bucket → linked list, compared with <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5">equals()</tspan></text>
+  <text x="130" y="271" fill="#8b949e" font-size="12">"Aa", "BB" and "C#" all have hashCode 2112 → bucket 0</text>
+  <rect x="470" y="292" width="406" height="112" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="486" y="314" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ONE NODE, ZOOMED</text>
+  <rect x="486" y="326" width="372" height="30" rx="5" fill="#161b22" stroke="#8b949e" stroke-opacity=".8"/>
+  <text x="532.5" y="346" text-anchor="middle" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">hash</text>
+  <text x="532.5" y="374" text-anchor="middle" fill="#8b949e" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">final int hash</text>
+  <line x1="579" y1="326" x2="579" y2="356" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="625.5" y="346" text-anchor="middle" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">key</text>
+  <text x="625.5" y="374" text-anchor="middle" fill="#8b949e" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">final K key</text>
+  <line x1="672" y1="326" x2="672" y2="356" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="718.5" y="346" text-anchor="middle" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">value</text>
+  <text x="718.5" y="374" text-anchor="middle" fill="#8b949e" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">V value</text>
+  <line x1="765" y1="326" x2="765" y2="356" stroke="#8b949e" stroke-opacity=".6"/>
+  <text x="811.5" y="346" text-anchor="middle" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">next</text>
+  <text x="811.5" y="374" text-anchor="middle" fill="#8b949e" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Node next</text>
+  <text x="486" y="394" fill="#c9d1d9" font-size="12">hash is stored, so it is never recomputed · next = same bucket</text>
+  <line x1="83" y1="423" x2="239" y2="423" stroke="#3fb950" stroke-width="1.5" marker-end="url(#m-gr)"/>
+  <line x1="254" y1="423" x2="198" y2="461" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="254" y1="423" x2="310" y2="461" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="198" y1="461" x2="170" y2="499" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="198" y1="461" x2="226" y2="499" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="310" y1="461" x2="282" y2="499" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="310" y1="461" x2="338" y2="499" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="282" y1="499" x2="262" y2="537" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <line x1="282" y1="499" x2="302" y2="537" stroke="#8b949e" stroke-opacity=".8" stroke-width="1.3"/>
+  <circle cx="254" cy="423" r="13" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="254" y="427" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k4</text>
+  <circle cx="198" cy="461" r="13" fill="#3a1d1d" stroke="#f85149" stroke-width="1.5"/>
+  <text x="198" y="465" text-anchor="middle" fill="#ff7b72" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k2</text>
+  <circle cx="310" cy="461" r="13" fill="#3a1d1d" stroke="#f85149" stroke-width="1.5"/>
+  <text x="310" y="465" text-anchor="middle" fill="#ff7b72" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k8</text>
+  <circle cx="170" cy="499" r="13" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="170" y="503" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k1</text>
+  <circle cx="226" cy="499" r="13" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="226" y="503" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k3</text>
+  <circle cx="282" cy="499" r="13" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="282" y="503" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k6</text>
+  <circle cx="338" cy="499" r="13" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="338" y="503" text-anchor="middle" fill="#e6edf3" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k9</text>
+  <circle cx="262" cy="537" r="13" fill="#3a1d1d" stroke="#f85149" stroke-width="1.5"/>
+  <text x="262" y="541" text-anchor="middle" fill="#ff7b72" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k5</text>
+  <circle cx="302" cy="537" r="13" fill="#3a1d1d" stroke="#f85149" stroke-width="1.5"/>
+  <text x="302" y="541" text-anchor="middle" fill="#ff7b72" font-size="11" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k7</text>
+  <text x="392" y="428" fill="#56d364" font-size="13" font-weight="600">&gt; 8 entries and table ≥ 64 → red-black tree: O(log n)</text>
+  <text x="392" y="449" fill="#c9d1d9" font-size="12">9 TreeNodes, ordered by hash (then compareTo)</text>
+  <text x="392" y="468" fill="#c9d1d9" font-size="12">≤ 6 entries after a resize → back to a linked list</text>
+  <circle cx="400" cy="491" r="7" fill="#0d1117" stroke="#8b949e" stroke-width="1.5"/>
+  <text x="414" y="495" fill="#8b949e" font-size="12">black node</text>
+  <circle cx="500" cy="491" r="7" fill="#3a1d1d" stroke="#f85149" stroke-width="1.5"/>
+  <text x="514" y="495" fill="#8b949e" font-size="12">red node</text>
+  <text x="392" y="525" fill="#8b949e" font-size="12" font-style="italic">Drawn in a 16-slot table for illustration: with fewer than</text>
+  <text x="392" y="543" fill="#8b949e" font-size="12" font-style="italic">64 slots, HashMap resizes the table instead of treeifying.</text>
+  <rect x="24" y="608" width="852" height="32" rx="16" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="450" y="629" text-anchor="middle" fill="#e3b341" font-size="13">capacity 16 · load factor 0.75 → resize after 12 entries</text>
+</svg>

@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="524" viewBox="0 0 900 524" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Shallow vs retained heap</title>
+  <desc>Object graph. The GC root class SessionRegistry, static field SESSIONS, points to a ConcurrentHashMap whose shallow size is 64 B but whose retained size is 1.9 GB. The map points to its Node[] table (shallow about 2 MB), which points to Node objects, each pointing to a UserSession (about 10 KB retained each, 180k of them), which points to a Cart and its List of Items. A dashed outline groups everything reachable only through the map: the retained set, freed if the map is collected, 1.9 GB. Side panel: the dominator tree sorted by retained heap lists ConcurrentHashMap 1.9 GB (78%), Node[] 1.9 GB, UserSession x180k about 10 KB each; everything else is small, e.g. byte[] Tomcat buffers 40 MB. Legend: shallow is the object's own size; retained is what the GC would free if this object went away.</desc>
+  <defs><marker id="m-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker><marker id="m-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="523" rx="14" fill="#161b22" stroke="#30363d"/>
+  <path d="M236,34 H586 V500 H132 V140 H236 Z" fill="#d29922" fill-opacity=".04" stroke="#d29922" stroke-opacity=".85" stroke-width="1.4" stroke-dasharray="7 4" stroke-linejoin="round"/>
+  <rect x="32" y="48" width="184" height="72" rx="7" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff"/>
+  <text x="124.0" y="70" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="700" letter-spacing="1.5">GC ROOT</text>
+  <text x="124.0" y="91" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">class SessionRegistry</text>
+  <text x="124.0" y="110" text-anchor="middle" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">static SESSIONS</text>
+  <rect x="264" y="44" width="208" height="82" rx="7" fill="#f85149" fill-opacity=".12" stroke="#f85149"/>
+  <text x="368.0" y="66" text-anchor="middle" fill="#e6edf3" font-size="13.5" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ConcurrentHashMap</text>
+  <text x="368.0" y="86" text-anchor="middle" fill="#c9d1d9" font-size="12">shallow 64 B</text>
+  <text x="368.0" y="114" text-anchor="middle" fill="#ff7b72" font-size="19" font-weight="700">retained 1.9 GB</text>
+  <line x1="216" y1="84" x2="262" y2="84" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#m-b)"/>
+  <rect x="304" y="162" width="128" height="46" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="368.0" y="181" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Node[] table</text>
+  <text x="368.0" y="199" text-anchor="middle" fill="#8b949e" font-size="12">shallow ~2 MB</text>
+  <line x1="368" y1="126" x2="368" y2="160" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <line x1="328" y1="208" x2="208" y2="246" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="178" y="248" width="60" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="208.0" y="268" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Node</text>
+  <line x1="208" y1="278" x2="208" y2="302" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="154" y="304" width="108" height="46" rx="7" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff"/>
+  <text x="208.0" y="323" text-anchor="middle" fill="#d2a8ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserSession</text>
+  <text x="208.0" y="341" text-anchor="middle" fill="#8b949e" font-size="11.5">~10 KB retained</text>
+  <line x1="208" y1="350" x2="208" y2="372" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="178" y="374" width="60" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="208.0" y="394" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Cart</text>
+  <line x1="208" y1="404" x2="208" y2="428" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="160" y="430" width="96" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="208.0" y="450" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">List&lt;Item&gt;</text>
+  <line x1="358" y1="208" x2="328" y2="246" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="298" y="248" width="60" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="328.0" y="268" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Node</text>
+  <line x1="328" y1="278" x2="328" y2="302" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="274" y="304" width="108" height="46" rx="7" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff"/>
+  <text x="328.0" y="323" text-anchor="middle" fill="#d2a8ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserSession</text>
+  <text x="328.0" y="341" text-anchor="middle" fill="#8b949e" font-size="11.5">~10 KB retained</text>
+  <line x1="328" y1="350" x2="328" y2="372" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="298" y="374" width="60" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="328.0" y="394" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Cart</text>
+  <line x1="328" y1="404" x2="328" y2="428" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="280" y="430" width="96" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="328.0" y="450" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">List&lt;Item&gt;</text>
+  <line x1="388" y1="208" x2="448" y2="246" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="418" y="248" width="60" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="448.0" y="268" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Node</text>
+  <line x1="448" y1="278" x2="448" y2="302" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="394" y="304" width="108" height="46" rx="7" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff"/>
+  <text x="448.0" y="323" text-anchor="middle" fill="#d2a8ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UserSession</text>
+  <text x="448.0" y="341" text-anchor="middle" fill="#8b949e" font-size="11.5">~10 KB retained</text>
+  <line x1="448" y1="350" x2="448" y2="372" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="418" y="374" width="60" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="448.0" y="394" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Cart</text>
+  <line x1="448" y1="404" x2="448" y2="428" stroke="#8b949e" stroke-width="1.5" marker-end="url(#m-g)"/>
+  <rect x="400" y="430" width="96" height="30" rx="7" fill="#1c2128" stroke="#30363d"/>
+  <text x="448.0" y="450" text-anchor="middle" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">List&lt;Item&gt;</text>
+  <text x="536" y="268" fill="#8b949e" font-size="15" font-weight="700" text-anchor="middle" data-nocheck="1">…</text>
+  <text x="536" y="323" fill="#8b949e" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" data-nocheck="1">×180k</text>
+  <line x1="412" y1="208" x2="528" y2="252" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="3 3" marker-end="url(#m-g)"/>
+  <text x="359.0" y="486" fill="#e3b341" font-size="12.5" font-weight="600" text-anchor="middle" data-nocheck="1">retained set: freed if the map is collected = 1.9 GB</text>
+  <rect x="604" y="34" width="272" height="222" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="618" y="58" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">DOMINATOR TREE</text>
+  <text x="618" y="76" fill="#8b949e" font-size="12">sorted by retained heap ↓</text>
+  <rect x="612" y="88" width="256" height="30" rx="5" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="620" y="106" fill="#ff7b72" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ConcurrentHashMap</text>
+  <text x="862" y="106" fill="#ff7b72" font-size="12" text-anchor="end" font-weight="700">1.9 GB (78%)</text>
+  <text x="630" y="140" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">└ Node[]</text>
+  <text x="862" y="140" fill="#c9d1d9" font-size="12" text-anchor="end">1.9 GB</text>
+  <text x="640" y="174" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">└ UserSession ×180k</text>
+  <text x="862" y="174" fill="#c9d1d9" font-size="12" text-anchor="end">~10 KB each</text>
+  <text x="618" y="208" fill="#8b949e" font-size="12" font-style="italic">… everything else is small</text>
+  <text x="620" y="236" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">byte[] (Tomcat buffers)</text>
+  <text x="862" y="236" fill="#c9d1d9" font-size="12" text-anchor="end">40 MB</text>
+  <rect x="604" y="276" width="272" height="224" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="618" y="300" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">LEGEND</text>
+  <text x="618" y="326" fill="#c9d1d9" font-size="13" font-weight="700">shallow<tspan fill="#c9d1d9" font-weight="400"> = the object's own size</tspan></text>
+  <text x="618" y="356" fill="#ff7b72" font-size="13" font-weight="700">retained<tspan fill="#c9d1d9" font-weight="400"> = what the GC would free</tspan></text>
+  <text x="618" y="375" fill="#c9d1d9" font-size="13">if this object went away</text>
+  <rect x="618" y="393" width="26" height="16" rx="3" fill="#d29922" fill-opacity=".06" stroke="#d29922" stroke-dasharray="4 3"/>
+  <text x="652" y="406" fill="#c9d1d9" font-size="13">the map&#8217;s retained set:</text>
+  <text x="652" y="425" fill="#c9d1d9" font-size="13">reachable only through it</text>
+</svg>

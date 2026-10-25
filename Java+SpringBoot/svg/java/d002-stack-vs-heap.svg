@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="430" viewBox="0 0 900 430" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Stack vs heap while greet runs</title>
+  <desc>Thread main's stack holds the running greet frame (person ref, times = 3, msg ref) on top of the main frame (args ref, count = 3, p ref). Primitives live in the frame. On the heap: a Person object whose name field points to "Asha" in the String pool, the String "Hi Asha" (garbage once greet returns) and an empty String[] args. p and person point to the same Person because the reference was copied.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="429" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- headers -->
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">STACK · THREAD <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" letter-spacing="0">main</tspan></text>
+  <text x="388" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">HEAP <tspan font-weight="400" letter-spacing="0">(shared by all threads)</tspan></text>
+
+  <!-- stack column -->
+  <rect x="24" y="52" width="332" height="316" rx="10" fill="#1c2128" fill-opacity=".5" stroke="#30363d"/>
+
+  <!-- greet frame -->
+  <rect x="40" y="62" width="300" height="140" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="56" y="86" fill="#79c0ff" font-size="14" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">greet()</text>
+  <rect x="236" y="71" width="88" height="22" rx="11" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="280" y="86" fill="#79c0ff" font-size="11" font-weight="700" letter-spacing=".8" text-anchor="middle">RUNNING</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">
+    <rect x="56" y="100" width="268" height="26" rx="5" fill="#1c2128" stroke="#30363d"/>
+    <text x="66" y="118" fill="#8b949e">Person <tspan fill="#e6edf3">person</tspan></text>
+    <rect x="56" y="132" width="268" height="26" rx="5" fill="#1c2128" stroke="#30363d"/>
+    <text x="66" y="150" fill="#8b949e">int <tspan fill="#e6edf3">times</tspan></text>
+    <rect x="56" y="164" width="268" height="26" rx="5" fill="#1c2128" stroke="#30363d"/>
+    <text x="66" y="182" fill="#8b949e">String <tspan fill="#e6edf3">msg</tspan></text>
+  </g>
+
+  <!-- main frame -->
+  <rect x="40" y="216" width="300" height="140" rx="8" fill="#1c2128" stroke="#484f58"/>
+  <text x="56" y="240" fill="#e6edf3" font-size="14" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">main()</text>
+  <text x="324" y="240" fill="#8b949e" font-size="12" text-anchor="end">waiting for greet to return</text>
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13">
+    <rect x="56" y="254" width="268" height="26" rx="5" fill="#161b22" stroke="#30363d"/>
+    <text x="66" y="272" fill="#8b949e">String[] <tspan fill="#e6edf3">args</tspan></text>
+    <rect x="56" y="286" width="268" height="26" rx="5" fill="#161b22" stroke="#30363d"/>
+    <text x="66" y="304" fill="#8b949e">int <tspan fill="#e6edf3">count</tspan></text>
+    <rect x="56" y="318" width="268" height="26" rx="5" fill="#161b22" stroke="#30363d"/>
+    <text x="66" y="336" fill="#8b949e">Person <tspan fill="#e6edf3">p</tspan></text>
+  </g>
+
+  <!-- value cells -->
+  <g font-size="12">
+    <rect x="262" y="104" width="56" height="18" rx="4" fill="#21262d" stroke="#484f58"/>
+    <text x="272" y="117" fill="#8b949e">ref</text><circle cx="306" cy="113" r="4" fill="#58a6ff"/>
+    <rect x="262" y="136" width="56" height="18" rx="4" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+    <text x="290" y="150" fill="#56d364" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="700">3</text>
+    <rect x="262" y="168" width="56" height="18" rx="4" fill="#21262d" stroke="#484f58"/>
+    <text x="272" y="181" fill="#8b949e">ref</text><circle cx="306" cy="177" r="4" fill="#8b949e"/>
+    <rect x="262" y="258" width="56" height="18" rx="4" fill="#21262d" stroke="#484f58"/>
+    <text x="272" y="271" fill="#8b949e">ref</text><circle cx="306" cy="267" r="4" fill="#8b949e"/>
+    <rect x="262" y="290" width="56" height="18" rx="4" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+    <text x="290" y="304" fill="#56d364" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="700">3</text>
+    <rect x="262" y="322" width="56" height="18" rx="4" fill="#21262d" stroke="#484f58"/>
+    <text x="272" y="335" fill="#8b949e">ref</text><circle cx="306" cy="331" r="4" fill="#58a6ff"/>
+  </g>
+
+  <!-- heap -->
+  <rect x="388" y="52" width="488" height="316" rx="10" fill="#bc8cff" fill-opacity=".07" stroke="#bc8cff" stroke-opacity=".6"/>
+
+  <!-- Person object -->
+  <rect x="652" y="68" width="208" height="84" rx="8" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".8"/>
+  <text x="666" y="90" fill="#79c0ff" font-size="14" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Person</text>
+  <text x="846" y="90" fill="#8b949e" font-size="12" text-anchor="end">object</text>
+  <rect x="664" y="104" width="184" height="34" rx="5" fill="#21262d" stroke="#30363d"/>
+  <text x="676" y="126" fill="#8b949e" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">String <tspan fill="#e6edf3">name</tspan></text>
+  <circle cx="830" cy="121" r="4" fill="#8b949e"/>
+
+  <!-- same-object label -->
+  <text x="660" y="176" fill="#79c0ff" font-size="12" font-weight="600">same object:</text>
+  <text x="660" y="194" fill="#c9d1d9" font-size="12">the reference was copied</text>
+  <text x="660" y="212" fill="#c9d1d9" font-size="12">(pass-by-value)</text>
+
+  <!-- String pool -->
+  <rect x="660" y="236" width="200" height="66" rx="8" fill="none" stroke="#bc8cff" stroke-opacity=".7" stroke-dasharray="5 4"/>
+  <text x="672" y="276" fill="#d2a8ff" font-size="12" font-weight="600">String pool</text>
+  <rect x="768" y="256" width="80" height="30" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="808" y="276" fill="#e6edf3" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"Asha"</text>
+
+  <!-- Hi Asha -->
+  <rect x="412" y="158" width="200" height="38" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="426" y="182" fill="#8b949e" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">String <tspan fill="#e6edf3">"Hi Asha"</tspan></text>
+  <text x="412" y="214" fill="#e3b341" font-size="12">⚠ garbage once greet() returns</text>
+
+  <!-- String[] args -->
+  <rect x="412" y="248" width="200" height="38" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="426" y="272" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">String[]</text>
+  <text x="598" y="272" fill="#8b949e" font-size="12" text-anchor="end">empty array</text>
+
+  <!-- arrows -->
+  <line x1="310" y1="113" x2="650" y2="113" stroke="#58a6ff" stroke-width="1.6" marker-end="url(#arrB)"/>
+  <path d="M310,331 H632 V140 H650" fill="none" stroke="#58a6ff" stroke-width="1.6" marker-end="url(#arrB)"/>
+  <line x1="310" y1="177" x2="410" y2="177" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="310" y1="267" x2="410" y2="267" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="830" y1="125" x2="830" y2="254" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- note -->
+  <text x="24" y="400" fill="#c9d1d9" font-size="13"><tspan fill="#56d364" font-weight="700">Primitives</tspan> live in the frame · <tspan fill="#d2a8ff" font-weight="700">objects</tspan> always on the heap · a frame is popped when its method returns</text>
+</svg>

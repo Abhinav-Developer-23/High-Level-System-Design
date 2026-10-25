@@ -1,0 +1,49 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="330" viewBox="0 0 880 330" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Heap vs Metaspace</title>
+  <desc>The heap (limited by -Xmx) holds objects and arrays, the String pool, and Class objects with their static fields; it fails with OutOfMemoryError: Java heap space. Metaspace lives in native (OS) memory and holds class metadata: fields, methods, bytecode and the runtime constant pool. It grows as needed, is unlimited by default, can be capped with -XX:MaxMetaspaceSize, is freed when a class loader becomes unreachable, and fails with OutOfMemoryError: Metaspace. Each Class object on the heap points to its metadata in metaspace.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="879" height="329" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ===== HEAP ===== -->
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">JVM HEAP</text>
+  <rect x="24" y="52" width="372" height="214" rx="10" fill="#bc8cff" fill-opacity=".08" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="42" y="80" fill="#d2a8ff" font-size="15" font-weight="700">Heap <tspan fill="#8b949e" font-weight="400" font-size="12">(Young + Old)</tspan></text>
+  <text x="380" y="80" fill="#8b949e" font-size="12" text-anchor="end">limited by <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-Xmx</tspan></text>
+
+  <rect x="40" y="96" width="340" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="56" y="119" fill="#e6edf3" font-size="13">objects and arrays <tspan fill="#8b949e" font-size="12">(everything created with </tspan><tspan fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">new</tspan><tspan fill="#8b949e" font-size="12">)</tspan></text>
+
+  <rect x="40" y="142" width="340" height="36" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="56" y="165" fill="#e6edf3" font-size="13">String pool <tspan fill="#8b949e" font-size="12">(string literals, interned strings)</tspan></text>
+
+  <rect x="40" y="188" width="340" height="62" rx="8" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-opacity=".6"/>
+  <text x="56" y="211" fill="#e6edf3" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">Class</tspan> objects</text>
+  <text x="56" y="233" fill="#c9d1d9" font-size="12.5">hold the class's <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">static</tspan> fields</text>
+
+  <rect x="63" y="282" width="294" height="26" rx="13" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".8"/>
+  <text x="210" y="299" fill="#ff7b72" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">OutOfMemoryError: Java heap space</text>
+
+  <!-- link -->
+  <line x1="381" y1="219" x2="500" y2="219" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="440" y="208" fill="#8b949e" font-size="12" text-anchor="middle" data-nocheck="1">points to</text>
+  <text x="440" y="240" fill="#8b949e" font-size="12" text-anchor="middle" data-nocheck="1">its metadata</text>
+
+  <!-- ===== METASPACE ===== -->
+  <text x="484" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">NATIVE (OS) MEMORY</text>
+  <rect x="484" y="52" width="372" height="214" rx="10" fill="none" stroke="#484f58" stroke-dasharray="5 4"/>
+  <rect x="500" y="66" width="340" height="186" rx="8" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8"/>
+  <text x="516" y="92" fill="#56d4dd" font-size="15" font-weight="700">Metaspace</text>
+  <text x="824" y="92" fill="#8b949e" font-size="12" text-anchor="end">not part of <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-Xmx</tspan></text>
+  <text x="516" y="118" fill="#56d4dd" font-size="13">class metadata:</text>
+  <text x="516" y="138" fill="#c9d1d9" font-size="13">fields, methods, bytecode,</text>
+  <text x="516" y="158" fill="#c9d1d9" font-size="13">runtime constant pool</text>
+  <line x1="512" y1="172" x2="828" y2="172" stroke="#39c5cf" stroke-opacity=".3"/>
+  <text x="516" y="194" fill="#c9d1d9" font-size="13">grows as needed, <tspan fill="#e3b341">unlimited by default</tspan></text>
+  <text x="516" y="214" fill="#8b949e" font-size="12">cap with <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-XX:MaxMetaspaceSize</tspan></text>
+  <text x="516" y="236" fill="#8b949e" font-size="12">freed when the class loader is unreachable</text>
+
+  <rect x="555" y="282" width="230" height="26" rx="13" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="670" y="299" fill="#e3b341" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">OutOfMemoryError: Metaspace</text>
+</svg>

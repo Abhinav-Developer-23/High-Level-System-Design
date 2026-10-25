@@ -1,6 +1,12 @@
 # CLAUDE.md
 
-Personal interview-prep notes (system design, DBMS, Java, LLD, networking) as markdown. The user reads them in Chrome with the **MarkView** extension in **dark theme**, so check rendering against that.
+Personal interview-prep notes (system design, DBMS, Java, Spring Boot, Node.js, LLD, networking) as markdown.
+
+## How the user reads the notes
+
+- Viewer: the Chrome extension **MarkView – Modern Markdown Viewer**. The user opens the `.md` files directly in Chrome, not on GitHub or in an editor preview.
+- MarkView's file sidebar only lists folders that have a `.md` **directly inside** them ("Browsing up to 2 folder levels deep"). Keep every doc at `<Topic>/<Doc>.md`, never `<Topic>/<Sub>/<Doc>.md`. Put a topic's diagrams in `<Topic>/svg/` (or `<Topic>/svg/<subtopic>/` when one folder holds several docs, e.g. `Java+SpringBoot/svg/java/`).
+- Theme: always **dark mode**. Everything (diagrams, tables, callouts, toggles, code) must look right on MarkView's dark background. Check rendering against that, e.g. with `tools/svg-diagrams/preview.js`.
 
 ## Diagrams: ASCII → SVG
 

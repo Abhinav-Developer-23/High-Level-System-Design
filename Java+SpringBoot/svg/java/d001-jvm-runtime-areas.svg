@@ -1,0 +1,124 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="610" viewBox="0 0 900 610" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>JVM runtime data areas</title>
+  <desc>The class loader subsystem (load, link, initialize) reads .class files and JARs and puts class metadata into metaspace. Runtime data areas: heap (young: Eden, S0, S1; old), metaspace and code cache are shared by all threads; each thread has its own stack memory (JVM stack of frames holding local variables, operand stack and return address; size set by -Xss; StackOverflowError when full), PC register and native method stack. The execution engine (interpreter, JIT compiler C1/C2, garbage collector) works on them; JNI connects to native libraries.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="609" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- class loader -->
+  <rect x="24" y="24" width="852" height="72" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="42" y="54" fill="#e6edf3" font-size="15" font-weight="600">Class Loader subsystem</text>
+  <text x="42" y="75" fill="#8b949e" font-size="12">reads <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">.class</tspan> files / JARs</text>
+  <rect x="300" y="38" width="96" height="44" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="348" y="65" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">Load</text>
+  <line x1="398" y1="60" x2="420" y2="60" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="422" y="38" width="220" height="44" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="532" y="56" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">Link</text>
+  <text x="532" y="74" fill="#8b949e" font-size="12" text-anchor="middle">verify, prepare, resolve</text>
+  <line x1="644" y1="60" x2="666" y2="60" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="668" y="38" width="120" height="44" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="728" y="65" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">Initialize</text>
+
+  <!-- arrow into metaspace -->
+  <line x1="460" y1="96" x2="460" y2="180" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#arrT)"/>
+  <text x="470" y="142" fill="#56d4dd" font-size="12" data-nocheck="1">class metadata</text>
+
+  <!-- runtime data areas -->
+  <rect x="24" y="112" width="852" height="332" rx="12" fill="none" stroke="#484f58" stroke-dasharray="6 4"/>
+  <text x="40" y="136" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">RUNTIME DATA AREAS</text>
+
+  <!-- shared -->
+  <rect x="40" y="148" width="520" height="280" rx="10" fill="#1c2128" fill-opacity=".5" stroke="#30363d"/>
+  <text x="56" y="170" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">SHARED BY ALL THREADS</text>
+
+  <rect x="56" y="182" width="304" height="232" rx="10" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".8"/>
+  <text x="72" y="206" fill="#d2a8ff" font-size="15" font-weight="600">Heap</text>
+  <text x="344" y="206" fill="#79c0ff" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-Xms / -Xmx</text>
+  <rect x="72" y="218" width="272" height="70" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="84" y="236" fill="#e6edf3" font-size="13" font-weight="600">Young</text>
+  <rect x="84" y="244" width="152" height="34" rx="6" fill="#21262d" stroke="#484f58"/>
+  <text x="160" y="266" fill="#c9d1d9" font-size="13" text-anchor="middle">Eden</text>
+  <rect x="242" y="244" width="42" height="34" rx="6" fill="#21262d" stroke="#484f58"/>
+  <text x="263" y="266" fill="#c9d1d9" font-size="13" text-anchor="middle">S0</text>
+  <rect x="290" y="244" width="42" height="34" rx="6" fill="#21262d" stroke="#484f58"/>
+  <text x="311" y="266" fill="#c9d1d9" font-size="13" text-anchor="middle">S1</text>
+  <rect x="72" y="296" width="272" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="84" y="321" fill="#e6edf3" font-size="13" font-weight="600">Old</text>
+  <text x="72" y="358" fill="#c9d1d9" font-size="13">objects, arrays, String pool,</text>
+  <text x="72" y="376" fill="#c9d1d9" font-size="13">static fields</text>
+  <text x="72" y="400" fill="#8b949e" font-size="12">managed by the GC</text>
+
+  <rect x="376" y="182" width="168" height="124" rx="10" fill="#39c5cf" fill-opacity=".10" stroke="#39c5cf" stroke-opacity=".8"/>
+  <text x="392" y="206" fill="#56d4dd" font-size="15" font-weight="600">Metaspace</text>
+  <text x="392" y="228" fill="#c9d1d9" font-size="12">class metadata,</text>
+  <text x="392" y="246" fill="#c9d1d9" font-size="12">bytecode, runtime</text>
+  <text x="392" y="264" fill="#c9d1d9" font-size="12">constant pool</text>
+  <text x="392" y="292" fill="#8b949e" font-size="12">native memory</text>
+
+  <rect x="376" y="318" width="168" height="96" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="392" y="342" fill="#e6edf3" font-size="15" font-weight="600">Code cache</text>
+  <text x="392" y="364" fill="#c9d1d9" font-size="12">JIT-compiled</text>
+  <text x="392" y="382" fill="#c9d1d9" font-size="12">native code</text>
+
+  <!-- per thread -->
+  <rect x="576" y="148" width="284" height="280" rx="10" fill="#1c2128" fill-opacity=".5" stroke="#30363d"/>
+  <text x="592" y="170" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">PER THREAD</text>
+  <text x="694" y="170" fill="#8b949e" font-size="12">(one set per thread)</text>
+
+  <rect x="592" y="180" width="252" height="204" rx="10" fill="#1c2128" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="604" y="199" fill="#e3b341" font-size="14" font-weight="600">Thread 1</text>
+
+  <!-- stack memory -->
+  <rect x="604" y="208" width="228" height="122" rx="8" fill="#f0883e" fill-opacity=".10" stroke="#f0883e" stroke-opacity=".8"/>
+  <text x="616" y="229" fill="#ffa657" font-size="15" font-weight="600">Stack memory</text>
+  <text x="820" y="229" fill="#79c0ff" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-Xss</text>
+  <rect x="616" y="238" width="204" height="22" rx="5" fill="#f0883e" fill-opacity=".18" stroke="#f0883e" stroke-opacity=".7"/>
+  <text x="628" y="253" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">greet()</text>
+  <text x="808" y="253" fill="#ffa657" font-size="11" text-anchor="end">top frame, running</text>
+  <rect x="616" y="264" width="204" height="22" rx="5" fill="#161b22" stroke="#484f58"/>
+  <text x="628" y="279" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">main()</text>
+  <text x="808" y="279" fill="#8b949e" font-size="11" text-anchor="end">caller</text>
+  <text x="616" y="304" fill="#c9d1d9" font-size="12">each frame: local variables,</text>
+  <text x="616" y="320" fill="#c9d1d9" font-size="12">operand stack, return address</text>
+
+  <rect x="604" y="338" width="108" height="38" rx="8" fill="#21262d" stroke="#30363d"/>
+  <text x="614" y="354" fill="#e6edf3" font-size="12" font-weight="600">PC register</text>
+  <text x="614" y="369" fill="#8b949e" font-size="11">next instruction</text>
+  <rect x="720" y="338" width="112" height="38" rx="8" fill="#21262d" stroke="#30363d"/>
+  <text x="730" y="354" fill="#e6edf3" font-size="12" font-weight="600">Native method</text>
+  <text x="730" y="369" fill="#e6edf3" font-size="12" font-weight="600">stack</text>
+
+  <text x="592" y="403" fill="#8b949e" font-size="12">Thread 2 … Thread N: each gets its own set</text>
+  <text x="592" y="420" fill="#8b949e" font-size="12">stack full → <tspan fill="#ff7b72" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">StackOverflowError</tspan></text>
+
+  <!-- execution engine -->
+  <line x1="128" y1="494" x2="128" y2="416" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <text x="136" y="456" fill="#d2a8ff" font-size="12" data-nocheck="1">manages the heap</text>
+  <line x1="460" y1="494" x2="460" y2="416" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="468" y="456" fill="#8b949e" font-size="12" data-nocheck="1">stores native code</text>
+
+  <rect x="24" y="462" width="600" height="98" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="484" fill="#e6edf3" font-size="15" font-weight="600">Execution engine</text>
+  <rect x="40" y="496" width="176" height="50" rx="8" fill="#bc8cff" fill-opacity=".10" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="128" y="517" fill="#d2a8ff" font-size="14" font-weight="600" text-anchor="middle">Garbage collector</text>
+  <text x="128" y="536" fill="#8b949e" font-size="12" text-anchor="middle">frees unreachable objects</text>
+  <rect x="228" y="496" width="150" height="50" rx="8" fill="#21262d" stroke="#30363d"/>
+  <text x="303" y="517" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">Interpreter</text>
+  <text x="303" y="536" fill="#8b949e" font-size="12" text-anchor="middle">runs bytecode</text>
+  <rect x="390" y="496" width="218" height="50" rx="8" fill="#21262d" stroke="#30363d"/>
+  <text x="499" y="517" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">JIT compiler <tspan fill="#8b949e" font-weight="400" font-size="12">(C1, C2)</tspan></text>
+  <text x="499" y="536" fill="#8b949e" font-size="12" text-anchor="middle">compiles hot methods</text>
+
+  <line x1="626" y1="511" x2="650" y2="511" stroke="#8b949e" stroke-width="1.5" marker-start="url(#arr)" marker-end="url(#arr)"/>
+  <rect x="652" y="462" width="224" height="98" rx="10" fill="#21262d" stroke="#484f58" stroke-dasharray="5 4"/>
+  <text x="668" y="486" fill="#e6edf3" font-size="14" font-weight="600">JNI → native libraries</text>
+  <text x="668" y="508" fill="#c9d1d9" font-size="12">C/C++ code called from Java;</text>
+  <text x="668" y="526" fill="#c9d1d9" font-size="12">its frames go on the thread's</text>
+  <text x="668" y="544" fill="#c9d1d9" font-size="12">native method stack</text>
+
+  <!-- footer -->
+  <text x="24" y="590" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">Remember: </tspan>GC manages the heap · only the heap is limited by <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-Xmx</tspan></text>
+</svg>

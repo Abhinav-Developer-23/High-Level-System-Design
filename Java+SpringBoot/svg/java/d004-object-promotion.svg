@@ -1,0 +1,183 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="648" viewBox="0 0 900 648" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Object promotion: Eden to Old</title>
+  <desc>Four snapshots of Eden, S0, S1 and Old. 1: new Order() is allocated in Eden inside the thread's TLAB. 2: Eden fills, a minor GC copies live objects from Eden and S0 to S1 with age + 1, then wipes Eden and S0; dead objects are never touched. 3: the next minor GC copies Eden and S1 to S0; survivor spaces swap roles. 4: at age 15 (MaxTenuringThreshold) the object is promoted to Old. Shortcuts: survivor overflow (premature promotion) and very large or G1 humongous objects go straight to Old. When Old is full, a major or full GC runs.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="647" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- column headers -->
+  <g fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">
+    <text x="395" y="40">EDEN</text>
+    <text x="533" y="40">S0</text>
+    <text x="651" y="40">S1</text>
+    <text x="795" y="40">OLD</text>
+  </g>
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">STEP</text>
+  <line x1="24" y1="52" x2="876" y2="52" stroke="#21262d"/>
+  <g font-size="12" fill="#8b949e">
+    <circle cx="108" cy="36" r="5" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/><text x="118" y="40">live</text>
+    <circle cx="160" cy="36" r="5" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/><text x="170" y="40">dead</text>
+    <circle cx="216" cy="36" r="5" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/><text x="226" y="40">other objects</text>
+  </g>
+
+  <!-- ===== step 1 (R=56) ===== -->
+  <circle cx="36" cy="98" r="12" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="36" y="103" fill="#79c0ff" font-size="13" font-weight="700" text-anchor="middle">1</text>
+  <text x="58" y="103" fill="#79c0ff" font-size="14" font-weight="600" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">new Order()</text>
+  <text x="58" y="123" fill="#c9d1d9" font-size="13">allocated in Eden, inside the</text>
+  <text x="58" y="141" fill="#c9d1d9" font-size="13">thread's TLAB (no lock)</text>
+
+  <rect x="320" y="86" width="150" height="50" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+  <rect x="326" y="94" width="108" height="34" rx="6" fill="none" stroke="#58a6ff" stroke-opacity=".7" stroke-dasharray="4 3"/>
+  <text x="332" y="115" fill="#8b949e" font-size="11">TLAB</text>
+  <rect x="364" y="100" width="66" height="22" rx="11" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="397" y="115" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·0</text>
+  <circle cx="446" cy="111" r="5" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="460" cy="111" r="5" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <rect x="478" y="86" width="110" height="50" rx="8" fill="#d29922" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="518" cy="111" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="548" cy="111" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <text x="533" y="130" fill="#8b949e" font-size="11" text-anchor="middle">active</text>
+  <rect x="596" y="86" width="110" height="50" rx="8" fill="none" stroke="#484f58" stroke-dasharray="4 3"/>
+  <text x="651" y="115" fill="#8b949e" font-size="12" text-anchor="middle">empty</text>
+  <rect x="714" y="86" width="162" height="50" rx="8" fill="#bc8cff" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="750" cy="111" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="770" cy="111" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="790" cy="111" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <!-- ===== step 2 (R=166) ===== -->
+  <circle cx="36" cy="208" r="12" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="36" y="213" fill="#79c0ff" font-size="13" font-weight="700" text-anchor="middle">2</text>
+  <text x="58" y="213" fill="#e6edf3" font-size="14" font-weight="600">Eden full → Minor GC</text>
+  <text x="58" y="233" fill="#c9d1d9" font-size="13">live objects in Eden + S0 are</text>
+  <text x="58" y="251" fill="#c9d1d9" font-size="13">copied to S1, <tspan fill="#56d364" font-weight="600">age + 1</tspan></text>
+
+  <path d="M440,196 C470,164 610,164 636,194" fill="none" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <path d="M548,196 C568,178 640,178 662,194" fill="none" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <text x="700" y="186" fill="#56d364" font-size="12">copy live · age + 1</text>
+
+  <rect x="320" y="196" width="150" height="50" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+  <rect x="328" y="210" width="66" height="22" rx="11" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="361" y="225" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·0</text>
+  <circle cx="410" cy="221" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+  <circle cx="426" cy="221" r="6" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="442" cy="221" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+  <circle cx="458" cy="221" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+
+  <rect x="478" y="196" width="110" height="50" rx="8" fill="#d29922" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="518" cy="221" r="6" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="548" cy="221" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+
+  <rect x="596" y="196" width="110" height="50" rx="8" fill="#3fb950" fill-opacity=".08" stroke="#3fb950" stroke-opacity=".6"/>
+  <rect x="604" y="210" width="66" height="22" rx="11" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="637" y="225" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·1</text>
+  <circle cx="684" cy="215" r="5" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="684" cy="229" r="5" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+
+  <rect x="714" y="196" width="162" height="50" rx="8" fill="#bc8cff" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="750" cy="221" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="770" cy="221" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="790" cy="221" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <text x="320" y="264" fill="#8b949e" font-size="12">then Eden + S0 are <tspan fill="#ff7b72">wiped in one go</tspan> · dead objects are never touched</text>
+
+  <!-- ===== step 3 (R=276) ===== -->
+  <circle cx="36" cy="318" r="12" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="36" y="323" fill="#79c0ff" font-size="13" font-weight="700" text-anchor="middle">3</text>
+  <text x="58" y="323" fill="#e6edf3" font-size="14" font-weight="600">Next Minor GC</text>
+  <text x="58" y="343" fill="#c9d1d9" font-size="13">Eden + S1 → S0, <tspan fill="#56d364" font-weight="600">age + 1</tspan></text>
+  <text x="58" y="361" fill="#c9d1d9" font-size="13">survivor spaces <tspan fill="#e3b341" font-weight="600">swap roles</tspan> each time</text>
+
+  <path d="M444,306 C462,286 496,286 510,304" fill="none" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <path d="M632,306 C614,286 572,286 556,304" fill="none" stroke="#3fb950" stroke-width="1.5" marker-end="url(#arrG)"/>
+  <text x="700" y="296" fill="#56d364" font-size="12">copy live · age + 1</text>
+
+  <rect x="320" y="306" width="150" height="50" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="340" cy="331" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+  <circle cx="360" cy="331" r="6" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="380" cy="331" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+  <circle cx="400" cy="331" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+  <circle cx="420" cy="331" r="6" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="440" cy="331" r="6" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+
+  <rect x="478" y="306" width="110" height="50" rx="8" fill="#3fb950" fill-opacity=".08" stroke="#3fb950" stroke-opacity=".6"/>
+  <rect x="486" y="320" width="66" height="22" rx="11" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="519" y="335" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·2</text>
+  <circle cx="566" cy="325" r="5" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="566" cy="339" r="5" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+
+  <rect x="596" y="306" width="110" height="50" rx="8" fill="#d29922" fill-opacity=".08" stroke="#30363d"/>
+  <rect x="604" y="320" width="66" height="22" rx="11" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="637" y="335" fill="#79c0ff" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·1</text>
+  <circle cx="684" cy="325" r="5" fill="#3fb950" fill-opacity=".3" stroke="#3fb950"/>
+  <circle cx="684" cy="339" r="5" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".6"/>
+
+  <rect x="714" y="306" width="162" height="50" rx="8" fill="#bc8cff" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="750" cy="331" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="770" cy="331" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="790" cy="331" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <text x="320" y="374" fill="#8b949e" font-size="12">then Eden + S1 are <tspan fill="#ff7b72">wiped</tspan> · next time it goes S0 → S1 again, and so on</text>
+
+  <!-- ===== step 4 (R=386) ===== -->
+  <circle cx="36" cy="428" r="12" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff"/>
+  <text x="36" y="433" fill="#d2a8ff" font-size="13" font-weight="700" text-anchor="middle">4</text>
+  <text x="58" y="433" fill="#e6edf3" font-size="14" font-weight="600">Age reaches 15 → <tspan fill="#d2a8ff">promoted to Old</tspan></text>
+  <text x="58" y="453" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">-XX:MaxTenuringThreshold=15</text>
+  <text x="58" y="471" fill="#c9d1d9" font-size="13">(default; age is 4 bits, so max 15)</text>
+
+  <path d="M540,416 C580,388 730,388 754,414" fill="none" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <text x="772" y="404" fill="#d2a8ff" font-size="12">promote</text>
+
+  <rect x="320" y="416" width="150" height="50" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#30363d"/>
+  <circle cx="360" cy="441" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="380" cy="441" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="400" cy="441" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <rect x="478" y="416" width="110" height="50" rx="8" fill="#d29922" fill-opacity=".08" stroke="#30363d"/>
+  <rect x="486" y="430" width="72" height="22" rx="11" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".5" stroke-dasharray="3 2"/>
+  <text x="522" y="445" fill="#79c0ff" fill-opacity=".7" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·15</text>
+  <circle cx="572" cy="441" r="5" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <rect x="596" y="416" width="110" height="50" rx="8" fill="none" stroke="#484f58" stroke-dasharray="4 3"/>
+  <text x="651" y="445" fill="#8b949e" font-size="12" text-anchor="middle">empty</text>
+
+  <rect x="714" y="416" width="162" height="50" rx="8" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".7"/>
+  <rect x="724" y="430" width="72" height="22" rx="11" fill="#bc8cff" fill-opacity=".22" stroke="#bc8cff"/>
+  <text x="760" y="445" fill="#d2a8ff" font-size="11" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order·15</text>
+  <circle cx="812" cy="441" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="832" cy="441" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+  <circle cx="852" cy="441" r="6" fill="#8b949e" fill-opacity=".25" stroke="#8b949e"/>
+
+  <text x="320" y="484" fill="#8b949e" font-size="12">the next minor GC moves it to Old instead of to the other survivor space</text>
+
+  <!-- ===== shortcuts + end ===== -->
+  <line x1="24" y1="500" x2="876" y2="500" stroke="#21262d"/>
+  <rect x="24" y="514" width="410" height="50" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="40" y="535" fill="#e3b341" font-size="13" font-weight="600">⚠ Survivor space overflows → straight to Old</text>
+  <text x="40" y="554" fill="#c9d1d9" font-size="12">premature promotion, whatever the object's age</text>
+  <rect x="24" y="574" width="410" height="50" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".8"/>
+  <text x="40" y="595" fill="#e3b341" font-size="13" font-weight="600">⚠ Very large object / G1 humongous → Old directly</text>
+  <text x="40" y="614" fill="#c9d1d9" font-size="12">G1: humongous = object ≥ ½ region, gets its own region(s)</text>
+
+  <path d="M434,539 H452 V556 H470" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#arrA)"/>
+  <path d="M434,599 H452 V582 H470" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#arrA)"/>
+
+  <rect x="472" y="536" width="168" height="66" rx="8" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".8"/>
+  <text x="488" y="560" fill="#d2a8ff" font-size="14" font-weight="600">Old generation</text>
+  <text x="488" y="580" fill="#8b949e" font-size="12">promoted (step 4) +</text>
+  <text x="488" y="596" fill="#8b949e" font-size="12">shortcut objects</text>
+
+  <line x1="640" y1="569" x2="688" y2="569" stroke="#f85149" stroke-width="1.5" marker-end="url(#arrR)"/>
+  <text x="664" y="561" fill="#ff7b72" font-size="11" text-anchor="middle" data-nocheck="1">when full</text>
+  <rect x="690" y="536" width="186" height="66" rx="8" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".8"/>
+  <text x="706" y="560" fill="#ff7b72" font-size="14" font-weight="600">Major GC / Full GC</text>
+  <text x="706" y="580" fill="#c9d1d9" font-size="12">Old only / whole heap:</text>
+  <text x="706" y="596" fill="#c9d1d9" font-size="12">the expensive ones</text>
+</svg>

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="446" viewBox="0 0 900 446" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>GC pros and cons</title>
+  <desc>Left, what you gain from garbage collection: memory safety, no forgotten frees, very fast allocation, no fragmentation, cycles handled, simpler code and APIs, tunable without code changes. Right, what you pay: stop-the-world pauses, CPU overhead, memory overhead, non-deterministic freeing, leaks still possible, hard tuning, less control.</desc>
+  <rect x="0.5" y="0.5" width="899" height="445" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="24" y="20" width="418" height="406" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M34,20 H432 A10,10 0 0 1 442,30 V64 H24 V30 A10,10 0 0 1 34,20 Z" fill="#3fb950" fill-opacity=".16" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="42" y="48" fill="#56d364" font-size="13" font-weight="700" letter-spacing="1.5">✓  WHAT YOU GAIN (PROS)</text>
+  <circle cx="54" cy="93" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="97.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="76" y="88" fill="#e6edf3" font-size="14" font-weight="600">Memory safety</text>
+  <text x="76" y="107" fill="#8b949e" font-size="12.5">no dangling pointers, use-after-free or double free</text>
+  <line x1="40" y1="119" x2="426" y2="119" stroke="#21262d"/>
+  <circle cx="54" cy="143" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="147.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="76" y="138" fill="#e6edf3" font-size="14" font-weight="600">No forgotten frees</text>
+  <text x="76" y="157" fill="#8b949e" font-size="12.5">you never call free</text>
+  <line x1="40" y1="169" x2="426" y2="169" stroke="#21262d"/>
+  <circle cx="54" cy="193" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="197.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <text x="76" y="188" fill="#e6edf3" font-size="14" font-weight="600">Very fast allocation</text>
+  <text x="76" y="207" fill="#8b949e" font-size="12.5">pointer bump in a TLAB, no lock</text>
+  <line x1="40" y1="219" x2="426" y2="219" stroke="#21262d"/>
+  <circle cx="54" cy="243" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="247.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">4</text>
+  <text x="76" y="238" fill="#e6edf3" font-size="14" font-weight="600">No fragmentation</text>
+  <text x="76" y="257" fill="#8b949e" font-size="12.5">compaction keeps free space contiguous</text>
+  <line x1="40" y1="269" x2="426" y2="269" stroke="#21262d"/>
+  <circle cx="54" cy="293" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="297.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">5</text>
+  <text x="76" y="288" fill="#e6edf3" font-size="14" font-weight="600">Cycles handled</text>
+  <text x="76" y="307" fill="#8b949e" font-size="12.5">tracing from roots frees them</text>
+  <line x1="40" y1="319" x2="426" y2="319" stroke="#21262d"/>
+  <circle cx="54" cy="343" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="347.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">6</text>
+  <text x="76" y="338" fill="#e6edf3" font-size="14" font-weight="600">Simpler code and APIs</text>
+  <text x="76" y="357" fill="#8b949e" font-size="12.5">no “who frees this?” rules</text>
+  <line x1="40" y1="369" x2="426" y2="369" stroke="#21262d"/>
+  <circle cx="54" cy="393" r="11" fill="#3fb950" fill-opacity=".14" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="54" y="397.5" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">7</text>
+  <text x="76" y="388" fill="#e6edf3" font-size="14" font-weight="600">Tunable without code changes</text>
+  <text x="76" y="407" fill="#8b949e" font-size="12.5">switch collector with a flag</text>
+  <rect x="458" y="20" width="418" height="406" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M468,20 H866 A10,10 0 0 1 876,30 V64 H458 V30 A10,10 0 0 1 468,20 Z" fill="#f85149" fill-opacity=".16" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="476" y="48" fill="#ff7b72" font-size="13" font-weight="700" letter-spacing="1.5">✗  WHAT YOU PAY (CONS)</text>
+  <circle cx="488" cy="93" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="97.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">1</text>
+  <text x="510" y="88" fill="#e6edf3" font-size="14" font-weight="600">Stop-the-world pauses</text>
+  <text x="510" y="107" fill="#8b949e" font-size="12.5">tail latency, timeouts, missed heartbeats</text>
+  <line x1="474" y1="119" x2="860" y2="119" stroke="#21262d"/>
+  <circle cx="488" cy="143" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="147.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">2</text>
+  <text x="510" y="138" fill="#e6edf3" font-size="14" font-weight="600">CPU overhead</text>
+  <text x="510" y="157" fill="#8b949e" font-size="12.5">GC threads + read/write barriers</text>
+  <line x1="474" y1="169" x2="860" y2="169" stroke="#21262d"/>
+  <circle cx="488" cy="193" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="197.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">3</text>
+  <text x="510" y="188" fill="#e6edf3" font-size="14" font-weight="600">Memory overhead</text>
+  <text x="510" y="207" fill="#8b949e" font-size="12.5">needs headroom (2–3× live data)</text>
+  <line x1="474" y1="219" x2="860" y2="219" stroke="#21262d"/>
+  <circle cx="488" cy="243" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="247.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">4</text>
+  <text x="510" y="238" fill="#e6edf3" font-size="14" font-weight="600">Non-deterministic freeing</text>
+  <text x="510" y="257" fill="#8b949e" font-size="12.5">use <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">try-with-resources</tspan> for files, sockets</text>
+  <line x1="474" y1="269" x2="860" y2="269" stroke="#21262d"/>
+  <circle cx="488" cy="293" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="297.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">5</text>
+  <text x="510" y="288" fill="#e6edf3" font-size="14" font-weight="600">Leaks still possible</text>
+  <text x="510" y="307" fill="#8b949e" font-size="12.5">referenced-but-unused objects stay</text>
+  <line x1="474" y1="319" x2="860" y2="319" stroke="#21262d"/>
+  <circle cx="488" cy="343" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="347.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">6</text>
+  <text x="510" y="338" fill="#e6edf3" font-size="14" font-weight="600">Tuning is hard</text>
+  <text x="510" y="357" fill="#8b949e" font-size="12.5">problems show under production load</text>
+  <line x1="474" y1="369" x2="860" y2="369" stroke="#21262d"/>
+  <circle cx="488" cy="393" r="11" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="488" y="397.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">7</text>
+  <text x="510" y="388" fill="#e6edf3" font-size="14" font-weight="600">Less control</text>
+  <text x="510" y="407" fill="#8b949e" font-size="12.5">no manual placement or freeing (go off-heap)</text>
+</svg>

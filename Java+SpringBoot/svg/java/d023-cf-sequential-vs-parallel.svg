@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>CompletableFuture: sequential vs parallel</title>
+  <desc>Two timelines on the same 0 to 1000 ms axis. Sequential, one after another: user 300 ms (0 to 300), orders 500 ms (300 to 800), wallet 200 ms (800 to 1000); total about 1000 ms. Parallel with supplyAsync and allOf: user, orders and wallet all start at 0 on pool-1-thread-1, 2 and 3 and end at 300, 500 and 200 ms; allOf completes at 500 ms when the slowest is done, then a short combine step (thenApply) runs; total about 500 ms.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="499" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- panels -->
+  <rect x="24" y="20" width="852" height="186" rx="10" fill="#f85149" fill-opacity=".04" stroke="#f85149" stroke-opacity=".5"/>
+  <text x="40" y="46" fill="#ff7b72" font-size="14" font-weight="700">Sequential <tspan fill="#c9d1d9" font-weight="400">(one after another)</tspan></text>
+
+  <rect x="24" y="218" width="852" height="222" rx="10" fill="#3fb950" fill-opacity=".04" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="40" y="244" fill="#56d364" font-size="14" font-weight="700">Parallel: <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#79c0ff" font-weight="400">supplyAsync</tspan><tspan fill="#c9d1d9" font-weight="400"> + </tspan><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#79c0ff" font-weight="400">allOf</tspan></text>
+
+  <!-- faint guides at 500 ms and 1000 ms (shared scale) -->
+  <g stroke="#8b949e" stroke-opacity=".3" stroke-dasharray="3 4">
+    <line x1="544" y1="56" x2="544" y2="458"/>
+    <line x1="864" y1="56" x2="864" y2="458"/>
+  </g>
+
+  <!-- sequential lanes -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="13" fill="#e6edf3">
+    <text x="40" y="81">user</text>
+    <text x="40" y="119">orders</text>
+    <text x="40" y="157">wallet</text>
+  </g>
+  <rect x="224" y="62" width="192" height="28" rx="6" fill="#58a6ff" fill-opacity=".18" stroke="#58a6ff"/>
+  <text x="320" y="81" fill="#79c0ff" font-size="12.5" font-weight="600" text-anchor="middle">user · 300 ms</text>
+  <rect x="416" y="100" width="320" height="28" rx="6" fill="#bc8cff" fill-opacity=".18" stroke="#bc8cff"/>
+  <text x="576" y="119" fill="#d2a8ff" font-size="12.5" font-weight="600" text-anchor="middle">orders · 500 ms</text>
+  <rect x="736" y="138" width="128" height="28" rx="6" fill="#39c5cf" fill-opacity=".18" stroke="#39c5cf"/>
+  <text x="800" y="157" fill="#56d4dd" font-size="12.5" font-weight="600" text-anchor="middle">wallet · 200 ms</text>
+
+  <text x="40" y="191" fill="#e6edf3" font-size="13" font-weight="600">Total</text>
+  <line x1="226" y1="187" x2="862" y2="187" stroke="#f85149" stroke-width="1.6" marker-start="url(#arrR)" marker-end="url(#arrR)"/>
+  <rect x="488" y="177" width="112" height="20" fill="#1f1d24"/>
+  <text x="544" y="192" fill="#ff7b72" font-size="13.5" font-weight="700" text-anchor="middle">≈ 1000 ms</text>
+
+  <!-- parallel lanes -->
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">
+    <text x="40" y="279" font-size="13" fill="#e6edf3">user</text>
+    <text x="100" y="279" font-size="11.5" fill="#8b949e">pool-1-thread-1</text>
+    <text x="40" y="317" font-size="13" fill="#e6edf3">orders</text>
+    <text x="100" y="317" font-size="11.5" fill="#8b949e">pool-1-thread-2</text>
+    <text x="40" y="355" font-size="13" fill="#e6edf3">wallet</text>
+    <text x="100" y="355" font-size="11.5" fill="#8b949e">pool-1-thread-3</text>
+  </g>
+  <rect x="224" y="260" width="192" height="28" rx="6" fill="#58a6ff" fill-opacity=".18" stroke="#58a6ff"/>
+  <text x="320" y="279" fill="#79c0ff" font-size="12.5" font-weight="600" text-anchor="middle">user · 300 ms</text>
+  <rect x="224" y="298" width="320" height="28" rx="6" fill="#bc8cff" fill-opacity=".18" stroke="#bc8cff"/>
+  <text x="384" y="317" fill="#d2a8ff" font-size="12.5" font-weight="600" text-anchor="middle">orders · 500 ms</text>
+  <rect x="224" y="336" width="128" height="28" rx="6" fill="#39c5cf" fill-opacity=".18" stroke="#39c5cf"/>
+  <text x="288" y="355" fill="#56d4dd" font-size="12.5" font-weight="600" text-anchor="middle">wallet · 200 ms</text>
+
+  <!-- allOf completes at 500 ms -->
+  <line x1="544" y1="254" x2="544" y2="400" stroke="#3fb950" stroke-width="1.6" stroke-dasharray="5 4"/>
+  <text x="556" y="279" fill="#56d364" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-weight="700">allOf</tspan> completes when the slowest is done</text>
+
+  <!-- combine marker just after 500 ms -->
+  <rect x="546" y="374" width="12" height="24" rx="3" fill="#3fb950" fill-opacity=".45" stroke="#3fb950"/>
+  <text x="568" y="391" fill="#c9d1d9" font-size="13">combine (<tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#79c0ff">thenApply</tspan>)</text>
+
+  <text x="40" y="425" fill="#e6edf3" font-size="13" font-weight="600">Total</text>
+  <line x1="226" y1="421" x2="542" y2="421" stroke="#3fb950" stroke-width="1.6" marker-start="url(#arrG)" marker-end="url(#arrG)"/>
+  <text x="556" y="426" fill="#56d364" font-size="13.5" font-weight="700">≈ 500 ms <tspan fill="#c9d1d9" font-size="13" font-weight="400">(the slowest call, not the sum)</tspan></text>
+
+  <!-- shared axis -->
+  <line x1="224" y1="462" x2="874" y2="462" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <g stroke="#8b949e" stroke-width="1.5">
+    <line x1="224" y1="457" x2="224" y2="467"/>
+    <line x1="288" y1="459" x2="288" y2="465"/>
+    <line x1="352" y1="459" x2="352" y2="465"/>
+    <line x1="416" y1="459" x2="416" y2="465"/>
+    <line x1="480" y1="459" x2="480" y2="465"/>
+    <line x1="544" y1="457" x2="544" y2="467"/>
+    <line x1="608" y1="459" x2="608" y2="465"/>
+    <line x1="672" y1="459" x2="672" y2="465"/>
+    <line x1="736" y1="459" x2="736" y2="465"/>
+    <line x1="800" y1="459" x2="800" y2="465"/>
+    <line x1="864" y1="457" x2="864" y2="467"/>
+  </g>
+  <g fill="#8b949e" font-size="12" text-anchor="middle">
+    <text x="224" y="484">0</text>
+    <text x="288" y="484">100</text>
+    <text x="352" y="484">200</text>
+    <text x="416" y="484">300</text>
+    <text x="480" y="484">400</text>
+    <text x="544" y="484" fill="#e6edf3" font-weight="600">500</text>
+    <text x="608" y="484">600</text>
+    <text x="672" y="484">700</text>
+    <text x="736" y="484">800</text>
+    <text x="800" y="484">900</text>
+    <text x="864" y="484" fill="#e6edf3" font-weight="600">1000</text>
+  </g>
+  <text x="40" y="484" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TIME (MS)</text>
+</svg>

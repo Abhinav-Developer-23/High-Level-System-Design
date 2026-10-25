@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="510" viewBox="0 0 800 510" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>GC tuning triangle</title>
+  <desc>A triangle with corners Throughput (top), Low latency (bottom left) and Small footprint (bottom right). Parallel sits near Throughput, ZGC and Shenandoah near Low latency, Serial near Small footprint, and G1 in the middle as the balanced default. Pick two: improving one corner costs another.</desc>
+  <rect x="0.5" y="0.5" width="799" height="509" rx="14" fill="#161b22" stroke="#30363d"/>
+  <polygon points="400,96 120,400 680,400" fill="#1c2128" stroke="#484f58" stroke-width="1.5" stroke-linejoin="round"/>
+  <circle cx="400" cy="96" r="5" fill="#58a6ff"/>
+  <circle cx="120" cy="400" r="5" fill="#bc8cff"/>
+  <circle cx="680" cy="400" r="5" fill="#39c5cf"/>
+  <rect x="340.0" y="47" width="120" height="30" rx="8" fill="#58a6ff" fill-opacity=".16" stroke="#58a6ff"/>
+  <text x="400" y="67" fill="#79c0ff" font-size="14" font-weight="700" text-anchor="middle">Throughput</text>
+  <rect x="58.0" y="419" width="124" height="30" rx="8" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff"/>
+  <text x="120" y="439" fill="#d2a8ff" font-size="14" font-weight="700" text-anchor="middle">Low latency</text>
+  <rect x="606.0" y="419" width="148" height="30" rx="8" fill="#39c5cf" fill-opacity=".16" stroke="#39c5cf"/>
+  <text x="680" y="439" fill="#56d4dd" font-size="14" font-weight="700" text-anchor="middle">Small footprint</text>
+  <rect x="358.0" y="158" width="84" height="24" rx="12" fill="#58a6ff" fill-opacity=".14" stroke="#58a6ff" stroke-opacity=".9"/>
+  <text x="400" y="174.5" fill="#79c0ff" font-size="13" font-weight="600" text-anchor="middle">Parallel</text>
+  <rect x="183.0" y="350" width="58" height="24" rx="12" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".9"/>
+  <text x="212" y="366.5" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle">ZGC</text>
+  <rect x="248.0" y="350" width="108" height="24" rx="12" fill="#bc8cff" fill-opacity=".14" stroke="#bc8cff" stroke-opacity=".9"/>
+  <text x="302" y="366.5" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle">Shenandoah</text>
+  <rect x="555.0" y="350" width="70" height="24" rx="12" fill="#39c5cf" fill-opacity=".14" stroke="#39c5cf" stroke-opacity=".9"/>
+  <text x="590" y="366.5" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle">Serial</text>
+  <rect x="328" y="278" width="144" height="50" rx="10" fill="#3fb950" fill-opacity=".14" stroke="#3fb950"/>
+  <text x="400" y="299" fill="#56d364" font-size="15" font-weight="700" text-anchor="middle">G1</text>
+  <text x="400" y="318" fill="#c9d1d9" font-size="12.5" text-anchor="middle">balanced default</text>
+  <text x="400" y="486" fill="#c9d1d9" font-size="13" text-anchor="middle"><tspan fill="#e3b341" font-weight="700">Pick two: </tspan>improving one corner costs another</text>
+</svg>

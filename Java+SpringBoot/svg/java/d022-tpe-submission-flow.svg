@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="548" viewBox="0 0 900 548" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>ThreadPoolExecutor submission flow</title>
+  <desc>Decision flow for execute(task). Running threads below corePoolSize? Yes: start a new core thread for this task. No: does the queue have space? Yes: the task waits in the queue. No: running threads below maximumPoolSize? Yes: start an extra thread for this new task, and it runs before the queued tasks. No: the rejection handler (AbortPolicy, CallerRunsPolicy, and so on). Worked example with core 2, max 4, queue 2 and 7 long tasks: thread-1 runs T1 and thread-2 runs T2 (core); T3 and T4 wait in the queue and run later, when a thread frees up; thread-3 runs T5 and thread-4 runs T6 (extra); T7 is rejected. The pool only grows past core when the queue is full; with an unbounded queue max is never used.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="547" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">ON EVERY SUBMIT</text>
+  <rect x="94" y="54" width="140" height="32" rx="16" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="164" y="75" fill="#79c0ff" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">execute(task)</text>
+  <line x1="164" y1="86" x2="164" y2="104" stroke="#8b949e" stroke-width="1.8" marker-end="url(#arr)"/>
+  <polygon points="164,106 284,152 164,198 44,152" fill="#1c2128" stroke="#8b949e" stroke-opacity=".8"/>
+  <text x="164" y="148" fill="#e6edf3" font-size="13" text-anchor="middle">running threads</text>
+  <text x="164" y="166" fill="#e6edf3" font-size="13" text-anchor="middle">&lt; <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#79c0ff">corePoolSize</tspan>?</text>
+  <line x1="284" y1="152" x2="332" y2="152" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#arrB)"/>
+  <text x="309" y="144" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle">yes</text>
+  <rect x="334" y="126.0" width="192" height="52" rx="9" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-opacity=".75"/>
+  <text x="350" y="147.5" fill="#e6edf3" font-size="13.5">start a new <tspan font-weight="700" fill="#79c0ff">core</tspan> thread</text>
+  <text x="350" y="166.5" fill="#e6edf3" font-size="13.5">for this task</text>
+  <line x1="164" y1="198" x2="164" y2="226" stroke="#8b949e" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="174" y="217.0" fill="#8b949e" font-size="12" font-weight="700">no</text>
+  <polygon points="164,228 284,274 164,320 44,274" fill="#1c2128" stroke="#8b949e" stroke-opacity=".8"/>
+  <text x="164" y="270" fill="#e6edf3" font-size="13" text-anchor="middle">queue has</text>
+  <text x="164" y="288" fill="#e6edf3" font-size="13" text-anchor="middle">space?</text>
+  <line x1="284" y1="274" x2="332" y2="274" stroke="#39c5cf" stroke-width="1.8" marker-end="url(#arrT)"/>
+  <text x="309" y="266" fill="#56d4dd" font-size="12" font-weight="700" text-anchor="middle">yes</text>
+  <rect x="334" y="253.0" width="192" height="42" rx="9" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".75"/>
+  <text x="350" y="279.0" fill="#e6edf3" font-size="13.5">task waits in the <tspan font-weight="700" fill="#56d4dd">queue</tspan></text>
+  <line x1="164" y1="320" x2="164" y2="348" stroke="#8b949e" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="174" y="339.0" fill="#8b949e" font-size="12" font-weight="700">no</text>
+  <polygon points="164,350 284,396 164,442 44,396" fill="#1c2128" stroke="#8b949e" stroke-opacity=".8"/>
+  <text x="164" y="392" fill="#e6edf3" font-size="13" text-anchor="middle">running threads</text>
+  <text x="164" y="410" fill="#e6edf3" font-size="13" text-anchor="middle">&lt; <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12.5" fill="#79c0ff">maximumPoolSize</tspan>?</text>
+  <line x1="284" y1="396" x2="332" y2="396" stroke="#d29922" stroke-width="1.8" marker-end="url(#arrA)"/>
+  <text x="309" y="388" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">yes</text>
+  <rect x="334" y="370.0" width="192" height="52" rx="9" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".75"/>
+  <text x="350" y="391.5" fill="#e6edf3" font-size="13.5">start an <tspan font-weight="700" fill="#e3b341">EXTRA</tspan> thread</text>
+  <text x="350" y="410.5" fill="#e6edf3" font-size="13.5">for this <tspan font-weight="700">NEW</tspan> task</text>
+  <text x="338" y="442" fill="#e3b341" font-size="12.5">⚠ it runs before the queued tasks</text>
+  <line x1="164" y1="442" x2="164" y2="464" stroke="#8b949e" stroke-width="1.8" marker-end="url(#arr)"/>
+  <text x="174" y="458.0" fill="#8b949e" font-size="12" font-weight="700">no</text>
+  <rect x="24" y="466" width="280" height="60" rx="9" fill="#f85149" fill-opacity=".12" stroke="#f85149" stroke-opacity=".8"/>
+  <text x="164" y="489" fill="#ff7b72" font-size="14" font-weight="700" text-anchor="middle">rejection handler</text>
+  <text x="164" y="511" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(AbortPolicy, CallerRunsPolicy, …)</text>
+  <rect x="552" y="20" width="324" height="508" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <text x="568" y="44" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">WORKED EXAMPLE</text>
+  <text x="568" y="68" fill="#e6edf3" font-size="13.5" font-weight="600">core = 2 · max = 4 · queue = 2</text>
+  <text x="568" y="88" fill="#c9d1d9" font-size="13">7 long tasks: T1 … T7</text>
+  <line x1="568" y1="102" x2="860" y2="102" stroke="#21262d"/>
+  <text x="568" y="126" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">THREADS</text>
+  <rect x="568" y="138" width="292" height="32" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="582" y="158.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">thread-1</text>
+  <rect x="692" y="142" width="40" height="24" rx="6" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="712.0" y="158.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T1</text>
+  <text x="846" y="158.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="end">core</text>
+  <rect x="568" y="178" width="292" height="32" rx="8" fill="#58a6ff" fill-opacity=".08" stroke="#58a6ff" stroke-opacity=".55"/>
+  <text x="582" y="198.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">thread-2</text>
+  <rect x="692" y="182" width="40" height="24" rx="6" fill="#58a6ff" fill-opacity=".2" stroke="#58a6ff"/>
+  <text x="712.0" y="198.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T2</text>
+  <text x="846" y="198.5" fill="#79c0ff" font-size="12.5" font-weight="700" text-anchor="end">core</text>
+  <rect x="568" y="218" width="292" height="32" rx="8" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".55"/>
+  <text x="582" y="238.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">thread-3</text>
+  <rect x="692" y="222" width="40" height="24" rx="6" fill="#d29922" fill-opacity=".2" stroke="#d29922"/>
+  <text x="712.0" y="238.5" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T5</text>
+  <text x="846" y="238.5" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="end">extra</text>
+  <rect x="568" y="258" width="292" height="32" rx="8" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".55"/>
+  <text x="582" y="278.5" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">thread-4</text>
+  <rect x="692" y="262" width="40" height="24" rx="6" fill="#d29922" fill-opacity=".2" stroke="#d29922"/>
+  <text x="712.0" y="278.5" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T6</text>
+  <text x="846" y="278.5" fill="#e3b341" font-size="12.5" font-weight="700" text-anchor="end">extra</text>
+  <text x="568" y="320" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">QUEUE (2 SLOTS)</text>
+  <rect x="568" y="330" width="104" height="36" rx="8" fill="#161b22" stroke="#39c5cf" stroke-opacity=".7"/>
+  <rect x="574" y="336" width="44" height="24" rx="6" fill="#39c5cf" fill-opacity=".2" stroke="#39c5cf"/>
+  <text x="596.0" y="352.5" fill="#56d4dd" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T3</text>
+  <rect x="622" y="336" width="44" height="24" rx="6" fill="#39c5cf" fill-opacity=".2" stroke="#39c5cf"/>
+  <text x="644.0" y="352.5" fill="#56d4dd" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T4</text>
+  <text x="688" y="345" fill="#c9d1d9" font-size="12.5">run later, when a</text>
+  <text x="688" y="363" fill="#c9d1d9" font-size="12.5">thread frees up</text>
+  <line x1="568" y1="384" x2="860" y2="384" stroke="#21262d"/>
+  <rect x="568" y="398" width="40" height="24" rx="6" fill="#f85149" fill-opacity=".2" stroke="#f85149"/>
+  <text x="588.0" y="414.5" fill="#ff7b72" font-size="12.5" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">T7</text>
+  <text x="620" y="415" fill="#ff7b72" font-size="13.5" font-weight="700">rejected</text>
+  <text x="688" y="415" fill="#8b949e" font-size="12">all 4 threads busy, queue full</text>
+  <rect x="568" y="440" width="292" height="72" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="582" y="463" fill="#e3b341" font-size="12.5" font-weight="700">⚠ the pool only grows past core</text>
+  <text x="582" y="482" fill="#e3b341" font-size="12.5" font-weight="700">when the queue is full;</text>
+  <text x="582" y="501" fill="#c9d1d9" font-size="12.5">unbounded queue ⇒ max never used</text>
+</svg>

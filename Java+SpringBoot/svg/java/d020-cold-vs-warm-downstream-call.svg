@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="494" viewBox="0 0 900 494" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Cold vs warm downstream call</title>
+  <desc>Two timelines on the same millisecond scale (numbers illustrative). Cold call, the first requests after start: DNS lookup about 20 ms, TCP connect 1 RTT about 30 ms, TLS handshake 1 to 2 RTT about 60 ms, client and serializer setup with class loading about 150 ms, request and downstream processing about 50 ms, response parsing in interpreted code about 40 ms; total about 350 ms. Warm call: reused keep-alive connection about 2 ms, downstream processing about 50 ms, JIT-compiled parsing about 3 ms; total about 55 ms. Your client-side timer measures the whole cold call, so dashboards blame the downstream, but the downstream own time is the same in both.</desc>
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="493" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="40" fill="#e6edf3" font-size="15" font-weight="600">Cold call <tspan fill="#8b949e" font-size="12" font-weight="400">first requests after start</tspan></text>
+  <text x="876" y="40" fill="#ff7b72" font-size="14" font-weight="700" text-anchor="end">total ≈ 350 ms</text>
+  <path d="M24,84 L24,76 L876,76 L876,84" fill="none" stroke="#e3b341" stroke-width="1.5"/>
+  <line x1="450.0" y1="76" x2="450.0" y2="71" stroke="#e3b341" stroke-width="1.5"/>
+  <text x="450.0" y="65" fill="#e3b341" font-size="13" text-anchor="middle"><tspan font-weight="700">your client-side timer measures all of this</tspan> → dashboards blame the downstream</text>
+  <rect x="24.8" y="90" width="47.2" height="76" rx="4" fill="#d29922" fill-opacity=".18" stroke="#d29922"/>
+  <text x="48.3" y="117.0" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">DNS</text>
+  <text x="48.3" y="132.0" fill="#c9d1d9" font-size="12" text-anchor="middle">lookup</text>
+  <text x="48.3" y="147.0" fill="#c9d1d9" font-size="12" text-anchor="middle">~20 ms</text>
+  <rect x="73.4" y="90" width="71.5" height="76" rx="4" fill="#d29922" fill-opacity=".18" stroke="#d29922"/>
+  <text x="109.2" y="109.5" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">TCP</text>
+  <text x="109.2" y="124.5" fill="#c9d1d9" font-size="12" text-anchor="middle">connect</text>
+  <text x="109.2" y="139.5" fill="#c9d1d9" font-size="12" text-anchor="middle">1 RTT</text>
+  <text x="109.2" y="154.5" fill="#c9d1d9" font-size="12" text-anchor="middle">~30 ms</text>
+  <rect x="146.5" y="90" width="144.6" height="76" rx="4" fill="#d29922" fill-opacity=".18" stroke="#d29922"/>
+  <text x="218.7" y="109.5" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle">TLS</text>
+  <text x="218.7" y="124.5" fill="#c9d1d9" font-size="12" text-anchor="middle">handshake</text>
+  <text x="218.7" y="139.5" fill="#c9d1d9" font-size="12" text-anchor="middle">1–2 RTT</text>
+  <text x="218.7" y="154.5" fill="#c9d1d9" font-size="12" text-anchor="middle">~60 ms</text>
+  <rect x="292.5" y="90" width="363.6" height="76" rx="4" fill="#f85149" fill-opacity=".18" stroke="#f85149"/>
+  <text x="474.3" y="117.0" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">client + serializer setup,</text>
+  <text x="474.3" y="132.0" fill="#c9d1d9" font-size="12" text-anchor="middle">class loading</text>
+  <text x="474.3" y="147.0" fill="#c9d1d9" font-size="12" text-anchor="middle">~150 ms</text>
+  <rect x="657.7" y="90" width="120.2" height="76" rx="4" fill="#39c5cf" fill-opacity=".30" stroke="#39c5cf"/>
+  <text x="717.8" y="109.5" fill="#c9d1d9" font-size="12" text-anchor="middle">request →</text>
+  <text x="717.8" y="124.5" fill="#56d4dd" font-size="12" font-weight="700" text-anchor="middle">downstream</text>
+  <text x="717.8" y="139.5" fill="#56d4dd" font-size="12" font-weight="700" text-anchor="middle">processing</text>
+  <text x="717.8" y="154.5" fill="#c9d1d9" font-size="12" text-anchor="middle">~50 ms</text>
+  <rect x="779.4" y="90" width="95.9" height="76" rx="4" fill="#f85149" fill-opacity=".18" stroke="#f85149"/>
+  <text x="827.3" y="109.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">response</text>
+  <text x="827.3" y="124.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">parsing,</text>
+  <text x="827.3" y="139.5" fill="#c9d1d9" font-size="12" text-anchor="middle">interpreted</text>
+  <text x="827.3" y="154.5" fill="#c9d1d9" font-size="12" text-anchor="middle">~40 ms</text>
+  <path d="M658.9,172 L658.9,178 L776.6,178 L776.6,172" fill="none" stroke="#56d4dd" stroke-width="1.5"/>
+  <line x1="717.8" y1="178" x2="717.8" y2="183" stroke="#56d4dd" stroke-width="1.5"/>
+  <text x="717.8" y="200" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle">the downstream's own time: the same</text>
+  <line x1="24" y1="220" x2="876" y2="220" stroke="#21262d"/>
+  <text x="24" y="250" fill="#e6edf3" font-size="15" font-weight="600">Warm call <tspan fill="#8b949e" font-size="12" font-weight="400">after warm-up</tspan></text>
+  <text x="876" y="250" fill="#56d364" font-size="14" font-weight="700" text-anchor="end">total ≈ 55 ms</text>
+  <rect x="24.5" y="290" width="5.3" height="76" rx="4" fill="#3fb950" fill-opacity=".18" stroke="#3fb950"/>
+  <rect x="31.1" y="290" width="120.2" height="76" rx="4" fill="#39c5cf" fill-opacity=".30" stroke="#39c5cf"/>
+  <text x="91.2" y="309.5" fill="#c9d1d9" font-size="12" text-anchor="middle">request →</text>
+  <text x="91.2" y="324.5" fill="#56d4dd" font-size="12" font-weight="700" text-anchor="middle">downstream</text>
+  <text x="91.2" y="339.5" fill="#56d4dd" font-size="12" font-weight="700" text-anchor="middle">processing</text>
+  <text x="91.2" y="354.5" fill="#c9d1d9" font-size="12" text-anchor="middle">~50 ms</text>
+  <rect x="152.5" y="290" width="6.3" height="76" rx="4" fill="#3fb950" fill-opacity=".18" stroke="#3fb950"/>
+  <path d="M27.2,290 L27.2,280 L177.3,280 L177.3,308" fill="none" stroke="#56d364" stroke-width="1.2"/>
+  <text x="183.3462857142857" y="312" fill="#56d364" font-size="13"><tspan font-weight="700">reused keep-alive connection</tspan> · ~2 ms <tspan fill="#8b949e">(no DNS, TCP or TLS)</tspan></text>
+  <line x1="161.3" y1="344" x2="177.3" y2="344" stroke="#56d364" stroke-width="1.2"/>
+  <text x="183.3462857142857" y="348" fill="#56d364" font-size="13"><tspan font-weight="700">JIT-compiled parsing</tspan> · ~3 ms</text>
+  <path d="M32.3,372 L32.3,378 L150.0,378 L150.0,372" fill="none" stroke="#56d4dd" stroke-width="1.5"/>
+  <line x1="91.2" y1="378" x2="91.2" y2="383" stroke="#56d4dd" stroke-width="1.5"/>
+  <text x="24" y="400" fill="#56d4dd" font-size="13" font-weight="600">the downstream's own time: the same</text>
+  <line x1="24" y1="428" x2="876" y2="428" stroke="#8b949e" stroke-width="1"/>
+  <line x1="24.0" y1="428" x2="24.0" y2="433" stroke="#8b949e"/>
+  <text x="24.0" y="448" fill="#8b949e" font-size="12" text-anchor="start">0 ms</text>
+  <line x1="145.7" y1="428" x2="145.7" y2="433" stroke="#8b949e"/>
+  <text x="145.7" y="448" fill="#8b949e" font-size="12" text-anchor="middle">50 ms</text>
+  <line x1="267.4" y1="428" x2="267.4" y2="433" stroke="#8b949e"/>
+  <text x="267.4" y="448" fill="#8b949e" font-size="12" text-anchor="middle">100 ms</text>
+  <line x1="389.1" y1="428" x2="389.1" y2="433" stroke="#8b949e"/>
+  <text x="389.1" y="448" fill="#8b949e" font-size="12" text-anchor="middle">150 ms</text>
+  <line x1="510.9" y1="428" x2="510.9" y2="433" stroke="#8b949e"/>
+  <text x="510.9" y="448" fill="#8b949e" font-size="12" text-anchor="middle">200 ms</text>
+  <line x1="632.6" y1="428" x2="632.6" y2="433" stroke="#8b949e"/>
+  <text x="632.6" y="448" fill="#8b949e" font-size="12" text-anchor="middle">250 ms</text>
+  <line x1="754.3" y1="428" x2="754.3" y2="433" stroke="#8b949e"/>
+  <text x="754.3" y="448" fill="#8b949e" font-size="12" text-anchor="middle">300 ms</text>
+  <line x1="876.0" y1="428" x2="876.0" y2="433" stroke="#8b949e"/>
+  <text x="876.0" y="448" fill="#8b949e" font-size="12" text-anchor="end">350 ms</text>
+  <rect x="24" y="460" width="22" height="14" rx="3" fill="#d29922" fill-opacity=".18" stroke="#d29922"/>
+  <text x="54" y="472" fill="#c9d1d9" font-size="13">connection setup (our side)</text>
+  <rect x="270.8" y="460" width="22" height="14" rx="3" fill="#f85149" fill-opacity=".18" stroke="#f85149"/>
+  <text x="300.8" y="472" fill="#c9d1d9" font-size="13">cold code on our side</text>
+  <rect x="479.20000000000005" y="460" width="22" height="14" rx="3" fill="#39c5cf" fill-opacity=".30" stroke="#39c5cf"/>
+  <text x="509.20000000000005" y="472" fill="#c9d1d9" font-size="13">downstream processing</text>
+  <rect x="687.6" y="460" width="22" height="14" rx="3" fill="#3fb950" fill-opacity=".18" stroke="#3fb950"/>
+  <text x="717.6" y="472" fill="#c9d1d9" font-size="13">warm: reused / compiled</text>
+  <text x="876" y="416" fill="#8b949e" font-size="12" font-style="italic" text-anchor="end">same ms scale for both · numbers are illustrative</text>
+</svg>
