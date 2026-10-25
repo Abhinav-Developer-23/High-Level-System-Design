@@ -95,8 +95,53 @@ Interview-prep notes on Java internals. Written for modern Java (17 / 21 / 25 LT
 1. [How HashMap works internally](#1-how-hashmap-works-internally)
 2. [How ConcurrentHashMap works internally](#2-how-concurrenthashmap-works-internally)
 3. [How CopyOnWriteArrayList works internally](#3-how-copyonwritearraylist-works-internally)
-4. [Collections interview questions](#4-collections-interview-questions)
-5. [Collections cheat sheet](#5-collections-cheat-sheet)
+4. [Fail-fast vs fail-safe iterators](#4-fail-fast-vs-fail-safe-iterators)
+5. [Collections interview questions](#5-collections-interview-questions)
+6. [Collections cheat sheet](#6-collections-cheat-sheet)
+
+**Strings: Why String Is Immutable**
+
+1. [What "immutable" means for String](#1-what-immutable-means-for-string)
+2. [The String pool](#2-the-string-pool)
+3. [Why String is immutable](#3-why-string-is-immutable)
+4. [How immutability is enforced](#4-how-immutability-is-enforced)
+5. [The price, and StringBuilder](#5-the-price-and-stringbuilder)
+6. [Strings interview questions](#6-strings-interview-questions)
+7. [Strings cheat sheet](#7-strings-cheat-sheet)
+
+**equals, hashCode, Immutability and Records**
+
+1. [The equals() contract](#1-the-equals-contract)
+2. [The hashCode() contract](#2-the-hashcode-contract)
+3. [What breaks in a HashMap when you get it wrong](#3-what-breaks-in-a-hashmap-when-you-get-it-wrong)
+4. [Writing equals and hashCode correctly](#4-writing-equals-and-hashcode-correctly)
+5. [Immutable objects: why bother](#5-immutable-objects-why-bother)
+6. [How to write an immutable class](#6-how-to-write-an-immutable-class)
+7. [Records](#7-records)
+8. [equals, hashCode and immutability interview questions](#8-equals-hashcode-and-immutability-interview-questions)
+9. [equals, hashCode and immutability cheat sheet](#9-equals-hashcode-and-immutability-cheat-sheet)
+
+**Reflection**
+
+1. [What is reflection?](#1-what-is-reflection)
+2. [The reflection API, with examples](#2-the-reflection-api-with-examples)
+3. [Annotations + reflection: how frameworks work](#3-annotations--reflection-how-frameworks-work)
+4. [Dynamic proxies](#4-dynamic-proxies)
+5. [The costs and limits](#5-the-costs-and-limits)
+6. [Reflection interview questions](#6-reflection-interview-questions)
+7. [Reflection cheat sheet](#7-reflection-cheat-sheet)
+
+**What's New in Java 8, 11, 17 and 21**
+
+1. [Release model and the LTS versions](#1-release-model-and-the-lts-versions)
+2. [Java 8 (2014): the big one](#2-java-8-2014-the-big-one)
+3. [Java 11: what came after 8 (Java 9, 10, 11)](#3-java-11-what-came-after-8-java-9-10-11)
+4. [Java 17: what came after 11 (Java 12 to 17)](#4-java-17-what-came-after-11-java-12-to-17)
+5. [Java 21: what came after 17 (Java 18 to 21)](#5-java-21-what-came-after-17-java-18-to-21)
+6. [After 21: Java 22 to 25](#6-after-21-java-22-to-25)
+7. [Upgrading from Java 8: what breaks](#7-upgrading-from-java-8-what-breaks)
+8. [Java versions interview questions](#8-java-versions-interview-questions)
+9. [Java versions cheat sheet](#9-java-versions-cheat-sheet)
 
 **JVM Flags Reference**
 
@@ -2653,7 +2698,97 @@ Compare with a plain `ArrayList`, where adding while another thread iterates thr
 
 ---
 
-## 4. Collections interview questions
+## 4. Fail-fast vs fail-safe iterators
+
+What happens if a collection changes **while you're iterating over it**? There are three behaviours:
+
+![Three iterator behaviours: fail-fast (ArrayList, HashMap) compares modCount with the iterator's expectedModCount and throws ConcurrentModificationException when list.add(E) changes it mid-loop; snapshot (CopyOnWriteArrayList) keeps reading the old array, so it never throws and doesn't see E; weakly consistent (ConcurrentHashMap) walks the live table, never throws, visits every element present at the start exactly once, and may or may not see a concurrent put](svg/java/d029-fail-fast-vs-fail-safe.svg)
+
+| Kind | Collections | On a change during iteration | Sees the change? |
+|---|---|---|---|
+| **Fail-fast** | `ArrayList`, `HashMap`, `HashSet`, `LinkedList`, `TreeMap` | Throws `ConcurrentModificationException` (CME) on the next `next()` | — |
+| **Snapshot** | `CopyOnWriteArrayList`, `CopyOnWriteArraySet` | Nothing: the iterator reads a frozen copy | ✗ Never |
+| **Weakly consistent** | `ConcurrentHashMap`, `ConcurrentLinkedQueue`, `ConcurrentSkipListMap`, `LinkedBlockingQueue` | Nothing: the iterator walks the live structure | Maybe |
+
+The last two are often called **"fail-safe"** in interviews. That isn't an official Java term; the JDK docs say *snapshot* and *weakly consistent*. It's worth saying so in the interview.
+
+### How fail-fast works: modCount
+
+Every fail-fast collection keeps a counter, `modCount`, that goes up on every **structural** change (add, remove, clear, resize; `set()` on a list doesn't count). The iterator remembers the value it started with and checks it on every step:
+
+```java
+// simplified from ArrayList.Itr
+int expectedModCount = modCount;          // taken when the iterator is created
+
+public E next() {
+    if (modCount != expectedModCount)     // someone changed the list behind my back
+        throw new ConcurrentModificationException();
+    ...
+}
+```
+
+The classic way to hit it needs **no threads at all**:
+
+```java
+List<String> names = new ArrayList<>(List.of("Asha", "Ravi", "Meera", "John"));
+
+for (String name : names) {                 // for-each uses an Iterator under the hood
+    if (name.startsWith("R")) {
+        names.remove(name);                 // ❌ modCount++ → next() throws CME
+    }
+}
+```
+
+The fixes:
+
+```java
+// 1. removeIf: the simplest (Java 8+)
+names.removeIf(name -> name.startsWith("R"));
+
+// 2. remove through the iterator itself: it updates expectedModCount
+Iterator<String> it = names.iterator();
+while (it.hasNext()) {
+    if (it.next().startsWith("R")) {
+        it.remove();                        // ✓ allowed
+    }
+}
+
+// 3. build a new list instead of changing the old one
+List<String> kept = names.stream().filter(n -> !n.startsWith("R")).toList();
+```
+
+> [!WARNING]
+> ⚠️ Fail-fast is **best effort**, not a guarantee. Without synchronization another thread's change may not be visible in time, so you can get no exception and corrupted data instead. And there's a famous trap: removing the **second-to-last** element inside a for-each loop throws nothing. `hasNext()` checks `cursor != size`, the size just shrank to match the cursor, the loop simply ends, and the last element is never visited. CME is a bug detector, never something to rely on.
+
+### How "fail-safe" works
+
+- **Snapshot (`CopyOnWriteArrayList`):** every write creates a new array; the iterator holds a reference to the old one. It can't throw and never sees changes made after it started. `iterator.remove()` throws `UnsupportedOperationException`. See [how CopyOnWriteArrayList works](#3-how-copyonwritearraylist-works-internally).
+- **Weakly consistent (`ConcurrentHashMap`):** the iterator walks the real table without locking. It never throws, visits every element that existed when it started **exactly once**, and may or may not show elements added or removed during the walk.
+
+```java
+Map<String, Integer> stock = new ConcurrentHashMap<>(Map.of("apple", 5, "pear", 0));
+
+for (String fruit : stock.keySet()) {
+    if (stock.get(fruit) == 0) {
+        stock.remove(fruit);                // ✓ fine on ConcurrentHashMap, CME on HashMap
+    }
+}
+```
+
+| | Fail-fast | Fail-safe (snapshot / weakly consistent) |
+|---|---|---|
+| Throws CME | ✓ | ✗ |
+| Works on | The live collection | A copy (snapshot) or the live structure (weakly consistent) |
+| Memory | No extra | Snapshot: a full copy per write |
+| Sees concurrent changes | — | Snapshot: never · weakly consistent: maybe |
+| Thread-safe | ✗ | ✓ |
+
+> [!NOTE]
+> Don't confuse CME with `UnsupportedOperationException`. `List.of(...)`, `Map.of(...)`, `Stream.toList()` and `Collections.unmodifiableList(...)` throw `UnsupportedOperationException` on **any** change, iterating or not, because they're unmodifiable.
+
+---
+
+## 5. Collections interview questions
 
 <details>
 <summary><b>Q1. How does HashMap work internally?</b></summary>
@@ -2712,12 +2847,12 @@ It keeps a `volatile` array. Reads and iteration use the current array with no l
 <details>
 <summary><b>Q10. What is a fail-fast vs a weakly consistent iterator?</b></summary>
 
-A fail-fast iterator (`ArrayList`, `HashMap`) checks a modification counter and throws `ConcurrentModificationException` if the collection changes during iteration (other than through the iterator itself). A weakly consistent iterator (`ConcurrentHashMap`) never throws, and may or may not reflect concurrent changes. `CopyOnWriteArrayList` iterators are snapshot iterators: they never reflect later changes.
+A fail-fast iterator (`ArrayList`, `HashMap`) checks a modification counter and throws `ConcurrentModificationException` if the collection changes during iteration (other than through the iterator itself). A weakly consistent iterator (`ConcurrentHashMap`) never throws, and may or may not reflect concurrent changes. `CopyOnWriteArrayList` iterators are snapshot iterators: they never reflect later changes. The last two are what interviewers call "fail-safe". See [Fail-fast vs fail-safe iterators](#4-fail-fast-vs-fail-safe-iterators).
 </details>
 
 ---
 
-## 5. Collections cheat sheet
+## 6. Collections cheat sheet
 
 | Topic | Remember |
 |---|---|
@@ -2732,6 +2867,1221 @@ A fail-fast iterator (`ArrayList`, `HashMap`) checks a modification counter and 
 | CHM rules | No nulls; weakly consistent iterators; use `merge` / `compute` / `computeIfAbsent` |
 | CopyOnWriteArrayList | Volatile array; writes copy the whole array; reads/iterators lock-free on a snapshot |
 | COW use | Read-mostly small lists (listeners); never write-heavy |
+| Fail-fast | `modCount` check → CME; remove with `iterator.remove()` / `removeIf` |
+| "Fail-safe" | Snapshot (COW: never sees changes) or weakly consistent (CHM: may see them); never CME |
+
+---
+
+# Strings: Why String Is Immutable
+
+## 1. What "immutable" means for String
+
+Once a `String` object is created, its characters **can never change**. Every method that looks like it modifies a string returns a **new** `String` and leaves the original alone.
+
+```java
+String s = "hello";
+s.toUpperCase();              // creates "HELLO" and throws it away
+System.out.println(s);        // hello: unchanged
+
+s = s.toUpperCase();          // the VARIABLE now points to a new object
+System.out.println(s);        // HELLO
+```
+
+The variable `s` can be reassigned; the **object** can't be changed. `concat`, `replace`, `substring`, `trim`, `strip` all work this way.
+
+---
+
+## 2. The String pool
+
+String literals are stored once in the **String pool** (a table on the heap). Every identical literal in the program points to the same object.
+
+```java
+String s1 = "hello";              // put in the pool
+String s2 = "hello";              // reuses the pooled object
+String s3 = new String("hello");  // forces a NEW object outside the pool
+String s4 = s3.intern();          // returns the pooled "hello"
+
+s1 == s2        // true:  same object
+s1 == s3        // false: different objects
+s1.equals(s3)   // true:  same characters
+s1 == s4        // true:  intern() gave back the pooled one
+```
+
+![String pool and immutability: s1 and s2 are literals pointing to the one shared "hello" object in the pool, so s1 == s2 is true; s3 = new String("hello") is a separate object outside the pool, so s1 == s3 is false while s1.equals(s3) is true; s4 = s1.toUpperCase() points to a new "HELLO" object and "hello" is unchanged; sharing is only safe because nobody can change "hello"](svg/java/d030-string-pool-immutability.svg)
+
+> [!WARNING]
+> ⚠️ Always compare strings with `equals()`, never `==`. `==` compares references, so it "works" for literals and fails for strings built at runtime (from input, a database, `substring`…).
+
+---
+
+## 3. Why String is immutable
+
+Five reasons, and they all come back to strings being **shared everywhere**:
+
+1. **The String pool needs it.** `s1` and `s2` above are the same object. If `s2` could change it to `"HELLX"`, `s1` would silently change too, and so would every other `"hello"` in the JVM. Sharing is only safe because nobody can modify the object.
+2. **Security.** Strings carry file paths, URLs, hostnames, class names, SQL and usernames. Code checks a value and then uses it:
+   ```java
+   if (isAllowed(path)) {        // check "/home/app/report.txt"
+       openFile(path);           // if path could change in between: "/etc/passwd"
+   }
+   ```
+   With a mutable string, another piece of code (or thread) holding the same reference could change it **after the check and before the use**. Immutability closes that hole.
+3. **Thread safety for free.** An object that never changes can be shared by any number of threads with no locks and no visibility problems.
+4. **Cached hashCode, so fast HashMap keys.** `String` computes its `hashCode()` once and stores it in a field. Because the content can't change, the cached value stays correct forever. That makes strings ideal `HashMap` keys. A mutable key would break the map (see [What breaks in a HashMap](#3-what-breaks-in-a-hashmap-when-you-get-it-wrong)).
+5. **Class loading.** The JVM loads classes by name (`"java.lang.String"`, `"com.example.Order"`). If a class name could change after the security check, you could trick the loader into loading a different class.
+
+> [!IMPORTANT]
+> Interview one-liner: **"String is immutable so it can be safely shared: the String pool reuses one object for every equal literal, its hashCode can be cached so it's a fast and safe HashMap key, any thread can read it without locks, and a value can't change between a security check and its use."**
+
+---
+
+## 4. How immutability is enforced
+
+Simplified from the JDK source:
+
+```java
+public final class String implements Comparable<String>, CharSequence {   // final: no subclass can add mutability
+
+    private final byte[] value;   // the characters; private and final
+    private final byte coder;     // LATIN1 (1 byte per char) or UTF16 (2 bytes per char)
+    private int hash;             // cached hashCode, 0 until first computed
+
+    // no setters; every "modifying" method copies into a NEW array and returns a NEW String
+}
+```
+
+- **`final` class**: nobody can write a `MutableString extends String`.
+- **`private final` array**: the reference can't be swapped, and the array never leaks out. `toCharArray()` and `getBytes()` return **copies**.
+- **No mutators**: every method that "changes" the string returns a new one.
+
+Since Java 9 strings use **compact strings**: text that fits in Latin-1 is stored with one byte per character instead of two, which roughly halves the memory of typical strings.
+
+---
+
+## 5. The price, and StringBuilder
+
+Immutability means every change creates a new object. In a loop that adds up:
+
+```java
+// ❌ O(n²): each += copies everything built so far into a new String
+String csv = "";
+for (Order o : orders) {
+    csv += o.id() + ",";
+}
+
+// ✓ O(n): one growing buffer, one final String
+StringBuilder sb = new StringBuilder();
+for (Order o : orders) {
+    sb.append(o.id()).append(',');
+}
+String csv = sb.toString();
+
+// ✓ or simply
+String csv = orders.stream().map(o -> String.valueOf(o.id())).collect(Collectors.joining(","));
+```
+
+A single expression like `"Hi " + name + "!"` is fine. The compiler turns it into one efficient concatenation; the problem is only `+=` in a loop.
+
+| | `String` | `StringBuilder` | `StringBuffer` |
+|---|---|---|---|
+| Mutable | ✗ | ✓ | ✓ |
+| Thread-safe | ✓ (immutable) | ✗ | ✓ (every method `synchronized`) |
+| Speed | New object per change | Fast | Slower (locking) |
+| Use | Values, keys, constants | Building strings in one thread (almost always) | Legacy code; rarely needed |
+
+---
+
+## 6. Strings interview questions
+
+<details>
+<summary><b>Q1. Why is String immutable in Java?</b></summary>
+
+So it can be shared safely. The String pool gives every equal literal the same object, which only works if nobody can change it. Immutability also makes strings thread-safe without locks, lets `hashCode` be cached (fast, reliable `HashMap` keys), and prevents a value from changing between a security check and its use (file paths, URLs, class names).
+</details>
+
+<details>
+<summary><b>Q2. How many objects does <code>new String("hello")</code> create?</b></summary>
+
+Up to two. The literal `"hello"` goes into the String pool the first time that line runs (if it isn't there already), and `new` always creates one more `String` object on the heap. So: one new object at runtime, plus the pooled literal if it didn't exist yet. There's almost never a reason to write `new String("...")`.
+</details>
+
+<details>
+<summary><b>Q3. == vs equals() for strings?</b></summary>
+
+`==` checks whether two references point to the same object. `equals()` checks whether the characters are the same. Literals happen to share one pooled object, so `==` seems to work for them, but strings created at runtime are separate objects. Always use `equals()` (or `Objects.equals(a, b)` when either may be null).
+</details>
+
+<details>
+<summary><b>Q4. What does intern() do?</b></summary>
+
+It returns the pooled copy of the string, adding it to the pool first if needed. Two interned equal strings are then `==`. It can save memory when you have millions of duplicate strings, but G1's `-XX:+UseStringDeduplication` usually does that better without code changes.
+</details>
+
+<details>
+<summary><b>Q5. Why is char[] preferred over String for passwords?</b></summary>
+
+A `String` can't be wiped: it stays in memory (and maybe in the pool) until the GC collects it, and it may show up in a heap dump or a log. A `char[]` can be overwritten with `Arrays.fill(password, '\0')` right after use. That's why `JPasswordField.getPassword()` and `Console.readPassword()` return `char[]`.
+</details>
+
+<details>
+<summary><b>Q6. StringBuilder vs StringBuffer?</b></summary>
+
+Same API. `StringBuffer` synchronizes every method, so it's thread-safe but slower. `StringBuilder` doesn't. Building a string is almost always done by one thread, so use `StringBuilder`.
+</details>
+
+<details>
+<summary><b>Q7. Is String really impossible to change?</b></summary>
+
+Through its public API, yes. Older Java versions allowed hacking the private `value` array with reflection; since Java 17 the JDK's internals are strongly encapsulated, and `setAccessible(true)` on `String.value` throws `InaccessibleObjectException` unless you open the module with `--add-opens`.
+</details>
+
+---
+
+## 7. Strings cheat sheet
+
+| Topic | Remember |
+|---|---|
+| Immutable | Every "change" returns a new String; the original never changes |
+| Why | Pool sharing · security · thread safety · cached hashCode · class loading |
+| Enforced by | `final` class, `private final byte[] value`, no setters, copies out |
+| String pool | Literals stored once on the heap; `intern()` returns the pooled copy |
+| Compare | `equals()`, never `==` |
+| `new String("x")` | One new object (+ the pooled literal if new). Avoid |
+| Compact strings | Java 9+: Latin-1 text uses 1 byte per char |
+| Building strings | `StringBuilder` in loops; `+` is fine in one expression |
+| `StringBuffer` | Synchronized `StringBuilder`; rarely needed |
+| Passwords | `char[]`, wiped after use |
+
+---
+
+# equals, hashCode, Immutability and Records
+
+## 1. The equals() contract
+
+`Object.equals` by default means **same object** (`==`). You override it when two different objects should count as equal because they hold the same value, like two `Money(100, "INR")` objects.
+
+An `equals` implementation must be:
+
+| Rule | Meaning |
+|---|---|
+| **Reflexive** | `a.equals(a)` is `true` |
+| **Symmetric** | `a.equals(b)` ⇔ `b.equals(a)` |
+| **Transitive** | `a.equals(b)` and `b.equals(c)` ⇒ `a.equals(c)` |
+| **Consistent** | Same answer on every call, as long as the objects don't change |
+| **Non-null** | `a.equals(null)` is `false`, never an exception |
+
+---
+
+## 2. The hashCode() contract
+
+1. **Equal objects must have equal hash codes.** If `a.equals(b)`, then `a.hashCode() == b.hashCode()`.
+2. Unequal objects **may** share a hash code (a collision). That's allowed, just slower.
+3. The value must stay the same while the fields used by `equals` don't change.
+
+So: **override `equals` → you must override `hashCode`, using the same fields.** Rule 1 is the one people break.
+
+---
+
+## 3. What breaks in a HashMap when you get it wrong
+
+`HashMap` first uses `hashCode()` to pick a **bucket**, then `equals()` to find the key **inside** that bucket (see [how HashMap works](#1-how-hashmap-works-internally)). Break the contract and it looks in the wrong bucket.
+
+![Three ways to break a HashMap: equals() without hashCode() puts new Emp(1, "Asha") in bucket 3 by identity hash, and get with an equal but new Emp looks in bucket 11 and returns null, so HashSet keeps duplicates; a mutable key whose id changes after put() now hashes to bucket 7, so get() returns null while the entry is stuck in bucket 3 as an unreachable entry and memory leak; a hashCode() that returns a constant puts every entry in bucket 0, which is still correct but O(n) or O(log n) instead of O(1)](svg/java/d031-hashmap-broken-equals-hashcode.svg)
+
+**Bug 1: `equals` without `hashCode`.**
+
+```java
+class Emp {
+    final int id; final String name;
+    Emp(int id, String name) { this.id = id; this.name = name; }
+
+    @Override public boolean equals(Object o) {
+        return o instanceof Emp e && id == e.id && name.equals(e.name);
+    }
+    // ❌ no hashCode(): inherits Object's identity hash
+}
+
+Map<Emp, String> roles = new HashMap<>();
+roles.put(new Emp(1, "Asha"), "dev");
+roles.get(new Emp(1, "Asha"));              // null: the equal key hashed to a different bucket
+
+Set<Emp> set = new HashSet<>();
+set.add(new Emp(1, "Asha"));
+set.add(new Emp(1, "Asha"));
+set.size();                                 // 2: "duplicates" in a Set
+```
+
+**Bug 2: a mutable key changed after `put`.**
+
+```java
+class Key {
+    int id;                                         // mutable, and used in hashCode
+    Key(int id) { this.id = id; }
+    @Override public boolean equals(Object o) { return o instanceof Key k && id == k.id; }
+    @Override public int hashCode() { return Integer.hashCode(id); }
+}
+
+Map<Key, String> map = new HashMap<>();
+Key key = new Key(1);
+map.put(key, "first");                      // stored in the bucket for id = 1
+
+key.id = 2;                                 // ❌ hash changes; the entry doesn't move
+map.get(key);                               // null: searches the bucket for id = 2
+map.get(new Key(1));                        // null: right bucket, but equals fails (id is 2 now)
+map.size();                                 // 1: the entry is still there, unreachable: a memory leak
+```
+
+**Bug 3: a constant `hashCode`.** `return 42;` is technically legal, so the map still works, but every entry lands in one bucket, and lookups degrade from O(1) to O(n). (Once the bucket becomes a tree it's O(log n), but only if the keys are `Comparable`.)
+
+The rules that avoid all three:
+
+- Override **both** methods, using the **same fields**.
+- Use **immutable** keys (`String`, `Integer`, records, your own immutable classes).
+- Never change a field used in `hashCode` while the object is in a `HashMap` or `HashSet`.
+
+---
+
+## 4. Writing equals and hashCode correctly
+
+```java
+public final class Money {
+    private final long amount;
+    private final String currency;
+
+    public Money(long amount, String currency) {
+        this.amount = amount;
+        this.currency = Objects.requireNonNull(currency);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;                         // fast path
+        if (!(o instanceof Money other)) return false;      // also handles null
+        return amount == other.amount && currency.equals(other.currency);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(amount, currency);              // same fields as equals
+    }
+}
+```
+
+- `instanceof` with a pattern (Java 16+) checks the type, handles `null` and casts in one go.
+- `Objects.hash(...)` combines fields; `Objects.equals(a, b)` compares fields that may be null.
+- Use `getClass() != o.getClass()` instead of `instanceof` if subclasses must never equal the parent; otherwise symmetry can break when a subclass adds fields. Making the class `final` avoids the question.
+- Or let the IDE generate both, or just use a **record**, which does it for you (section 7).
+
+---
+
+## 5. Immutable objects: why bother
+
+An **immutable** object's state can't change after construction. `String`, `Integer`, `LocalDate`, `BigDecimal`, `List.of(...)` and records are all immutable.
+
+| Benefit | Why |
+|---|---|
+| **Thread-safe** | No writes, so no races and no locks. Share it freely between threads |
+| **Safe map / set keys** | `hashCode` can't change, so Bug 2 above can't happen |
+| **No defensive copies needed** | Pass it anywhere; nobody can change it behind your back |
+| **Easy to reason about** | Validated once in the constructor, valid forever |
+| **Cacheable** | Can be reused and shared, e.g. `Integer.valueOf(42)`, `LocalDate.MIN` |
+
+The cost: every change means a new object, so heavy updates create garbage (that's why `StringBuilder` exists).
+
+---
+
+## 6. How to write an immutable class
+
+The checklist:
+
+1. Make the class **`final`** (or the constructor private with a factory), so a subclass can't add mutable state.
+2. Make every field **`private final`**.
+3. **No setters.** Methods that "change" something return a new object (`withX(...)`).
+4. **Defensive copy mutable inputs** in the constructor, so the caller can't change them afterwards.
+5. **Never hand out internal mutable objects.** Return copies or unmodifiable views.
+6. Prefer immutable field types (`Instant`, `LocalDate`, `List.copyOf`) over mutable ones (`Date`, `ArrayList`).
+
+```java
+public final class Order {                                    // 1. final
+    private final String id;                                  // 2. private final
+    private final Instant createdAt;                          //    Instant is immutable (Date isn't)
+    private final List<String> items;
+
+    public Order(String id, Instant createdAt, List<String> items) {
+        this.id = Objects.requireNonNull(id);
+        this.createdAt = Objects.requireNonNull(createdAt);
+        this.items = List.copyOf(items);                      // 4. defensive, unmodifiable copy
+    }
+
+    public String id()            { return id; }
+    public Instant createdAt()    { return createdAt; }
+    public List<String> items()   { return items; }           // 5. safe: List.copyOf is unmodifiable
+
+    public Order withItem(String item) {                      // 3. "change" = new object
+        List<String> more = new ArrayList<>(items);
+        more.add(item);
+        return new Order(id, createdAt, more);
+    }
+}
+```
+
+What goes wrong without step 4:
+
+```java
+List<String> list = new ArrayList<>(List.of("pen"));
+Order order = new Order("o-1", Instant.now(), list);
+list.add("laptop");          // with `this.items = items;` the Order would now contain "laptop" too
+```
+
+> [!WARNING]
+> ⚠️ **`final` is not immutable.** `private final List<String> items` stops you from pointing `items` at another list, but the list itself can still be changed with `items.add(...)`. Immutability needs final fields **and** immutable (or copied, never exposed) contents.
+
+---
+
+## 7. Records
+
+A **record** (Java 16, standard in Java 17 LTS) is a class for **immutable data**. You list the fields once; the compiler writes the rest.
+
+```java
+public record Point(int x, int y) { }
+
+Point p = new Point(1, 2);
+p.x();                         // 1  (accessor is x(), not getX())
+p.equals(new Point(1, 2));     // true
+p.toString();                  // Point[x=1, y=2]
+```
+
+![What the compiler generates for record Point(int x, int y): a final class extending java.lang.Record with one private final field per component, a canonical constructor, accessors x() and y(), and equals, hashCode and toString built from every component; records can add methods, static fields, extra constructors and implement interfaces, but can't extend a class or add instance fields, and are only shallowly immutable, so List components should be copied with List.copyOf in the compact constructor](svg/java/d032-record-generated-members.svg)
+
+That one line replaces a class of 40+ lines: private final fields, constructor, accessors, `equals`, `hashCode` and `toString`.
+
+### Validation: the compact constructor
+
+```java
+public record Money(long amount, String currency) {
+
+    public Money {                                            // compact constructor: no parameter list
+        if (amount < 0) throw new IllegalArgumentException("amount must be >= 0");
+        Objects.requireNonNull(currency);
+        currency = currency.toUpperCase();                    // you can normalise the parameters
+    }                                                         // fields are assigned after this block
+
+    public static Money inr(long amount) {                    // static factories are allowed
+        return new Money(amount, "INR");
+    }
+
+    public Money plus(Money other) {                          // so are normal methods
+        if (!currency.equals(other.currency)) throw new IllegalArgumentException("currency mismatch");
+        return new Money(amount + other.amount, currency);
+    }
+}
+```
+
+### Records are only shallowly immutable
+
+```java
+public record Cart(String id, List<String> items) {
+    public Cart {
+        items = List.copyOf(items);   // ✓ without this, the caller's ArrayList could still be changed
+    }
+}
+```
+
+The `items` field is final, but the **list** is whatever object was passed in. Copy mutable components in the compact constructor.
+
+### What records can and can't do
+
+| ✓ Can | ✗ Can't |
+|---|---|
+| Implement interfaces | Extend another class (they already extend `java.lang.Record`) |
+| Add methods, static fields, static methods | Add instance fields beyond the components |
+| Add extra constructors (they must call the canonical one) | Have non-final fields or setters |
+| Be generic: `record Pair<A, B>(A first, B second)` | Be subclassed (records are `final`) |
+| Be nested or local (declared inside a method) | |
+
+### Where to use them
+
+- **DTOs**: API requests and responses (Jackson supports records), Spring `@ConfigurationProperties`.
+- **Value objects**: `Money`, `Point`, `DateRange`.
+- **Map keys and set elements**: correct `equals`/`hashCode` for free, and immutable.
+- **Returning several values** from a method: `record MinMax(int min, int max)`.
+- **Pattern matching** (Java 21): records can be taken apart in `switch` and `instanceof`:
+
+```java
+sealed interface Shape permits Circle, Rect { }
+record Circle(double r) implements Shape { }
+record Rect(double w, double h) implements Shape { }
+
+double area(Shape s) {
+    return switch (s) {
+        case Circle(double r)         -> Math.PI * r * r;     // record pattern: binds r directly
+        case Rect(double w, double h) -> w * h;
+    };                                                        // no default: the compiler knows all cases
+}
+```
+
+> [!NOTE]
+> Records **can't be JPA entities**: JPA needs a no-arg constructor and mutable, proxyable classes. Use records for DTOs and query projections instead, and keep entities as normal classes.
+
+---
+
+## 8. equals, hashCode and immutability interview questions
+
+<details>
+<summary><b>Q1. What is the equals/hashCode contract?</b></summary>
+
+`equals` must be reflexive, symmetric, transitive, consistent and return `false` for `null`. `hashCode` must return the same value for equal objects and stay stable while the object doesn't change. Unequal objects may share a hash code. So if you override `equals`, you must override `hashCode` using the same fields.
+</details>
+
+<details>
+<summary><b>Q2. What happens if you override equals but not hashCode?</b></summary>
+
+Two equal objects get different identity hash codes, so hash-based collections put them in different buckets. `map.get(equalKey)` returns `null`, `containsKey` is `false`, and a `HashSet` happily stores both "duplicates". Lists and `equals` itself still work, which is why the bug hides until you use a map or set.
+</details>
+
+<details>
+<summary><b>Q3. What happens if you change a key after putting it in a HashMap?</b></summary>
+
+If the change affects `hashCode`, the entry stays in the bucket of the old hash. Lookups with the same key search the new bucket and fail; lookups with an equal copy of the old key find the right bucket but fail `equals`. The entry is unreachable but still counted in `size()` and still uses memory: a leak. That's why keys should be immutable.
+</details>
+
+<details>
+<summary><b>Q4. Can two unequal objects have the same hashCode? Can two equal objects have different ones?</b></summary>
+
+Unequal objects with the same hash code: yes, that's a collision, legal but slower. Equal objects with different hash codes: no, that breaks the contract and every hash-based collection.
+</details>
+
+<details>
+<summary><b>Q5. How do you make a class immutable?</b></summary>
+
+Make the class `final`, all fields `private final`, add no setters, defensively copy mutable constructor arguments (`List.copyOf`), never return internal mutable objects (return copies or unmodifiable views), and prefer immutable field types like `Instant` over `Date`. "Changes" return a new instance. Or use a record and copy mutable components in its compact constructor.
+</details>
+
+<details>
+<summary><b>Q6. Is a class with only final fields immutable?</b></summary>
+
+Not necessarily. `final` only stops the field from being reassigned. If it points to a mutable object (an `ArrayList`, a `Date`, an array), that object can still be changed, by the class itself or by anyone who got the reference through the constructor or a getter.
+</details>
+
+<details>
+<summary><b>Q7. What is a record and what does the compiler generate?</b></summary>
+
+A concise, final class for immutable data. From `record Point(int x, int y)` the compiler generates private final fields, a canonical constructor, accessors `x()` and `y()`, and `equals`, `hashCode` and `toString` based on all components. You can add a compact constructor for validation, methods, static members and interfaces, but not instance fields or a superclass.
+</details>
+
+<details>
+<summary><b>Q8. Record vs Lombok @Data / @Value?</b></summary>
+
+`@Data` generates a **mutable** class (setters), `@Value` an immutable one. Records are part of the language: no annotation processor, understood by the compiler (pattern matching, serialization through the canonical constructor) and by libraries like Jackson. Lombok still helps for builders, mutable classes and JPA entities, which can't be records.
+</details>
+
+<details>
+<summary><b>Q9. Are records truly immutable?</b></summary>
+
+Shallowly. The fields are final, so they can't be reassigned, but a component that's a mutable object (a `List`, an array) can still be changed through its reference. Copy such components in the compact constructor (`items = List.copyOf(items)`) to make the record fully immutable.
+</details>
+
+---
+
+## 9. equals, hashCode and immutability cheat sheet
+
+| Topic | Remember |
+|---|---|
+| `equals` contract | Reflexive, symmetric, transitive, consistent, `false` for null |
+| `hashCode` contract | Equal objects → equal hash codes. Collisions are allowed |
+| Golden rule | Override both, with the same fields |
+| `equals` without `hashCode` | `get` returns null; `HashSet` holds duplicates |
+| Mutable key changed | Entry stuck in the old bucket: unreachable + leak |
+| Constant `hashCode` | Correct but O(n) (O(log n) in a tree bucket with `Comparable` keys) |
+| Writing them | `instanceof` pattern + `Objects.equals` / `Objects.hash`, or a record |
+| Immutable class | `final` class, `private final` fields, no setters, defensive copies in and out |
+| `final` ≠ immutable | A final reference to a mutable list is still mutable |
+| Record | Final data class: fields, constructor, accessors, `equals`, `hashCode`, `toString` generated |
+| Compact constructor | Validate and normalise; copy mutable components |
+| Records can't | Extend classes, add instance fields, be JPA entities |
+
+---
+
+# Reflection
+
+## 1. What is reflection?
+
+Normally code knows its types at compile time: `order.getStatus()`. **Reflection** lets code inspect and use classes **at runtime**, by name, without knowing them when it was compiled: list a class's fields, read its annotations, create an instance, call a method, even read a `private` field.
+
+Every loaded class has one **`Class` object** (created by the class loader, backed by the class metadata in metaspace). It's the entry point to reflection. Three ways to get it:
+
+```java
+Class<?> c1 = Order.class;                              // known at compile time
+Class<?> c2 = order.getClass();                         // from an instance (the runtime type)
+Class<?> c3 = Class.forName("com.example.shop.Order");  // from a name, e.g. read from config
+```
+
+`Class.forName` also **initializes** the class (runs its `static` blocks).
+
+![How frameworks use reflection: Order.class bytecode is loaded by a ClassLoader into a Class object, a heap object whose class metadata lives in metaspace; reflection calls such as getDeclaredConstructors, getDeclaredFields, getDeclaredMethods, getAnnotation, setAccessible and invoke let Spring find @Component classes and inject dependencies, Jackson turn fields into JSON and back, Hibernate fill @Entity fields from database rows and JUnit run @Test methods; the costs are speed, broken encapsulation, no compile-time checks and blocked JDK internals since Java 17](svg/java/d033-reflection-frameworks.svg)
+
+---
+
+## 2. The reflection API, with examples
+
+```java
+public class Order {
+    private String id;
+    private String status = "NEW";
+
+    public Order() { }
+    public Order(String id) { this.id = id; }
+
+    public void ship()          { status = "SHIPPED"; }
+    private String secret()     { return "internal"; }
+}
+```
+
+**Inspect** the class:
+
+```java
+Class<Order> c = Order.class;
+
+for (Field f : c.getDeclaredFields())   System.out.println("field  " + f.getType().getSimpleName() + " " + f.getName());
+for (Method m : c.getDeclaredMethods()) System.out.println("method " + m.getName());
+for (Constructor<?> k : c.getDeclaredConstructors()) System.out.println("ctor   " + k.getParameterCount() + " params");
+```
+
+```text
+field  String id
+field  String status
+method ship
+method secret
+ctor   0 params
+ctor   1 params
+```
+
+(The order of fields and methods isn't guaranteed.)
+
+**Create** an instance and **call** a method by name:
+
+```java
+Order order = c.getDeclaredConstructor(String.class).newInstance("o-1");   // new Order("o-1")
+
+Method ship = c.getMethod("ship");
+ship.invoke(order);                                                        // order.ship()
+```
+
+**Read a private field** and **call a private method**:
+
+```java
+Field status = c.getDeclaredField("status");
+status.setAccessible(true);                       // switch off the private check
+System.out.println(status.get(order));            // SHIPPED
+status.set(order, "CANCELLED");                   // write it too
+
+Method secret = c.getDeclaredMethod("secret");
+secret.setAccessible(true);
+System.out.println(secret.invoke(order));         // internal
+```
+
+| Method | Returns |
+|---|---|
+| `getFields()` / `getMethods()` | **Public** members, **including inherited** ones |
+| `getDeclaredFields()` / `getDeclaredMethods()` | **All** members of this class (private too), **not inherited** |
+| `getDeclaredConstructor(types…)` | One constructor, by parameter types |
+| `getAnnotation(X.class)` / `isAnnotationPresent(X.class)` | An annotation on the class, field or method |
+| `getRecordComponents()` | The components of a record (Java 16+) |
+
+---
+
+## 3. Annotations + reflection: how frameworks work
+
+Annotations do **nothing** on their own. They're labels. A framework reads them with reflection and acts on them. A mini test runner in 25 lines shows the whole idea behind JUnit:
+
+```java
+@Retention(RetentionPolicy.RUNTIME)       // keep it in the class file AND visible at runtime
+@Target(ElementType.METHOD)
+@interface MyTest { }
+
+class CalculatorTest {
+    @MyTest void adds()     { if (2 + 2 != 4) throw new AssertionError("2 + 2 should be 4"); }
+    @MyTest void fails()    { if (10 / 2 != 4) throw new AssertionError("10 / 2 should be 4"); }
+    void helper()           { }                                   // not a test: no annotation
+}
+
+public class MiniRunner {
+    public static void main(String[] args) throws Exception {
+        Class<?> testClass = Class.forName("CalculatorTest");
+        for (Method m : testClass.getDeclaredMethods()) {
+            if (!m.isAnnotationPresent(MyTest.class)) continue;   // only @MyTest methods
+            Object instance = testClass.getDeclaredConstructor().newInstance();   // fresh object per test
+            try {
+                m.invoke(instance);
+                System.out.println("✓ " + m.getName());
+            } catch (InvocationTargetException e) {               // the test itself threw
+                System.out.println("✗ " + m.getName() + ": " + e.getCause().getMessage());
+            }
+        }
+    }
+}
+```
+
+```text
+✓ adds
+✗ fails: 10 / 2 should be 4
+```
+
+> [!NOTE]
+> `@Retention` decides whether reflection can see an annotation: `SOURCE` (dropped by the compiler, e.g. `@Override`), `CLASS` (in the class file but not visible at runtime, the default) or `RUNTIME` (visible to reflection). Framework annotations like `@Component`, `@Entity` and `@Test` are all `RUNTIME`.
+
+Real frameworks do the same at a bigger scale:
+
+| Framework | What it does with reflection |
+|---|---|
+| **Spring** | Scans classes for `@Component`, picks the constructor, creates the object, passes in dependencies, finds `@Transactional` methods to proxy |
+| **Jackson** | Reads fields and getters to write JSON; creates objects and sets fields from JSON |
+| **Hibernate / JPA** | Reads `@Entity`, `@Id`, `@Column`; fills private fields from database rows |
+| **JUnit** | Finds `@Test` methods and invokes them |
+| **Mockito** | Creates mock subclasses and injects them into `@InjectMocks` fields |
+
+---
+
+## 4. Dynamic proxies
+
+Reflection can also **create** classes at runtime. `java.lang.reflect.Proxy` generates a class that implements your interfaces and sends **every call** to one handler. This is how cross-cutting behaviour (timing, transactions, retries) is added without touching the real class.
+
+```java
+interface PaymentService {
+    String pay(String orderId, long amount);
+}
+
+class StripePaymentService implements PaymentService {
+    public String pay(String orderId, long amount) { return "paid " + orderId; }
+}
+
+PaymentService real = new StripePaymentService();
+
+PaymentService timed = (PaymentService) Proxy.newProxyInstance(
+        PaymentService.class.getClassLoader(),
+        new Class<?>[] { PaymentService.class },          // interfaces the proxy implements
+        (proxy, method, args) -> {                        // InvocationHandler: runs for EVERY call
+            long start = System.nanoTime();
+            try {
+                return method.invoke(real, args);         // forward to the real object
+            } catch (InvocationTargetException e) {
+                throw e.getCause();                       // rethrow the real exception, not the wrapper
+            } finally {
+                System.out.printf("%s took %d µs%n", method.getName(), (System.nanoTime() - start) / 1_000);
+            }
+        });
+
+timed.pay("o-1", 500);               // prints "pay took 35 µs", returns "paid o-1"
+timed.getClass().getName();          // e.g. jdk.proxy1.$Proxy0: a class generated at runtime
+```
+
+![Dynamic proxy: the caller holds a PaymentService that is really $Proxy12, a class generated at runtime by Proxy.newProxyInstance; every method call goes to InvocationHandler.invoke(proxy, method, args), which runs before-logic such as starting a timer or a transaction, calls method.invoke on the real StripePaymentService and runs after-logic such as logging or commit before returning; JDK proxies need an interface, Spring uses CGLIB subclasses otherwise, and this is how @Transactional, @Async and Spring Data repositories work](svg/java/d034-dynamic-proxy.svg)
+
+- **JDK dynamic proxies** only work with **interfaces**.
+- For classes without an interface, libraries generate a **subclass** with bytecode tools: **CGLIB** (Spring Boot uses it by default, even when there is an interface) or **ByteBuddy** (Mockito, Hibernate).
+- This is exactly how Spring's `@Transactional`, `@Async` and `@Cacheable` work, and how a Spring Data repository interface gets an implementation without you writing one. It's also why calling such a method from inside the same class skips the annotation (see the self-invocation section in the Spring Boot notes).
+
+---
+
+## 5. The costs and limits
+
+| Cost | Detail |
+|---|---|
+| **Slower** | Looking up a `Method` / `Field` is expensive; invoking is slower than a direct call. Frameworks cache the lookups. Since Java 18 core reflection runs on method handles, so it's faster than it used to be |
+| **Breaks encapsulation** | `setAccessible(true)` reads and writes `private` state the class author meant to protect |
+| **No compile-time safety** | A typo in `getMethod("shp")` or a renamed field is a runtime `NoSuchMethodException`, not a compile error. IDE refactoring can't see string names |
+| **Blocked for JDK internals** | Since Java 16/17 the JDK is strongly encapsulated: `setAccessible(true)` on, say, `String`'s private field throws `InaccessibleObjectException` unless you add `--add-opens java.base/java.lang=ALL-UNNAMED`. Your own classes on the classpath are fine |
+| **Native images** | GraalVM native images must know reflective access at build time (Spring AOT generates that config) |
+
+**Alternatives** when you want to avoid reflection: `MethodHandle` / `VarHandle` (access checked once at lookup, JIT-friendly), or **compile-time code generation** with annotation processors (Lombok, MapStruct, Dagger, Micronaut): the work is done by the compiler, so there's no runtime reflection at all.
+
+---
+
+## 6. Reflection interview questions
+
+<details>
+<summary><b>Q1. What is reflection, and where is it used?</b></summary>
+
+The ability to inspect and use classes at runtime: list fields, methods, constructors and annotations, create objects, call methods and access private members, all by name. Frameworks are built on it: Spring (component scanning, dependency injection, proxies), Jackson (JSON mapping), Hibernate (entity mapping), JUnit (finding `@Test` methods), Mockito (mocks). Application code rarely needs it directly.
+</details>
+
+<details>
+<summary><b>Q2. What are the drawbacks of reflection?</b></summary>
+
+It's slower than direct calls (especially the lookups), it bypasses encapsulation, it has no compile-time checking (names are strings, refactoring breaks them at runtime), it's blocked on JDK internals by the module system since Java 16/17, and it complicates native images. Use it for framework-style generic code, not everyday logic.
+</details>
+
+<details>
+<summary><b>Q3. Can reflection access private members? Can it change a final field?</b></summary>
+
+Private members: yes, with `setAccessible(true)`, as long as the module allows it (your own classpath classes do; JDK internals don't, since Java 17). Final fields: a non-static `final` field of a normal class can still be changed after `setAccessible(true)`, but `static final` fields and the fields of records and hidden classes can't. Newer JDKs are moving to "final means final" and warn about such writes.
+</details>
+
+<details>
+<summary><b>Q4. How can reflection break a singleton, and how do you prevent it?</b></summary>
+
+Get the private constructor with `getDeclaredConstructor()`, call `setAccessible(true)` and `newInstance()`: now there are two instances. Prevent it by throwing from the constructor if the instance already exists, or better, use an **enum singleton**: the JVM forbids creating enum instances reflectively (`newInstance` throws `IllegalArgumentException`), and enums are also safe against serialization tricks.
+
+```java
+public enum IdGenerator {
+    INSTANCE;
+    private final AtomicLong next = new AtomicLong();
+    public long nextId() { return next.incrementAndGet(); }
+}
+```
+</details>
+
+<details>
+<summary><b>Q5. Class.forName() vs .class vs getClass()?</b></summary>
+
+`Order.class` needs the type at compile time and doesn't initialize the class. `obj.getClass()` returns the runtime class of an instance (could be a subclass or a proxy). `Class.forName("…")` loads a class by name at runtime and runs its static initializers, which is how JDBC drivers used to register themselves.
+</details>
+
+<details>
+<summary><b>Q6. Why must an annotation have RUNTIME retention for a framework to see it?</b></summary>
+
+Retention controls how long the annotation survives. `SOURCE` annotations are dropped by the compiler, `CLASS` (the default) are stored in the class file but not loaded for reflection, and only `RUNTIME` annotations can be read with `getAnnotation`. Spring, JPA and JUnit annotations are all `RUNTIME`.
+</details>
+
+<details>
+<summary><b>Q7. What is a dynamic proxy? JDK proxy vs CGLIB?</b></summary>
+
+A class generated at runtime that implements given interfaces and routes every call to an `InvocationHandler`, which can add logic before and after calling the real object. JDK proxies (`java.lang.reflect.Proxy`) require an interface. CGLIB/ByteBuddy generate a subclass instead, so they work on classes but can't proxy `final` classes or methods. Spring uses them for `@Transactional`, `@Async` and repositories.
+</details>
+
+---
+
+## 7. Reflection cheat sheet
+
+| Topic | Remember |
+|---|---|
+| Entry point | `Class` object: `Order.class`, `obj.getClass()`, `Class.forName("…")` |
+| `getX` vs `getDeclaredX` | Public + inherited vs all of this class (incl. private), not inherited |
+| Create | `getDeclaredConstructor(types).newInstance(args)` |
+| Call | `method.invoke(target, args)`; exceptions arrive wrapped in `InvocationTargetException` |
+| Private access | `setAccessible(true)`; JDK internals need `--add-opens` (Java 17+) |
+| Annotations | Must be `@Retention(RUNTIME)` to be visible |
+| Dynamic proxy | `Proxy.newProxyInstance` + `InvocationHandler`; interfaces only |
+| Class proxies | CGLIB / ByteBuddy subclasses; not for `final` |
+| Used by | Spring, Jackson, Hibernate, JUnit, Mockito |
+| Costs | Slower, breaks encapsulation, no compile-time checks, native-image config |
+| Singleton vs reflection | Enum singleton can't be instantiated reflectively |
+
+---
+
+# What's New in Java 8, 11, 17 and 21
+
+## 1. Release model and the LTS versions
+
+Since Java 10 a new version ships **every 6 months** (March and September). Most are supported only until the next one. Every 2 years (since Java 17) one is a **Long-Term Support (LTS)** release that vendors patch for years. Companies run LTS versions, so those are the ones interviews ask about.
+
+![Java LTS timeline from 2014 to 2025: Java 8 (March 2014) with lambdas, Streams, Optional, java.time and default methods; Java 11 (September 2018) with var, List.of, modules, HttpClient and new String methods; Java 17 (September 2021) with records, sealed classes, switch expressions, text blocks and pattern matching for instanceof; Java 21 (September 2023) with virtual threads, pattern matching for switch, record patterns, sequenced collections and generational ZGC; Java 25 (September 2025) with scoped values, compact source files, flexible constructor bodies and compact object headers; a new release every 6 months since Java 10 and an LTS every 2 years since Java 17](svg/java/d035-java-lts-timeline.svg)
+
+| LTS | Released | One-line summary |
+|---|---|---|
+| **Java 8** | Mar 2014 | Functional programming arrives: lambdas, Streams, `Optional`, `java.time` |
+| **Java 11** | Sep 2018 | Modern basics: `var`, `List.of`, new `String` methods, `HttpClient` |
+| **Java 17** | Sep 2021 | Modern data modelling: records, sealed classes, switch expressions, text blocks |
+| **Java 21** | Sep 2023 | Virtual threads and full pattern matching |
+| **Java 25** | Sep 2025 | Scoped values, simpler `main`, smaller object headers |
+
+Each section below lists what arrived **since the previous LTS** (so "Java 11" includes 9 and 10).
+
+---
+
+## 2. Java 8 (2014): the big one
+
+Java 8 changed how Java is written more than any release before or since.
+
+**Lambdas and method references**: pass behaviour as a value.
+
+```java
+// before: an anonymous class
+Collections.sort(names, new Comparator<String>() {
+    public int compare(String a, String b) { return a.length() - b.length(); }
+});
+
+// Java 8
+names.sort((a, b) -> a.length() - b.length());          // lambda
+names.sort(Comparator.comparing(String::length));       // method reference
+```
+
+**Functional interfaces**: an interface with exactly one abstract method can be implemented by a lambda. `java.util.function` has the common ones:
+
+| Interface | Shape | Example |
+|---|---|---|
+| `Function<T, R>` | T → R | `String::length` |
+| `Predicate<T>` | T → boolean | `s -> s.isEmpty()` |
+| `Consumer<T>` | T → nothing | `System.out::println` |
+| `Supplier<T>` | nothing → T | `ArrayList::new` |
+| `BiFunction<T, U, R>` | (T, U) → R | `(a, b) -> a + b` |
+
+**Streams**: declarative processing of collections.
+
+```java
+List<String> bigSpenders = orders.stream()
+        .filter(o -> o.amount() > 1_000)                 // intermediate (lazy)
+        .map(Order::customer)                            // intermediate (lazy)
+        .distinct()
+        .sorted()
+        .collect(Collectors.toList());                   // terminal: runs the whole pipeline
+
+Map<String, Long> countByStatus = orders.stream()
+        .collect(Collectors.groupingBy(Order::status, Collectors.counting()));
+```
+
+Intermediate operations are **lazy**: nothing runs until a terminal operation (`collect`, `forEach`, `count`, `findFirst`…). A stream can be consumed only once.
+
+**`Optional`**: a return type that says "there may be no value", instead of returning `null`.
+
+```java
+String name = userRepository.findByEmail(email)          // Optional<User>
+        .map(User::name)
+        .orElse("guest");
+```
+
+**Default and static methods in interfaces**: interfaces can now have method bodies, so APIs can grow without breaking implementations (that's how `List.sort` and `Collection.stream()` were added).
+
+```java
+interface Discount {
+    double apply(double price);
+
+    default Discount then(Discount next) {               // inherited by every implementation
+        return price -> next.apply(apply(price));
+    }
+}
+```
+
+**`java.time`**: a new, immutable, thread-safe date/time API replacing `Date` and `Calendar`.
+
+```java
+LocalDate due = LocalDate.now().plusDays(30);
+Duration took = Duration.between(start, Instant.now());
+ZonedDateTime india = ZonedDateTime.now(ZoneId.of("Asia/Kolkata"));
+```
+
+Also in Java 8: `CompletableFuture` (see the [CompletableFuture part](#1-why-completablefuture)), `StringJoiner` / `String.join`, `Base64`, `Map.getOrDefault` / `computeIfAbsent` / `merge`, parallel streams, and Metaspace for class metadata.
+
+---
+
+## 3. Java 11: what came after 8 (Java 9, 10, 11)
+
+**Collection factory methods (9)**: short, **unmodifiable** collections.
+
+```java
+List<String> roles = List.of("admin", "user");                  // add() → UnsupportedOperationException
+Set<Integer> primes = Set.of(2, 3, 5);
+Map<String, Integer> ages = Map.of("Asha", 30, "Ravi", 28);
+List<String> copy = List.copyOf(mutableList);                   // (10) unmodifiable copy
+```
+
+They don't allow `null` elements.
+
+**`var` (10)**: local variable type inference. Still statically typed: the compiler works out the type.
+
+```java
+var orders = new ArrayList<Order>();          // ArrayList<Order>
+for (var entry : map.entrySet()) { ... }      // Map.Entry<K, V>
+```
+
+Only for local variables with an initializer; not for fields, parameters or return types.
+
+**New `String` methods (11)**:
+
+```java
+"  hi  ".strip();          // "hi"  (Unicode-aware trim)
+"   ".isBlank();           // true
+"a\nb\nc".lines().count(); // 3
+"ab".repeat(3);            // "ababab"
+```
+
+**Standard `HttpClient` (11)**: HTTP/1.1 and HTTP/2, sync and async, no library needed.
+
+```java
+HttpClient client = HttpClient.newHttpClient();
+HttpRequest request = HttpRequest.newBuilder(URI.create("https://api.example.com/users/1")).build();
+HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+```
+
+**Others worth naming:**
+
+| Version | Feature |
+|---|---|
+| 9 | **Module system (JPMS)**: `module-info.java` declares what a module `requires` and `exports` |
+| 9 | **JShell**: a REPL for trying Java snippets |
+| 9 | Private methods in interfaces; `Stream.takeWhile` / `dropWhile` / `ofNullable`; `Optional.ifPresentOrElse` / `or` / `stream` |
+| 9 | **G1 becomes the default GC**; compact strings |
+| 10 | `Optional.orElseThrow()`, `Collectors.toUnmodifiableList()` |
+| 11 | `Files.readString` / `writeString`; `Optional.isEmpty()`; `Predicate.not` |
+| 11 | Run a single source file directly: `java Hello.java` |
+| 11 | `var` in lambda parameters (so you can annotate them); Flight Recorder open-sourced; ZGC (experimental) |
+| 11 | **Removed**: Java EE and CORBA modules (JAXB, JAX-WS, `javax.annotation`): add them as dependencies |
+
+---
+
+## 4. Java 17: what came after 11 (Java 12 to 17)
+
+**Switch expressions (14)**: `switch` returns a value, arrows have no fall-through.
+
+```java
+String type = switch (day) {
+    case SATURDAY, SUNDAY -> "weekend";
+    case MONDAY -> {
+        log.info("start of week");
+        yield "weekday";                       // yield returns a value from a block
+    }
+    default -> "weekday";
+};
+```
+
+**Text blocks (15)**: multi-line strings without `\n` and escaping.
+
+```java
+String json = """
+        {
+          "id": 1,
+          "name": "Asha"
+        }
+        """;
+```
+
+**Records (16)**: immutable data classes in one line. See [Records](#7-records).
+
+```java
+public record Point(int x, int y) { }
+```
+
+**Pattern matching for `instanceof` (16)**: test and cast in one step.
+
+```java
+// before
+if (obj instanceof String) {
+    String s = (String) obj;
+    System.out.println(s.length());
+}
+
+// Java 16+
+if (obj instanceof String s && !s.isBlank()) {
+    System.out.println(s.length());
+}
+```
+
+**Sealed classes (17)**: a class or interface lists exactly which classes may extend it. The compiler then knows every possible subtype.
+
+```java
+public sealed interface Payment permits Card, Upi, Cash { }
+
+public record Card(String number) implements Payment { }
+public record Upi(String vpa)     implements Payment { }
+public record Cash()              implements Payment { }
+```
+
+A permitted subclass must be `final`, `sealed` or `non-sealed`. Sealed types + records model "one of these shapes" precisely, and Java 21's pattern matching uses that to check that a `switch` covers every case.
+
+**Helpful NullPointerExceptions (14)**: the message says **what** was null.
+
+```text
+Cannot invoke "Address.city()" because the return value of "User.address()" is null
+```
+
+**Others worth naming:**
+
+| Version | Feature |
+|---|---|
+| 12 | `String.indent`, `Collectors.teeing`, compact number formatting |
+| 15 | **ZGC and Shenandoah ready for production** (low-pause collectors) |
+| 16 | `Stream.toList()`: shorter than `collect(Collectors.toList())`, returns an unmodifiable list |
+| 17 | **Strong encapsulation of JDK internals**: reflection into `java.*` internals fails without `--add-opens` |
+| 17 | Security Manager deprecated for removal; `RandomGenerator` API |
+
+---
+
+## 5. Java 21: what came after 17 (Java 18 to 21)
+
+**Virtual threads (21)**: lightweight threads managed by the JVM, so blocking code scales to huge numbers of concurrent tasks. See [Virtual threads](#9-virtual-threads-java-21).
+
+```java
+try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+    for (int i = 0; i < 10_000; i++) {
+        executor.submit(() -> callSlowApi());     // 10,000 blocking calls, 10,000 cheap threads
+    }
+}                                                 // close() waits for all tasks
+```
+
+**Pattern matching for `switch` (21)** and **record patterns (21)**: switch on type, take records apart, add conditions.
+
+```java
+String describe(Payment p) {
+    return switch (p) {
+        case Card c when c.number().startsWith("4") -> "Visa card";         // guard with `when`
+        case Card(String number) -> "card ending " + number.substring(number.length() - 4);
+        case Upi(String vpa)     -> "UPI " + vpa;                           // record pattern
+        case Cash()              -> "cash";
+    };                       // no default: Payment is sealed, so the compiler knows all cases
+}
+```
+
+If you later add `record Wallet(...) implements Payment`, every such `switch` **stops compiling** until it handles `Wallet`. That's the big win of sealed types + pattern matching. `switch` can also handle `null` with `case null ->`.
+
+**Sequenced collections (21)**: one interface for collections with an order, with methods that used to be missing or awkward.
+
+```java
+List<Integer> list = List.of(1, 2, 3);
+list.getFirst();      // 1   (before: list.get(0))
+list.getLast();       // 3   (before: list.get(list.size() - 1))
+list.reversed();      // [3, 2, 1] as a view
+
+LinkedHashMap<String, Integer> map = new LinkedHashMap<>();
+map.firstEntry();  map.lastEntry();  map.pollFirstEntry();  map.putFirst("k", 1);
+```
+
+**Others worth naming:**
+
+| Version | Feature |
+|---|---|
+| 18 | **UTF-8 is the default charset** everywhere |
+| 18 | `jwebserver`: a tiny static file server for testing |
+| 18 | Core reflection reimplemented on method handles |
+| 21 | **Generational ZGC** (`-XX:+UseZGC -XX:+ZGenerational`; generational by default from 23) |
+| 21 | `Math.clamp`, `StringBuilder.repeat`, `Character.isEmoji` |
+| 21 (preview) | Structured concurrency, scoped values, unnamed patterns `_`, instance `main` methods |
+
+---
+
+## 6. After 21: Java 22 to 25
+
+Java 25 (September 2025) is the newest LTS. Highlights since 21:
+
+| Version | Feature |
+|---|---|
+| 22 | **Unnamed variables `_`**: `catch (Exception _)`, `case Card _ ->` |
+| 22 | **Foreign Function & Memory API**: call native code and use off-heap memory without JNI |
+| 24 | **Virtual threads no longer pinned by `synchronized`**: a blocking call inside `synchronized` now releases the carrier thread |
+| 24 | **Stream gatherers**: custom intermediate operations (`Gatherers.windowFixed(3)`…) |
+| 25 | **Scoped values**: an immutable, safer, cheaper alternative to `ThreadLocal`, built for virtual threads |
+| 25 | **Compact source files and instance `main`**: `void main() { IO.println("Hello"); }` is a whole program |
+| 25 | **Flexible constructor bodies**: validate arguments *before* calling `super(...)` |
+| 25 | **Module import declarations**: `import module java.base;` |
+| 25 | **Compact object headers** (`-XX:+UseCompactObjectHeaders`): smaller objects, less heap |
+| 25 | Ahead-of-time cache improvements for faster startup and warm-up |
+
+Still in preview in 25: structured concurrency and primitive types in patterns.
+
+---
+
+## 7. Upgrading from Java 8: what breaks
+
+| Problem | Since | Fix |
+|---|---|---|
+| `ClassNotFoundException: javax.xml.bind.JAXBContext` | 11 | Java EE modules were removed: add `jakarta.xml.bind` (or the old `javax` artifacts) as dependencies |
+| `InaccessibleObjectException` / "illegal reflective access" | 16–17 | Old libraries poking into JDK internals: upgrade Lombok, Mockito, ByteBuddy, Spring, etc. Last resort: `--add-opens` |
+| Different default GC and memory use | 9 | G1 replaced Parallel as default. Re-check GC flags; many old ones (CMS, `PermSize`) are gone |
+| Text looks garbled on some servers | 18 | Default charset is now UTF-8 everywhere. Specify charsets explicitly anyway |
+| Spring Boot 3 / Jakarta EE 10 won't start | — | Boot 3 needs Java 17+ and moved `javax.*` to `jakarta.*` |
+
+The payoff is large: better GCs (G1 improvements, ZGC), compact strings, faster startup, container awareness, records, pattern matching, virtual threads, and security updates.
+
+---
+
+## 8. Java versions interview questions
+
+<details>
+<summary><b>Q1. What are the main features of Java 8?</b></summary>
+
+Lambdas and method references, functional interfaces (`Function`, `Predicate`, `Supplier`, `Consumer`), the Streams API, `Optional`, default and static methods in interfaces, the `java.time` API, `CompletableFuture`, and Metaspace for class metadata.
+</details>
+
+<details>
+<summary><b>Q2. What changed between Java 8 and 11?</b></summary>
+
+The module system and JShell (9), `List.of` / `Set.of` / `Map.of` (9), private interface methods (9), G1 as default GC (9), `var` (10), new `String` methods like `isBlank`, `strip`, `lines` and `repeat` (11), the standard `HttpClient` (11), running a single `.java` file directly (11), and the removal of the Java EE / CORBA modules (11).
+</details>
+
+<details>
+<summary><b>Q3. What's new in Java 17?</b></summary>
+
+Counting from 11: switch expressions (14), helpful NullPointerExceptions (14), text blocks (15), records (16), pattern matching for `instanceof` (16), `Stream.toList()` (16), production-ready ZGC and Shenandoah (15), sealed classes (17) and strong encapsulation of JDK internals (17).
+</details>
+
+<details>
+<summary><b>Q4. What's new in Java 21?</b></summary>
+
+Virtual threads, pattern matching for `switch`, record patterns, sequenced collections (`getFirst`, `getLast`, `reversed`), generational ZGC, and from 18: UTF-8 by default. Structured concurrency and scoped values arrived as previews.
+</details>
+
+<details>
+<summary><b>Q5. Why would you upgrade from Java 8 to 17 or 21?</b></summary>
+
+Performance for free (better G1, ZGC, compact strings, faster startup), less boilerplate (records, `var`, switch expressions, text blocks, pattern matching), virtual threads for high-concurrency I/O (21), continued security patches, and ecosystem requirements: Spring Boot 3 needs Java 17.
+</details>
+
+<details>
+<summary><b>Q6. Default methods in interfaces vs abstract classes?</b></summary>
+
+Both can hold method bodies now. An abstract class can have state (instance fields), constructors and non-public members, and a class can extend only one. An interface has no instance state, and a class can implement many. Default methods were added so interfaces could evolve (e.g. `Collection.stream()`) without breaking existing implementations. If two interfaces give the same default method, the class must override it and choose.
+</details>
+
+<details>
+<summary><b>Q7. What is a functional interface?</b></summary>
+
+An interface with exactly one abstract method (default and static methods don't count), so it can be implemented with a lambda or method reference. `@FunctionalInterface` makes the compiler enforce it. Examples: `Runnable`, `Comparator`, `Function`, `Predicate`, `Supplier`, `Consumer`.
+</details>
+
+<details>
+<summary><b>Q8. map vs flatMap in streams?</b></summary>
+
+`map` turns each element into exactly one element. `flatMap` turns each element into a stream and joins all those streams into one, flattening a level of nesting.
+
+```java
+List<List<String>> nested = List.of(List.of("a", "b"), List.of("c"));
+nested.stream().map(List::size).toList();               // [2, 1]
+nested.stream().flatMap(List::stream).toList();         // [a, b, c]
+```
+</details>
+
+<details>
+<summary><b>Q9. Intermediate vs terminal operations? Are streams lazy?</b></summary>
+
+Intermediate operations (`filter`, `map`, `sorted`, `distinct`) return a new stream and are lazy: they only describe the pipeline. Terminal operations (`collect`, `forEach`, `count`, `findFirst`, `reduce`) run it. Elements flow through the whole pipeline one at a time, so `findFirst` can stop early. A stream can be consumed only once.
+</details>
+
+<details>
+<summary><b>Q10. Does var make Java dynamically typed?</b></summary>
+
+No. The compiler infers the type from the initializer, and the variable keeps that static type forever: `var x = 1; x = "a";` doesn't compile. It only works for local variables with an initializer, and it should be used when the type is obvious from the right-hand side.
+</details>
+
+<details>
+<summary><b>Q11. What are sealed classes for?</b></summary>
+
+To limit which classes can extend a type: `sealed interface Payment permits Card, Upi, Cash`. It models a closed set of variants (like an enum, but each variant can carry different data), and lets a pattern-matching `switch` be exhaustive without a `default`, so adding a new variant becomes a compile error everywhere it isn't handled.
+</details>
+
+<details>
+<summary><b>Q12. What is an LTS release?</b></summary>
+
+A Long-Term Support version that vendors keep patching for years, while non-LTS versions get updates for only 6 months. LTS versions so far: 8, 11, 17, 21 and 25; a new one every 2 years. Production systems normally run an LTS.
+</details>
+
+---
+
+## 9. Java versions cheat sheet
+
+| Version | Remember it for |
+|---|---|
+| **8** (LTS) | Lambdas, Streams, `Optional`, `java.time`, default methods, `CompletableFuture` |
+| 9 | Modules, JShell, `List.of`, G1 default, compact strings |
+| 10 | `var` |
+| **11** (LTS) | `String.isBlank/strip/lines/repeat`, `HttpClient`, `java File.java`, Java EE removed |
+| 14 | Switch expressions, helpful NPEs |
+| 15 | Text blocks, ZGC production-ready |
+| 16 | Records, `instanceof` patterns, `Stream.toList()` |
+| **17** (LTS) | Sealed classes, strong encapsulation |
+| 18 | UTF-8 default |
+| **21** (LTS) | Virtual threads, `switch` patterns, record patterns, sequenced collections, generational ZGC |
+| 22 | Unnamed variables `_`, FFM API |
+| 24 | No pinning on `synchronized`, stream gatherers |
+| **25** (LTS) | Scoped values, instance `main`, flexible constructors, compact object headers |
 
 ---
 

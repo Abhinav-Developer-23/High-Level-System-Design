@@ -1,0 +1,163 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="640" viewBox="0 0 900 640" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+<title>HashMap with broken equals / hashCode</title>
+<desc>Three failure scenarios, each with a 16-bucket table. 1, equals() without hashCode(): map.put(new Emp(1, "Asha"), "dev") hashes from the identity hash code to bucket 3; map.get(new Emp(1, "Asha")) gets a different identity hash, bucket 11, which is empty, so it returns null. Equal objects end up in different buckets: get() returns null and a HashSet keeps duplicates. 2, a mutable key changed after put(): put(key) with id = 1 goes to bucket 3; then key.setId(2) makes its hash point to bucket 7; get(key) searches bucket 7 and returns null; the entry is stuck in bucket 3, an unreachable entry and a memory leak. 3, hashCode() returns a constant: every entry lands in bucket 0, a long chain or tree; still correct but slow, O(n), or O(log n) once treeified with Comparable keys, instead of O(1). Footer rules: equal objects must have equal hash codes; use immutable keys, records are ideal.</desc>
+<defs><marker id="m-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker><marker id="m-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker><marker id="m-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker><marker id="m-amber" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker><marker id="m-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker><marker id="m-teal" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker><marker id="m-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+<rect x="0.5" y="0.5" width="899" height="639" rx="14" fill="#161b22" stroke="#30363d"/>
+<rect x="24" y="24" width="852" height="168" rx="10" fill="#1c2128" fill-opacity=".55" stroke="#30363d"/>
+<rect x="40" y="38" width="222" height="24" rx="12" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".85"/>
+<text x="52" y="54.5" fill="#ff7b72" font-size="13" font-weight="700">equals() without hashCode()</text>
+<text x="40" y="86" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">map.put(new Emp(1, "Asha"), "dev")</text>
+<text x="320" y="86" fill="#8b949e" font-size="12">identity hash → bucket 3</text>
+<line x1="152.0" y1="92" x2="152.0" y2="106" stroke="#58a6ff" stroke-width="1.6" marker-end="url(#m-blue)"/>
+<rect x="40" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="56.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">0</text>
+<rect x="72" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="88.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+<rect x="104" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="120.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+<rect x="136" y="108" width="32" height="30" fill="#58a6ff" fill-opacity=".28" stroke="#58a6ff"/>
+<text x="152.0" y="127.5" fill="#79c0ff" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+<rect x="168" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="184.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4</text>
+<rect x="200" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="216.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5</text>
+<rect x="232" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="248.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6</text>
+<rect x="264" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="280.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">7</text>
+<rect x="296" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="312.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">8</text>
+<rect x="328" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="344.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">9</text>
+<rect x="360" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="376.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">10</text>
+<rect x="393" y="109" width="30" height="28" fill="#f85149" fill-opacity=".06" stroke="#f85149" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="408.0" y="127.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">11</text>
+<rect x="424" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="440.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">12</text>
+<rect x="456" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="472.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">13</text>
+<rect x="488" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="504.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">14</text>
+<rect x="520" y="108" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="536.0" y="127.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">15</text>
+<line x1="408.0" y1="158" x2="408.0" y2="140" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+<text x="40" y="174" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">map.get(new Emp(1, "Asha"))</text>
+<text x="256" y="174" font-size="12" fill="#8b949e">different identity hash → bucket 11 → empty → <tspan fill="#ff7b72" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">null</tspan></text>
+<rect x="592" y="76" width="268" height="76" rx="8" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".55"/>
+<text x="606" y="101" fill="#ff7b72" font-size="12.5" font-weight="700">equal objects, different buckets</text>
+<text x="606" y="119" fill="#c9d1d9" font-size="12.5">→ <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">get()</tspan> returns null</text>
+<text x="606" y="137" fill="#c9d1d9" font-size="12.5">→ HashSet keeps duplicates</text>
+<rect x="24" y="208" width="852" height="168" rx="10" fill="#1c2128" fill-opacity=".55" stroke="#30363d"/>
+<rect x="40" y="222" width="248" height="24" rx="12" fill="#f85149" fill-opacity=".14" stroke="#f85149" stroke-opacity=".85"/>
+<text x="52" y="238.5" fill="#ff7b72" font-size="13" font-weight="700">Mutable key changed after put()</text>
+<text x="40" y="270" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">map.put(key, "dev")</text>
+<text x="196" y="270" font-size="12" fill="#8b949e">with <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff">id = 1</tspan> → bucket 3</text>
+<line x1="152.0" y1="276" x2="152.0" y2="290" stroke="#58a6ff" stroke-width="1.6" marker-end="url(#m-blue)"/>
+<rect x="40" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="56.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">0</text>
+<rect x="72" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="88.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+<rect x="104" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="120.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+<rect x="136" y="292" width="32" height="30" fill="#d29922" fill-opacity=".28" stroke="#d29922"/>
+<text x="152.0" y="311.5" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+<rect x="168" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="184.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4</text>
+<rect x="200" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="216.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5</text>
+<rect x="232" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="248.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6</text>
+<rect x="265" y="293" width="30" height="28" fill="#f85149" fill-opacity=".06" stroke="#f85149" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="280.0" y="311.5" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">7</text>
+<rect x="296" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="312.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">8</text>
+<rect x="328" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="344.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">9</text>
+<rect x="360" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="376.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">10</text>
+<rect x="392" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="408.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">11</text>
+<rect x="424" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="440.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">12</text>
+<rect x="456" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="472.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">13</text>
+<rect x="488" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="504.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">14</text>
+<rect x="520" y="292" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="536.0" y="311.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">15</text>
+<line x1="280.0" y1="342" x2="280.0" y2="324" stroke="#f85149" stroke-width="1.6" marker-end="url(#m-red)"/>
+<text x="152.0" y="338" fill="#e3b341" font-size="11.5" font-weight="700" text-anchor="middle">stuck</text>
+<text x="132" y="358" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">key.setId(2); map.get(key)</text>
+<text x="336" y="358" font-size="12" fill="#8b949e">new hash → bucket 7 → <tspan fill="#ff7b72" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">null</tspan></text>
+<rect x="592" y="260" width="268" height="76" rx="8" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".55"/>
+<text x="606" y="285" fill="#c9d1d9" font-size="12.5">the entry is stuck in bucket 3:</text>
+<text x="606" y="303" fill="#ff7b72" font-size="12.5" font-weight="700">unreachable entry · memory leak</text>
+<text x="606" y="321" fill="#8b949e" font-size="12.5">get(key) only searches bucket 7</text>
+<rect x="24" y="392" width="852" height="176" rx="10" fill="#1c2128" fill-opacity=".55" stroke="#30363d"/>
+<rect x="40" y="406" width="236" height="24" rx="12" fill="#d29922" fill-opacity=".14" stroke="#d29922" stroke-opacity=".85"/>
+<text x="52" y="422.5" fill="#e3b341" font-size="13" font-weight="700">hashCode() returns a constant</text>
+<text x="40" y="454" fill="#e6edf3" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">public int hashCode() { return 0; }</text>
+<text x="320" y="454" fill="#8b949e" font-size="12">every entry → bucket 0</text>
+<line x1="56.0" y1="460" x2="56.0" y2="474" stroke="#d29922" stroke-width="1.6" marker-end="url(#m-amber)"/>
+<rect x="40" y="476" width="32" height="30" fill="#d29922" fill-opacity=".28" stroke="#d29922"/>
+<text x="56.0" y="495.5" fill="#e3b341" font-size="12" font-weight="700" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">0</text>
+<rect x="72" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="88.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">1</text>
+<rect x="104" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="120.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2</text>
+<rect x="136" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="152.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">3</text>
+<rect x="168" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="184.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4</text>
+<rect x="200" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="216.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">5</text>
+<rect x="232" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="248.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">6</text>
+<rect x="264" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="280.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">7</text>
+<rect x="296" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="312.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">8</text>
+<rect x="328" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="344.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">9</text>
+<rect x="360" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="376.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">10</text>
+<rect x="392" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="408.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">11</text>
+<rect x="424" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="440.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">12</text>
+<rect x="456" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="472.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">13</text>
+<rect x="488" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="504.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">14</text>
+<rect x="520" y="476" width="32" height="30" fill="#0d1117" fill-opacity=".5" stroke="#30363d"/>
+<text x="536.0" y="495.5" fill="#6e7681" font-size="11.5" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">15</text>
+<path d="M56.0,506 V530 H86" fill="none" stroke="#d29922" stroke-width="1.5" marker-end="url(#m-amber)"/>
+<rect x="88" y="518" width="36" height="24" rx="5" fill="#1c2128" stroke="#d29922"/>
+<text x="106" y="534.5" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k1</text>
+<line x1="124" y1="530" x2="138" y2="530" stroke="#d29922" stroke-width="1.4" marker-end="url(#m-amber)"/>
+<rect x="140" y="518" width="36" height="24" rx="5" fill="#1c2128" stroke="#d29922"/>
+<text x="158" y="534.5" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k2</text>
+<line x1="176" y1="530" x2="190" y2="530" stroke="#d29922" stroke-width="1.4" marker-end="url(#m-amber)"/>
+<rect x="192" y="518" width="36" height="24" rx="5" fill="#1c2128" stroke="#d29922"/>
+<text x="210" y="534.5" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k3</text>
+<line x1="228" y1="530" x2="242" y2="530" stroke="#d29922" stroke-width="1.4" marker-end="url(#m-amber)"/>
+<rect x="244" y="518" width="36" height="24" rx="5" fill="#1c2128" stroke="#d29922"/>
+<text x="262" y="534.5" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k4</text>
+<line x1="280" y1="530" x2="294" y2="530" stroke="#d29922" stroke-width="1.4" marker-end="url(#m-amber)"/>
+<rect x="296" y="518" width="36" height="24" rx="5" fill="#1c2128" stroke="#d29922"/>
+<text x="314" y="534.5" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">k5</text>
+<line x1="332" y1="530" x2="346" y2="530" stroke="#d29922" stroke-width="1.4" marker-end="url(#m-amber)"/>
+<text x="358" y="535" fill="#e3b341" font-size="14" font-weight="700" text-anchor="middle">…</text>
+<line x1="368" y1="530" x2="382" y2="530" stroke="#d29922" stroke-width="1.4" marker-end="url(#m-amber)"/>
+<rect x="384" y="518" width="36" height="24" rx="5" fill="#1c2128" stroke="#d29922"/>
+<text x="402" y="534.5" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">kN</text>
+<text x="434" y="534.5" fill="#e3b341" font-size="12.5" font-weight="600">one long chain (or tree)</text>
+<rect x="592" y="444" width="268" height="94" rx="8" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".55"/>
+<text x="606" y="469" fill="#e3b341" font-size="12.5" font-weight="700">still correct, but slow:</text>
+<text x="606" y="487" fill="#c9d1d9" font-size="12.5">O(n), or O(log n) once treeified</text>
+<text x="606" y="505" fill="#8b949e" font-size="12.5">(keys must be Comparable),</text>
+<text x="606" y="523" fill="#c9d1d9" font-size="12.5">instead of O(1)</text>
+<rect x="24" y="584" width="852" height="34" rx="17" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".75"/>
+<text x="450" y="606" text-anchor="middle" font-size="13" fill="#56d364"><tspan font-weight="700">Rules:</tspan> equal objects → equal hash codes · use immutable keys (records are ideal)</text>
+</svg>

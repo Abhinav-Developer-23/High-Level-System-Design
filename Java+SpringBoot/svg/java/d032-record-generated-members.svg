@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="496" viewBox="0 0 920 496" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>What a record generates</title>
+  <desc>One line, public record Point(int x, int y) { }, and the compiler generates public final class Point extends java.lang.Record with: private final int x and private final int y (one field per component); public Point(int x, int y) (canonical constructor); public int x() and public int y() (accessors, not getX); equals(Object) (compares every component); hashCode() (built from every component); toString() (Point[x=1, y=2]). You can add methods, static fields, extra constructors and implement interfaces. You can't extend a class or add instance fields, and the fields are final. Records are shallowly immutable: copy List components with List.copyOf in the compact constructor.</desc>
+  <defs>
+    <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="919" height="495" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- left: source -->
+  <text x="24" y="168" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">YOU WRITE</text>
+  <rect x="24" y="180" width="324" height="50" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="38" y="210" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#ff7b72">public record</tspan> <tspan fill="#79c0ff">Point</tspan>(int x, int y) { }</text>
+
+  <!-- arrow -->
+  <line x1="350" y1="205" x2="444" y2="205" stroke="#58a6ff" stroke-width="1.8" marker-end="url(#arrB)"/>
+  <text x="397" y="178" fill="#79c0ff" font-size="12" text-anchor="middle" data-nocheck="1">the compiler</text>
+  <text x="397" y="194" fill="#79c0ff" font-size="12" text-anchor="middle" data-nocheck="1">generates</text>
+
+  <!-- right: generated class -->
+  <text x="448" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">EQUIVALENT CLASS</text>
+  <rect x="448" y="52" width="448" height="288" rx="10" fill="#1c2128" stroke="#58a6ff" stroke-opacity=".7"/>
+  <path d="M448,62 a10,10 0 0 1 10,-10 h428 a10,10 0 0 1 10,10 v32 h-448 z" fill="#58a6ff" fill-opacity=".12"/>
+  <line x1="448" y1="94" x2="896" y2="94" stroke="#58a6ff" stroke-opacity=".5"/>
+  <text x="464" y="78" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace"><tspan fill="#ff7b72">public final class</tspan> <tspan fill="#79c0ff">Point</tspan> <tspan fill="#ff7b72">extends</tspan> java.lang.Record</text>
+
+  <!-- fields -->
+  <text x="464" y="117" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">private final int x;</text>
+  <text x="464" y="136" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">private final int y;</text>
+  <text x="880" y="127" fill="#8b949e" font-size="12" text-anchor="end">one field per component</text>
+  <line x1="460" y1="146" x2="884" y2="146" stroke="#21262d"/>
+
+  <!-- constructor -->
+  <text x="464" y="167" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">public Point(int x, int y)</text>
+  <text x="880" y="167" fill="#8b949e" font-size="12" text-anchor="end">canonical constructor</text>
+  <line x1="460" y1="180" x2="884" y2="180" stroke="#21262d"/>
+
+  <!-- accessors -->
+  <text x="464" y="201" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">public int x()</text>
+  <text x="464" y="220" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">public int y()</text>
+  <text x="880" y="211" fill="#8b949e" font-size="12" text-anchor="end">accessors <tspan fill="#e3b341">(not <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">getX</tspan>)</tspan></text>
+  <line x1="460" y1="230" x2="884" y2="230" stroke="#21262d"/>
+
+  <!-- equals / hashCode / toString -->
+  <text x="464" y="251" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">equals(Object)</text>
+  <text x="880" y="251" fill="#8b949e" font-size="12" text-anchor="end">compares every component</text>
+  <line x1="460" y1="264" x2="884" y2="264" stroke="#21262d"/>
+  <text x="464" y="285" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">hashCode()</text>
+  <text x="880" y="285" fill="#8b949e" font-size="12" text-anchor="end">built from every component</text>
+  <line x1="460" y1="298" x2="884" y2="298" stroke="#21262d"/>
+  <text x="464" y="319" fill="#79c0ff" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">toString()</text>
+  <text x="880" y="319" fill="#8b949e" font-size="12" text-anchor="end" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">"Point[x=1, y=2]"</text>
+
+  <!-- notes -->
+  <rect x="24" y="364" width="872" height="32" rx="8" fill="#3fb950" fill-opacity=".10" stroke="#3fb950" stroke-opacity=".6"/>
+  <text x="40" y="385" fill="#c9d1d9" font-size="13"><tspan fill="#56d364" font-weight="700">✓ can</tspan> add methods, static fields, extra constructors, implement interfaces</text>
+  <rect x="24" y="404" width="872" height="32" rx="8" fill="#f85149" fill-opacity=".10" stroke="#f85149" stroke-opacity=".6"/>
+  <text x="40" y="425" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72" font-weight="700">✗ can't</tspan> extend a class · <tspan fill="#ff7b72" font-weight="700">can't</tspan> add instance fields · fields are <tspan fill="#ff7b72" font-weight="700">final</tspan></text>
+  <rect x="24" y="444" width="872" height="32" rx="8" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".6"/>
+  <text x="40" y="465" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">⚠ shallowly immutable:</tspan> copy <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">List</tspan> components with <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">List.copyOf</tspan> in the compact constructor</text>
+</svg>

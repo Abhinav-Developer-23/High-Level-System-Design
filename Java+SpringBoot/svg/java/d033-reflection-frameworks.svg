@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="478" viewBox="0 0 920 478" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Reflection and frameworks</title>
+  <desc>Order.class (bytecode) is loaded by the ClassLoader into a Class object, Order.class, a heap object whose class metadata lives in metaspace. Reflection API calls fan out of it: getDeclaredConstructors(), getDeclaredFields(), getDeclaredMethods(), getAnnotation(Entity.class), plus field.setAccessible(true) and method.invoke(obj). Frameworks use it: Spring finds @Component classes, calls the constructor and injects dependencies; Jackson reads fields or getters to JSON and creates objects from JSON; Hibernate reads @Entity and @Id and fills private fields from DB rows; JUnit finds @Test methods and invokes them. Costs: slower than direct calls, breaks encapsulation, no compile-time checks, JDK internals blocked since Java 17 (needs --add-opens).</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="919" height="477" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- section labels -->
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">CLASS LOADING</text>
+  <text x="280" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">REFLECTION API</text>
+  <text x="584" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">FRAMEWORKS USING IT</text>
+
+  <!-- left column -->
+  <rect x="24" y="54" width="200" height="40" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="124" y="79" fill="#e6edf3" font-size="13" text-anchor="middle"><tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order.class</tspan> <tspan fill="#8b949e">(bytecode)</tspan></text>
+  <line x1="124" y1="94" x2="124" y2="116" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="24" y="118" width="200" height="40" rx="8" fill="#58a6ff" fill-opacity=".10" stroke="#58a6ff" stroke-opacity=".7"/>
+  <text x="124" y="143" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">ClassLoader</text>
+  <line x1="124" y1="158" x2="124" y2="180" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="24" y="182" width="200" height="108" rx="10" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".8"/>
+  <text x="40" y="206" fill="#d2a8ff" font-size="15" font-weight="600">Class object</text>
+  <text x="40" y="228" fill="#e6edf3" font-size="13" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Order.class</text>
+  <text x="40" y="254" fill="#8b949e" font-size="12">heap object; its metadata</text>
+  <text x="40" y="272" fill="#8b949e" font-size="12">lives in metaspace</text>
+
+  <!-- fan from Class object to the Class-level calls -->
+  <path d="M224,236 C262,236 262,84 298,84" fill="none" stroke="#bc8cff" stroke-opacity=".8" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <path d="M224,236 C262,236 262,126 298,126" fill="none" stroke="#bc8cff" stroke-opacity=".8" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <path d="M224,236 C262,236 262,168 298,168" fill="none" stroke="#bc8cff" stroke-opacity=".8" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <path d="M224,236 C262,236 262,210 298,210" fill="none" stroke="#bc8cff" stroke-opacity=".8" stroke-width="1.5" marker-end="url(#arrP)"/>
+
+  <!-- middle column -->
+  <rect x="280" y="54" width="276" height="318" rx="10" fill="none" stroke="#484f58" stroke-dasharray="6 4"/>
+  <rect x="300" y="70" width="240" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="312" y="88.5" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">getDeclaredConstructors()</text>
+  <rect x="300" y="112" width="240" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="312" y="130.5" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">getDeclaredFields()</text>
+  <rect x="300" y="154" width="240" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="312" y="172.5" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">getDeclaredMethods()</text>
+  <rect x="300" y="196" width="240" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="312" y="214.5" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">getAnnotation(Entity.class)</text>
+  <line x1="300" y1="244" x2="540" y2="244" stroke="#30363d"/>
+  <text x="300" y="266" fill="#8b949e" font-size="12">plus, on a Field / Method:</text>
+  <rect x="300" y="278" width="240" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="312" y="296.5" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">field.setAccessible(true)</text>
+  <rect x="300" y="320" width="240" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="312" y="338.5" fill="#79c0ff" font-size="12.5" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">method.invoke(obj)</text>
+
+  <!-- arrows to frameworks -->
+  <line x1="556" y1="90" x2="582" y2="90" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="556" y1="172" x2="582" y2="172" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="556" y1="254" x2="582" y2="254" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="556" y1="336" x2="582" y2="336" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- framework cards -->
+  <rect x="584" y="54" width="312" height="72" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="600" y="78" fill="#e6edf3" font-size="14" font-weight="600">Spring</text>
+  <text x="600" y="99" fill="#c9d1d9" font-size="12.5">finds <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Component</tspan> classes, calls the</text>
+  <text x="600" y="117" fill="#c9d1d9" font-size="12.5">constructor, injects dependencies</text>
+
+  <rect x="584" y="136" width="312" height="72" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="600" y="160" fill="#e6edf3" font-size="14" font-weight="600">Jackson</text>
+  <text x="600" y="181" fill="#c9d1d9" font-size="12.5">reads fields / getters → JSON;</text>
+  <text x="600" y="199" fill="#c9d1d9" font-size="12.5">creates objects from JSON</text>
+
+  <rect x="584" y="218" width="312" height="72" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="600" y="242" fill="#e6edf3" font-size="14" font-weight="600">Hibernate</text>
+  <text x="600" y="263" fill="#c9d1d9" font-size="12.5">reads <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Entity</tspan> / <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Id</tspan>, fills private fields</text>
+  <text x="600" y="281" fill="#c9d1d9" font-size="12.5">from DB rows</text>
+
+  <rect x="584" y="300" width="312" height="72" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="600" y="324" fill="#e6edf3" font-size="14" font-weight="600">JUnit</text>
+  <text x="600" y="345" fill="#c9d1d9" font-size="12.5">finds <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">@Test</tspan> methods and invokes them</text>
+
+  <!-- footer -->
+  <rect x="24" y="392" width="872" height="62" rx="9" fill="#d29922" fill-opacity=".10" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="40" y="416" fill="#c9d1d9" font-size="13"><tspan fill="#e3b341" font-weight="700">⚠ costs:</tspan> slower than direct calls · breaks encapsulation · no compile-time checks ·</text>
+  <text x="40" y="438" fill="#c9d1d9" font-size="13">JDK internals blocked since Java 17 (needs <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">--add-opens</tspan>)</text>
+</svg>

@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="500" viewBox="0 0 920 500" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Java LTS timeline</title>
+  <desc>Java release timeline from 2014 to 2025. LTS releases: Java 8 (Mar 2014): lambdas, Streams, Optional, java.time, default methods. Java 11 (Sep 2018): var (from 10), List.of (from 9), modules (from 9), HttpClient, new String methods. Java 17 (Sep 2021): records, sealed classes, switch expressions, text blocks, pattern matching for instanceof. Java 21 (Sep 2023): virtual threads, pattern matching for switch, record patterns, sequenced collections, generational ZGC. Java 25 (Sep 2025): scoped values, compact source files, flexible constructor bodies, compact object headers. Non-LTS releases 9, 10, 12 to 16, 18 to 20 and 22 to 24 are small ticks. A new release ships every 6 months since Java 10; an LTS every 2 years since Java 17.</desc>
+  <defs><marker id="ax" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="919" height="499" rx="14" fill="#161b22" stroke="#30363d"/>
+  <line x1="71.3" y1="178" x2="71.3" y2="223" stroke="#3fb950" stroke-opacity=".7" stroke-width="1.5"/>
+  <line x1="377.3" y1="249" x2="377.3" y2="290" stroke="#3fb950" stroke-opacity=".7" stroke-width="1.5"/>
+  <line x1="581.3" y1="178" x2="581.3" y2="223" stroke="#3fb950" stroke-opacity=".7" stroke-width="1.5"/>
+  <line x1="717.3" y1="249" x2="717.3" y2="290" stroke="#3fb950" stroke-opacity=".7" stroke-width="1.5"/>
+  <line x1="853.3" y1="178" x2="853.3" y2="223" stroke="#3fb950" stroke-opacity=".7" stroke-width="1.5"/>
+  <line x1="40" y1="236" x2="894" y2="236" stroke="#8b949e" stroke-width="1.5" marker-end="url(#ax)"/>
+  <line x1="60.0" y1="236" x2="60.0" y2="242" stroke="#8b949e"/>
+  <text x="60.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2014</text>
+  <line x1="128.0" y1="236" x2="128.0" y2="242" stroke="#8b949e"/>
+  <text x="128.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2015</text>
+  <line x1="196.0" y1="236" x2="196.0" y2="242" stroke="#8b949e"/>
+  <text x="196.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2016</text>
+  <line x1="264.0" y1="236" x2="264.0" y2="242" stroke="#8b949e"/>
+  <text x="264.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2017</text>
+  <line x1="332.0" y1="236" x2="332.0" y2="242" stroke="#8b949e"/>
+  <text x="332.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2018</text>
+  <line x1="400.0" y1="236" x2="400.0" y2="242" stroke="#8b949e"/>
+  <text x="400.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2019</text>
+  <line x1="468.0" y1="236" x2="468.0" y2="242" stroke="#8b949e"/>
+  <text x="468.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2020</text>
+  <line x1="536.0" y1="236" x2="536.0" y2="242" stroke="#8b949e"/>
+  <text x="536.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2021</text>
+  <line x1="604.0" y1="236" x2="604.0" y2="242" stroke="#8b949e"/>
+  <text x="604.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2022</text>
+  <line x1="672.0" y1="236" x2="672.0" y2="242" stroke="#8b949e"/>
+  <text x="672.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2023</text>
+  <line x1="740.0" y1="236" x2="740.0" y2="242" stroke="#8b949e"/>
+  <text x="740.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2024</text>
+  <line x1="808.0" y1="236" x2="808.0" y2="242" stroke="#8b949e"/>
+  <text x="808.0" y="262" fill="#8b949e" font-size="12" text-anchor="middle">2025</text>
+  <line x1="309.3" y1="230" x2="309.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="309.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="309.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">9</text>
+  <line x1="343.3" y1="230" x2="343.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="343.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="343.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">10</text>
+  <line x1="411.3" y1="230" x2="411.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="411.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="411.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">12</text>
+  <line x1="445.3" y1="230" x2="445.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="445.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="445.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">13</text>
+  <line x1="479.3" y1="230" x2="479.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="479.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="479.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">14</text>
+  <line x1="513.3" y1="230" x2="513.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="513.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="513.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">15</text>
+  <line x1="547.3" y1="230" x2="547.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="547.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="547.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">16</text>
+  <line x1="615.3" y1="230" x2="615.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="615.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="615.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">18</text>
+  <line x1="649.3" y1="230" x2="649.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="649.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="649.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">19</text>
+  <line x1="683.3" y1="230" x2="683.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="683.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="683.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">20</text>
+  <line x1="751.3" y1="230" x2="751.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="751.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="751.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">22</text>
+  <line x1="785.3" y1="230" x2="785.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="785.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="785.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">23</text>
+  <line x1="819.3" y1="230" x2="819.3" y2="236" stroke="#8b949e" stroke-width="2"/>
+  <circle cx="819.3" cy="236" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="819.3" y="224" fill="#8b949e" font-size="11" text-anchor="middle">24</text>
+  <circle cx="71.3" cy="236" r="13" fill="#16351f" stroke="#3fb950" stroke-width="2"/>
+  <text x="71.3" y="240.5" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">8</text>
+  <rect x="24" y="24" width="260" height="154" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M24 60 V34 Q24 24 34 24 H274 Q284 24 284 34 V60 Z" fill="#3fb950" fill-opacity=".12"/>
+  <line x1="24" y1="60" x2="284" y2="60" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="40" y="48" fill="#e6edf3" font-size="15" font-weight="600">Java 8 <tspan fill="#8b949e" font-size="13" font-weight="400">· Mar 2014</tspan></text>
+  <rect x="226" y="31" width="44" height="22" rx="11" fill="#3fb950" fill-opacity=".15" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="248" y="46" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">LTS</text>
+  <circle cx="45" cy="77.5" r="2" fill="#56d364"/>
+  <text x="54" y="82" fill="#c9d1d9" font-size="13">lambdas</text>
+  <circle cx="45" cy="97.5" r="2" fill="#56d364"/>
+  <text x="54" y="102" fill="#c9d1d9" font-size="13">Streams</text>
+  <circle cx="45" cy="117.5" r="2" fill="#56d364"/>
+  <text x="54" y="122" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">Optional</tspan></text>
+  <circle cx="45" cy="137.5" r="2" fill="#56d364"/>
+  <text x="54" y="142" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">java.time</tspan></text>
+  <circle cx="45" cy="157.5" r="2" fill="#56d364"/>
+  <text x="54" y="162" fill="#c9d1d9" font-size="13">default methods</text>
+  <circle cx="377.3" cy="236" r="13" fill="#16351f" stroke="#3fb950" stroke-width="2"/>
+  <text x="377.3" y="240.5" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">11</text>
+  <rect x="247" y="290" width="260" height="154" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M247 326 V300 Q247 290 257 290 H497 Q507 290 507 300 V326 Z" fill="#3fb950" fill-opacity=".12"/>
+  <line x1="247" y1="326" x2="507" y2="326" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="263" y="314" fill="#e6edf3" font-size="15" font-weight="600">Java 11 <tspan fill="#8b949e" font-size="13" font-weight="400">· Sep 2018</tspan></text>
+  <rect x="449" y="297" width="44" height="22" rx="11" fill="#3fb950" fill-opacity=".15" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="471" y="312" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">LTS</text>
+  <circle cx="268" cy="343.5" r="2" fill="#56d364"/>
+  <text x="277" y="348" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">var</tspan> (10)</text>
+  <circle cx="268" cy="363.5" r="2" fill="#56d364"/>
+  <text x="277" y="368" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">List.of</tspan> (9)</text>
+  <circle cx="268" cy="383.5" r="2" fill="#56d364"/>
+  <text x="277" y="388" fill="#c9d1d9" font-size="13">modules (9)</text>
+  <circle cx="268" cy="403.5" r="2" fill="#56d364"/>
+  <text x="277" y="408" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">HttpClient</tspan></text>
+  <circle cx="268" cy="423.5" r="2" fill="#56d364"/>
+  <text x="277" y="428" fill="#c9d1d9" font-size="13">new <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">String</tspan> methods</text>
+  <circle cx="581.3" cy="236" r="13" fill="#16351f" stroke="#3fb950" stroke-width="2"/>
+  <text x="581.3" y="240.5" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">17</text>
+  <rect x="350" y="24" width="260" height="154" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M350 60 V34 Q350 24 360 24 H600 Q610 24 610 34 V60 Z" fill="#3fb950" fill-opacity=".12"/>
+  <line x1="350" y1="60" x2="610" y2="60" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="366" y="48" fill="#e6edf3" font-size="15" font-weight="600">Java 17 <tspan fill="#8b949e" font-size="13" font-weight="400">· Sep 2021</tspan></text>
+  <rect x="552" y="31" width="44" height="22" rx="11" fill="#3fb950" fill-opacity=".15" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="574" y="46" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">LTS</text>
+  <circle cx="371" cy="77.5" r="2" fill="#56d364"/>
+  <text x="380" y="82" fill="#c9d1d9" font-size="13">records</text>
+  <circle cx="371" cy="97.5" r="2" fill="#56d364"/>
+  <text x="380" y="102" fill="#c9d1d9" font-size="13">sealed classes</text>
+  <circle cx="371" cy="117.5" r="2" fill="#56d364"/>
+  <text x="380" y="122" fill="#c9d1d9" font-size="13"><tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">switch</tspan> expressions</text>
+  <circle cx="371" cy="137.5" r="2" fill="#56d364"/>
+  <text x="380" y="142" fill="#c9d1d9" font-size="13">text blocks</text>
+  <circle cx="371" cy="157.5" r="2" fill="#56d364"/>
+  <text x="380" y="162" fill="#c9d1d9" font-size="13">pattern matching for <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">instanceof</tspan></text>
+  <circle cx="717.3" cy="236" r="13" fill="#16351f" stroke="#3fb950" stroke-width="2"/>
+  <text x="717.3" y="240.5" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">21</text>
+  <rect x="590" y="290" width="260" height="154" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M590 326 V300 Q590 290 600 290 H840 Q850 290 850 300 V326 Z" fill="#3fb950" fill-opacity=".12"/>
+  <line x1="590" y1="326" x2="850" y2="326" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="606" y="314" fill="#e6edf3" font-size="15" font-weight="600">Java 21 <tspan fill="#8b949e" font-size="13" font-weight="400">· Sep 2023</tspan></text>
+  <rect x="792" y="297" width="44" height="22" rx="11" fill="#3fb950" fill-opacity=".15" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="814" y="312" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">LTS</text>
+  <circle cx="611" cy="343.5" r="2" fill="#56d364"/>
+  <text x="620" y="348" fill="#c9d1d9" font-size="13">virtual threads</text>
+  <circle cx="611" cy="363.5" r="2" fill="#56d364"/>
+  <text x="620" y="368" fill="#c9d1d9" font-size="13">pattern matching for <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" fill="#79c0ff" font-size="12.5">switch</tspan></text>
+  <circle cx="611" cy="383.5" r="2" fill="#56d364"/>
+  <text x="620" y="388" fill="#c9d1d9" font-size="13">record patterns</text>
+  <circle cx="611" cy="403.5" r="2" fill="#56d364"/>
+  <text x="620" y="408" fill="#c9d1d9" font-size="13">sequenced collections</text>
+  <circle cx="611" cy="423.5" r="2" fill="#56d364"/>
+  <text x="620" y="428" fill="#c9d1d9" font-size="13">generational ZGC</text>
+  <circle cx="853.3" cy="236" r="13" fill="#16351f" stroke="#3fb950" stroke-width="2"/>
+  <text x="853.3" y="240.5" fill="#e6edf3" font-size="12" font-weight="700" text-anchor="middle">25</text>
+  <rect x="636" y="24" width="260" height="154" rx="10" fill="#1c2128" stroke="#30363d"/>
+  <path d="M636 60 V34 Q636 24 646 24 H886 Q896 24 896 34 V60 Z" fill="#3fb950" fill-opacity=".12"/>
+  <line x1="636" y1="60" x2="896" y2="60" stroke="#3fb950" stroke-opacity=".5"/>
+  <text x="652" y="48" fill="#e6edf3" font-size="15" font-weight="600">Java 25 <tspan fill="#8b949e" font-size="13" font-weight="400">· Sep 2025</tspan></text>
+  <rect x="838" y="31" width="44" height="22" rx="11" fill="#3fb950" fill-opacity=".15" stroke="#3fb950" stroke-opacity=".7"/>
+  <text x="860" y="46" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle">LTS</text>
+  <circle cx="657" cy="77.5" r="2" fill="#56d364"/>
+  <text x="666" y="82" fill="#c9d1d9" font-size="13">scoped values</text>
+  <circle cx="657" cy="97.5" r="2" fill="#56d364"/>
+  <text x="666" y="102" fill="#c9d1d9" font-size="13">compact source files</text>
+  <circle cx="657" cy="117.5" r="2" fill="#56d364"/>
+  <text x="666" y="122" fill="#c9d1d9" font-size="13">flexible constructor bodies</text>
+  <circle cx="657" cy="137.5" r="2" fill="#56d364"/>
+  <text x="666" y="142" fill="#c9d1d9" font-size="13">compact object headers</text>
+  <line x1="24" y1="452" x2="896" y2="452" stroke="#21262d"/>
+  <text x="24" y="474" fill="#8b949e" font-size="12.5">new release every 6 months (since Java 10)&#160; · &#160;<tspan fill="#56d364">LTS every 2 years (since Java 17)</tspan></text>
+  <circle cx="670" cy="470" r="7" fill="#16351f" stroke="#3fb950" stroke-width="2"/>
+  <text x="683" y="474" fill="#8b949e" font-size="12">LTS</text>
+  <circle cx="730" cy="470" r="3.5" fill="#484f58" stroke="#8b949e"/>
+  <text x="740" y="474" fill="#8b949e" font-size="12">non-LTS release</text>
+</svg>
