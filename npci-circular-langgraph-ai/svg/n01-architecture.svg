@@ -109,7 +109,7 @@
     <text x="262.5" y="416">Claude</text>
     <text x="377" y="416">Postgres ledger</text>
     <text x="484" y="416">Weaviate</text>
-    <text x="573" y="416">cross-encoder</text>
+    <text x="573" y="416">rerank + MMR</text>
     <text x="662" y="416" fill="#d2a8ff">Claude Sonnet</text>
     <text x="784" y="416">grounded?</text>
   </g>

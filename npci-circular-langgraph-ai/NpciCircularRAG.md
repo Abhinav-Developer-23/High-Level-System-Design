@@ -104,7 +104,7 @@ html.markview-dark #markview-container details:hover { border-color: #3d444d; }
 
 Design notes for an LLM tool that answers questions like *"What is the UPI Lite per-transaction limit today?"* or *"What changed in ISD-GSTIN for URCS?"* from NPCI operating circulars, with the circular number and clause as proof. Stack: **S3 → 10-minute ingestion job → Weaviate**, **LangChain** for loaders, splitters and the Weaviate retriever, **LangGraph** for the question-answering flow, **Claude Sonnet** for answers.
 
-This is a learning and interview design, not a running service. **`npci_circular_graph.py`** in this folder is a small offline version of the whole flow you can run and read (section 7), and the questions an interviewer is likely to ask are in [section 15](#15-interview-trick-questions).
+This is a learning and interview design, not a running service. **`npci_circular_graph.py`** in this folder is a small offline version of the whole flow you can run and read (section 7), and the questions an interviewer is likely to ask are in [section 16](#16-interview-trick-questions).
 
 **Resume line this backs:**
 
@@ -126,7 +126,8 @@ This is a learning and interview design, not a running service. **`npci_circular
 12. [The 60-second pitch](#12-the-60-second-pitch)
 13. [RAG basics: how text becomes numbers](#13-rag-basics-how-text-becomes-numbers)
 14. [PageIndex: what it is, and why I used vector RAG instead](#14-pageindex-what-it-is-and-why-i-used-vector-rag-instead)
-15. [Interview trick questions](#15-interview-trick-questions)
+15. [Making RAG more accurate: BM25, fusion, reranking and MMR](#15-making-rag-more-accurate-bm25-fusion-reranking-and-mmr)
+16. [Interview trick questions](#16-interview-trick-questions)
 
 ---
 
@@ -145,6 +146,26 @@ So the tool has two jobs:
 
 1. **Search:** find the clauses that answer the question (that's RAG).
 2. **Currency:** know which of those clauses are still valid on a given date, and say so (that's metadata and versioning, section 6).
+
+### The main feature: every answer shows where it comes from
+
+> [!IMPORTANT]
+> The tool doesn't just answer. **Every answer names the circular that contains the data**: the circular number, the clause, the page, the exact sentence quoted from it, whether that rule is still in force or was superseded (and by which circular), and a link to the PDF. A PM or engineer can check the answer in one click instead of trusting the bot, and compliance can see exactly which circular a decision rests on.
+
+What a user gets back (real output of the learning code, section 7.1):
+
+```text
+Q (pm-2): What is the Tap & Pay limit on PoS without an extra factor of authentication?
+UPI Tap & Pay per transaction limit (PoS) is ₹5,000 (UPI-OC-186A-2026-27, Key Guidelines > 3), in force since 2026-09-10 [1][2].
+
+Proof (check it in the circular):
+  [1][2] UPI-OC-186A-2026-27 > Key Guidelines > 3, page 1, effective 2026-09-10 (CURRENT)
+      "Members and UPI Application Providers shall ensure that per transaction limit is capped at ₹5000, up to which additional factor of authentication shall not be required."
+      https://www.npci.org.in/uploads/UPI_I_OC_No_186_A_I_Enhancement_UPI_Tap_and_Pay_on_Point_of_Sale_Po_S_e695625b85.pdf
+Check the source circular before acting.
+```
+
+Everything else in this design exists to make that proof block **right**: OCR and clause chunking give an exact quote and page, the validity dates make "current" vs "superseded" correct, the rule ledger gives the exact value, and the grounding check rejects an answer whose numbers aren't in the cited text.
 
 ---
 
@@ -587,8 +608,8 @@ The learning code applies all of these operations: `RuleLedger.apply_change` in 
 |---|---|---|
 | `understand` | Claude, structured output | Intent (`rule_value`, `what_changed`, `explain`, `out_of_scope`), products, parameter, `as_of` date (default today). Resets the per-turn fields, because the checkpointer keeps state across turns. |
 | `rule_lookup` | SQL on the rule ledger | `rule_value`: the version valid on `as_of`, plus the next change if one is scheduled. `what_changed`: the whole history. |
-| `retrieve` | Weaviate hybrid search | `alpha=0.5`, date + product filters, top 20. The clauses that state the ledger rows are fetched first, because they're the proof. On a retry the product filter is dropped. |
-| `rerank` | Cross-encoder | Top 20 → top 6. |
+| `retrieve` | Weaviate hybrid search (BM25 + vector) | `alpha=0.5`, date + product filters, top 40. The clauses that state the ledger rows are fetched first, because they're the proof. On a retry the product filter is dropped. |
+| `rerank` | Cross-encoder + MMR | Rerank the candidates, keep 12, then MMR picks 6 that aren't near-duplicates. The proof clauses are pinned (section 15). |
 | `resolve_versions` | Python | Numbers every piece of evidence and labels it `current`, `history` or `upcoming` for the asked date. |
 | `generate` | Claude Sonnet | Answers only from the numbered sources, with `[n]` markers and the effective date. |
 | `check_grounding` | Python | Every number in the answer must appear in a source it cites. One retry, then `not_found`. |
@@ -966,14 +987,140 @@ qvec = emb.embed_query("What is the UPI Lite per transaction limit?")
 
 ---
 
-## 15. Interview trick questions
+## 15. Making RAG more accurate: BM25, fusion, reranking and MMR
+
+Most wrong RAG answers are **retrieval** failures: the right clause never reached the prompt, or it arrived buried under near-copies of another one. The fixes, by stage:
+
+| Stage | What goes wrong | Fix in this design |
+|---|---|---|
+| Ingestion | OCR misreads ₹5000; a clause is cut in half; a chunk doesn't say which product it's about | Textract with confidence checks, clause-aware chunks, tables whole, contextual header on every chunk (section 4) |
+| Understanding the question | "PoS" vs "point of sale", no product named, a date hidden in the question | `understand` extracts product, parameter and `as_of`; asks "which product?" when unclear |
+| Filtering | A superseded or not-yet-live clause is retrieved | Metadata filters before search: valid on `as_of`, product, `visible` (section 6.3) |
+| Search | Vectors miss `OC-229A` and `₹5000`; keywords miss paraphrases | **Hybrid: BM25 + vector, fused** (15.1) |
+| Ordering | The right clause is 9th, so it gets cut | **Cross-encoder reranking** (15.2) |
+| Variety | 6 slots spent on near-copies of one clause | **MMR** (15.3) |
+| Exact values | Similarity can't pick between ₹500 and ₹1,000 | Rule ledger lookup; the proof clause is pinned through every step |
+| Answer | The model invents or mixes values | Numbered sources, "not found" allowed, grounding check with one retry (section 7) |
+| Measurement | You can't tell if a change helped | Golden question set: recall@6 of the right clause, answer correctness (section 9) |
+
+![Retrieval pipeline: filters, BM25 and vector search top 40 each, fusion, cross-encoder rerank to 12, MMR to 6 plus pinned proof clauses, prompt](svg/n06-retrieval-pipeline.svg)
+
+### 15.1 BM25 + vectors: hybrid search and fusion
+
+**BM25** is classic keyword search. A chunk scores high for a query word when the word appears often **in that chunk** and rarely **across all chunks** (a rare word like `ISD` is worth more than a common one like `bank`), with a correction so long chunks don't win just by being long:
+
+```text
+BM25(chunk, query) = Σ over query words w:
+        IDF(w) × tf × (k1 + 1) / (tf + k1 × (1 − b + b × chunk_length / average_length))
+
+tf  = how often w appears in the chunk        IDF = how rare w is across all chunks
+k1 ≈ 1.2 (more repeats help less and less)     b ≈ 0.75 (how much to penalise long chunks)
+```
+
+| | BM25 (keywords) | Vector (meaning) |
+|---|---|---|
+| Good at | Exact tokens: `OC-229A`, `₹5000`, `ISD`, `PRD`, `MCC` | Paraphrases: "tap to pay at a card machine" → "Tap & Pay on PoS" |
+| Bad at | Synonyms, different wording | Codes, numbers, ids: they carry little "meaning" |
+
+So we run **both** and merge the two ranked lists. Weaviate does this in one `hybrid` query. There are two common ways to merge:
+
+- **Relative score fusion** (Weaviate's default): scale each list's scores to 0–1, then `final = alpha × vector_score + (1 − alpha) × bm25_score`. `alpha = 0` is pure BM25, `1` is pure vectors, `0.5` weighs them equally.
+- **Reciprocal Rank Fusion (RRF):** ignore the raw scores and use only the ranks: `score = Σ 1 / (60 + rank)` over both lists. Rewards chunks that **both** methods rank well.
+
+RRF example:
+
+| Chunk | BM25 rank | Vector rank | 1/(60+rank) + 1/(60+rank) | Fused |
+|---|---|---|---|---|
+| X | 1 | 4 | 0.01639 + 0.01562 | 0.03202 |
+| Y | 6 | 1 | 0.01515 + 0.01639 | 0.03154 |
+| **Z** | 2 | 2 | 0.01613 + 0.01613 | **0.03226** ← first |
+
+Z wasn't first in either list, but both liked it, so it wins. Use relative score when the scores themselves are meaningful, RRF when the two scales are hard to compare. Either way, **tune `alpha` on the golden set**: circular numbers and amounts pull it down (more BM25), plain-language questions pull it up.
+
+```python
+from weaviate.classes.query import HybridFusion
+
+res = chunks.query.hybrid(
+    query=question,                       # BM25 side
+    vector=emb.embed_query(question),     # vector side (OpenAI text-embedding-3-small)
+    alpha=0.5,
+    fusion_type=HybridFusion.RELATIVE_SCORE,   # or HybridFusion.RANKED
+    filters=valid_on(as_of) & product_filter,
+    limit=40,
+)
+```
+
+### 15.2 Reranking: read the question and the chunk together
+
+Embedding search is a **bi-encoder**: the question and each chunk are turned into vectors **separately**, then compared. That's what makes it fast (chunk vectors are computed once, at ingest), but a whole clause squeezed into one vector loses details: "PoS" vs "QR", "not required" vs "required", ₹500 vs ₹1,000.
+
+A **reranker** is a **cross-encoder**: it reads the question and one chunk **together** in a single pass and outputs one relevance score. It sees how the words of the question line up with the words of the chunk, so it's much more accurate. It is also much slower: one model pass per (question, chunk) pair, nothing precomputed. So it only reorders the top 20–50 that search returned.
+
+| | Bi-encoder (embedding search) | Cross-encoder (reranker) |
+|---|---|---|
+| Input | question alone; chunk alone | question + chunk together |
+| Cost | chunk vectors precomputed; search in milliseconds | one model pass per pair, at query time |
+| Accuracy | good recall, rough order | much better order |
+| Used for | thousands → 40 | 40 → 12 |
+
+Example: *"Tap & Pay limit on PoS without extra authentication?"* Vector search ranks OC-186A's intro ("Tap & Pay ... extended to PoS terminals") first, because it's about the same topic. The reranker puts **Key Guidelines 3** ("capped at ₹5000, up to which additional factor of authentication shall not be required") first, because that's the clause that actually answers the question.
+
+Options: **Cohere Rerank** (API, also on Bedrock), **bge-reranker-v2-m3** (open source, self-hosted), Voyage rerank, or an LLM as reranker (Claude Haiku scoring each chunk: accurate but slower and more expensive).
+
+### 15.3 MMR: Maximal Marginal Relevance
+
+The top results are often **near-copies**: the same rule restated in two circulars, both parts of one split clause, the old and new Lite clause (when date filtering is off for a "what changed?" question). Six slots spent on one fact means the second fact the answer needs (say "23 days" **and** "7 days grace") never reaches the prompt.
+
+**MMR** picks the final chunks **one at a time**, trading relevance against redundancy:
+
+```text
+MMR score(c) = λ × relevance(c, question)  −  (1 − λ) × max similarity(c, chunks already picked)
+
+λ = 1   -> pure relevance (plain top-k)
+λ = 0   -> pure variety
+λ = 0.5 -> LangChain's default; 0.5–0.7 is typical
+```
+
+Worked example, λ = 0.5:
+
+| Candidate | Relevance | Similarity to A | Step 1 score | Step 2 score |
+|---|---|---|---|---|
+| A: "respond in 23 calendar days" | 0.90 | | **0.45** ← picked | |
+| A′: same sentence from another circular | 0.88 | 0.95 | 0.44 | 0.44 − 0.475 = **−0.035** |
+| B: "7 calendar days as grace period" | 0.80 | 0.30 | 0.40 | 0.40 − 0.15 = **0.25** ← picked |
+
+A′ is almost as relevant as A but adds nothing new, so B, the second fact the answer needs, takes the slot.
+
+```python
+# LangChain: MMR over the vector store
+retriever = vectorstore.as_retriever(
+    search_type="mmr",
+    search_kwargs={"k": 6, "fetch_k": 40, "lambda_mult": 0.5},   # fetch 40, keep 6 diverse
+)
+```
+
+The learning code's `rerank` node runs MMR (`mmr()` in `npci_circular_graph.py`), with word overlap standing in for embedding similarity.
+
+### 15.4 Putting them together
+
+**Order: filters → BM25 + vector → fusion (top 40) → rerank (top 12) → MMR (6) → prompt.**
+
+- **Filters first.** Removing superseded and other-product chunks before search means every later step only sees candidates that could be valid answers.
+- **Rerank before MMR.** MMR needs a good relevance score to trade off against. The reranker's score is the best one available; MMR on raw fusion scores would be diversifying a rough guess.
+- **MMR last, and only over the reranked 12.** Its job is to remove repeats among chunks that are already good, not to pull in weak ones.
+- **Pin the proof.** The clause that states the ledger value skips reranking and MMR. Neither step may drop the document the answer cites.
+- **Measure each step.** Turn steps on one at a time and track recall@6 and answer correctness on the golden set. Keep only what helps.
+
+---
+
+## 16. Interview trick questions
 
 Questions an interviewer is likely to ask about this resume line. Each answer starts with the one-line version to say out loud, then the detail if they push.
 
 > [!WARNING]
 > Every number you say (how many circulars, how many users, latency, accuracy) will be probed. Only quote numbers you can defend. If you don't have a measured number, describe how you **would** measure it. That answer is safer than an invented figure.
 
-### 15.1 Probing the resume line itself
+### 16.1 Probing the resume line itself
 
 #### Q1. Your resume says LangChain. Your folder says LangGraph. Which one?
 
@@ -1006,7 +1153,7 @@ Weaviate gives **hybrid search (BM25 + vector) with metadata filters in one quer
 PMs and engineers at the PSP: limits ("Tap & Pay PoS cap?"), timelines ("days to respond to an MCC dispute?"), applicability ("does this apply to RuPay credit card on UPI?") and "what changed in the latest circular about X". That shaped the design: value questions go to the exact rule ledger, explanation questions go to RAG.
 
 
-### 15.2 Ingestion, OCR and chunking
+### 16.2 Ingestion, OCR and chunking
 
 #### Q7. Why poll S3 every 10 minutes instead of using S3 event notifications?
 
@@ -1032,7 +1179,17 @@ Half the chunks, but **invisible and harmless**:
 
 All four sample circulars are scanned, with no text layer. So: if a text layer exists, read it directly (free). Otherwise **Textract** async document analysis with `TABLES` and `LAYOUT`, so tables come out as tables. Pages with low OCR confidence go to Claude's image input as a fallback and the circular is marked for review. OCR output is cached in S3, so re-chunking never re-runs OCR.
 
-#### Q12. OCR reads ₹5000 as ₹500. Now your bot gives a wrong limit with a valid citation.
+#### Q12. Which model do you use for OCR?
+
+**Amazon Textract**, AWS's managed OCR service. It's not an LLM; it's a set of document models behind an API. I use `AnalyzeDocument` with the **TABLES** and **LAYOUT** features, through the async API (`StartDocumentAnalysis` on the PDF in S3, then fetch the result), because circulars are multi-page. It returns lines, words, tables and section headers with a **confidence score per word**.
+
+Why Textract: the PDFs are already in S3, all four sample circulars are scans with no text layer, the circulars have tables (31-country list, fee table), and per-word confidence lets me flag a doubtful "₹5000" instead of trusting it. No GPU to run.
+
+Fallback: pages with low confidence go to **Claude's vision input** (it reads the page image and returns text and markdown tables), and the circular is marked for review. Claude isn't the primary OCR because it costs more per page and, worse, a vision LLM can "fix" a smudged number into a plausible one instead of reporting low confidence.
+
+Details that show you did it: if a PDF already has a text layer, skip OCR and read the text directly (free). Strip the repeated header and footer (NPCI logo text, address block, "Together We Build") so it doesn't pollute every chunk. Textract handles English; if Hindi circulars appeared, I'd check language support first. Alternatives: Azure AI Document Intelligence, Google Document AI, or open-source Tesseract / PaddleOCR (cheaper, weaker on tables).
+
+#### Q13. OCR reads ₹5000 as ₹500. Now your bot gives a wrong limit with a valid citation.
 
 This is the scariest failure, so there are three layers:
 
@@ -1040,45 +1197,45 @@ This is the scariest failure, so there are three layers:
 2. Every extracted rule value must appear **literally** in the OCR text of the clause it cites, and Claude's extraction is compared with a regex pass over the same text.
 3. Rule facts don't go live until a reviewer approves them (maker-checker), and every answer links the original PDF page so a human can check in one click.
 
-#### Q13. How did you chunk? Why not fixed 512-token chunks?
+#### Q14. How did you chunk? Why not fixed 512-token chunks?
 
 Fixed windows cut clauses in half and mix two rules in one chunk. I chunk **by the document's structure**: one chunk per numbered clause or sub-section, tables whole, oversize clauses split at sentences with ~10% overlap. Every chunk gets a **contextual header** (`circular id | subject | date | section path`) before embedding, because "per transaction limit is capped at ₹5000" means nothing without knowing it's Tap & Pay on PoS.
 
-#### Q14. How do you chunk a table, like the 31-country list?
+#### Q15. How do you chunk a table, like the 31-country list?
 
 As **one chunk**, rendered as a markdown table, with the header row kept. Splitting a table loses the column meaning. If a table were huge, I'd split by row groups and repeat the header in each piece.
 
-#### Q15. A circular has an annexure full of blank forms (OC-239 has 5 pages of them). Problem?
+#### Q16. A circular has an annexure full of blank forms (OC-239 has 5 pages of them). Problem?
 
 They match lots of queries ("claim", "MCC", "merchant") but contain no answers. They're tagged `chunk_type=form` and down-weighted or excluded from answer retrieval, while still findable if someone asks "what's the format of the submission memo?".
 
-#### Q16. How do you parse the circular number when every circular formats it differently?
+#### Q17. How do you parse the circular number when every circular formats it differently?
 
 Regex with tolerance for spaces, "No.", dashes and 2- or 4-digit year ends, then normalise: `NPCI/UPI/OC No. 229A/2026 – 2027` → `UPI-OC-229A-2026-27`, `base_no=229`, `suffix=A`. Claude also extracts it; if they disagree, the regex wins and the file is flagged.
 
 
-### 15.3 Versioning: the ₹500 → ₹1,000 family of questions
+### 16.3 Versioning: the ₹500 → ₹1,000 family of questions
 
-#### Q17. UPI Lite limit was ₹500 in one circular and ₹1,000 in a later one. How do you overwrite the old data?
+#### Q18. UPI Lite limit was ₹500 in one circular and ₹1,000 in a later one. How do you overwrite the old data?
 
 **We don't overwrite.** Each version of a rule gets a validity window `[valid_from, valid_to)`. Ingesting the new circular **closes** the old version (`valid_to` = new effective date, `superseded_by` = new circular) and opens the new one. Queries filter on "valid on date D", D = today by default. This is SCD Type 2 from data warehousing.
 
 Concretely: a `rule_fact` row in Postgres for the exact value, and the matching Weaviate chunks get `effective_to` patched. A partial unique index allows only one open version per `(product, parameter, scope)`, so a bug can't leave two "current" limits.
 
-#### Q18. Why not just delete the old chunks? Simpler.
+#### Q19. Why not just delete the old chunks? Simpler.
 
 1. **History questions:** "what was the limit when this transaction happened?". Disputes under OC-239 reach back 90 days.
 2. **Partial supersession:** a new circular usually changes one clause. Deleting the old circular deletes rules that are still in force (OC-161A explicitly keeps all of OC-161's compliance rules).
 3. **Mistakes are reversible:** if the supersession link was wrong, reopen the window. A delete can't be undone.
 4. **"What changed?"** is one of the most valuable questions, and it needs the old version.
 
-#### Q19. What metadata did you store for this?
+#### Q20. What metadata did you store for this?
 
 On the circular: `circular_id`, `base_no`, `suffix`, `fy`, `issue_date`, **`effective_from`**, `department`, `status`, parent links with a kind (`AMENDS`, `EXTENDS`, `REVERSES`, `REFERENCES`).
 On each rule version: `product`, `parameter`, `scope`, value + unit, `circular_id`, `clause_path`, **`valid_from`, `valid_to`, `superseded_by`**, `review_status`, `recorded_at`.
 On each chunk: the same validity fields plus `products`, `clause_path`, `chunk_type`, `page`, `visible`, `embed_model`.
 
-#### Q20. How does the system know circular B supersedes circular A? Who decides?
+#### Q21. How does the system know circular B supersedes circular A? Who decides?
 
 Detection is automatic, approval is human:
 
@@ -1087,15 +1244,15 @@ Detection is automatic, approval is human:
 3. **Claude classifies** each candidate pair: `REPLACES`, `EXTENDS`, `ADDS`, `REVERSES` or `REFERENCES_ONLY`.
 4. **A compliance reviewer approves** before any old version is closed. Until then the answer shows both and says a newer circular is pending review.
 
-#### Q21. Circular OC-229A was issued 24 Aug but goes live 15 Sep. On 1 Sep, what does your bot say?
+#### Q22. Circular OC-229A was issued 24 Aug but goes live 15 Sep. On 1 Sep, what does your bot say?
 
 **The old rule**, because filtering is by `effective_from`, not issue date. That's exactly why I use a date window instead of an `is_current` boolean: a boolean flipped at ingestion would be wrong for three weeks, or need a scheduler to flip it at the right time. With dates, the new rule simply becomes the answer on 15 Sep. The answer also mentions *"changes on 15 Sep 2026 under OC-229A"*, because a PM planning work wants to know.
 
-#### Q22. A new circular says "all other provisions of the earlier circular remain unchanged". How do you model that?
+#### Q23. A new circular says "all other provisions of the earlier circular remain unchanged". How do you model that?
 
 That's **partial supersession**, and it's the normal case. Versioning is **per rule, not per document**: only the rule facts and clause chunks the new circular changes are closed. The parent's status becomes `PARTIALLY_SUPERSEDED`, and its other clauses stay open and keep being retrieved.
 
-#### Q23. Two retrieved chunks say ₹500 and ₹1,000 with nearly the same similarity score. How do you stop the LLM picking the wrong one?
+#### Q24. Two retrieved chunks say ₹500 and ₹1,000 with nearly the same similarity score. How do you stop the LLM picking the wrong one?
 
 Don't let the LLM decide:
 
@@ -1104,128 +1261,146 @@ Don't let the LLM decide:
 3. If both still appear (e.g. "what changed?"), `resolve_versions` labels one *current* and the other *history* before generation.
 4. The **grounding check** verifies the number in the answer matches the ledger's current value.
 
-#### Q24. User asks "what was the Lite limit in March 2024?"
+#### Q25. User asks "what was the Lite limit in March 2024?"
 
 The `understand` step extracts `as_of = 2024-03-xx`. The same filter runs with that date instead of today: `effective_from <= as_of < effective_to`. Same code path, no special case.
 
-#### Q25. When you mark the old chunks superseded in Weaviate, do you re-embed them?
+#### Q26. When you mark the old chunks superseded in Weaviate, do you re-embed them?
 
 **No.** It's a metadata-only partial update (`collection.data.update(uuid, properties={...})`). We bring our own vectors, so the stored vector is untouched. Re-embedding is only needed when the chunk **text** or the embedding model changes.
 
-#### Q26. What if your supersession link was wrong and you closed a rule that's still valid?
+#### Q27. What if your supersession link was wrong and you closed a rule that's still valid?
 
 Because nothing was deleted, it's an update: reopen `valid_to` to the sentinel, clear `superseded_by`, reject the link. The review step exists to make this rare, and the audit trail (`recorded_at`, reviewer) shows what the bot said in between.
 
-#### Q27. A circular is applied retroactively (OC-229A applies the ISD change to the whole reporting month). How does that fit?
+#### Q28. A circular is applied retroactively (OC-229A applies the ISD change to the whole reporting month). How does that fit?
 
 `valid_from` is set to the start of that month, even though we learned about it later. A second timestamp, `recorded_at`, stores **when we learned it**. Two time axes ("when it was valid" and "when we knew") are called **bitemporal** data. It lets you answer both "what was the rule on 20 Aug" and "what would the bot have said on 20 Aug".
 
-#### Q28. The amendment arrives before its parent was ever ingested. Now what?
+#### Q29. The amendment arrives before its parent was ever ingested. Now what?
 
 The link is stored anyway, pointing to a circular id we don't have yet. When the parent arrives, its rule versions are inserted **already closed** wherever an approved newer version exists. Order is always decided by effective date, never by arrival order.
 
-#### Q29. Isn't this just SQL temporal tables? Why build it?
+#### Q30. Isn't this just SQL temporal tables? Why build it?
 
-Same idea, yes. Temporal tables give you the history of a row, but here the hard part is **deciding** which new value replaces which old one (Q20), and the vector store needs the same validity window to filter chunks. The Postgres side could use a temporal-table extension; Weaviate still needs the fields.
+Same idea, yes. Temporal tables give you the history of a row, but here the hard part is **deciding** which new value replaces which old one (Q21), and the vector store needs the same validity window to filter chunks. The Postgres side could use a temporal-table extension; Weaviate still needs the fields.
 
 
-#### Q30. Lite was a simple replace. What about all the other ways a circular changes rules?
+#### Q31. Lite was a simple replace. What about all the other ways a circular changes rules?
 
 **Same model, more operations.** Store rules at the right grain (product, parameter, scope; lists as one row per member), and have Claude turn each new circular into **change operations**: `NEW`, `REPLACE`, `ADD_MEMBER`, `REMOVE_MEMBER`, `EXTEND_SCOPE`, `TEMPORARY`, `CORRECT`, `WITHDRAW`, `RESTATE`, `REFERENCE_ONLY`, plus future or past effective dates. One deterministic function applies them as "close these rows, open these rows"; nothing is deleted. The samples cover four of them: 161A adds 19 countries (`ADD_MEMBER`), 229A removes the receivable section (`REMOVE_MEMBER`), 186A adds PoS next to QR (`EXTEND_SCOPE`), Lite ₹500 → ₹1,000 (`REPLACE`). The read side never changes: every question is "rows valid on the asked date". Anything that closes or voids a row waits for a reviewer. Details in [section 6.7](#67-every-kind-of-change-one-model-twelve-operations).
 
-### 15.4 Retrieval and generation
+### 16.4 Retrieval and generation
 
-#### Q31. User types "OC-229A". Vector search returns garbage. Why, and what did you do?
+#### Q32. User types "OC-229A". Vector search returns garbage. Why, and what did you do?
 
 Embeddings are bad at exact identifiers and codes. Two fixes: **hybrid search** (BM25 catches the exact token), and the `understand` step extracts circular ids from the question, which are then **fetched directly** by a filter on `circular_id` (stored with field tokenization so it matches as one token).
 
-#### Q32. "What's the per-transaction limit?" Which product?
+#### Q33. "What's the per-transaction limit?" Which product?
 
 It's ambiguous: UPI Lite has one, Tap & Pay on PoS is ₹5,000, and there are others. If no product is detected, the bot **asks** with a short list instead of guessing. Products are a controlled vocabulary on every chunk and rule, so once known they're a hard filter.
 
-#### Q33. How do you prevent hallucination?
+#### Q34. How do you prevent hallucination?
 
 - Answer only from the given clauses; "not found in the indexed circulars" is an allowed, tested answer.
 - Every sentence cites `[circular › clause]`.
 - A grounding check: every number and date in the answer must appear in a cited chunk or ledger row. If not, retry retrieval once, then return not found.
 - Value questions use the exact ledger, not generated text.
 
-#### Q34. Did you set temperature to 0?
+#### Q35. Did you set temperature to 0?
 
 On older models that was the usual advice. Current Claude models reject sampling parameters like `temperature`, so consistency comes from elsewhere: **structured output** for extraction and planning, a **fixed system prompt**, **grounded context**, and the **grounding check**. Also, temperature 0 never guaranteed correctness: a confidently wrong answer is still wrong.
 
-#### Q35. Why a reranker? Which one?
+#### Q36. Why a reranker? Which one? And what is MMR?
 
-Hybrid search is cheap but rough; a **cross-encoder** reranker reads the question and each chunk together and scores relevance much better. Retrieve 20, rerank, keep 6. Options: Cohere Rerank on Bedrock, or an open cross-encoder (e.g. a `bge-reranker` model) hosted ourselves.
+Embedding search reads the question and each chunk **separately** (bi-encoder), so it's fast but rough. A **cross-encoder reranker** reads question + chunk **together** and scores the pair, which is much more accurate and much slower, so it only reorders the top 40. Cohere Rerank or `bge-reranker-v2-m3`. Then **MMR** (Maximal Marginal Relevance) picks the final 6 one at a time: `λ × relevance − (1 − λ) × similarity to what's already picked`, so near-copies of one clause don't fill every slot. Order: hybrid search → rerank → MMR, with the proof clause pinned. Details and a worked example in [section 15](#15-making-rag-more-accurate-bm25-fusion-reranking-and-mmr).
 
-#### Q36. How did you choose top-k, chunk size and the hybrid `alpha`?
+#### Q37. How does BM25 combine with vector search?
+
+Both run on the same filtered chunks. BM25 scores exact words (rare words count more), so it finds `OC-229A` and `₹5000`; vectors find paraphrases. Weaviate's `hybrid` query merges the two lists, by default with **relative score fusion** (scale both to 0–1, then `alpha × vector + (1 − alpha) × BM25`), or with **Reciprocal Rank Fusion** (`Σ 1/(60 + rank)`, which rewards chunks both methods like). `alpha` is tuned on the golden set.
+
+#### Q38. How would you make the RAG more accurate?
+
+Start by measuring which questions fail and why, on the golden set, instead of guessing. Then fix by stage:
+- **Ingestion:** better OCR checks, clause-aware chunks, contextual headers.
+- **Question understanding:** extract product and date; ask when unclear.
+- **Before search:** metadata filters.
+- **Search:** hybrid BM25 + vector with a tuned `alpha`.
+- **Ordering:** a cross-encoder reranker.
+- **Variety:** MMR.
+- **Exact values:** a rule ledger.
+- **Answer:** a grounding check.
+
+Most wins come from chunking, filters and reranking, not from a bigger model.
+
+#### Q39. How did you choose top-k, chunk size and the hybrid `alpha`?
 
 **On the eval set, not by guessing.** Sweep `alpha` (0 = pure BM25, 1 = pure vector), k and chunk size, and keep the setting with the best recall@6 of the expected clause. Codes and ids pull `alpha` down; paraphrased questions pull it up. 0.5 is a starting point.
 
-#### Q37. Could a PDF contain a prompt injection?
+#### Q40. Could a PDF contain a prompt injection?
 
 Unlikely from NPCI, but the pipeline shouldn't depend on that. Retrieved text goes into the prompt as quoted data with an instruction that text inside sources is never an instruction. The tool has no write actions, so the worst case is a bad answer, which the grounding check and citations limit.
 
-#### Q38. Why does a Q&A bot need LangGraph checkpointing?
+#### Q41. Why does a Q&A bot need LangGraph checkpointing?
 
 For **follow-ups**. "What's the Lite limit?" then "and before that?" — the second question only makes sense with the first. The checkpointer saves the graph state per `thread_id` (in Postgres), so the follow-up knows the product and parameter. It also survives a server restart.
 
-#### Q39. How do you show the source?
+#### Q42. How do you show the source?
 
 Every answer ends with a **proof** block. For each citation: the **circular id**, the **clause** and **page**, the **exact sentence** quoted from the circular, whether that rule is current or was later superseded (and by which circular), and a link to the PDF (pre-signed S3 URL, plus the NPCI URL when known). The user can verify the answer in one click instead of trusting the bot. `cite_sources` in `npci_circular_graph.py` builds it.
 
 
-#### Q40. How does vector similarity actually work?
+#### Q43. How does vector similarity actually work?
 
 Text goes through a tokenizer and an embedding model and comes out as a fixed-length vector (1536 numbers for `text-embedding-3-small`). Texts with similar meaning get vectors pointing in similar directions, because the model was trained to put related pairs close together. Closeness is **cosine similarity**: dot product divided by the two lengths, 1 = same direction, 0 = unrelated. Weaviate finds the nearest vectors with an **HNSW** graph index (approximate, fast), and hybrid search adds **BM25** for exact tokens like `OC-229A`. Worked example in [section 13.2](#132-vector-similarity-cosine).
 
-#### Q41. Have you heard of PageIndex? Why not use it instead of RAG?
+#### Q44. Have you heard of PageIndex? Why not use it instead of RAG?
 
 PageIndex skips embeddings: it builds a table-of-contents tree per document and lets an LLM reason its way to the right section. It's strong for a few long, structured documents. My corpus is hundreds of short circulars, and the hard part is which rule is *current*, which needs date and product filters and a rule ledger, not navigation. It also costs several LLM calls per question versus one millisecond vector lookup. For a long annexure I'd navigate inside it, or put the whole circular in Claude's context. See [section 14](#14-pageindex-what-it-is-and-why-i-used-vector-rag-instead).
 
-### 15.5 Evaluation, operations and cost
+### 16.5 Evaluation, operations and cost
 
-#### Q42. How do you know the answers are right?
+#### Q45. How do you know the answers are right?
 
 A **golden set** of ~100 questions written with a compliance person, each with the expected answer and expected clause. Crucially it contains **version traps**: superseded values, as-of dates, future effective dates, partial supersession, product confusion, ids, and questions whose answer isn't in the corpus. Metrics: retrieval recall, answer correctness, **currency accuracy** (did it give the version valid on the asked date), citation correctness. It runs on every prompt, chunking or model change.
 
-#### Q43. What do you monitor in production?
+#### Q46. What do you monitor in production?
 
 Ingest: run success, files `FAILED`, time since last good run, review queue age, OCR confidence. Query: p95 latency, Claude errors and rate limits, `not_found` rate, thumbs-down rate. A rising `not_found` rate usually means a circular is missing.
 
-#### Q44. What does a question cost, and how long does it take?
+#### Q47. What does a question cost, and how long does it take?
 
 Don't quote a figure you didn't measure. The shape: two Claude calls per question (`understand` + `generate`), a few thousand input tokens each (six chunks + system prompt), one embedding call, one Weaviate query, one rerank. The system prompt is cached. Ingest cost is negligible: a few circulars a week. Latency is dominated by the generate call; stream the answer so the user sees text immediately.
 
-#### Q45. How does it scale? What if there are 100× more documents?
+#### Q48. How does it scale? What if there are 100× more documents?
 
 The corpus is small (circulars, maybe tens of thousands of chunks over many years). One Weaviate node handles that; replicate for availability, not for size. At 100× you'd add shards, and you'd keep relying on **filters** (product, date) to shrink the search space. The ingest job scales by processing files in parallel, still one at a time per file.
 
-#### Q46. Access control: can everyone see everything?
+#### Q49. Access control: can everyone see everything?
 
 The circulars are public, so the corpus needs no per-document access control. The tool sits behind SSO. If internal interpretation notes were added later, they'd need a `visibility` field and a filter by user group, applied in the retriever, never left to the prompt.
 
 
-### 15.6 Curveballs
+### 16.6 Curveballs
 
-#### Q47. What was the hardest problem?
+#### Q50. What was the hardest problem?
 
 **Currency, not search.** Early on the obvious design (embed every PDF, retrieve top-k) happily returns the superseded ₹500 clause next to the ₹1,000 one, and the model sometimes picks the old one. The fix was the validity-window metadata, the rule ledger and the review step. (Tell this as your own story only if it happened that way; otherwise present it as the main design risk you planned for.)
 
-#### Q48. What would you do differently?
+#### Q51. What would you do differently?
 
 - pgvector in the existing Postgres instead of a separate Weaviate, given the corpus size.
 - Build the golden set on day one, before choosing chunk size or `alpha`.
 - Show a "what changed" diff view per circular, since that turned out to be the most useful kind of question.
 
-#### Q49. A PM acts on a wrong answer and the bank gets fined. Whose fault?
+#### Q52. A PM acts on a wrong answer and the bank gets fined. Whose fault?
 
 The tool is a **finder, not an authority**. Every answer cites the circular and clause, links the PDF, says when the rule took effect, and ends with "check the source circular before acting". Compliance still signs off. That framing has to be in the product from day one, not added after an incident.
 
-#### Q50. Could this become an agent that tells engineers which code to change?
+#### Q53. Could this become an agent that tells engineers which code to change?
 
 Possible next step: map rule facts to config keys (e.g. `UPI_LITE.per_txn_limit` → the switch's limit config) and raise a ticket when a rule version changes. I'd keep it as "propose a ticket for a human", not "change the config", for the same reason the supersession needs approval.
 
-#### Q51. Why Claude Sonnet and not a bigger or smaller model?
+#### Q54. Why Claude Sonnet and not a bigger or smaller model?
 
 Sonnet is the balance point: good at structured extraction from messy OCR text and at careful cited answers, at moderate cost and latency. The plan was to measure on the eval whether `understand` (a small classification step) can move to a Haiku model for lower latency, and whether a larger model improves the hardest supersession classifications enough to matter.

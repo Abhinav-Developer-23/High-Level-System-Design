@@ -634,7 +634,7 @@ def rule_lookup(s: QAState) -> dict:
 def retrieve(s: QAState) -> dict:
     broaden = s.get("retries", 0) > 0                         # retry: drop the product filter, fetch more
     as_of = None if s["intent"] == "what_changed" else s["as_of"]
-    hits = chunks.search(s["question"], as_of, [] if broaden else s["products"], k=40 if broaden else 20)
+    hits = chunks.search(s["question"], as_of, [] if broaden else s["products"], k=80 if broaden else 40)
     proof = [c for r in s["ledger_rows"] for c in chunks.by_clause(r.circular_id, r.clause_path)]
     seen, out = set(), []
     for c in proof + hits:                                    # the clauses that state the rule go first
@@ -644,9 +644,37 @@ def retrieve(s: QAState) -> dict:
     return {"candidates": out}
 
 
+def similarity(a: str, b: str) -> float:
+    """Stand-in for cosine similarity between two embeddings: word overlap (Jaccard)."""
+    x, y = set(tokens(a)), set(tokens(b))
+    return len(x & y) / len(x | y) if x | y else 0.0
+
+
+def mmr(ranked: list[Chunk], k: int, lam: float, pinned: list[Chunk]) -> list[Chunk]:
+    """Maximal Marginal Relevance: pick one chunk at a time, scoring
+         lam * relevance(chunk)  -  (1 - lam) * max similarity(chunk, chunks already picked)
+    so a near-duplicate of something already picked loses to a slightly less relevant, NEW fact.
+    `ranked` is best-first; relevance comes from that rank (real: the reranker's score)."""
+    picked = list(pinned)
+    relevance = {c.uuid: 1 - i / len(ranked) for i, c in enumerate(ranked)}
+    pool = [c for c in ranked if c.uuid not in {p.uuid for p in picked}]
+    while pool and len(picked) < k:
+        best = max(pool, key=lambda c: lam * relevance[c.uuid]
+                   - (1 - lam) * max((similarity(c.text, p.text) for p in picked), default=0.0))
+        picked.append(best)
+        pool.remove(best)
+    return picked
+
+
 def rerank(s: QAState) -> dict:
-    """Real: a cross-encoder (Cohere Rerank / bge-reranker) scores question + chunk together; keep 6."""
-    return {"candidates": s["candidates"][:6]}
+    """Real: a cross-encoder (Cohere Rerank / bge-reranker) scores each (question, chunk) pair and we keep
+    the best 12; then MMR picks 6 that aren't near-duplicates. Here the search order stands in for the
+    reranker, and word overlap stands in for embedding similarity between chunks.
+    The clauses that prove a ledger value are pinned: MMR may never drop the proof."""
+    proof_keys = {(r.circular_id, r.clause_path) for r in s["ledger_rows"]}
+    pinned = [c for c in s["candidates"] if (c.circular_id, c.clause_path) in proof_keys]
+    ranked = s["candidates"][:12]          # real: sorted by cross-encoder score, best first
+    return {"candidates": mmr(ranked, k=6, lam=0.5, pinned=pinned)}
 
 
 def resolve_versions(s: QAState) -> dict:

@@ -46,8 +46,8 @@
     <text x="360" y="110">Claude: intent, product, as_of</text>
     <text x="119" y="210">ledger version on as_of</text>
     <text x="668" y="210">"which product?" / off-topic</text>
-    <text x="360" y="310">hybrid · valid on as_of · top 20</text>
-    <text x="360" y="390">cross-encoder: 20 → 6</text>
+    <text x="360" y="310">BM25 + vector · valid on as_of · 40</text>
+    <text x="360" y="390">cross-encoder → 12, MMR → 6</text>
     <text x="360" y="470">label current vs history</text>
     <text x="360" y="550">Claude Sonnet, cited answer</text>
     <text x="360" y="630">every number in a source?</text>

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="312" viewBox="0 0 900 312" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Retrieval pipeline: filters, BM25 and vector search, fusion, rerank, MMR</title>
+  <desc>About 3,000 chunks are filtered by validity date, product and visibility. BM25 and vector search each return their top 40, fusion merges them, a cross-encoder reranks to 12, MMR picks 6 that are not near-duplicates, plus the pinned proof clauses, and those go into the prompt as numbered sources.</desc>
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="311" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="34" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">FROM THOUSANDS OF CHUNKS TO 6 IN THE PROMPT</text>
+  <rect x="24" y="96" width="130" height="110" rx="9" fill="#39c5cf" fill-opacity="0.10" stroke="#39c5cf"/>
+  <text x="89" y="120" fill="#56d4dd" font-size="14" font-weight="600" text-anchor="middle">Filters</text>
+  <text x="89" y="140" fill="#c9d1d9" font-size="12" text-anchor="middle">valid on as_of</text>
+  <text x="89" y="157" fill="#c9d1d9" font-size="12" text-anchor="middle">product</text>
+  <text x="89" y="174" fill="#c9d1d9" font-size="12" text-anchor="middle">visible</text>
+  <rect x="24" y="226" width="130" height="24" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="89" y="242" fill="#e6edf3" font-size="12" text-anchor="middle">~3,000 → ~200</text>
+  <rect x="176" y="84" width="130" height="58" rx="9" fill="#d29922" fill-opacity="0.10" stroke="#d29922"/>
+  <text x="241" y="106" fill="#e3b341" font-size="14" font-weight="600" text-anchor="middle">BM25</text>
+  <text x="241" y="126" fill="#c9d1d9" font-size="12" text-anchor="middle">exact words</text>
+  <rect x="176" y="160" width="130" height="58" rx="9" fill="#58a6ff" fill-opacity="0.10" stroke="#58a6ff"/>
+  <text x="241" y="182" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">Vector</text>
+  <text x="241" y="202" fill="#c9d1d9" font-size="12" text-anchor="middle">meaning</text>
+  <rect x="176" y="226" width="130" height="24" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="241" y="242" fill="#e6edf3" font-size="12" text-anchor="middle">top 40 each</text>
+  <rect x="328" y="96" width="120" height="110" rx="9" fill="#bc8cff" fill-opacity="0.10" stroke="#bc8cff"/>
+  <text x="388" y="120" fill="#d2a8ff" font-size="14" font-weight="600" text-anchor="middle">Fusion</text>
+  <text x="388" y="140" fill="#c9d1d9" font-size="12" text-anchor="middle">relative score</text>
+  <text x="388" y="157" fill="#c9d1d9" font-size="12" text-anchor="middle">or RRF</text>
+  <text x="388" y="174" fill="#c9d1d9" font-size="12" text-anchor="middle">alpha = 0.5</text>
+  <rect x="328" y="226" width="120" height="24" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="388" y="242" fill="#e6edf3" font-size="12" text-anchor="middle">→ 40</text>
+  <rect x="470" y="96" width="130" height="110" rx="9" fill="#3fb950" fill-opacity="0.10" stroke="#3fb950"/>
+  <text x="535" y="120" fill="#56d364" font-size="14" font-weight="600" text-anchor="middle">Rerank</text>
+  <text x="535" y="140" fill="#c9d1d9" font-size="12" text-anchor="middle">cross-encoder</text>
+  <text x="535" y="157" fill="#c9d1d9" font-size="12" text-anchor="middle">reads question</text>
+  <text x="535" y="174" fill="#c9d1d9" font-size="12" text-anchor="middle">+ chunk together</text>
+  <rect x="470" y="226" width="130" height="24" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="535" y="242" fill="#e6edf3" font-size="12" text-anchor="middle">→ 12</text>
+  <rect x="622" y="96" width="130" height="110" rx="9" fill="#f0883e" fill-opacity="0.10" stroke="#f0883e"/>
+  <text x="687" y="120" fill="#ffa657" font-size="14" font-weight="600" text-anchor="middle">MMR</text>
+  <text x="687" y="140" fill="#c9d1d9" font-size="12" text-anchor="middle">λ = 0.5</text>
+  <text x="687" y="157" fill="#c9d1d9" font-size="12" text-anchor="middle">drops near-</text>
+  <text x="687" y="174" fill="#c9d1d9" font-size="12" text-anchor="middle">duplicates</text>
+  <rect x="622" y="226" width="130" height="24" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="687" y="242" fill="#e6edf3" font-size="12" text-anchor="middle">→ 6 + proof</text>
+  <rect x="774" y="96" width="102" height="110" rx="9" fill="#58a6ff" fill-opacity="0.10" stroke="#58a6ff"/>
+  <text x="825" y="120" fill="#79c0ff" font-size="14" font-weight="600" text-anchor="middle">Prompt</text>
+  <text x="825" y="140" fill="#c9d1d9" font-size="12" text-anchor="middle">numbered</text>
+  <text x="825" y="157" fill="#c9d1d9" font-size="12" text-anchor="middle">sources</text>
+  <text x="825" y="174" fill="#c9d1d9" font-size="12" text-anchor="middle">[1] … [6]</text>
+  <rect x="774" y="226" width="102" height="24" rx="12" fill="#1c2128" stroke="#30363d"/>
+  <text x="825" y="242" fill="#e6edf3" font-size="12" text-anchor="middle">to Claude</text>
+  <line x1="154" y1="151" x2="174" y2="115" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="154" y1="151" x2="174" y2="187" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="306" y1="113" x2="326" y2="146" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="306" y1="189" x2="326" y2="156" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="448" y1="151" x2="468" y2="151" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="600" y1="151" x2="620" y2="151" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="752" y1="151" x2="772" y2="151" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="24" y="278" fill="#8b949e" font-size="12">Cheap and wide first, expensive and precise last: filters and BM25/vector search cover thousands of chunks in milliseconds,</text>
+  <text x="24" y="296" fill="#8b949e" font-size="12">the cross-encoder reads only 40 pairs, and MMR only reorders 12. The clauses that prove a ledger value are pinned through every step.</text>
+</svg>
