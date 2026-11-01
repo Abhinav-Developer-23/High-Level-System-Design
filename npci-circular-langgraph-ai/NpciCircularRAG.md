@@ -523,6 +523,56 @@ Automated detection, then a human approves anything that closes a version:
 
 The current value comes from the **rule ledger** (exact, SQL). The quote and the citation come from the **chunk** (Weaviate). The LLM writes the sentence; it does not choose between ₹500 and ₹1,000 on its own.
 
+### 6.7 Every kind of change: one model, twelve operations
+
+The Lite case is the simplest change a circular can make: one value replaced by another. The four sample circulars already show three other kinds (a list that grows, a scope that's added, a section that's taken away), and real circulars add more: temporary relaxations, corrigenda, withdrawals, master circulars. They all fit the same model if you get two things right.
+
+**1. Store each rule at the right grain.** A rule is `(product, parameter, scope)`, and its value has a shape:
+
+| Value shape | Example from the samples | How it's stored |
+|---|---|---|
+| Number | UPI Lite per-transaction limit ₹1,000 | One row per version, `value` + `unit` |
+| Text or yes/no | ISD update window: 15th to month end | One row per version, `text` |
+| **List** | 31 permitted countries (OC-161A) | **One row per member**: `parameter = permitted_country`, `scope = 'Bahrain'` |
+| **Scoped or tiered** | Tap & Pay ₹5,000 on **PoS**, separate from QR | `scope = 'PoS'`; one row per scope |
+| Deadline | "members must comply by 31 March" | `text` = the obligation, `valid_from` = the deadline |
+| Process | MCC dispute stages (OC-239) | No ledger row; answered from chunks |
+
+Lists as one row per member is the key decision. Then "is Brazil allowed on 15 Sep 2026?" is a plain lookup, and adding or removing one member never rewrites the others.
+
+**2. Turn every new circular into change operations, and apply them with one function.** Claude reads the new circular **together with the rows currently in force for the same products**, and outputs a list of operations (structured output, validated). A small deterministic function applies them. The LLM never writes to the database itself.
+
+![What each change operation does to the rule ledger rows: replace, add member, remove member, extend scope, temporary, correct](svg/n04-change-operations.svg)
+
+| Operation | What the circular says | Example | Rows closed | Rows opened |
+|---|---|---|---|---|
+| `NEW` | A rule that didn't exist | OC-239: minimum claim ₹10,00,000 | none | the new rule |
+| `REPLACE` | New value for the same rule | Lite ₹500 → ₹1,000 | the old version, on the effective date | the new version |
+| `ADD_MEMBER` | Adds items to a list | OC-161A adds 19 countries to 12 | none, existing members untouched | one row per new member |
+| `REMOVE_MEMBER` | Takes something away | OC-229A removes the receivable section | that member's row | **none** |
+| `EXTEND_SCOPE` | Same feature, new scope | OC-186A: Tap & Pay from QR to PoS | none, QR rows untouched | rows with `scope = 'PoS'` |
+| `TEMPORARY` | A value for a fixed period, then back | e.g. a relaxation until 31 March | the current version, on the start date | the temporary value with an end date, **and** a copy of the old value from the end date |
+| `CORRECT` | Corrigendum: "read ₹2,000 as ₹5,000" | typo fix | the wrong row is marked **VOID** (it was never valid, so history doesn't show it) | the corrected value with the **same** dates |
+| `WITHDRAW` | The circular is rescinded | | its rows, on the withdrawal date | a copy of the version just before it |
+| `RESTATE` | A master circular repeats the same value | annual master circular | none | none; the master is added as an extra citation |
+| `DEFERRED` | Go-live later than the issue date | OC-229A: issued 24 Aug, live 15 Sep 2026 | (whatever its other ops close, on the go-live date) | `valid_from` = go-live date |
+| `RETROSPECTIVE` | Applies from an earlier date | OC-229A: a change applies to the whole reporting month | as above, with a past date | `valid_from` in the past; `recorded_at` = today |
+| `REFERENCE_ONLY` | Cites another circular | OC-239 cites RuPay/047 | none | none; only a link, used for "see also" |
+
+`DEFERRED` and `RETROSPECTIVE` aren't separate code paths: they're the same operations with a future or past effective date. That's why the date is always the **effective** date, never the issue date.
+
+**What stays the same for all twelve:** the query. Every question is still "rows valid on the asked date", and "what changed?" is still "all rows for this rule, sorted by date". A new kind of change only adds a branch to the apply function; the read side never changes.
+
+**Chunks follow the rows, with one twist.** When a row is closed, its clause chunk is closed too, **unless another open row still cites that clause**. OC-229's single clause enables both the payable and the receivable section; OC-229A removes only receivable, so the chunk stays open and is tagged `partly_changed_by = OC-229A`. The answer then shows that clause as "current, partly changed by OC-229A" instead of hiding it.
+
+**Safety rails**
+
+- Operations that close or void anything (`REPLACE`, `REMOVE_MEMBER`, `TEMPORARY`, `CORRECT`, `WITHDRAW`) wait for a reviewer. `NEW`, `ADD_MEMBER`, `EXTEND_SCOPE`, `RESTATE` and `REFERENCE_ONLY` can apply straight away.
+- Two open versions of the same rule, or two circulars setting different values from the same date, go to the review queue (the unique index makes the first one impossible to commit).
+- **Out-of-band changes:** OC-229A mentions that ISD was switched off on 28 Nov 2025 **by email**, not by circular. The tool only knows what's in circulars, so answers about operational status say *"based on circulars only"*.
+
+The learning code applies all of these operations: `RuleLedger.apply_change` in `npci_circular_graph.py`. The demo runs `NEW`, `REPLACE`, `EXTEND_SCOPE`, `ADD_MEMBER` and `REMOVE_MEMBER` on the sample circulars and prints the resulting ledger.
+
 ---
 
 ## 7. Query side: the LangGraph flow
@@ -545,7 +595,7 @@ The current value comes from the **rule ledger** (exact, SQL). The quote and the
 
 ### 7.1 Run the learning code
 
-`npci_circular_graph.py` is the whole system in one file, offline: the 10-minute ingest job (with the content-hash manifest), closing the ₹500 version when the ₹1,000 circular arrives, and this graph. S3, Textract, Postgres, Weaviate and Claude are replaced by small in-memory fakes, each with a comment saying what the real component is.
+`npci_circular_graph.py` is the whole system in one file, offline: the 10-minute ingest job (with the content-hash manifest), the change operations of section 6.7 (closing the ₹500 version when the ₹1,000 circular arrives is one of them), and this graph. S3, Textract, Postgres, Weaviate and Claude are replaced by small in-memory fakes, each with a comment saying what the real component is. The UPI Lite circulars are made-up placeholders, and OC-229 is reconstructed from what OC-229A says about it (we don't have its PDF).
 
 ```bash
 pip install langgraph pydantic
@@ -567,8 +617,8 @@ def check_grounding(s: QAState) -> dict:
     """Every number in the answer must appear in a source it cites. Cheap, and catches the worst failures."""
     by_n = {src.n: src for src in s["sources"]}
     cited = [by_n[n] for n in s["citations"] if n in by_n]
-    evidence = " ".join(f"{c.circular_id} {c.clause_path} {c.text} {c.effective_from} {c.effective_to}"
-                        for c in cited)
+    evidence = " ".join(f"{c.circular_id} {c.clause_path} {c.text} {c.effective_from} {c.effective_to} "
+                        f"{c.superseded_by or ''}" for c in cited)
     claims = numbers_in(re.sub(r"\[\d+\]", "", s["answer"]))
     ok = s["found"] and bool(cited) and claims <= numbers_in(evidence)
     return {"grounded": ok, "retries": s.get("retries", 0) + (0 if ok else 1)}
@@ -596,24 +646,46 @@ def build_graph():
     g.add_conditional_edges("check_grounding", route_grounding, ["cite_sources", "retrieve", "not_found"])
     for terminal in ("cite_sources", "clarify_or_refuse", "not_found"):
         g.add_edge(terminal, END)
-    # the checkpointer serialises state; our pydantic classes must be allow-listed
-    serde = JsonPlusSerializer(allowed_msgpack_modules=[(__name__, c.__name__) for c in (RuleVersion, Chunk, Source)])
+    # Real: PostgresSaver, so a thread survives restarts. Memory is enough to show follow-ups.
+    # The checkpointer serialises state; our pydantic classes must be allow-listed to be read back.
+    serde = JsonPlusSerializer(allowed_msgpack_modules=[(__name__, cls.__name__)
+                                                        for cls in (RuleVersion, Chunk, Source)])
     return g.compile(checkpointer=InMemorySaver(serde=serde))
 ```
 
-What it prints (first three questions; the run also covers Tap & Pay, MCC disputes, ISD in URCS, an ambiguous question and an off-topic one):
+What it prints (the ingest log with every change operation, the resulting ledger, and four of the nine questions; the run also covers Tap & Pay, MCC disputes, the ISD update window, an ambiguous question and an off-topic one):
 
 ```text
 Ingest run 1 (every 10 minutes in the real system):
   indexed OC-L1
+      NEW: opened per transaction limit = ₹500
   indexed OC-L2
-      closed ₹500 (OC-L1) on 2024-12-16, opened ₹1,000 (OC-L2)
+      REPLACE: closed ₹500 (OC-L1) on 2024-12-16, opened per transaction limit = ₹1,000
   indexed UPI-OC-186A-2026-27
+      EXTEND_SCOPE: opened per transaction limit [PoS] = ₹5,000
+  indexed UPI-OC-229-2025-26
+      ADD_MEMBER: 2 ISD section rows opened, existing members untouched
   indexed UPI-OC-229A-2026-27
+      REMOVE_MEMBER: closed ISD section [receivable] (UPI-OC-229-2025-26) on 2026-09-15, nothing opened
+      NEW: opened ISD update window = 15th to month end
   indexed UPI-OC-239-2026-27
+      NEW: opened minimum claim amount = ₹10,00,000
+      NEW: opened response time = 23 days
   indexed UPI-OC-161A-2026-27
+      ADD_MEMBER: 19 permitted country rows opened, existing members untouched
 Ingest run 2 (same files again):
   skip OC-L1: same content already indexed
+
+Rule ledger (nothing is ever deleted; list members collapsed):
+  UPI_LITE        per_txn_limit                    ₹500                OC-L1                 2023-10-01 -> 2024-12-16 OC-L2
+  UPI_LITE        per_txn_limit                    ₹1,000              OC-L2                 2024-12-16 -> open
+  TAP_AND_PAY     per_txn_limit       PoS          ₹5,000              UPI-OC-186A-2026-27   2026-09-10 -> open
+  URCS_GST        isd_section         payable      allowed             UPI-OC-229-2025-26    2025-11-17 -> open
+  URCS_GST        isd_section         receivable   allowed             UPI-OC-229-2025-26    2025-11-17 -> 2026-09-15 UPI-OC-229A-2026-27
+  URCS_GST        isd_update_window                15th to month end   UPI-OC-229A-2026-27   2026-09-15 -> open
+  DISPUTES_MCC    min_claim_amount                 ₹10,00,000          UPI-OC-239-2026-27    2026-10-14 -> open
+  DISPUTES_MCC    response_days                    23 days             UPI-OC-239-2026-27    2026-10-14 -> open
+  NRI_INTL_MOBILE permitted_country   19 members                       UPI-OC-161A-2026-27   2026-10-01 -> open
 
 Q (pm-1): What is the UPI Lite per transaction limit?
 UPI Lite per transaction limit is ₹1,000 (OC-L2, Guidelines > 2(a)), in force since 2024-12-16 [1][2].
@@ -621,35 +693,47 @@ UPI Lite per transaction limit is ₹1,000 (OC-L2, Guidelines > 2(a)), in force 
 Proof (check it in the circular):
   [1][2] OC-L2 > Guidelines > 2(a), page 1, effective 2024-12-16 (CURRENT)
       "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, effective 16 December 2024."
-      (synthetic sample circular, no PDF)
+      (sample circular in this file, no PDF)
 Check the source circular before acting.
 
 Q (pm-1): And before that?
 History: ₹500 from 2023-10-01 (OC-L1) [1][3] -> ₹1,000 from 2024-12-16 (OC-L2) [2][4].
 
 Proof (check it in the circular):
-  [1][3] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (HISTORY, later superseded by OC-L2)
+  [1][3] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (HISTORY, superseded by OC-L2 on 2024-12-16)
       "The per transaction limit for UPI Lite shall be ₹500."
-      (synthetic sample circular, no PDF)
+      (sample circular in this file, no PDF)
   [2][4] OC-L2 > Guidelines > 2(a), page 1, effective 2024-12-16 (CURRENT)
       "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, effective 16 December 2024."
-      (synthetic sample circular, no PDF)
+      (sample circular in this file, no PDF)
 Check the source circular before acting.
 
 Q (pm-1): What was the UPI Lite limit on 10 Dec 2024?
 UPI Lite per transaction limit is ₹500 (OC-L1, Guidelines > 3), in force since 2023-10-01 [1][3]. It changes to ₹1,000 from 2024-12-16 (OC-L2) [2][4].
 
 Proof (check it in the circular):
-  [1][3] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (CURRENT, later superseded by OC-L2)
+  [1][3] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (CURRENT, superseded by OC-L2 on 2024-12-16)
       "The per transaction limit for UPI Lite shall be ₹500."
-      (synthetic sample circular, no PDF)
+      (sample circular in this file, no PDF)
   [2][4] OC-L2 > Guidelines > 2(a), page 1, effective 2024-12-16 (UPCOMING)
       "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, effective 16 December 2024."
-      (synthetic sample circular, no PDF)
+      (sample circular in this file, no PDF)
+Check the source circular before acting.
+
+Q (pm-2): How did the ISD sections in URCS change?
+History: payable: allowed from 2025-11-17 (UPI-OC-229-2025-26) [1][3]; receivable: allowed from 2025-11-17 (UPI-OC-229-2025-26) [2][3] -> ended 2026-09-15 (UPI-OC-229A-2026-27) [5].
+
+Proof (check it in the circular):
+  [1][2][3] UPI-OC-229-2025-26 > Main, page 1, effective 2025-11-17 (CURRENT, partly changed by UPI-OC-229A-2026-27)
+      "The Input Service Distributor (ISD)/GSTIN option would be enabled in the URCS system for both payable and receivable sections."
+      (sample circular in this file, no PDF)
+  [5] UPI-OC-229A-2026-27 > Main > a, page 1, effective 2026-09-15 (CURRENT)
+      "The receivable section has been removed from the ISD functionality. Users will now be able to update ISD details only for the payable section."
+      https://www.npci.org.in/uploads/UPI_OC_229_A_ISD_GSTIN_Input_Service_Distributor_Option_in_UPI_URCS_898c087730.pdf
 Check the source circular before acting.
 ```
 
-The second question is a follow-up in the same thread (`pm-1`): the checkpointer kept the product and parameter from the first turn. The third shows **issue date ≠ effective date**: on 10 Dec 2024 OC-L2 was already issued, but ₹500 was still the rule.
+The second question is a follow-up in the same thread (`pm-1`): the checkpointer kept the product and parameter from the first turn. The third shows **issue date ≠ effective date**: on 10 Dec 2024 OC-L2 was already issued, but ₹500 was still the rule. The fourth is a `REMOVE_MEMBER`: payable is still allowed, receivable ended on 15 Sep 2026, and the proof shows OC-229's clause as *partly changed by OC-229A* plus the 229A clause that removed it.
 
 ### 7.2 Retrieval details
 
@@ -931,91 +1015,95 @@ The link is stored anyway, pointing to a circular id we don't have yet. When the
 Same idea, yes. Temporal tables give you the history of a row, but here the hard part is **deciding** which new value replaces which old one (Q20), and the vector store needs the same validity window to filter chunks. The Postgres side could use a temporal-table extension; Weaviate still needs the fields.
 
 
+#### Q30. Lite was a simple replace. What about all the other ways a circular changes rules?
+
+**Same model, more operations.** Store rules at the right grain (product, parameter, scope; lists as one row per member), and have Claude turn each new circular into **change operations**: `NEW`, `REPLACE`, `ADD_MEMBER`, `REMOVE_MEMBER`, `EXTEND_SCOPE`, `TEMPORARY`, `CORRECT`, `WITHDRAW`, `RESTATE`, `REFERENCE_ONLY`, plus future or past effective dates. One deterministic function applies them as "close these rows, open these rows"; nothing is deleted. The samples cover four of them: 161A adds 19 countries (`ADD_MEMBER`), 229A removes the receivable section (`REMOVE_MEMBER`), 186A adds PoS next to QR (`EXTEND_SCOPE`), Lite ₹500 → ₹1,000 (`REPLACE`). The read side never changes: every question is "rows valid on the asked date". Anything that closes or voids a row waits for a reviewer. Details in [section 6.7](#67-every-kind-of-change-one-model-twelve-operations).
+
 ### 13.4 Retrieval and generation
 
-#### Q30. User types "OC-229A". Vector search returns garbage. Why, and what did you do?
+#### Q31. User types "OC-229A". Vector search returns garbage. Why, and what did you do?
 
 Embeddings are bad at exact identifiers and codes. Two fixes: **hybrid search** (BM25 catches the exact token), and the `understand` step extracts circular ids from the question, which are then **fetched directly** by a filter on `circular_id` (stored with field tokenization so it matches as one token).
 
-#### Q31. "What's the per-transaction limit?" Which product?
+#### Q32. "What's the per-transaction limit?" Which product?
 
 It's ambiguous: UPI Lite has one, Tap & Pay on PoS is ₹5,000, and there are others. If no product is detected, the bot **asks** with a short list instead of guessing. Products are a controlled vocabulary on every chunk and rule, so once known they're a hard filter.
 
-#### Q32. How do you prevent hallucination?
+#### Q33. How do you prevent hallucination?
 
 - Answer only from the given clauses; "not found in the indexed circulars" is an allowed, tested answer.
 - Every sentence cites `[circular › clause]`.
 - A grounding check: every number and date in the answer must appear in a cited chunk or ledger row. If not, retry retrieval once, then return not found.
 - Value questions use the exact ledger, not generated text.
 
-#### Q33. Did you set temperature to 0?
+#### Q34. Did you set temperature to 0?
 
 On older models that was the usual advice. Current Claude models reject sampling parameters like `temperature`, so consistency comes from elsewhere: **structured output** for extraction and planning, a **fixed system prompt**, **grounded context**, and the **grounding check**. Also, temperature 0 never guaranteed correctness: a confidently wrong answer is still wrong.
 
-#### Q34. Why a reranker? Which one?
+#### Q35. Why a reranker? Which one?
 
 Hybrid search is cheap but rough; a **cross-encoder** reranker reads the question and each chunk together and scores relevance much better. Retrieve 20, rerank, keep 6. Options: Cohere Rerank on Bedrock, or an open cross-encoder (e.g. a `bge-reranker` model) hosted ourselves.
 
-#### Q35. How did you choose top-k, chunk size and the hybrid `alpha`?
+#### Q36. How did you choose top-k, chunk size and the hybrid `alpha`?
 
 **On the eval set, not by guessing.** Sweep `alpha` (0 = pure BM25, 1 = pure vector), k and chunk size, and keep the setting with the best recall@6 of the expected clause. Codes and ids pull `alpha` down; paraphrased questions pull it up. 0.5 is a starting point.
 
-#### Q36. Could a PDF contain a prompt injection?
+#### Q37. Could a PDF contain a prompt injection?
 
 Unlikely from NPCI, but the pipeline shouldn't depend on that. Retrieved text goes into the prompt as quoted data with an instruction that text inside sources is never an instruction. The tool has no write actions, so the worst case is a bad answer, which the grounding check and citations limit.
 
-#### Q37. Why does a Q&A bot need LangGraph checkpointing?
+#### Q38. Why does a Q&A bot need LangGraph checkpointing?
 
 For **follow-ups**. "What's the Lite limit?" then "and before that?" — the second question only makes sense with the first. The checkpointer saves the graph state per `thread_id` (in Postgres), so the follow-up knows the product and parameter. It also survives a server restart.
 
-#### Q38. How do you show the source?
+#### Q39. How do you show the source?
 
 Every answer ends with a **proof** block. For each citation: the **circular id**, the **clause** and **page**, the **exact sentence** quoted from the circular, whether that rule is current or was later superseded (and by which circular), and a link to the PDF (pre-signed S3 URL, plus the NPCI URL when known). The user can verify the answer in one click instead of trusting the bot. `cite_sources` in `npci_circular_graph.py` builds it.
 
 
 ### 13.5 Evaluation, operations and cost
 
-#### Q39. How do you know the answers are right?
+#### Q40. How do you know the answers are right?
 
 A **golden set** of ~100 questions written with a compliance person, each with the expected answer and expected clause. Crucially it contains **version traps**: superseded values, as-of dates, future effective dates, partial supersession, product confusion, ids, and questions whose answer isn't in the corpus. Metrics: retrieval recall, answer correctness, **currency accuracy** (did it give the version valid on the asked date), citation correctness. It runs on every prompt, chunking or model change.
 
-#### Q40. What do you monitor in production?
+#### Q41. What do you monitor in production?
 
 Ingest: run success, files `FAILED`, time since last good run, review queue age, OCR confidence. Query: p95 latency, Claude errors and rate limits, `not_found` rate, thumbs-down rate. A rising `not_found` rate usually means a circular is missing.
 
-#### Q41. What does a question cost, and how long does it take?
+#### Q42. What does a question cost, and how long does it take?
 
 Don't quote a figure you didn't measure. The shape: two Claude calls per question (`understand` + `generate`), a few thousand input tokens each (six chunks + system prompt), one embedding call, one Weaviate query, one rerank. The system prompt is cached. Ingest cost is negligible: a few circulars a week. Latency is dominated by the generate call; stream the answer so the user sees text immediately.
 
-#### Q42. How does it scale? What if there are 100× more documents?
+#### Q43. How does it scale? What if there are 100× more documents?
 
 The corpus is small (circulars, maybe tens of thousands of chunks over many years). One Weaviate node handles that; replicate for availability, not for size. At 100× you'd add shards, and you'd keep relying on **filters** (product, date) to shrink the search space. The ingest job scales by processing files in parallel, still one at a time per file.
 
-#### Q43. Access control: can everyone see everything?
+#### Q44. Access control: can everyone see everything?
 
 The circulars are public, so the corpus needs no per-document access control. The tool sits behind SSO. If internal interpretation notes were added later, they'd need a `visibility` field and a filter by user group, applied in the retriever, never left to the prompt.
 
 
 ### 13.6 Curveballs
 
-#### Q44. What was the hardest problem?
+#### Q45. What was the hardest problem?
 
 **Currency, not search.** Early on the obvious design (embed every PDF, retrieve top-k) happily returns the superseded ₹500 clause next to the ₹1,000 one, and the model sometimes picks the old one. The fix was the validity-window metadata, the rule ledger and the review step. (Tell this as your own story only if it happened that way; otherwise present it as the main design risk you planned for.)
 
-#### Q45. What would you do differently?
+#### Q46. What would you do differently?
 
 - pgvector in the existing Postgres instead of a separate Weaviate, given the corpus size.
 - Build the golden set on day one, before choosing chunk size or `alpha`.
 - Show a "what changed" diff view per circular, since that turned out to be the most useful kind of question.
 
-#### Q46. A PM acts on a wrong answer and the bank gets fined. Whose fault?
+#### Q47. A PM acts on a wrong answer and the bank gets fined. Whose fault?
 
 The tool is a **finder, not an authority**. Every answer cites the circular and clause, links the PDF, says when the rule took effect, and ends with "check the source circular before acting". Compliance still signs off. That framing has to be in the product from day one, not added after an incident.
 
-#### Q47. Could this become an agent that tells engineers which code to change?
+#### Q48. Could this become an agent that tells engineers which code to change?
 
 Possible next step: map rule facts to config keys (e.g. `UPI_LITE.per_txn_limit` → the switch's limit config) and raise a ticket when a rule version changes. I'd keep it as "propose a ticket for a human", not "change the config", for the same reason the supersession needs approval.
 
-#### Q48. Why Claude Sonnet and not a bigger or smaller model?
+#### Q49. Why Claude Sonnet and not a bigger or smaller model?
 
 Sonnet is the balance point: good at structured extraction from messy OCR text and at careful cited answers, at moderate cost and latency. The plan was to measure on the eval whether `understand` (a small classification step) can move to a Haiku model for lower latency, and whether a larger model improves the hardest supersession classifications enough to matter.
