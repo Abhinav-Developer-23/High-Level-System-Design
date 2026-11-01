@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="580" viewBox="0 0 900 580" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Append-only storage, latest wins at query time</title>
+  <desc>The Rs 500 clause of OC-L1 (effective E1) and the Rs 1,000 clause of OC-L2 (issued before E2, effective E2) are both stored once with effective_from and rule_key and never edited. At query time, among clauses with the same rule_key, the latest with effective_from on or before the asked date is current, older ones are history and later ones upcoming.</desc>
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker></defs>
+  <rect x="0.5" y="0.5" width="899" height="579" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="24" y="34" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">TIMELINE · <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" letter-spacing="0">rule_key = UPI_LITE.per_txn_limit</tspan></text>
+  <line x1="40" y1="110" x2="868" y2="110" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <circle cx="140" cy="110" r="6" fill="#e3b341"/>
+  <text x="140" y="80" fill="#e3b341" font-size="13" font-weight="600" text-anchor="middle">₹500 · OC-L1</text>
+  <text x="140" y="134" fill="#c9d1d9" font-size="12" text-anchor="middle">E1 · takes effect</text>
+  <line x1="470" y1="102" x2="470" y2="118" stroke="#8b949e" stroke-width="2"/>
+  <text x="470" y="152" fill="#8b949e" font-size="12" text-anchor="middle">OC-L2 issued</text>
+  <circle cx="580" cy="110" r="6" fill="#56d364"/>
+  <text x="580" y="80" fill="#56d364" font-size="13" font-weight="600" text-anchor="middle">₹1,000 · OC-L2</text>
+  <text x="580" y="134" fill="#c9d1d9" font-size="12" text-anchor="middle">E2 · takes effect</text>
+  <line x1="770" y1="102" x2="770" y2="118" stroke="#8b949e" stroke-width="2"/>
+  <text x="770" y="134" fill="#c9d1d9" font-size="12" text-anchor="middle">today</text>
+  <text x="450" y="178" fill="#8b949e" font-size="12" text-anchor="middle">No end dates on the line: a rule has no valid_to until a later clause for the same rule_key appears.</text>
+  <rect x="24" y="196" width="852" height="150" rx="10" fill="#1c2128" stroke="#39c5cf"/>
+  <path d="M24,226 L24,206 Q24,196 34,196 L866,196 Q876,196 876,206 L876,226 Z" fill="#39c5cf" fill-opacity="0.12"/>
+  <line x1="24" y1="226" x2="876" y2="226" stroke="#39c5cf" stroke-opacity="0.5"/>
+  <text x="40" y="216" fill="#56d4dd" font-size="13" font-weight="600">Weaviate chunks: appended once, never edited or deleted</text>
+  <text x="40" y="248" fill="#8b949e" font-size="12">circular_id</text>
+  <text x="150" y="248" fill="#8b949e" font-size="12">clause</text>
+  <text x="310" y="248" fill="#8b949e" font-size="12">rule_key</text>
+  <text x="560" y="248" fill="#8b949e" font-size="12">effective_from</text>
+  <text x="690" y="248" fill="#8b949e" font-size="12">text</text>
+  <text x="40" y="268" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">OC-L1</text>
+  <text x="150" y="268" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Guidelines > 3</text>
+  <text x="310" y="268" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPI_LITE.per_txn_limit</text>
+  <text x="560" y="268" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2023-10-01</text>
+  <text x="690" y="268" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">… shall be ₹500</text>
+  <text x="40" y="290" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">OC-L1</text>
+  <text x="150" y="290" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Guidelines > 4</text>
+  <text x="310" y="290" fill="#8b949e" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(none)</text>
+  <text x="560" y="290" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2023-10-01</text>
+  <text x="690" y="290" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">… no UPI PIN</text>
+  <text x="40" y="312" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">OC-L2</text>
+  <text x="150" y="312" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">Guidelines > 2(a)</text>
+  <text x="310" y="312" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">UPI_LITE.per_txn_limit</text>
+  <text x="560" y="312" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">2024-12-16</text>
+  <text x="690" y="312" fill="#e6edf3" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">… ₹500 to ₹1,000</text>
+  <text x="40" y="336" fill="#8b949e" font-size="12">Adding OC-L2 appended the third row. The first two rows were not touched.</text>
+  <text x="24" y="380" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">AT QUERY TIME · LATEST WINS PER rule_key</text>
+  <text x="24" y="400" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">fetch all clauses with the rule_key → latest with effective_from &lt;= as_of is CURRENT</text>
+  <rect x="24" y="414" width="852" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="433" fill="#c9d1d9" font-size="12">as_of = today (default)</text>
+  <line x1="270" y1="428" x2="300" y2="428" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <text x="312" y="433" fill="#56d364" font-size="12" font-weight="600">₹1,000 CURRENT (OC-L2)</text>
+  <text x="540" y="433" fill="#8b949e" font-size="12">₹500 HISTORY, replaced by OC-L2 from E2</text>
+  <rect x="24" y="448" width="852" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="467" fill="#c9d1d9" font-size="12">as_of = between issue and E2</text>
+  <line x1="270" y1="462" x2="300" y2="462" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <text x="312" y="467" fill="#e3b341" font-size="12" font-weight="600">₹500 CURRENT (OC-L1)</text>
+  <text x="540" y="467" fill="#8b949e" font-size="12">₹1,000 UPCOMING from E2</text>
+  <rect x="24" y="482" width="852" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="501" fill="#c9d1d9" font-size="12">as_of = a date in the ₹500 era</text>
+  <line x1="270" y1="496" x2="300" y2="496" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <text x="312" y="501" fill="#e3b341" font-size="12" font-weight="600">₹500 CURRENT (OC-L1)</text>
+  <text x="540" y="501" fill="#8b949e" font-size="12">(OC-L2 not in force yet)</text>
+  <rect x="24" y="516" width="852" height="28" rx="6" fill="#1c2128" stroke="#30363d"/>
+  <text x="40" y="535" fill="#c9d1d9" font-size="12">"what changed?"</text>
+  <line x1="270" y1="530" x2="300" y2="530" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <text x="312" y="535" fill="#79c0ff" font-size="12" font-weight="600">₹500 → ₹1,000</text>
+  <text x="540" y="535" fill="#8b949e" font-size="12">all clauses, sorted by effective_from</text>
+</svg>

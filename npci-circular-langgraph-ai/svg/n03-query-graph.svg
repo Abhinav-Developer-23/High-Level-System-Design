@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="800" height="840" viewBox="0 0 800 840" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
   <title>The question-answering LangGraph</title>
-  <desc>START to understand. Conditional edges from understand: rule_value or what_changed to rule_lookup, explain to retrieve, off-topic or no product to clarify_or_refuse. rule_lookup to retrieve. Then retrieve, rerank, resolve_versions, generate, check_grounding. Conditional edges from check_grounding: ok to cite_sources then END, retry once back to retrieve, give_up to not_found. Solid gray arrows are normal edges, dashed amber arrows are conditional edges.</desc>
+  <desc>START to understand. Conditional edges from understand: on-topic questions to retrieve, off-topic or no product to clarify_or_refuse. Then retrieve, rerank, latest_wins, generate, check_grounding. Conditional edges from check_grounding: ok to cite_sources then END, retry once back to retrieve, give_up to not_found. Solid gray arrows are normal edges, dashed amber arrows are conditional edges.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
     <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
@@ -16,9 +16,6 @@
     <!-- understand -->
     <rect x="240" y="70" width="240" height="50" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
     <text x="360" y="91">understand</text>
-    <!-- rule_lookup -->
-    <rect x="24" y="170" width="190" height="50" rx="9" fill="#39c5cf" fill-opacity="0.10" stroke="#39c5cf"/>
-    <text x="119" y="191">rule_lookup</text>
     <!-- refuse -->
     <rect x="560" y="170" width="216" height="50" rx="9" fill="#f85149" fill-opacity="0.10" stroke="#f85149"/>
     <text x="668" y="191">clarify_or_refuse</text>
@@ -28,9 +25,9 @@
     <!-- rerank -->
     <rect x="240" y="350" width="240" height="50" rx="9" fill="#1c2128" stroke="#30363d"/>
     <text x="360" y="371">rerank</text>
-    <!-- resolve_versions -->
+    <!-- latest_wins -->
     <rect x="240" y="430" width="240" height="50" rx="9" fill="#d29922" fill-opacity="0.10" stroke="#d29922"/>
-    <text x="360" y="451">resolve_versions</text>
+    <text x="360" y="451">latest_wins</text>
     <!-- generate -->
     <rect x="240" y="510" width="240" height="50" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
     <text x="360" y="531">generate</text>
@@ -44,27 +41,21 @@
 
   <g font-size="12" fill="#8b949e" text-anchor="middle">
     <text x="360" y="110">Claude: intent, product, as_of</text>
-    <text x="119" y="210">ledger version on as_of</text>
     <text x="668" y="210">"which product?" / off-topic</text>
-    <text x="360" y="310">BM25 + vector · valid on as_of · 40</text>
+    <text x="360" y="310">all clauses of the rule + BM25/vector</text>
     <text x="360" y="390">cross-encoder → 12, MMR → 6</text>
-    <text x="360" y="470">label current vs history</text>
+    <text x="360" y="470">per rule_key: current / history</text>
     <text x="360" y="550">Claude Sonnet, cited answer</text>
     <text x="360" y="630">every number in a source?</text>
     <text x="668" y="630">"not in the circulars"</text>
   </g>
 
   <!-- conditional edges from understand -->
-  <polyline points="240,95 119,95 119,168" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
-  <text x="127" y="140" fill="#e3b341" font-size="11">rule_value / what_changed</text>
   <polyline points="480,95 668,95 668,168" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
   <text x="676" y="140" fill="#e3b341" font-size="11">off-topic / no product</text>
   <line x1="360" y1="120" x2="360" y2="268" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
-  <text x="368" y="200" fill="#e3b341" font-size="11">explain</text>
+  <text x="368" y="200" fill="#e3b341" font-size="11">rule_value / what_changed / explain</text>
 
-  <!-- rule_lookup -> retrieve -->
-  <polyline points="119,220 119,295 238,295" fill="none" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
-  <text x="127" y="262" fill="#8b949e" font-size="11">fetch clause text to cite</text>
 
   <!-- main chain -->
   <line x1="360" y1="320" x2="360" y2="348" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>

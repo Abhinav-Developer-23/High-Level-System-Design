@@ -5,13 +5,17 @@ Runs fully offline. Everything that would be a cloud service is faked in memory,
 with a comment saying what the real thing is:
 
     S3 + 10-minute job   ->  ingest_job(inbox)            (manifest keyed by content hash)
-    Textract + Claude    ->  circulars already given as clauses + change operations
-    Postgres ledger      ->  RuleLedger                   (versions with valid_from / valid_to)
+    Textract + Claude    ->  circulars already given as clauses with metadata
     Weaviate             ->  ChunkStore                   (keyword score + the same metadata filters)
     Claude Sonnet        ->  fake_plan() / fake_answer()  (keyword rules)
 
     pip install langgraph pydantic
     python npci_circular_graph.py
+
+How updates (₹500 -> ₹1,000) are handled: APPEND-ONLY. Every clause is stored once with
+static metadata (effective_from, rule_key) and is never edited or deleted. At query time,
+among the clauses that state the same rule, the latest one in force on the asked date wins;
+older ones are shown as history, future ones as upcoming.
 
 The UPI Lite circulars OC-L1 / OC-L2 and their dates are SYNTHETIC placeholders for the
 ₹500 -> ₹1,000 example. OC-229 is reconstructed from what OC-229A says about it.
@@ -32,7 +36,6 @@ from langgraph.checkpoint.serde.jsonplus import JsonPlusSerializer
 from langgraph.graph import END, START, StateGraph
 from pydantic import BaseModel
 
-OPEN_END = date(9999, 12, 31)          # "still in force": a sentinel instead of NULL
 TODAY = date.today()
 
 PRODUCTS = {
@@ -43,70 +46,27 @@ PRODUCTS = {
     "DISPUTES_MCC": "MCC misclassification disputes",
 }
 LABELS = {"per_txn_limit": "per transaction limit", "min_claim_amount": "minimum claim amount",
-          "response_days": "response time", "isd_section": "ISD section",
-          "isd_update_window": "ISD update window", "permitted_country": "permitted country"}
+          "response_days": "response time", "isd_section": "ISD sections",
+          "isd_update_window": "ISD update window", "permitted_country": "permitted countries"}
 
 
 # =====================================================================================
 # 1. Data shapes
 # =====================================================================================
 
-class RuleVersion(BaseModel):
-    """One version of one rule. Postgres table `rule_fact` in the real design."""
-    id: int
-    product: str
-    parameter: str
-    scope: str = ""                     # sub-scope ("PoS") or a list member ("Bahrain", "receivable")
-    value: float | None = None
-    text: str | None = None
-    unit: str = ""
-    circular_id: str
-    clause_path: str
-    valid_from: date                    # the EFFECTIVE date, not the issue date
-    valid_to: date = OPEN_END           # exclusive: valid on [valid_from, valid_to)
-    superseded_by: str | None = None
-    status: Literal["ACTIVE", "VOID"] = "ACTIVE"   # VOID = corrected away by a corrigendum, never valid
-
-    @property
-    def key(self) -> tuple[str, str, str]:
-        return (self.product, self.parameter, self.scope)
-
-    def valid_on(self, d: date) -> bool:
-        return self.status == "ACTIVE" and self.valid_from <= d < self.valid_to
-
-    def shown(self) -> str:
-        if self.value is None:
-            return self.text or ""
-        v = int(self.value) if self.value == int(self.value) else self.value
-        return f"₹{inr(v)}" if self.unit == "INR" else f"{v} {self.unit}".strip()
-
-
-def inr(n: int | float) -> str:
-    """Indian digit grouping, as circulars write it: 1000000 -> 10,00,000."""
-    head, last3 = str(int(n))[:-3], str(int(n))[-3:]
-    groups = []
-    while len(head) > 2:
-        head, groups = head[:-2], [head[-2:]] + groups
-    return ",".join(([head] if head else []) + groups + [last3])
-
-
 class Chunk(BaseModel):
-    """One clause of one circular. A Weaviate object in the real design."""
+    """One clause of one circular. A Weaviate object in the real design.
+    Every field is written ONCE at ingest and never edited."""
     uuid: str
     circular_id: str
     clause_path: str
     text: str
     header: str                         # contextual header, embedded together with the text
     products: list[str]
+    rule_key: str | None = None         # "UPI_LITE.per_txn_limit": which rule this clause sets, if any
     page: int
-    effective_from: date
-    effective_to: date = OPEN_END
-    superseded_by: str | None = None
-    partly_changed_by: str | None = None   # some, not all, rules of this clause were changed
-    visible: bool = False               # True only after the whole circular is written
-
-    def valid_on(self, d: date) -> bool:
-        return self.effective_from <= d < self.effective_to
+    issue_date: date
+    effective_from: date                # the EFFECTIVE date, not the issue date
 
 
 class QueryPlan(BaseModel):
@@ -120,24 +80,22 @@ class QueryPlan(BaseModel):
 class Source(BaseModel):
     """A numbered piece of evidence: shown to the LLM, then to the user as proof."""
     n: int
-    kind: Literal["rule", "clause"]
     circular_id: str
     clause_path: str
-    scope: str = ""
-    page: int | None
+    rule_key: str | None
+    page: int
     text: str
     effective_from: date
-    effective_to: date
     role: Literal["current", "history", "upcoming"]
-    superseded_by: str | None
-    partly_changed_by: str | None = None
+    replaced_by: str | None = None      # worked out at query time, never stored
+    replaced_on: date | None = None
     pdf_url: str | None
 
 
 # =====================================================================================
 # 2. Sample circulars: what OCR + Claude extraction would hand to the ingest step.
-#    "changes" are CHANGE OPERATIONS, not raw facts: the op says what the circular does
-#    to the rules already in force (see RuleLedger.apply_change).
+#    Each clause: (clause_path, page, text, rule_key). rule_key is set when the clause
+#    states a looked-up rule (a limit, a window, a list); None for everything else.
 # =====================================================================================
 
 NPCI = "https://www.npci.org.in/uploads/"
@@ -147,22 +105,19 @@ CIRCULARS = [
         "id": "OC-L1", "subject": "UPI Lite: transaction limits", "issue_date": "2023-10-01",
         "effective_from": "2023-10-01", "products": ["UPI_LITE"], "pdf_url": None,
         "clauses": [
-            ("Guidelines > 3", 1, "The per transaction limit for UPI Lite shall be ₹500."),
-            ("Guidelines > 4", 1, "UPI Lite payments up to the per transaction limit shall not require UPI PIN."),
+            ("Guidelines > 3", 1, "The per transaction limit for UPI Lite shall be ₹500.", "UPI_LITE.per_txn_limit"),
+            ("Guidelines > 4", 1, "UPI Lite payments up to the per transaction limit shall not require UPI PIN.",
+             None),
         ],
-        "changes": [{"op": "NEW", "product": "UPI_LITE", "parameter": "per_txn_limit", "value": 500,
-                     "unit": "INR", "clause": "Guidelines > 3"}],
     },
     {   # SYNTHETIC placeholder: issued 2 Dec, effective 16 Dec -> issue date != effective date
         "id": "OC-L2", "subject": "UPI Lite: enhancement of per transaction limit", "issue_date": "2024-12-02",
         "effective_from": "2024-12-16", "products": ["UPI_LITE"], "pdf_url": None,
         "clauses": [
-            ("Main", 1, "With reference to circular OC-L1, the UPI Lite per transaction limit is revised."),
+            ("Main", 1, "With reference to circular OC-L1, the UPI Lite per transaction limit is revised.", None),
             ("Guidelines > 2(a)", 1, "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, "
-                                     "effective 16 December 2024."),
+                                     "effective 16 December 2024.", "UPI_LITE.per_txn_limit"),
         ],
-        "changes": [{"op": "REPLACE", "product": "UPI_LITE", "parameter": "per_txn_limit", "value": 1000,
-                     "unit": "INR", "clause": "Guidelines > 2(a)"}],
     },
     {
         "id": "UPI-OC-186A-2026-27", "subject": "Enhancement - UPI Tap & Pay on Point of Sale (PoS)",
@@ -171,30 +126,26 @@ CIRCULARS = [
         "clauses": [
             ("Main", 1, "With reference to UPI Operating Circular NPCI/UPI/OC-186/2023-24 dated 19th December 2023, "
                         "UPI Tap & Pay through NFC on QR was introduced. UPI Tap & Pay shall now be extended to "
-                        "Point of Sale (PoS) terminals."),
+                        "Point of Sale (PoS) terminals.", None),
             ("Key Guidelines > 1", 1, "Members and UPI Application Providers shall ensure that UPI Tap & Pay "
                                       "transactions on PoS terminals are accepted only for Person-to-Merchant (P2M) "
-                                      "transactions."),
+                                      "transactions.", None),
+            # a new SCOPE (PoS) gets its own rule key, so it never competes with the QR rules
             ("Key Guidelines > 3", 1, "Members and UPI Application Providers shall ensure that per transaction limit "
                                       "is capped at ₹5000, up to which additional factor of authentication shall "
-                                      "not be required."),
+                                      "not be required.", "TAP_AND_PAY.per_txn_limit.PoS"),
             ("UPI Application Provider > 2", 2, "UPI Application Providers shall ensure that device lock is enabled "
                                                 "as a prerequisite for activating UPI Tap & Pay. The device shall be "
-                                                "in an unlocked state at the time of initiating a transaction."),
+                                                "in an unlocked state at the time of initiating a transaction.", None),
         ],
-        # Tap & Pay on QR (OC-186) keeps its own rules: PoS is a NEW SCOPE, not a replacement
-        "changes": [{"op": "EXTEND_SCOPE", "product": "TAP_AND_PAY", "parameter": "per_txn_limit", "scope": "PoS",
-                     "value": 5000, "unit": "INR", "clause": "Key Guidelines > 3"}],
     },
     {   # RECONSTRUCTED from OC-229A's own summary of it (we don't have the OC-229 PDF)
         "id": "UPI-OC-229-2025-26", "subject": "ISD/GSTIN option in URCS (reconstructed)",
         "issue_date": "2025-11-12", "effective_from": "2025-11-17", "products": ["URCS_GST"], "pdf_url": None,
         "clauses": [
             ("Main", 1, "The Input Service Distributor (ISD)/GSTIN option would be enabled in the URCS system for "
-                        "both payable and receivable sections."),
+                        "both payable and receivable sections.", "URCS_GST.isd_section"),
         ],
-        "changes": [{"op": "ADD_MEMBER", "product": "URCS_GST", "parameter": "isd_section",
-                     "members": ["payable", "receivable"], "clause": "Main"}],
     },
     {
         "id": "UPI-OC-229A-2026-27", "subject": "Implementation of Revised ISD-GSTIN Option in URCS Back-Office System",
@@ -202,18 +153,13 @@ CIRCULARS = [
         "pdf_url": NPCI + "UPI_OC_229_A_ISD_GSTIN_Input_Service_Distributor_Option_in_UPI_URCS_898c087730.pdf",
         "clauses": [
             ("Main > a", 1, "The receivable section has been removed from the ISD functionality. Users will now be "
-                            "able to update ISD details only for the payable section."),
-            ("Main > c", 1, "Users are permitted to update only one GSTIN or ISD per product per bank in a month."),
+                            "able to update ISD details only for the payable section.", "URCS_GST.isd_section"),
+            ("Main > c", 1, "Users are permitted to update only one GSTIN or ISD per product per bank in a month.",
+             None),
             ("Main > d", 1, "ISD/GSTIN update should be submitted in URCS between the 15th and 31st or last day of "
                             "every month. Back Office system will not permit users to update ISD/GSTIN details "
-                            "between the 1st to 14th of every month."),
-            ("Go-Live", 1, "Revised ISD-GSTIN functionality will be made live on Sep 15, 2026."),
-        ],
-        "changes": [
-            {"op": "REMOVE_MEMBER", "product": "URCS_GST", "parameter": "isd_section", "member": "receivable",
-             "clause": "Main > a"},
-            {"op": "NEW", "product": "URCS_GST", "parameter": "isd_update_window", "text": "15th to month end",
-             "clause": "Main > d"},
+                            "between the 1st to 14th of every month.", "URCS_GST.isd_update_window"),
+            ("Go-Live", 1, "Revised ISD-GSTIN functionality will be made live on Sep 15, 2026.", None),
         ],
     },
     {
@@ -223,19 +169,15 @@ CIRCULARS = [
                           "7770320097.pdf",
         "clauses": [
             ("2.3 Claim Eligibility > a(i)", 5, "Amount Threshold for a Claim: Minimum aggregate Claim amount must "
-                                                "be INR 10,00,000 (Ten Lakhs rupees only)."),
+                                                "be INR 10,00,000 (Ten Lakhs rupees only).",
+             "DISPUTES_MCC.min_claim_amount"),
             ("4.2 Pre-Compliance Response > a", 8, "Responding Party must submit response in 23 calendar days. On "
                                                    "expiry of 23rd day, if no response is received, responding party "
-                                                   "will have a period of 7 calendar days as grace period."),
+                                                   "will have a period of 7 calendar days as grace period.",
+             "DISPUTES_MCC.response_days"),
             ("4.4 Panel for Resolution of Disputes > b", 10, "Panel shall endeavor to review the Claim and resolve "
                                                              "the same within 90 calendar days from Panel Reference "
-                                                             "Date."),
-        ],
-        "changes": [
-            {"op": "NEW", "product": "DISPUTES_MCC", "parameter": "min_claim_amount", "value": 1000000,
-             "unit": "INR", "clause": "2.3 Claim Eligibility > a(i)"},
-            {"op": "NEW", "product": "DISPUTES_MCC", "parameter": "response_days", "value": 23, "unit": "days",
-             "clause": "4.2 Pre-Compliance Response > a"},
+                                                             "Date.", None),
         ],
     },
     {
@@ -248,132 +190,15 @@ CIRCULARS = [
                         "were permitted. Now, international mobile numbers from the following 19 countries are being "
                         "added: Bahrain, Bhutan, Brazil, Germany, Greece, Ireland, Italy, Japan, Kuwait, Maldives, "
                         "Nepal, Netherlands, New Zealand, Philippines, Portugal, South Africa, Spain, Sweden, "
-                        "Thailand. All compliance requirements shall remain as is."),
+                        "Thailand. All compliance requirements shall remain as is.", "NRI_INTL_MOBILE.permitted_country"),
         ],
-        # a list grows: one row per new member; the 12 existing members are untouched
-        "changes": [{"op": "ADD_MEMBER", "product": "NRI_INTL_MOBILE", "parameter": "permitted_country",
-                     "members": ["Bahrain", "Bhutan", "Brazil", "Germany", "Greece", "Ireland", "Italy", "Japan",
-                                 "Kuwait", "Maldives", "Nepal", "Netherlands", "New Zealand", "Philippines",
-                                 "Portugal", "South Africa", "Spain", "Sweden", "Thailand"],
-                     "clause": "Main"}],
     },
 ]
 
 
 # =====================================================================================
-# 3. Stores (in memory). Real: Postgres for the ledger, Weaviate for chunks.
+# 3. Chunk store (in memory). Real: Weaviate. APPEND-ONLY: no update, no delete.
 # =====================================================================================
-
-class RuleLedger:
-    """Postgres stand-in. In SQL, a partial unique index guarantees one open version per rule.
-
-    apply_change() is the ONE place that turns a change operation into row changes.
-    Every op is "close some rows, open some rows". Nothing is ever deleted, so every
-    query stays the same: rows valid on the asked date.
-    """
-
-    def __init__(self) -> None:
-        self.rows: list[RuleVersion] = []
-        self.circulars: dict[str, dict] = {}
-
-    def versions(self, product: str, parameter: str | None) -> list[RuleVersion]:
-        rows = [r for r in self.rows if r.status == "ACTIVE" and r.product == product
-                and (parameter is None or r.parameter == parameter)]
-        return sorted(rows, key=lambda r: (r.parameter, r.scope, r.valid_from))
-
-    def _current(self, key: tuple[str, str, str], d: date) -> RuleVersion | None:
-        return next((r for r in self.rows if r.key == key and r.valid_on(d)), None)
-
-    def _open(self, ch: dict, cid: str, valid_from: date, *, scope: str | None = None, text: str | None = None,
-              valid_to: date = OPEN_END, like: RuleVersion | None = None) -> RuleVersion:
-        base = like.model_dump(exclude={"id", "valid_from", "valid_to", "superseded_by", "status"}) if like else {
-            "product": ch["product"], "parameter": ch["parameter"], "scope": ch.get("scope", ""),
-            "value": ch.get("value"), "text": ch.get("text"), "unit": ch.get("unit", ""),
-            "circular_id": cid, "clause_path": ch["clause"]}
-        if scope is not None:
-            base["scope"] = scope
-        if text is not None:
-            base["text"] = text
-        row = RuleVersion(id=len(self.rows) + 1, valid_from=valid_from, valid_to=valid_to, **base)
-        self.rows.append(row)
-        return row
-
-    def _close(self, row: RuleVersion, on: date, by: str) -> RuleVersion:
-        # In production a reviewer approves every close before it happens (maker-checker).
-        closed = row.model_copy(update={"valid_to": on, "superseded_by": by})
-        self.rows[self.rows.index(row)] = closed
-        return closed
-
-    def apply_change(self, ch: dict, cid: str, eff: date) -> tuple[list[str], list[RuleVersion]]:
-        """Returns (notes for the log, rows that were closed or voided)."""
-        op, notes, closed = ch["op"], [], []
-        key = (ch.get("product"), ch.get("parameter"), ch.get("scope", ""))
-
-        if op in ("NEW", "REPLACE", "EXTEND_SCOPE", "RESTATE"):
-            cur = self._current(key, eff)
-            if cur and (cur.value, cur.text) == (ch.get("value"), ch.get("text")):
-                notes.append(f"{op}: {cur.shown()} restated, no new version ({cid} kept as an extra citation)")
-            else:
-                if cur:
-                    closed.append(self._close(cur, eff, cid))
-                new = self._open(ch, cid, eff)
-                notes.append(f"{op}: " + (f"closed {cur.shown()} ({cur.circular_id}) on {eff}, " if cur else "")
-                             + f"opened {LABELS[new.parameter]}" + (f" [{new.scope}]" if new.scope else "")
-                             + f" = {new.shown()}")
-
-        elif op == "ADD_MEMBER":                                  # a list grows: one row per new member
-            for m in ch["members"]:
-                if not self._current((ch["product"], ch["parameter"], m), eff):
-                    self._open(ch, cid, eff, scope=m, text="allowed")
-            notes.append(f"ADD_MEMBER: {len(ch['members'])} {LABELS[ch['parameter']]} rows opened, "
-                         f"existing members untouched")
-
-        elif op == "REMOVE_MEMBER":                               # a list shrinks: close, open nothing
-            cur = self._current((ch["product"], ch["parameter"], ch["member"]), eff)
-            if cur:
-                closed.append(self._close(cur, eff, cid))
-                notes.append(f"REMOVE_MEMBER: closed {LABELS[cur.parameter]} [{cur.scope}] "
-                             f"({cur.circular_id}) on {eff}, nothing opened")
-
-        elif op == "TEMPORARY":                                   # e.g. a relaxation until a date, then back
-            until = date.fromisoformat(ch["until"])
-            cur = self._current(key, eff)
-            if cur:
-                closed.append(self._close(cur, eff, cid))
-            temp = self._open(ch, cid, eff, valid_to=until)
-            if cur:
-                self._open(ch, cid, until, like=cur)              # the old value again, citing the old circular
-            notes.append(f"TEMPORARY: {temp.shown()} from {eff} until {until}"
-                         + (f", then {cur.shown()} again" if cur else ""))
-
-        elif op == "CORRECT":                                     # corrigendum: the wrong row was never valid
-            for wrong in [r for r in self.rows if r.key == key and r.circular_id == ch["target"]
-                          and r.status == "ACTIVE"]:
-                void = wrong.model_copy(update={"status": "VOID", "superseded_by": cid})
-                self.rows[self.rows.index(wrong)] = void
-                closed.append(void)
-                fixed = self._open(ch, cid, wrong.valid_from, valid_to=wrong.valid_to)
-                notes.append(f"CORRECT: {wrong.shown()} ({wrong.circular_id}) voided, "
-                             f"{fixed.shown()} from {wrong.valid_from} instead")
-
-        elif op == "WITHDRAW":                                    # rescinded: the previous value comes back
-            for row in [r for r in self.rows if r.circular_id == ch["target"] and r.valid_on(eff)]:
-                closed.append(self._close(row, eff, cid))
-                prev = next((p for p in self.rows if p.key == row.key and p.status == "ACTIVE"
-                             and p.valid_to == row.valid_from), None)       # the version just before it
-                if prev:
-                    self._open(ch, cid, eff, like=prev)
-                notes.append(f"WITHDRAW: closed {row.shown()} ({row.circular_id}) on {eff}"
-                             + (f", {prev.shown()} back in force" if prev else ""))
-
-        elif op == "REFERENCE_ONLY":                              # cites another circular, changes nothing
-            notes.append(f"REFERENCE_ONLY: link {cid} -> {ch['target']}, no rule changed")
-        return notes, closed
-
-    def still_cited(self, circular_id: str, clause_path: str, after: date) -> bool:
-        return any(r.circular_id == circular_id and r.clause_path == clause_path and r.status == "ACTIVE"
-                   and r.valid_to > after for r in self.rows)
-
 
 def tokens(text: str) -> list[str]:
     stop = {"the", "a", "an", "of", "for", "to", "in", "on", "is", "what", "and", "or", "be", "shall", "by", "with"}
@@ -381,36 +206,23 @@ def tokens(text: str) -> list[str]:
 
 
 class ChunkStore:
-    """Weaviate stand-in. Real search is hybrid (BM25 + vector); here it is a BM25-like keyword score.
-    The metadata filters are the part that matters, and they are the same as in Weaviate."""
+    """Weaviate stand-in. Real search is hybrid (BM25 + vector); here it is a BM25-like keyword score."""
 
     def __init__(self) -> None:
         self.objects: dict[str, Chunk] = {}
 
-    def upsert(self, chunks: list[Chunk]) -> None:
-        for c in chunks:
+    def add(self, new: list[Chunk]) -> None:
+        for c in new:
             self.objects[c.uuid] = c                    # deterministic uuid: re-ingest overwrites, no duplicates
 
-    def patch(self, circular_id: str, clause_path: str, **props) -> None:
-        """Metadata-only update. Real Weaviate keeps the stored vector: no re-embedding."""
-        for u, c in self.objects.items():
-            if c.circular_id == circular_id and c.clause_path == clause_path:
-                self.objects[u] = c.model_copy(update=props)
+    def by_rule(self, rule_prefix: str) -> list[Chunk]:
+        """Metadata filter, not similarity: EVERY clause that states this rule, oldest first.
+        Real: fetch_objects(filters=Filter.by_property("rule_key").like(f"{prefix}*"))"""
+        return sorted((c for c in self.objects.values() if c.rule_key and c.rule_key.startswith(rule_prefix)),
+                      key=lambda c: c.effective_from)
 
-    def set_visible(self, circular_id: str) -> None:
-        for u, c in self.objects.items():
-            if c.circular_id == circular_id:
-                self.objects[u] = c.model_copy(update={"visible": True})
-
-    def by_clause(self, circular_id: str, clause_path: str) -> list[Chunk]:
-        return [c for c in self.objects.values()
-                if c.visible and c.circular_id == circular_id and c.clause_path == clause_path]
-
-    def search(self, query: str, as_of: date | None, products: list[str], k: int) -> list[Chunk]:
-        # Weaviate: filters=effective_from <= as_of AND effective_to > as_of AND products contains_any [...]
-        pool = [c for c in self.objects.values()
-                if c.visible and (as_of is None or c.valid_on(as_of))
-                and (not products or set(products) & set(c.products))]
+    def search(self, query: str, products: list[str], k: int) -> list[Chunk]:
+        pool = [c for c in self.objects.values() if not products or set(products) & set(c.products)]
         docs = {c.uuid: Counter(tokens(c.header + " " + c.text)) for c in pool}
         df = Counter(t for d in docs.values() for t in d)
         scored = []
@@ -422,7 +234,8 @@ class ChunkStore:
         return [c for _, c in sorted(scored, key=lambda x: -x[0])[:k]]
 
 
-ledger, chunks = RuleLedger(), ChunkStore()
+chunks = ChunkStore()
+circulars: dict[str, dict] = {}        # circular registry (Postgres in the real design)
 
 
 # =====================================================================================
@@ -432,33 +245,18 @@ ledger, chunks = RuleLedger(), ChunkStore()
 manifest: dict[str, str] = {}          # sha256 -> status. A Postgres table in the real design.
 
 
-def ingest_circular(c: dict) -> list[str]:
-    cid, eff = c["id"], date.fromisoformat(c["effective_from"])
-    ledger.circulars[cid] = c
-
-    # (1) one chunk per clause, with a contextual header, written INVISIBLE first
-    chunks.upsert([
-        Chunk(uuid=hashlib.sha1(f"{cid}:{path}".encode()).hexdigest(), circular_id=cid, clause_path=path,
-              text=text, header=f"[{cid} | {c['subject']} | {c['issue_date']} | {path}]",
-              products=c["products"], page=page, effective_from=eff)
-        for path, page, text in c["clauses"]
-    ])
-
-    # (2) change operations -> ledger. Closing happens here; nothing is overwritten or deleted.
-    notes = []
-    for ch in c["changes"]:
-        op_notes, closed = ledger.apply_change(ch, cid, eff)
-        notes += op_notes
-        # (3) the closed rule's clause chunk: close it only if no other open rule still cites it
-        for row in closed:
-            if ledger.still_cited(row.circular_id, row.clause_path, after=eff):
-                chunks.patch(row.circular_id, row.clause_path, partly_changed_by=cid)
-            else:
-                chunks.patch(row.circular_id, row.clause_path, effective_to=eff, superseded_by=cid)
-
-    # (4) only now can queries see the new circular
-    chunks.set_visible(cid)
-    return notes
+def ingest_circular(c: dict) -> int:
+    """Write each clause ONCE with its static metadata. Nothing older is touched:
+    the new ₹1,000 clause simply sits next to the old ₹500 one."""
+    cid = c["id"]
+    circulars[cid] = c
+    new = [Chunk(uuid=hashlib.sha1(f"{cid}:{path}".encode()).hexdigest(), circular_id=cid, clause_path=path,
+                 text=text, header=f"[{cid} | {c['subject']} | {c['issue_date']} | {path}]",
+                 products=c["products"], rule_key=rule_key, page=page,
+                 issue_date=date.fromisoformat(c["issue_date"]), effective_from=date.fromisoformat(c["effective_from"]))
+           for path, page, text, rule_key in c["clauses"]]
+    chunks.add(new)
+    return len(new)
 
 
 def ingest_job(inbox: list[dict]) -> None:
@@ -468,24 +266,9 @@ def ingest_job(inbox: list[dict]) -> None:
         if manifest.get(sha) == "INDEXED":
             print(f"  skip {c['id']}: same content already indexed")
             continue
-        notes = ingest_circular(c)
+        n = ingest_circular(c)
         manifest[sha] = "INDEXED"
-        print(f"  indexed {c['id']}" + "".join(f"\n      {n}" for n in notes))
-
-
-def print_ledger() -> None:
-    print("Rule ledger (nothing is ever deleted; list members collapsed):")
-    rows, i = ledger.rows, 0
-    while i < len(rows):
-        r, j = rows[i], i
-        while j + 1 < len(rows) and (rows[j + 1].parameter, rows[j + 1].circular_id, rows[j + 1].valid_to) == \
-                (r.parameter, r.circular_id, r.valid_to) and r.parameter == "permitted_country":
-            j += 1
-        scope = r.scope if j == i else f"{j - i + 1} members"
-        to = "open" if r.valid_to == OPEN_END else str(r.valid_to)
-        print(f"  {r.product:<16}{r.parameter:<20}{scope:<13}{(r.shown() if j == i else ''):<20}"
-              f"{r.circular_id:<22}{r.valid_from} -> {to:<11}{r.superseded_by or ''}")
-        i = j + 1
+        print(f"  indexed {c['id']}: {n} chunks appended (effective {c['effective_from']})")
 
 
 # =====================================================================================
@@ -538,42 +321,43 @@ def fake_plan(question: str, previous: dict) -> QueryPlan:
     return QueryPlan(intent=intent, products=products, parameter=parameter, as_of=parse_date(q))
 
 
-def fake_answer(intent: str, sources: list[Source]) -> tuple[str, list[int], bool]:
-    """Real: Claude Sonnet with the sources in the prompt and structured output (answer, citations, found)."""
-    rules = [s for s in sources if s.kind == "rule"]
-    clauses = [s for s in sources if s.kind == "clause"]
-    clause_of = {(s.circular_id, s.clause_path): s.n for s in clauses}
+AMOUNT = r"(?:₹|INR )\s?\d(?:[\d,]*\d)?|\b\d+ calendar days\b"
+AMOUNT_RE = re.compile(AMOUNT)
+FROM_TO_RE = re.compile(rf"from ({AMOUNT}) to ({AMOUNT})")
 
-    def proof(r: Source) -> str:
-        m = clause_of.get((r.circular_id, r.clause_path))
-        return f" [{r.n}]" + (f"[{m}]" if m else "")
 
-    def value(r: Source) -> str:
-        return r.text.split(" = ")[1]
+def fake_answer(intent: str, parameter: str | None, sources: list[Source]) -> tuple[str, list[int], bool]:
+    """Real: Claude Sonnet with the numbered sources in the prompt, told that CURRENT beats HISTORY,
+    and structured output (answer, citations, found)."""
+    def value(s: Source) -> str:
+        change = FROM_TO_RE.search(s.text)              # "enhanced from ₹500 to ₹1,000" -> ₹1,000
+        if change:
+            return change.group(2)
+        found = AMOUNT_RE.findall(s.text)                # "23 calendar days ... 7 calendar days" -> the first
+        return found[0] if found else f"\"{s.text}\""
 
+    def label(s: Source) -> str:
+        product, param = s.rule_key.split(".")[:2]
+        return f"{PRODUCTS[product]} {LABELS[param]}"
+
+    rules = [s for s in sources if s.rule_key and s.rule_key.split(".")[1] == parameter]   # only the asked rule
     if intent == "what_changed" and rules:
+        steps = [f"{value(s)} from {s.effective_from} ({s.circular_id}) [{s.n}]"
+                 for s in sorted(rules, key=lambda s: s.effective_from)]
+        text = f"{label(rules[0])}: " + " -> ".join(steps) + "."
+    elif intent == "rule_value" and any(s.role == "current" for s in rules):
         parts = []
-        for scope in dict.fromkeys(r.scope for r in rules):            # one history line per scope / member
-            rs = [r for r in rules if r.scope == scope]
-            steps = [f"{value(r)} from {r.effective_from} ({r.circular_id}){proof(r)}" for r in rs]
-            last = rs[-1]
-            if last.effective_to != OPEN_END and not any(r.effective_from == last.effective_to for r in rs):
-                why = next((c for c in clauses if c.circular_id == last.superseded_by
-                            and scope.lower() in c.text.lower()), None)
-                steps.append(f"ended {last.effective_to} ({last.superseded_by})" + (f" [{why.n}]" if why else ""))
-            parts.append((f"{scope}: " if scope else "") + " -> ".join(steps))
-        text = "History: " + "; ".join(parts) + "."
-    elif intent == "rule_value" and any(r.role == "current" for r in rules):
-        parts = []
-        for r in rules:
-            if r.role == "current":
-                parts.append(f"{r.text.replace(' = ', ' is ')} ({r.circular_id}, {r.clause_path}), "
-                             f"in force since {r.effective_from}{proof(r)}.")
-            elif r.role == "upcoming":
-                parts.append(f"It changes to {value(r)} from {r.effective_from} ({r.circular_id}){proof(r)}.")
+        for s in rules:
+            if s.role == "current":
+                parts.append(f"{label(s)} is {value(s)} ({s.circular_id}, {s.clause_path}), "
+                             f"in force since {s.effective_from} [{s.n}].")
+            elif s.role == "upcoming":
+                parts.append(f"It changes to {value(s)} from {s.effective_from} ({s.circular_id}) [{s.n}].")
+            elif s.role == "history":
+                parts.append(f"Earlier: {value(s)} under {s.circular_id} [{s.n}].")
         text = " ".join(parts)
     else:
-        current = [s for s in clauses if s.role == "current"]
+        current = [s for s in sources if s.role == "current"]
         if not current:
             return "", [], False
         text = " ".join(f"{s.text} [{s.n}]" for s in current[:2])
@@ -590,7 +374,7 @@ class QAState(TypedDict, total=False):
     products: list[str]
     parameter: str | None
     as_of: date
-    ledger_rows: list[RuleVersion]
+    pinned: list[Chunk]                 # every clause of the asked rule, fetched by metadata
     candidates: list[Chunk]
     sources: list[Source]
     answer: str
@@ -605,7 +389,7 @@ def understand(s: QAState) -> dict:
     plan = fake_plan(s["question"], {"products": s.get("products", []), "parameter": s.get("parameter")})
     return {  # also resets every per-turn field: the checkpointer keeps state across turns of a thread
         "intent": plan.intent, "products": plan.products, "parameter": plan.parameter,
-        "as_of": plan.as_of or TODAY, "ledger_rows": [], "candidates": [], "sources": [],
+        "as_of": plan.as_of or TODAY, "pinned": [], "candidates": [], "sources": [],
         "answer": "", "citations": [], "found": False, "grounded": False, "retries": 0, "final": "",
     }
 
@@ -613,35 +397,22 @@ def understand(s: QAState) -> dict:
 def route_intent(s: QAState) -> str:
     if s["intent"] == "out_of_scope":
         return "clarify_or_refuse"
-    if s["intent"] in ("rule_value", "what_changed"):
-        return "rule_lookup" if s["products"] else "clarify_or_refuse"   # "which product's limit?"
+    if s["intent"] in ("rule_value", "what_changed") and not s["products"]:
+        return "clarify_or_refuse"                                       # "which product's limit?"
     return "retrieve"
 
 
-def rule_lookup(s: QAState) -> dict:
-    """Exact values come from the ledger (SQL), never from similarity search."""
-    rows = []
-    for p in s["products"]:
-        history = ledger.versions(p, s["parameter"])
-        if s["intent"] == "what_changed":
-            rows += history
-        else:
-            rows += [r for r in history if r.valid_on(s["as_of"])]
-            rows += [r for r in history if r.valid_from > s["as_of"]][:1]      # the next change, if any
-    return {"ledger_rows": rows}
-
-
 def retrieve(s: QAState) -> dict:
+    """Two sources of candidates:
+    - rule questions: EVERY clause with that rule_key, by metadata filter. The newest clause can't be
+      missed by similarity search, so "latest wins" can't silently fall back to the old ₹500.
+    - everything: hybrid search (BM25 + vector in Weaviate), filtered by product."""
+    pinned = []
+    if s["parameter"]:
+        pinned = [c for p in s["products"] for c in chunks.by_rule(f"{p}.{s['parameter']}")]
     broaden = s.get("retries", 0) > 0                         # retry: drop the product filter, fetch more
-    as_of = None if s["intent"] == "what_changed" else s["as_of"]
-    hits = chunks.search(s["question"], as_of, [] if broaden else s["products"], k=80 if broaden else 40)
-    proof = [c for r in s["ledger_rows"] for c in chunks.by_clause(r.circular_id, r.clause_path)]
-    seen, out = set(), []
-    for c in proof + hits:                                    # the clauses that state the rule go first
-        if c.uuid not in seen:
-            seen.add(c.uuid)
-            out.append(c)
-    return {"candidates": out}
+    hits = chunks.search(s["question"], [] if broaden else s["products"], k=80 if broaden else 40)
+    return {"pinned": pinned, "candidates": hits}
 
 
 def similarity(a: str, b: str) -> float:
@@ -670,37 +441,42 @@ def rerank(s: QAState) -> dict:
     """Real: a cross-encoder (Cohere Rerank / bge-reranker) scores each (question, chunk) pair and we keep
     the best 12; then MMR picks 6 that aren't near-duplicates. Here the search order stands in for the
     reranker, and word overlap stands in for embedding similarity between chunks.
-    The clauses that prove a ledger value are pinned: MMR may never drop the proof."""
-    proof_keys = {(r.circular_id, r.clause_path) for r in s["ledger_rows"]}
-    pinned = [c for c in s["candidates"] if (c.circular_id, c.clause_path) in proof_keys]
+    The pinned rule clauses always stay: MMR may never drop the proof."""
     ranked = s["candidates"][:12]          # real: sorted by cross-encoder score, best first
-    return {"candidates": mmr(ranked, k=6, lam=0.5, pinned=pinned)}
+    return {"candidates": mmr(ranked, k=6, lam=0.5, pinned=s["pinned"])}
 
 
-def resolve_versions(s: QAState) -> dict:
-    """Number every piece of evidence and label it current / history / upcoming for the asked date."""
+def latest_wins(s: QAState) -> dict:
+    """The update rule, at query time. For each rule_key, among its clauses:
+    the latest with effective_from <= as_of is CURRENT, older ones are HISTORY (replaced by the next one),
+    later ones are UPCOMING. Nothing is stored: 'replaced by' is worked out here, every time."""
     as_of, out = s["as_of"], []
-
-    def role(f: date, t: date) -> str:
-        return "current" if f <= as_of < t else ("upcoming" if f > as_of else "history")
-
-    for r in s["ledger_rows"]:
-        page = next((c.page for c in chunks.by_clause(r.circular_id, r.clause_path)), None)
-        label = f"{PRODUCTS[r.product]} {LABELS[r.parameter]}" + (f" ({r.scope})" if r.scope else "")
-        out.append(Source(n=len(out) + 1, kind="rule", circular_id=r.circular_id, clause_path=r.clause_path,
-                          scope=r.scope, page=page, text=f"{label} = {r.shown()}", effective_from=r.valid_from,
-                          effective_to=r.valid_to, role=role(r.valid_from, r.valid_to),
-                          superseded_by=r.superseded_by, pdf_url=ledger.circulars[r.circular_id]["pdf_url"]))
+    groups: dict[str | None, list[Chunk]] = {}
     for c in s["candidates"]:
-        out.append(Source(n=len(out) + 1, kind="clause", circular_id=c.circular_id, clause_path=c.clause_path,
-                          page=c.page, text=c.text, effective_from=c.effective_from, effective_to=c.effective_to,
-                          role=role(c.effective_from, c.effective_to), superseded_by=c.superseded_by,
-                          partly_changed_by=c.partly_changed_by, pdf_url=ledger.circulars[c.circular_id]["pdf_url"]))
-    return {"sources": out}
+        groups.setdefault(c.rule_key, []).append(c)
+    for key, cs in groups.items():
+        cs = sorted(cs, key=lambda c: c.effective_from)
+        live = [c for c in cs if c.effective_from <= as_of]
+        for i, c in enumerate(cs):
+            if c.effective_from > as_of:
+                role = "upcoming"
+            elif key is None or c is live[-1]:
+                role = "current"                           # clauses without a rule_key are just in force
+            else:
+                role = "history"
+            nxt = cs[i + 1] if key is not None and i + 1 < len(cs) else None
+            out.append(Source(n=0, circular_id=c.circular_id, clause_path=c.clause_path, rule_key=c.rule_key,
+                              page=c.page, text=c.text, effective_from=c.effective_from, role=role,
+                              replaced_by=nxt.circular_id if nxt and role == "history" else None,
+                              replaced_on=nxt.effective_from if nxt and role == "history" else None,
+                              pdf_url=circulars[c.circular_id]["pdf_url"]))
+    order = {"current": 0, "upcoming": 1, "history": 2}
+    out.sort(key=lambda x: (x.rule_key is None, order[x.role]))
+    return {"sources": [src.model_copy(update={"n": i + 1}) for i, src in enumerate(out)]}
 
 
 def generate(s: QAState) -> dict:
-    answer, citations, found = fake_answer(s["intent"], s["sources"])
+    answer, citations, found = fake_answer(s["intent"], s["parameter"], s["sources"])
     return {"answer": answer, "citations": citations, "found": found}
 
 
@@ -712,8 +488,7 @@ def check_grounding(s: QAState) -> dict:
     """Every number in the answer must appear in a source it cites. Cheap, and catches the worst failures."""
     by_n = {src.n: src for src in s["sources"]}
     cited = [by_n[n] for n in s["citations"] if n in by_n]
-    evidence = " ".join(f"{c.circular_id} {c.clause_path} {c.text} {c.effective_from} {c.effective_to} "
-                        f"{c.superseded_by or ''}" for c in cited)
+    evidence = " ".join(f"{c.circular_id} {c.clause_path} {c.text} {c.effective_from}" for c in cited)
     claims = numbers_in(re.sub(r"\[\d+\]", "", s["answer"]))
     ok = s["found"] and bool(cited) and claims <= numbers_in(evidence)
     return {"grounded": ok, "retries": s.get("retries", 0) + (0 if ok else 1)}
@@ -728,19 +503,13 @@ def route_grounding(s: QAState) -> str:
 def cite_sources(s: QAState) -> dict:
     """The answer plus the proof: circular id, clause, page, the exact text and a link, for every citation."""
     by_n = {src.n: src for src in s["sources"]}
-    groups: dict[tuple[str, str], list[Source]] = {}       # a rule row and its clause are one piece of proof
-    for n in s["citations"]:
-        groups.setdefault((by_n[n].circular_id, by_n[n].clause_path), []).append(by_n[n])
     lines = [s["answer"], "", "Proof (check it in the circular):"]
-    for group in groups.values():
-        src = next((g for g in group if g.kind == "clause"), group[0])
+    for n in s["citations"]:
+        src = by_n[n]
         status = src.role.upper()
-        if src.superseded_by and src.effective_to != OPEN_END:
-            status += f", superseded by {src.superseded_by} on {src.effective_to}"
-        if src.partly_changed_by:
-            status += f", partly changed by {src.partly_changed_by}"
-        marks = "".join(f"[{g.n}]" for g in group)
-        lines.append(f"  {marks} {src.circular_id} > {src.clause_path}, page {src.page}, "
+        if src.replaced_by:
+            status += f", replaced by {src.replaced_by} from {src.replaced_on}"
+        lines.append(f"  [{n}] {src.circular_id} > {src.clause_path}, page {src.page}, "
                      f"effective {src.effective_from} ({status})")
         lines.append(f"      \"{src.text}\"")
         lines.append(f"      {src.pdf_url or '(sample circular in this file, no PDF)'}")
@@ -760,24 +529,22 @@ def not_found(s: QAState) -> dict:
 
 def build_graph():
     g = StateGraph(QAState)
-    for fn in (understand, rule_lookup, retrieve, rerank, resolve_versions, generate, check_grounding,
+    for fn in (understand, retrieve, rerank, latest_wins, generate, check_grounding,
                cite_sources, clarify_or_refuse, not_found):
         g.add_node(fn.__name__, fn)
 
     g.add_edge(START, "understand")
-    g.add_conditional_edges("understand", route_intent, ["rule_lookup", "retrieve", "clarify_or_refuse"])
-    g.add_edge("rule_lookup", "retrieve")           # still fetch the clause text, to cite it as proof
+    g.add_conditional_edges("understand", route_intent, ["retrieve", "clarify_or_refuse"])
     g.add_edge("retrieve", "rerank")
-    g.add_edge("rerank", "resolve_versions")
-    g.add_edge("resolve_versions", "generate")
+    g.add_edge("rerank", "latest_wins")
+    g.add_edge("latest_wins", "generate")
     g.add_edge("generate", "check_grounding")
     g.add_conditional_edges("check_grounding", route_grounding, ["cite_sources", "retrieve", "not_found"])
     for terminal in ("cite_sources", "clarify_or_refuse", "not_found"):
         g.add_edge(terminal, END)
     # Real: PostgresSaver, so a thread survives restarts. Memory is enough to show follow-ups.
     # The checkpointer serialises state; our pydantic classes must be allow-listed to be read back.
-    serde = JsonPlusSerializer(allowed_msgpack_modules=[(__name__, cls.__name__)
-                                                        for cls in (RuleVersion, Chunk, Source)])
+    serde = JsonPlusSerializer(allowed_msgpack_modules=[(__name__, cls.__name__) for cls in (Chunk, Source)])
     return g.compile(checkpointer=InMemorySaver(serde=serde))
 
 
@@ -790,8 +557,6 @@ def main() -> None:
     ingest_job(CIRCULARS)
     print("Ingest run 2 (same files again):")
     ingest_job(CIRCULARS[:1])
-    print()
-    print_ledger()
 
     app = build_graph()
     questions = [

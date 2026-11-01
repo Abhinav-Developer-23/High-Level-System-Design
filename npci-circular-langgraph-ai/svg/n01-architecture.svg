@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="564" viewBox="0 0 900 564" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
   <title>NPCI circular RAG architecture</title>
-  <desc>Ingestion path: EventBridge every 10 minutes starts one ingest task that reads new PDFs from S3 by content hash, OCRs them with Textract, extracts metadata and rule facts with regex and Claude, chunks by clause and embeds. It writes registry and rule ledger rows to Postgres and chunks with vectors to Weaviate. Query path: a PM or engineer asks; a LangGraph flow runs understand, rule_lookup on Postgres, retrieve on Weaviate with a valid-on-date filter, rerank, generate with Claude Sonnet and check_grounding with one retry, and returns a cited answer.</desc>
+  <desc>Ingestion path: EventBridge every 10 minutes starts one ingest task that reads new PDFs from S3 by content hash, OCRs them with Textract, extracts metadata and tags each clause with its rule_key using regex and Claude, chunks by clause and embeds. It appends the registry row to Postgres and the chunks with vectors to Weaviate; nothing stored is edited. Query path: a PM or engineer asks; a LangGraph flow runs understand, retrieve (every clause of the rule plus hybrid search on Weaviate), rerank with MMR, latest_wins per rule_key, generate with Claude Sonnet and check_grounding with one retry, and returns a cited answer.</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
     <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
@@ -46,7 +46,7 @@
   <line x1="230" y1="184" x2="230" y2="132" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
   <text x="238" y="162" fill="#8b949e" font-size="11">read new PDFs</text>
   <line x1="600" y1="130" x2="600" y2="182" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
-  <text x="608" y="162" fill="#8b949e" font-size="11">registry, rule facts</text>
+  <text x="608" y="162" fill="#8b949e" font-size="11">registry</text>
   <line x1="800" y1="130" x2="800" y2="182" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
   <text x="808" y="162" fill="#8b949e" font-size="11">chunks</text>
 
@@ -59,20 +59,18 @@
   <rect x="292" y="184" width="316" height="96" rx="9" fill="#39c5cf" fill-opacity="0.10" stroke="#39c5cf"/>
   <text x="308" y="208" fill="#56d4dd" font-size="14" font-weight="600">Postgres</text>
   <text x="308" y="228" fill="#c9d1d9" font-size="12">manifest (SHA-256) · circular registry</text>
-  <text x="308" y="246" fill="#c9d1d9" font-size="12">rule ledger: valid_from / valid_to</text>
-  <text x="308" y="264" fill="#c9d1d9" font-size="12">review queue · LangGraph checkpoints</text>
+  <text x="308" y="246" fill="#c9d1d9" font-size="12">references between circulars</text>
+  <text x="308" y="264" fill="#c9d1d9" font-size="12">LangGraph checkpoints</text>
 
   <rect x="640" y="184" width="236" height="96" rx="9" fill="#39c5cf" fill-opacity="0.10" stroke="#39c5cf"/>
   <text x="656" y="208" fill="#56d4dd" font-size="14" font-weight="600">Weaviate</text>
   <text x="656" y="228" fill="#c9d1d9" font-size="12">CircularChunk: text + vector</text>
-  <text x="656" y="246" fill="#c9d1d9" font-size="12">effective_from / effective_to</text>
-  <text x="656" y="264" fill="#c9d1d9" font-size="12">products · clause · visible</text>
+  <text x="656" y="246" fill="#c9d1d9" font-size="12">effective_from · rule_key</text>
+  <text x="656" y="264" fill="#c9d1d9" font-size="12">products · clause · page</text>
 
   <!-- stores -> query -->
-  <line x1="377" y1="280" x2="377" y2="370" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
-  <text x="385" y="306" fill="#8b949e" font-size="11">exact value</text>
-  <polyline points="700,280 700,300 484,300 484,370" fill="none" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
-  <text x="592" y="294" fill="#8b949e" font-size="11" text-anchor="middle">hybrid, valid on date</text>
+  <polyline points="700,280 700,300 366,300 366,370" fill="none" stroke="#39c5cf" stroke-width="1.6" marker-end="url(#arrT)"/>
+  <text x="533" y="294" fill="#8b949e" font-size="11" text-anchor="middle">rule_key fetch + hybrid</text>
 
   <!-- query lane -->
   <text x="24" y="326" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">QUERY · READ PATH</text>
@@ -88,38 +86,38 @@
   <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" text-anchor="middle">
     <rect x="216" y="372" width="93" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
     <text x="262.5" y="389" fill="#e6edf3">understand</text>
-    <rect x="327" y="372" width="100" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
-    <text x="377" y="389" fill="#e6edf3">rule_lookup</text>
-    <rect x="445" y="372" width="78" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
-    <text x="484" y="389" fill="#e6edf3">retrieve</text>
-    <rect x="541" y="372" width="64" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
-    <text x="573" y="389" fill="#e6edf3">rerank</text>
+    <rect x="327" y="372" width="78" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
+    <text x="366" y="389" fill="#e6edf3">retrieve</text>
+    <rect x="423" y="372" width="64" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
+    <text x="455" y="389" fill="#e6edf3">rerank</text>
+    <rect x="505" y="372" width="100" height="26" rx="13" fill="#d29922" fill-opacity="0.12" stroke="#d29922"/>
+    <text x="555" y="389" fill="#e6edf3">latest_wins</text>
     <rect x="623" y="372" width="78" height="26" rx="13" fill="#bc8cff" fill-opacity="0.15" stroke="#bc8cff"/>
     <text x="662" y="389" fill="#e6edf3">generate</text>
     <rect x="719" y="372" width="130" height="26" rx="13" fill="#1c2128" stroke="#30363d"/>
     <text x="784" y="389" fill="#e6edf3">check_grounding</text>
   </g>
   <line x1="309" y1="385" x2="325" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
-  <line x1="427" y1="385" x2="443" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
-  <line x1="523" y1="385" x2="539" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="405" y1="385" x2="421" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
+  <line x1="487" y1="385" x2="503" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
   <line x1="605" y1="385" x2="621" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
   <line x1="701" y1="385" x2="717" y2="385" stroke="#8b949e" stroke-width="1.4" marker-end="url(#arr)"/>
 
   <g font-size="11" fill="#8b949e" text-anchor="middle">
     <text x="262.5" y="416">Claude</text>
-    <text x="377" y="416">Postgres ledger</text>
-    <text x="484" y="416">Weaviate</text>
-    <text x="573" y="416">rerank + MMR</text>
+    <text x="366" y="416">Weaviate</text>
+    <text x="455" y="416">+ MMR</text>
+    <text x="555" y="416">per rule_key</text>
     <text x="662" y="416" fill="#d2a8ff">Claude Sonnet</text>
     <text x="784" y="416">grounded?</text>
   </g>
-  <polyline points="830,398 830,440 515,440 515,400" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <polyline points="830,398 830,440 400,440 400,400" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
   <text x="672" y="454" fill="#e3b341" font-size="11" text-anchor="middle">retry once if not grounded</text>
 
   <line x1="533" y1="460" x2="533" y2="478" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
 
   <rect x="190" y="480" width="686" height="60" rx="9" fill="#3fb950" fill-opacity="0.10" stroke="#3fb950"/>
-  <text x="206" y="505" fill="#e6edf3" font-size="13"><tspan fill="#56d364" font-weight="600">Answer:</tspan> ₹1,000 per txn [OC-L2 › 2(a)], effective E2. Earlier ₹500 (OC-L1, superseded).</text>
+  <text x="206" y="505" fill="#e6edf3" font-size="13"><tspan fill="#56d364" font-weight="600">Answer:</tspan> ₹1,000 per txn [OC-L2 › 2(a)], effective E2. Earlier ₹500 (OC-L1, history).</text>
   <text x="206" y="526" fill="#8b949e" font-size="12">+ link to the source PDF page · ends with "check the source circular before acting"</text>
 
   <polyline points="190,510 94,510 94,418" fill="none" stroke="#3fb950" stroke-width="1.6" marker-end="url(#arrG)"/>
