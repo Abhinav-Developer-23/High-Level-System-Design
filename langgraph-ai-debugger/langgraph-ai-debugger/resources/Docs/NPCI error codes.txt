@@ -1,0 +1,6289 @@
+ 
+ 
+ 
+ 
+UNIFIED PAYMENTS INTERFACE 
+Error and Response Codes 
+Version 2.9 
+
+UPI Error and Response Codes 
+ Page 1 of 72 Public - UPI V 2.9 
+  
+Document Release Details 
+  
+Version No. 
+Date 
+Description 
+2.0 
+01/07/2016 
+Included API names for Response codes 
+2.1 
+16/09/2016 
+Added two response codes ( AM , BR) in sec 3.4 & AM in Sec 3.1 
+2.2 
+25/10/2016 
+Added three response codes – B1 , B3 in Sec 3.1 & B2 in Sec 3.4 
+2.3 
+24/11/2016 
+Added three response codes – TM in Sec 3.3 & SP,AJ in Sec 3.4 
+2.3.1 
+15/06/2017 
+Added Response Code DF, DT, NO, PS in Sec 3.1, Response Code OC,OD,NC and ND in Sec 3.2, Response code VN in Sec 3.4, 
+Response code E13, E15 in Sec 4.3.3, Error Code G74, Error Code U77, U78 in Sec 4.4m 
+2.3.2 
+15/11/2017 
+Added Response Code B6, HS in Sec 3.1, Response Code B7, HS in Sec 3.4 
+2.3.3 
+13/12/2017 
+Added Response Codes LD, LC in Sec 3.1 and Sec 3.4 
+2.3.4 
+26/12/2017 
+Added Response Code UB, UR in Sec 3.1, Response Code B3, UR in Sec 3.4 
+2.3.5 
+20/06/2018 
+Updated Response Code UR to IR in Sec 3.1 and Sec 3.4, Added Response Codes in Settlement RR, UR, RS, ND, OD, R9, U9, S9 in 
+Sec 3.5 
+2.3.6 
+23/07/2018 
+Added Error Codes U82, U85, U87, U88, U95, U96, U97, U98, U99 in Sec 4.4  
+2.3.7 
+27/07/2018 Added Response Code RA in Sec 3.3, Error Codes T14, T15, IM0, IM1, IM3, IM5 in Sec 4.3.1, Error Codes  T14, IM0, T20 in Sec 4.3.2, 
+Error Codes  T14, IM0 in Sec 4.3.3, Error Codes IM0, T16 in Sec 4.3.9, Error Codes BA2, FM2, KI1, PT1 in Sec 4.3.10 
+2.3.8 
+03/09/2018 
+Added Response Code CS in Sec 3.2 
+2.3.9 
+09/10/2018 
+Added Response Codes QU, VA-VD, VF-VM, VO-VU,VZ in Sec 3.1, Response Codes QA-QD, QH-QI, QK-QL, QR-QS, QU, VX in Sec 
+3.3, Response Codes MM, QC-QD, QI, QM--QQ, QT, QV-QZ, VV-VW in Sec 3.6.1, Response Codes QJ, QN, VF-VG, VL-VM, VU in 
+Sec 3.6.2, Error Codes T13,D12, D13, PM0-PM9, PN0,PN1 in Sec 4.3.1 and Sec 4.3.2, Error Codes PI0-PJ9, PK0  in Sec 4.3.1, Error 
+Codes E16-E18 in Sec 4.3.3, Error Code P09 in Sec 4.3.7, Error Codes X08, X09 in Sec 4.3.9, Error Codes G17-G20,G75-G81 in Sec 
+4.3.10, Error Codes MA0-MB7, MC3-MC4 in Sec 4.3.11, Error Codes U79-U81, UM0-UO0 in Sec 4.5, Error Codes 100-999 in Sec 
+4.6.1, ACTN Codes A201-A405 in Sec 4.6.2, Error Codes UA1-UC2 in Sec 4.5 
+2.4 
+10/10/2018 
+Added Response Codes IC,ID,IE,VE,VT in Sec 3.1, Response Code SA in Sec 3.4, Response Code IA in Sec 3.6.1, Response Code IB 
+in Sec 3.6.2, Error Codes IM0-IM6,UP1 in Sec 4.3.1, Error Code IM3 in Sec 4.3.2, Error Codes E19,PN1,PN2 in Sec 4.3.3, Error Codes 
+BA1,BA3,G51,KI2-KI6,Q12,TT4,UA2,UB7,UH1,UV2 in Sec 4.3.10, Error Codes HV0-HV2,MA10,MA11,MP0-MP5,MV0-MV2,PA0-
+PA3,PR0-PR5,PY1-PY5 in Sec 4.3.11, Error Codes OR1-OR9,R10,R13,R14,R15,R19-R21,R23-R25 in Sec 4.3.12, Error Codes 
+U83,UO1,UP2 in Sec 4.5 
+
+UPI Error and Response Codes 
+ Page 2 of 72 Public - UPI V 2.9 
+  
+2.4.1 
+26/10/2018 
+Updated Error Code IM5 in Sec 4.3.1, MA10 in Sec 4.3.11, Added Error Codes RM1-RM9,RM11, MN1-MN9 in Sec 4.3.11 
+2.4.2 
+28/01/2019 
+Added Response Codes FL, FP in Sec 3.1, added Error Codes MP6, MP7,MP8,MP9 in Sec 4.3.11 
+2.4.3 
+02/08/2019 
+Added Error Codes UO0, UO1, UO3,UO4, UO5, UO7, UO8, UO9, MX0, MX1, MX2, MX3, MX4, MX5 in Sec 4.3.11 
+2.4.4 
+16/01/2020 
+Added Response codes PA in 3.7 and Error codes U97, U98, U99, UC1, A15, UC2, UC3, UC4, UC5 in Sec  4.3.13 
+2.4.5 
+17/06/2020 
+Added Error Codes–U84,U81,U86,U89 in sec 4.4 and Response Codes – V3,V4,NU in Sec 3.6.2 
+2.4.6 
+17/06/2020 
+Added  Error Codes – UG1,UG3,UG5,UG6 in sec 4.3.13 and Response Codes – SD.CN,IV,PE,RD,IN in sec 3.8.1 
+2.4.7 
+19/06/2020 
+Added Error Codes – X10,R26,Q13-Q14,G82-G95  in sec 4.3.10, T17 in sec 4.3.2 and PV1-PV5,PY2 AND PY4 in 4.3.13 and VZ1-
+VZ4  in sec 4.3.11 and U80,U90 AND U91 in sec 4.4 and PM16 in Sec 4.3.1,Q3 and Q4 in Sec3.6.1 V5 and V6 in Sec 3.6.2, MB9 in 
+Sec 4.3.11 
+2.4.8 
+07/04/2021 
+Added Error Codes – C01-C04, V1-V13 ,MM1-MM7 in Sec 4.3.15 , Response code FP description updated and Added TD/BD 
+bifurcation 
+2.4.9 
+29/04/2021 
+Added Error codes – U92,U93,U94 in Section 4.4 , Added UDIR Error codes - 
+C15,C24,C25,C26,E13,E10,E15,E20,R14,T08,T14,V01,V03,UTO , response codes-
+102,103,104,105,106,114,115,116,117,118,119,120,501-RRC,TB,TP,UT1-UT6,UU1-UU3– and Error code U28, U78 descriptions 
+updated 
+2.4.10 
+03/08/2021 
+Added Prepaid Voucher Error codes - T28,J10,J11,T30,IU0,T27,J09 in Section 4.3.17 and Response code – PQ in Section 3.10 , 
+added Central mapper error codes - C30 - C33,V30 - V42,MM1 – MM18 in Section 4.3.16, updated UDIR Error codes in Section 
+4.3.15 and UDIR Response codes in Section 3.9 
+2.5 
+24/03/2023 
+3.9 Response Code for UDIR,3.10 Response Code for Prepaid Voucher,3.11 Code for UPI Lite,4.3.14 UPI Global,4.3.15 UDIR,4.3.16 
+Central Mapper,4.3.17 Prepaid Voucher,4.3.18 Aadhaar OTP,4.3.19 UPI  Lite,4.3.20 Credit Card on UPI,4.3.21 E-RUPI & API 
+Gateway , MR,MB, S99,HS1, HS2, HS3 response codes added  
+2.5.1 
+15/05/2023 
+Mapping of NO response code s– changed to TD , SA – Description modification, error Code added - M16  
+2.6 
+11/08/2023 
+Mapping of response codes for UPI Lite Offline 3.12 
+2.7 
+12/06/2023 
+Added Error Codes – S93, S94, S95, S96, S97, S98 in Section 4.4 
+2.8 
+28/12/2023 
+Added Error codes HS1, HS2, HS3 in section 4.4 and Error codes  TT1, TV3, TV4 added in section 4.8 
+2.9 
+17/01/2024 
+Added Response code for EMI and CC Bill payment through UPI , UPI Lite MCB declines  
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 3 of 72 Public - UPI V 2.9 
+  
+Table of Contents 
+1. Introduction ......................................................................................................................................................................................................................................................................... 5 
+2. Final RespPay ....................................................................................................................................................................................................................................................................... 5 
+2.2 ErrorCode Attribute: ................................................................................................................................................................................................................................................... 5 
+2.3 RespCode Attribute:.................................................................................................................................................................................................................................................... 5 
+3. Codes to be populated by PSP/Banks ............................................................................................................................................................................................................................ 6 
+3.1 Response codes in RespPay Debit, RespPay Credit, RespPay Debit (Mandate) & RespChkTxn API: .......................................................................................................... 6 
+3.2 Response codes in RespPayReversal API .............................................................................................................................................................................................................. 11 
+3.3 Response codes in RespAuthDetail API ................................................................................................................................................................................................................ 12 
+3.4 Response codes sent by PSP in Meta API ............................................................................................................................................................................................................. 14 
+3.5 Response codes in Settlement ................................................................................................................................................................................................................................ 15 
+3.6 Response codes for Mandate.................................................................................................................................................................................................................................. 16 
+3.6.1 RespAuthMandate............................................................................................................................................................................................................................................ 16 
+3.6.2 RespMandate ..................................................................................................................................................................................................................................................... 17 
+3.7 Response codes for PAN Validation ...................................................................................................................................................................................................................... 18 
+3.7.1 RespValCust........................................................................................................................................................................................................................................................ 18 
+3.8 Response Code for UPI Global................................................................................................................................................................................................................................ 18 
+3.8.1 RespValQr........................................................................................................................................................................................................................................................... 18 
+3.8.2 RespPay ............................................................................................................................................................................................................................................................... 18 
+3.9 Response Code for UDIR.......................................................................................................................................................................................................................................... 19 
+3.10 Response Code for e-RUPI Voucher/e-RUPI API Gateway ............................................................................................................................................................................. 20 
+3.11 Code for UPI Lite ..................................................................................................................................................................................................................................................... 20 
+3.12 Response Code for UPI Lite Offline ..................................................................................................................................................................................................................... 21 
+4. Codes populated by UPI.................................................................................................................................................................................................................................................. 23 
+4.1 Response codes populated by UPI ........................................................................................................................................................................................................................ 23 
+4.3.1 API: ReqPay......................................................................................................................................................................................................................................................... 24 
+4.3.2 API : RespAuthDetails ....................................................................................................................................................................................................................................... 31 
+
+UPI Error and Response Codes 
+ Page 4 of 72 Public - UPI V 2.9 
+  
+4.3.4 Meta API : ReqListPsp........................................................................................................................................................................................................................................ 39 
+4.3.5 Meta API : ReqListAccPvd ................................................................................................................................................................................................................................ 39 
+4.3.6 Meta API : ReqListKeys...................................................................................................................................................................................................................................... 40 
+4.3.7 Meta API : ReqListAccount .............................................................................................................................................................................................................................. 40 
+4.3.8 Meta API : ReqSetCre ........................................................................................................................................................................................................................................ 41 
+4.3.9 Meta API : ReqChkTxn ...................................................................................................................................................................................................................................... 43 
+4.3.10 Few other Meta Msg Code ........................................................................................................................................................................................................................... 44 
+4.3.11 Mandate Codes ............................................................................................................................................................................................................................................... 49 
+4.3.12 Online Refund Codes..................................................................................................................................................................................................................................... 53 
+4.3.13 PAN Validation................................................................................................................................................................................................................................................ 54 
+4.3.14 UPI Global ........................................................................................................................................................................................................................................................ 55 
+4.3.15 UDIR .................................................................................................................................................................................................................................................................. 55 
+4.3.16 Central Mapper ............................................................................................................................................................................................................................................... 56 
+4.3.17 Prepaid Voucher ............................................................................................................................................................................................................................................. 57 
+4.3.18 Aadhaar OTP ................................................................................................................................................................................................................................................... 58 
+4.3.19 UPI Lite .............................................................................................................................................................................................................................................................. 58 
+4.3.20 Credit Card on UPI.......................................................................................................................................................................................................................................... 59 
+4.3.21 E-RUPI & API Gateway ................................................................................................................................................................................................................................... 59 
+4.4 Errors from UPI Service Layer.................................................................................................................................................................................................................................. 59 
+4.5 Errors from UPI 2.0 Service Layer ........................................................................................................................................................................................................................... 64 
+4.6 Errors and ACTN from UIDAI.................................................................................................................................................................................................................................. 66 
+4.6.1 ErrorCodes from UIDAI.................................................................................................................................................................................................................................... 66 
+4.6.2 ACTN from UIDAI.............................................................................................................................................................................................................................................. 69 
+4.7 Errors from Common Library .................................................................................................................................................................................................................................. 71 
+4.8 Errors from PSO ......................................................................................................................................................................................................................................................... 72 
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 5 of 72 Public - UPI V 2.9 
+  
+1. Introduction  
+   
+   This document explains the usage of the final RespPay send by UPI and the about the error codes & response codes to be used in UPI system.  
+  
+2. Final RespPay  
+  
+ 
+The status of the transaction can be known to the initiator PSP in the final RespPay message given by UPI. The status can be known by the address translating 
+PSP using the ReqTxnConfirmation. UPI sends RespPay finally to the payer and payee for pay and collect scenario respectively which gives the information about 
+debit, credit and reversal for the particular transaction.  
+The following tag have to be looked upon to know the status of the transaction.  
+ 2.1 Result Attribute:  
+This will be populated by UPI and describes the result of the transaction and it will have four possible values: SUCCESS | FAILURE | DEEMED  
+SUCCESS: Denotes the transaction is processed successfully.  
+FAILURE: Denotes the transaction is failed due to some reason. Reason for the failure will be populated with the appropriate error 
+code/response code filed in the UPI APIs. In such case the fund transfer shall not be successful.  
+DEEMED: Denotes the transaction has an unknown CREDIT status due to some reason. The response codes for timeout shall be populated by 
+UPI layer. The final status shall be updated in UDIR /Backoffice respectively. 
+       
+ 
+2.2 ErrorCode Attribute:  
+This element describes the reason for the failure. It will be populated if the transaction is failed. It explains the reason for the failure. This will be 
+populated by UPI and the list is available in the document.  
+ 
+ 
+2.3 RespCode Attribute:  
+The code is populated by PSP/Bank in the response leg (RespPay debit,RespPay credit,RespPay reversal,RespChkTxn etc). This will show the reason for the 
+transaction failure at the PSP/BANK end.  
+
+UPI Error and Response Codes 
+ Page 6 of 72 Public - UPI V 2.9 
+  
+                  
+    
+3. Codes to be populated by PSP/Banks  
+  
+This section contains the codes that will be populated by the PSP/Banks.  
+  
+ 
+3.1 Response codes in RespPay Debit, RespPay Credit, RespPay Debit (Mandate) & 
+RespChkTxn API:  
+The below response codes should be populated by the PSP in case of any error. In RespPay Debit, RespPay Credit, RespChkTxn the PSP has to populate the 
+following response appropriately.                                                                                                                                                                                                                                                
+Response code 
+Description 
+Remarks 
+TD/BD 
+00 
+APPROVED OR COMPLETED SUCCESSFULLY  
+ 
+- 
+15 
+ISSUER NOT LIVE ON UPI 
+ 
+BD 
+59 
+SUSPECTED FRAUD, DECLINE/TRANSACTIONS DECLINED BASED ON RISKSCORE BY REMITTER 
+ 
+BD 
+AM 
+MPIN NOT SET BY CUSTOMER 
+ 
+BD 
+B1 
+REGISTERED MOBILE NUMBER LINKED TO THE ACCOUNT HAS BEEN CHANGED/REMOVED 
+ 
+BD 
+B3 
+TRANSACTION NOT PERMITTED TO THE ACCOUNT (EXAMPLE: MINOR ACCOUNT, PROPRIETOR 
+ACCOUNT,  
+LEGAL CASE AGAINST THIS ACCOUNT ETC., NRE (AS PER BANK’S POLICY)) 
+ 
+BD 
+B6 
+MISMATCH IN PAYMENT DETAILS 
+ 
+TD 
+CA 
+COMPLIANCE ERROR CODE FOR ACQUIRER 
+ 
+BD 
+CI 
+COMPLIANCE ERROR CODE FOR ISSUER 
+ 
+BD 
+DF 
+DUPLICATE RRN FOUND IN THE TRANSACTION. (BENEFICIARY) 
+ 
+BD 
+DT 
+DUPLICATE RRN FOUND IN THE TRANSACTION. (REMITTER) 
+ 
+BD 
+HS 
+BANKS HSM IS DOWN(REMITTER) 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 7 of 72 Public - UPI V 2.9 
+  
+IC 
+DEBIT AMOUNT IS NOT BLOCKED FOR THE CUSTOMER 
+ 
+BD 
+ID 
+DEBIT AMOUNT GREATER THAN BLOCKED AMOUNT 
+ 
+BD 
+IE 
+ADEQUATE FUNDS NOT AVAILABLE IN THE ACCOUNT BECAUSE FUNDS HAVE BEEN 
+BLOCKED FOR MANDATE 
+ 
+BD 
+IR 
+UNABLE TO PROCESS DUE TO INTERNAL EXCEPTION AT SERVER/CBS/ETC ON REMITTER SIDE 
+ 
+TD 
+K1 
+SUSPECTED FRAUD, DECLINE / TRANSACTIONS DECLINED BASED ON RISK SCORE BY REMITTER   
+BD 
+LC 
+UNABLE TO PROCESS CREDIT FROM BANK’S POOL/BGL ACCOUNT 
+ 
+BD 
+LD 
+UNABLE TO PROCESS DEBIT IN BANK’S POOL/BGL ACCOUNT 
+ 
+TD 
+NO 
+NO ORIGINAL REQUEST FOUND DURING DEBIT/CREDIT 
+Members should not 
+decline the original 
+transaction with NO 
+response code, it can be 
+only used for a response 
+to check transaction 
+TD 
+PS 
+MAXIMUM BALANCE EXCEEDED AS SET BY BENEFICIARY BANK 
+ 
+BD 
+QU 
+PAYER ACCOUNT HAS CHANGED(PAYER) 
+ 
+BD 
+UA 
+PSP NOT SUPPORTED BY UPI 
+ 
+BD 
+UB 
+UNABLE TO PROCESS DUE TO INTERNAL EXCEPTION AT SERVER/CBS/ETC ON BENEFICIARY 
+SIDE 
+ 
+TD 
+UP 
+PSP TIME-OUT 
+ 
+TD 
+VA 
+MANDATE HAS BEEN REVOKED 
+ 
+BD 
+VB 
+INCORRECT RECURRENCE PATTERN 
+ 
+BD 
+VC 
+INCORRECT RECURRENCE PATTERN RULE 
+ 
+BD 
+VD 
+INCORRECT AMOUNT RULE 
+ 
+BD 
+VE 
+MANDATE IS ALREADY HONOURED 
+ 
+BD 
+VF 
+UMN DOES NOT EXIST (REMITTER) 
+ 
+BD 
+VG 
+PAYER VPA IS INCORRECT (REMITTER) 
+ 
+BD 
+VH 
+MANDATE SIGNATURE IS TAMPERED OR CORRUPT (REMITTER) 
+ 
+BD 
+
+UPI Error and Response Codes 
+ Page 8 of 72 Public - UPI V 2.9 
+  
+VI 
+EXECUTION DAY AND EXECUTION RULE MISMATCH (REMITTER) 
+ 
+BD 
+VJ 
+PAYER ACCOUNT HAS CHANGED (REMITTER) 
+ 
+BD 
+VK 
+NUMBER OF MANDATES ALLOWED ON THIS ACCOUNT HAS EXCEEDED ISSUER'S LIMIT 
+(OPTIONAL: AS PER BANK'S POLICY) 
+ 
+BD 
+VL 
+MANDATE REGISTRATION NOT ALLOWED FOR CC PF PPF ACT (BANK'S POLICY) 
+ 
+BD 
+VM 
+NATURE OF DEBIT NOT ALLOWED IN ACCOUNT TYPE 
+ 
+BD 
+VO 
+PAYMENT STOPPED BY COURT ORDER 
+ 
+BD 
+VP 
+WITHDRAWAL STOPPED OWING TO DEATH OF ACCOUNT HOLDER 
+ 
+BD 
+VQ 
+WITHDRAWAL STOPPED OWING TO INSOLVENCY OF ACCOUNT 
+ 
+BD 
+VR 
+WITHDRAWAL STOPPED OWING TO LUNACY OF ACCOUNT HOLD 
+ 
+BD 
+VS 
+DUPLICATE MANDATE REQUEST FOR SAME ITEM 
+ 
+BD 
+VT 
+MANDATE IS PAUSED 
+ 
+BD 
+VU 
+MANDATE HAS EXPIRED 
+ 
+BD 
+VY 
+PAYEE VPA IS INCORRECT (REMITTER) 
+ 
+BD 
+VZ 
+PAYMENT STOPPED BY ATTACHMENT ORDER 
+ 
+BD 
+X6 
+INVALID MERCHANT (ACQURIER)  
+ 
+BD 
+X7 
+MERCHANT NOT REACHABLE (ACQURIER)  
+ 
+TD 
+XB 
+INVALID TRANSACTION OR IF MEMBER IS NOT ABLE TO FIND ANY APPROPRIATE RESPONSE 
+CODE (REMITTER)  
+ 
+BD 
+XC 
+INVALID TRANSACTION OR IF MEMBER IS NOT ABLE TO FIND ANY APPROPRIATE RESPONSE 
+CODE (BENEFICIARY)  
+ 
+BD 
+XD 
+INVALID AMOUNT (REMITTER)  
+ 
+BD 
+XE 
+INVALID AMOUNT (BENEFICIARY)  
+ 
+BD 
+XF 
+FORMAT ERROR (INVALID FORMAT) (REMITTER)  
+ 
+BD 
+XG 
+FORMAT ERROR (INVALID FORMAT) (BENEFICIARY)  
+ 
+BD 
+XH 
+ACCOUNT DOES NOT EXIST (REMITTER)  
+ 
+BD 
+XI 
+ACCOUNT DOES NOT EXIST (BENEFICIARY)  
+ 
+BD 
+
+UPI Error and Response Codes 
+ Page 9 of 72 Public - UPI V 2.9 
+  
+XJ 
+REQUESTED FUNCTION NOT SUPPORTED (REMITTER) 
+ 
+BD 
+XK 
+REQUESTED FUNCTION NOT SUPPORTED (BENEFICIARY) 
+ 
+BD 
+XL 
+EXPIRED CARD, DECLINE (REMITTER)  
+ 
+BD 
+XM 
+EXPIRED CARD, DECLINE (BENEFICIARY)  
+ 
+BD 
+XN 
+NO CARD RECORD (REMITTER)  
+ 
+BD 
+XO 
+NO CARD RECORD (BENEFICIARY)  
+ 
+BD 
+XP 
+TRANSACTION NOT PERMITTED TO CARDHOLDER  (REMITTER)  
+ 
+BD 
+XQ 
+TRANSACTION NOT PERMITTED TO CARDHOLDER (BENEFICIARY)  
+ 
+BD 
+XR 
+RESTRICTED CARD, DECLINE (REMITTER)  
+ 
+BD 
+XS 
+RESTRICTED CARD, DECLINE (BENEFICIARY)  
+ 
+BD 
+XT 
+CUT-OFF IS IN PROCESS (REMITTER)  
+ 
+TD 
+XU 
+CUT-OFF IS IN PROCESS (BENEFICIARY)  
+ 
+TD 
+XV 
+TRANSACTION CANNOT BE COMPLETED. COMPLIANCE VIOLATION (REMITTER)  
+ 
+BD 
+XW 
+TRANSACTION CANNOT BE COMPLETED. COMPLIANCE VIOLATION (BENEFICIARY)  
+ 
+BD 
+XX 
+NO FINANCIAL ADDRESS RECORD FOUND 
+ 
+BD 
+XY 
+REMITTER CBS OFFLINE 
+ 
+TD 
+Y1 
+BENEFICIARY CBS OFFLINE 
+ 
+TD 
+YA 
+LOST OR STOLEN CARD (REMITTER)  
+ 
+BD 
+YB 
+LOST OR STOLEN CARD (BENEFICIARY)  
+ 
+BD 
+YC 
+DO NOT HONOUR (REMITTER)  
+ 
+BD 
+YD 
+DO NOT HONOUR (BENEFICIARY)  
+ 
+BD 
+YE 
+REMITTING ACCOUNT BLOCKED/FROZEN  
+ 
+BD 
+YF 
+BENEFICIARY ACCOUNT BLOCKED/FROZEN  
+ 
+BD 
+YH 
+MERCHANT ERROR(ACQUIRING BANK) 
+ 
+BD 
+YI 
+INVALID RESPONSE CODE 
+ 
+BD 
+Z5 
+INVALID BENEFICIARY CREDENTIALS  
+ 
+BD 
+Z6 
+NUMBER OF PIN TRIES EXCEEDED  
+ 
+BD 
+
+UPI Error and Response Codes 
+ Page 10 of 72 Public - UPI V 2.9 
+  
+Z7 
+TRANSACTION FREQUENCY LIMIT EXCEEDED AS SET BY  REMITTING MEMBER  
+ 
+BD 
+Z8 
+PER TRANSACTION LIMIT EXCEEDED AS SET BY REMITTING MEMBER  
+ 
+BD 
+Z9 
+INSUFFICIENT FUNDS IN CUSTOMER (REMITTER) ACCOUNT  
+ 
+BD 
+ZC 
+ACQUIRER/BENEFICIARY UNAVAILABLE (Reserved for future purpose) 
+ 
+TD 
+ZD 
+VALIDATION ERROR  
+ 
+BD 
+ZF 
+TRANSACTION NOT PERMITTED TO DEVICE 
+ 
+BD 
+ZI 
+SUSPECTED FRAUD, DECLINE / TRANSACTIONS DECLINED BASED ON RISK SCORE BY 
+BENEFICIARY  
+ 
+BD 
+ZJ 
+BENEFICIARY OR ACQUIRING SWITCH IS INOPERATIVE/NODE OFFLINE (Reserved for future 
+purpose) 
+ 
+TD 
+ZK 
+REMITTER SWITCH IS INOPERATIVE/NODE OFFLINE (Reserved for future purpose) 
+ 
+TD 
+ZL 
+RECEIVED LATE RESPONSE (Reserved for future purpose) 
+ 
+ 
+ZM 
+INVALID MPIN  
+ 
+BD 
+ZN 
+FUNCTIONALITY NOT YET AVAILABLE FOR MERCHANT  THROUGH THE ACQUIRING BANK 
+ 
+BD 
+ZO 
+FUNCTIONALITY NOT YET AVAILABLE FOR CUSTOMER THROUGH THE PAYEE PSP 
+ 
+BD 
+ZP 
+BANKS AS BENEFICIARY NOT LIVE ON PARTICULAR TXN TYPE  
+ 
+BD 
+ZQ 
+UNABLE TO PROCESS REVERSAL (Reserved for future purpose) 
+ 
+BD 
+ZR 
+INVALID OTP  
+ 
+BD 
+ZS 
+OTP EXPIRED  
+ 
+BD 
+ZT 
+OTP TRANSACTION LIMIT EXCEEDED  
+ 
+BD 
+ZU 
+LIMIT EXCEEDED FOR REMITTING BANK/ISSUING BANK 
+ 
+BD 
+ZV 
+INCORRECT OTP (Reserved for future purpose) 
+ 
+BD 
+ZX 
+INACTIVE OR DORMANT ACCOUNT (REMITTER)  
+ 
+BD 
+ZY 
+INACTIVE OR DORMANT ACCOUNT (BENEFICIARY)  
+ 
+BD 
+FL 
+FIRST TRANSACTION LIMIT EXCEEDED 
+SCENARIO:  For a user 
+doing 1st time 
+transaction in UPI 
+channel, 1st transaction 
+limit will be limited to 
+BD 
+
+UPI Error and Response Codes 
+ Page 11 of 72 Public - UPI V 2.9 
+  
+Rs5,000 only. Only 
+transactions below 
+Rs.5,000 will be 
+approved and above 
+Rs.5,000 will be rejected 
+by the remitter bank. 
+ 
+FP 
+FREEZE PERIOD FOR FIRST TIME USER 
+SCENARIO: During the 
+cool down period, the 
+account holder has 
+attempted a transaction 
+of cumulative value 
+greater than 5k 
+(Including value of 1st 
+txn) .This is valid for 24 
+hours from the first 
+transaction. 
+BD 
+MR 
+Incorrect Account details due to Amalgamated/Merged Activity on Remitter Side (Remitter) 
+ 
+BD 
+MB 
+Incorrect Account details due to Amalgamated/Merged Activity on Beneficiary Side (Beneficiary) 
+ 
+BD 
+ 
+3.2 Response codes in RespPayReversal API  
+The below response codes should be populated by the PSP in case of any error. In RespPay Reversal, the PSP has to populate the same code in both 
+Errorcode and Respcode Tags.  
+ Response Code 
+Description 
+Used In 
+Transaction Status 
+00 
+REVERSAL SUCCESS 
+1. RESPONSE DEBIT REVERSAL 2. RESPONSE CREDIT REVERSAL 
+FAILURE 
+96 
+REVERSAL FAILURE 
+1. RESPONSE DEBIT REVERSAL 2. RESPONSE CREDIT REVERSAL 
+DEEMED SUCCESS 
+CS 
+CREDIT SUCCESS 
+RESPONSE CREDIT REVERSAL 
+SUCCESS 
+NC 
+CREDIT NOT DONE 
+RESPONSE CREDIT REVERSAL 
+FAILURE 
+ND 
+DEBIT NOT DONE  
+RESPONSE DEBIT REVERSAL 
+FAILURE 
+OC 
+ORIGINAL CREDIT NOT FOUND 
+RESPONSE CREDIT REVERSAL 
+FAILURE 
+
+UPI Error and Response Codes 
+ Page 12 of 72 Public - UPI V 2.9 
+  
+OD 
+ORIGINAL DEBIT NOT FOUND 
+RESPONSE DEBIT REVERSAL 
+FAILURE 
+ 
+3.3 Response codes in RespAuthDetail API  
+The below response codes are populated in the error code tag of the RespAuthDetail API by the PSP.   
+Response 
+code 
+Description 
+Remarks 
+TD/BD 
+QA 
+MANDATE IS PAUSED BY USER 
+ 
+BD 
+QB 
+MANDATE IS ALREADY HONOURED 
+ 
+BD 
+QC 
+MANDATE HAS BEEN REVOKED 
+ 
+BD 
+QD 
+MANDATE HAS EXPIRED 
+ 
+BD 
+QH 
+TXN AMOUNT DIFFERS FROM MANDATE AMOUNT 
+ 
+BD 
+QI 
+PAYEE VPA IS INCORRECT (PAYER) 
+SCENARIO: QR MANDATE COLLECT REQUEST - 
+SOMEONE ELSE TRIES TO VALIDATE. EX- MAY@UPI 
+DURING CREATION/98820890@UPI DURING FINANCIAL 
+BD 
+QK 
+MANDATE REQUEST LIMIT HAS BREACHED 
+SCENARIO: IN COLLECT REQUEST, DEBIT DONE ON A 
+PARTICULAR DATE AND NEW REQUEST IS MADE AGAIN. 
+BD 
+QL 
+MANDATE DEBIT IS BEYOND PSP SPECIFIED AMOUNT CAP 
+ 
+BD 
+QR 
+EXECUTION DAY AND EXECUTION RULE MISMATCH 
+(PAYER) 
+ 
+BD 
+QS 
+PAYER PROFILE DOES NOT EXIST (DE REGISTRATION/VPA 
+REMOVED/UPDATED) 
+ 
+BD 
+QU 
+PAYER ACCOUNT HAS CHANGED (PAYER) 
+ 
+BD 
+RA 
+PAYER AND PAYEE ACCOUNT SHOULD NOT BE EQUAL 
+ 
+BD 
+S0 
+SPAM COLLECT DECLINED BY PSP 
+SCENARIO: WHEN A CUSTOMER IS MARKED AS SPAM, 
+EXISTING COLLECT REQUESTS RAISED BY HIM WILL BE 
+DECLINED WITH S1 
+BD 
+S1 
+PAYEE IS REPORTED AS SPAM UNDER RULE 1 
+SCENARIO: INITIATOR OF COLLECT REQUEST IS 
+REPORTED AS SPAM 
+BD 
+
+UPI Error and Response Codes 
+ Page 13 of 72 Public - UPI V 2.9 
+  
+AND BLOCKED FOR PERIOD AS SPECIFIED UNDER RULE 
+1 
+S2 
+PAYEE IS REPORTED AS SPAM UNDER RULE 2 
+SCENARIO: INITIATOR OF COLLECT REQUEST IS 
+REPORTED AS SPAM  
+AND BLOCKED FOR PERIOD AS SPECIFIED UNDER RULE 
+2 
+BD 
+S3 
+PAYEE IS REPORTED AS SPAM UNDER RULE 3 
+SCENARIO: INITIATOR OF COLLECT REQUEST IS 
+REPORTED AS SPAM  
+AND BLOCKED FOR PERIOD AS SPECIFIED UNDER RULE 
+3 
+BD 
+SA 
+TRANSACTION NOT PERMITTED FOR THIS A/C TYPE 
+(OD/CC/PPI) 
+ 
+BD 
+TM 
+COLLECT REQUEST IS DECLINED AS REQUESTOR IS 
+BLOCKED BY CUSTOMER 
+SCENARIO: WHEN A CUSTOMER PERCEIVES A COLLECT 
+REQUEST 
+AS ILLICIT FROM A PARTICULAR REQUESTER AND 
+BLOCKS HIM 
+ON THE PSP APPLICATION THEN ALL THE 
+TRANSACTIONS FROM THAT REQUESTOR WILL BE 
+DECLINED BY “TM” BY THE PSP OF THE CUSTOMER. 
+BD 
+UX 
+EXPIRED VIRTUAL ADDRESS 
+ 
+BD 
+VX 
+MANDATE DECLINED AS PAYEE IS NON MERCHANT 
+(PAYEE) 
+ 
+BD 
+X1 
+RESPONSE NOT RECEIVED WITHIN TAT AS SET BY PAYEE 
+ 
+BD 
+YG 
+MERCHANT ERROR (PAYEE PSP) 
+ 
+BD 
+ZA 
+TRANSACTION DECLINED BY CUSTOMER 
+ 
+BD 
+ZB 
+INVALID MERCHANT (PAYEE PSP) 
+ 
+BD 
+ZE 
+TRANSACTION NOT PERMITTED TO VPA by the PSP 
+ 
+BD 
+ZG 
+VPA RESTRICTED BY CUSTOMER 
+ 
+BD 
+ZH 
+INVALID VIRTUAL ADDRESS 
+ 
+BD 
+  
+ 
+
+UPI Error and Response Codes 
+ Page 14 of 72 Public - UPI V 2.9 
+  
+3.4 Response codes sent by PSP in Meta API  
+The below response codes are populated in the error code tag of the Meta API’s   
+ 
+Response 
+code 
+Description 
+Meta API 
+Remarks 
+Type 
+AJ  
+CARD IS NOT ACTIVE 
+RespRegMob 
+SCENARIO: CUSTOMER HAS NEVER 
+CREATED/ACTIVATED AN ATM PIN 
+HOWEVER WHILE CREATING UPI PIN ON 
+THE PSP APP CUSTOMER RANDOMLY 
+ENTERS ANY NUMERICAL VALUE IN THE 
+ATM PIN BLOCK IN MOBILE BANKING 
+REGISTRATION THE RESPONSE SHOULD 
+BE “AJ” 
+BD 
+AM  
+MPIN NOT SET BY CUSTOMER  
+RespBalEnq , 
+SetCre 
+  
+BD 
+B2  
+ACCOUNT LINKED WITH MULTIPLE NAMES  
+RespListAccount 
+EG: JOINT ACCOUNT, KARTA ACCOUNT 
+ETC.  
+'RESPONSE CODES SENT BY PSP META'!(AS 
+PER BANK’S POLICY 
+BD 
+B3 
+TRANSACTION NOT PERMITTED TO THE ACCOUNT 
+RespBalEnq 
+ 
+BD 
+B7 
+BANK CARD MANAGEMENT SYSTEM IS DOWN 
+RespRegMob 
+ 
+TD 
+BR  
+MOBILE NUMBER REGISTERED WITH MULTIPLE 
+CUSTOMER IDS 
+RespListAccount 
+  
+BD 
+HS 
+BANKS HSM IS DOWN 
+RespBalEnq, 
+RespSetCre, 
+RespRegMob 
+ 
+TD 
+IR 
+UNABLE TO PROCESS DUE TO INTERNAL EXCEPTION 
+AT SERVER/CBS/ETC ON REMITTER SIDE 
+RespListAcc, 
+RespBalEnq, 
+RespRegMob, 
+RespSetCreds 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 15 of 72 Public - UPI V 2.9 
+  
+LC 
+UNABLE TO PROCESS CREDIT FROM BANK’S 
+POOL/BGL ACCOUNT 
+RespChkTxn 
+ 
+BD 
+LD 
+UNABLE TO PROCESS DEBIT IN BANK’S POOL/BGL 
+ACCOUNT 
+RespChkTxn 
+ 
+BD 
+RM  
+INVALID MPIN ( VIOLATION OF POLICIES WHILE 
+SETTING/CHANGING  MPIN ) 
+RespSetCred 
+  
+BD 
+RN  
+REGISTRATION IS TEMPORARY BLOCKED  
+DUE TO MAXIMUM NO OF ATTEMPTS EXCEEDED 
+RespRegMob 
+  
+BD 
+RZ  
+ACCOUNT IS ALREADY REGISTERED WITH MBEBA 
+FLAG AS 'Y'  
+RespListAccount 
+  
+BD 
+SP  
+INVALID/INCORRECT ATM PIN 
+RespRegMob 
+SCENARIO: WHILE CREATING UPI PIN  
+CUSTOMER HAS ENTERED 
+INVALID/INCORRECT ATM PIN IN MOBILE 
+BANKING REGISTRATION 
+BD 
+VN  
+VAE DOES NOT EXIST 
+ReqManageVae 
+  
+BD 
+XH  
+ACCOUNT DOES NOT EXIST 
+RespListAccount 
+  
+BD 
+XL  
+EXPIRED CARD DETAILS  
+RespRegMob 
+  
+BD 
+XN  
+NO CARD RECORD FOUND 
+RespRegMob 
+  
+BD 
+XR  
+RESTRICTED CARD 
+RespRegMob 
+  
+BD 
+Z6  
+NO OF PIN TRIES EXCEEDED 
+RespBalEnq 
+  
+BD 
+ZM  
+INVALID / INCORRECT MPIN 
+RespRegMob 
+  
+BD 
+ZR  
+INVALID / INCORRECT OTP  
+RespRegMob 
+  
+BD 
+ZS  
+OTP TIME EXPIRED 
+RespRegMob 
+  
+BD 
+ZT  
+NUMBER OF OTP’S TRIES HAS BEEN EXCEEDED 
+RespRegMob 
+  
+BD 
+  
+3.5 Response codes in Settlement  
+Response Code in Raw file UPI Response Code in 
+Debit Reversal 
+Description  
+
+UPI Error and Response Codes 
+ Page 16 of 72 Public - UPI V 2.9 
+  
+RR 
+RR 
+DEBIT REVERSAL TIMEOUT - WITHOUT INITIATING CREDIT  
+UR 
+96 
+DEBIT REVERSAL DECLINED BY 96 - WITHOUT INITIATING CREDIT 
+RS 
+00 
+DEBIT REVERSAL SUCCESS - WITHOUT INITIATING CREDIT 
+ND 
+ND 
+DEBIT REVERSAL DECLINED BY ND - WITHOUT INITIATING CREDIT 
+OD 
+OD 
+DEBIT REVERSAL DECLINED BY OD - WITHOUT INITIATING CREDIT 
+R9 
+RR 
+DEBIT REVERSAL TIMEOUT - AFTER CREDIT FAILURE/TIMEOUT 
+U9 
+96 
+DEBIT REVERSAL DECLINED BY 96 - AFTER CREDIT FAILURE/TIMEOUT 
+S9 
+00 
+DEBIT REVERSAL SUCCESS - AFTER CREDIT FAILURE/TIMEOUT 
+ 
+3.6 Response codes for Mandate 
+3.6.1 RespAuthMandate 
+Response 
+code 
+Description 
+TD/BD 
+IA 
+DUPLICATE BLOCKFUND FOR MANDATE REQUEST 
+BD 
+MM 
+MANDATE REQUEST IS DECLINED BY MERCHANT (PAYEE) 
+BD 
+QC 
+MANDATE HAS BEEN REVOKED 
+BD 
+QD 
+MANDATE HAS EXPIRED 
+BD 
+QJ 
+UMN DOES NOT EXIST (PAYER) 
+BD 
+QM 
+PAYER VPA IS INCORRECT (PAYER) 
+BD 
+QN 
+DUPLICATE MANDATE REQUEST 
+BD 
+QO 
+THIS MANDATE IS NON REVOKEABLE 
+BD 
+QP 
+PAYER INITIATED MANDATE CANNOT BE MODIFIED BY PAYEE 
+BD 
+QQ 
+MANDATE CANNOT BE CREATED ON THIS VPA (PAYER) 
+BD 
+QT 
+MANDATE MODIFY REQUEST IS DECLINED (PAYER) 
+BD 
+QV 
+MANDATE DECLINED AS PAYEE IS NON-MERCHANT (PAYER) 
+BD 
+QW 
+UMN DOES NOT EXIST (PAYEE) 
+BD 
+
+UPI Error and Response Codes 
+ Page 17 of 72 Public - UPI V 2.9 
+  
+QX 
+PAYER VPA IS INCORRECT (PAYEE) 
+BD 
+QY 
+PAYEE INITIATED MANDATE CANNOT BE MODIFIED BY PAYER 
+BD 
+QZ 
+MANDATE MODIFICATION DECLINED BY MERCHANT 
+BD 
+VV 
+MANDATE CAN NOT BE CREATED ON THIS VPA (PAYEE) 
+BD 
+VW 
+MANDATE MODIFY REQUEST IS DECLINED (PAYEE) 
+BD 
+Q1 
+SEQNUM MISMATCH (PAYER PSP) 
+BD 
+Q2 
+RECURRENCE PATTERN AND VALUE MISMATCH (PAYER) 
+BD 
+Q3 
+Purpose code=14, Block Fund =Y ( Block fund must be N always for SI/ recurring mandate) ( PAYER) 
+BD 
+Q4 
+Purpose Code=14, Revocable= N ( Revokable tag must always be Y for for SI/ recurring mandate) ( PAYER) 
+BD 
+ 
+3.6.2 RespMandate 
+Response 
+code 
+Description 
+TD/BD 
+IB 
+REVOKE MANDATE AFTER THE REMITTER UNBLOCKED THE AMOUNT 
+BD 
+QJ 
+UMN DOES NOT EXIST (PAYER) 
+BD 
+QN 
+DUPLICATE MANDATE REQUEST 
+BD 
+VF 
+UMN DOES NOT EXIST (REMITTER) 
+BD 
+VG 
+PAYER VPA IS INCORRECT (REMITTER) 
+BD 
+VL 
+MANDATE REGISTRATION NOT ALLOWED FOR CC PF PPF ACT (BANK'S POLICY) 
+BD 
+VM 
+NATURE OF DEBIT NOT ALLOWED IN ACCOUNT TYPE 
+BD 
+VU 
+MANDATE HAS EXPIRED 
+BD 
+NU 
+Unable to Notify the Customer 
+BD 
+V1 
+SEQNUM MISMATCH (REMITTER) 
+BD 
+V2 
+RECURRENCE PATTERN AND VALUE MISMATCH (REMITTER) 
+BD 
+V3 
+PIN Cred Block is missing (txns > Rs 15000) 
+BD 
+V4 
+PIN Cred Block is missing (txns < Rs 15000 and Seq No = 1) 
+BD 
+V5 
+Purpose code=14, Block Fund =Y ( Block fund must be N always for SI/ recurring mandate) (Remitter) 
+BD 
+
+UPI Error and Response Codes 
+ Page 18 of 72 Public - UPI V 2.9 
+  
+V6 
+Purpose Code=14, Revocable= N ( Revokable tag must always be Y for for SI/ recurring mandate except for MCC 
+7322, where revocable tag can be both Y or N) ( Remitter) 
+BD 
+  3.7 Response codes for PAN Validation 
+3.7.1 RespValCust 
+Response 
+code 
+Description 
+TD/BD 
+PA 
+Invalid PAN details 
+BD 
+3.8 Response Code for UPI Global 
+3.8.1 RespValQr 
+Response 
+code 
+Description 
+TD/BD 
+KN 
+KYC not Available 
+BD 
+3.8.2 RespPay 
+Response 
+code 
+Description 
+TD/BD 
+SD 
+Service disable on UPI/ Customer is not active 
+BD 
+CN 
+Country/ Currency not supported 
+BD 
+IV 
+Invalid verification token 
+BD 
+PE 
+Payment validity expired 
+TD 
+RD 
+Request Decline by the bank 
+BD 
+IN 
+International Service not activated/disabled 
+BD 
+
+UPI Error and Response Codes 
+ Page 19 of 72 Public - UPI V 2.9 
+  
+3.9 Response Code for UDIR 
+Response Code (by PSP/Bank) 
+Flag 
+Message Details 
+TD/BD 
+102 ;103 
+DRC 
+Debit Reversal Confirmation 
+NA 
+104 
+Debit Reversal Confirmation – Original transaction not debited 
+ 
+105 
+Debit Reversal Confirmation Timeout 
+TD 
+NO 
+Remitter Original transaction not found 
+ 
+UT1;UT2;UT3;UT4;UT5;UT6 
+Debit Reversal Confirmation Unable to Update 
+TD 
+102;103 
+TCC 
+Transaction Credit Confirmation 
+NA 
+114;115;116;117;118;119;120 
+RET 
+Beneficiary Initiates Return 
+NA 
+UT1;UT2;UT3;UT4;UT5;UT6 
+BUU 
+ 
+Beneficiary Unable to Update 
+TD 
+NO 
+Beneficiary Original transaction not found 
+ 
+TB 
+BTO 
+Beneficiary Timeout 
+TD 
+501-RRC Success 
+RRC 
+Return Reversal Confirmation  
+NA 
+502-RRC Timeout 
+Return Reversal Confirmation Timeout 
+TD 
+UT1;UT2;UT3;UT4;UT5;UT6 
+RUU 
+Return Reversal Confirmation Unable to Update 
+TD 
+105 
+PR2C 
+Response to Complaint 
+NA 
+UT1;UT2;UT3;UT4;UT5;UT6 
+PUU 
+Response to Complaint as Unable to Update 
+TD 
+106 
+PR2C 
+Response to Complaint as Refund will be initiated 
+NA 
+TP 
+PTO 
+Payee Timeout 
+TD 
+UTO 
+-- 
+URCS Timeout 
+TD 
+UT1 
+Account Closed 
+BD 
+UT2 
+Party Instructions 
+BD 
+UT3 
+Credit Freeze 
+BD 
+UT4 
+Duplicate Processing  
+BD 
+UT5 
+Technical Error 
+TD 
+UT6 
+Account Closed 
+BD 
+
+UPI Error and Response Codes 
+ Page 20 of 72 Public - UPI V 2.9 
+  
+UT7 
+Others 
+TD 
+UU1 
+Remitter version not supported 
+BD 
+UU2 
+Beneficiary version not supported 
+TD 
+UU3 
+Remitter/beneficiary not supported 
+TD 
+UU4 
+Payee not supported 
+TD 
+ 
+3.10 Response Code for e-RUPI Voucher/e-RUPI API Gateway  
+Response 
+Code 
+Message Details 
+TD/BD 
+PQ 
+QR Tampered 
+TD 
+GA 
+Invalid Merchant details 
+BD 
+GB 
+Original Voucher Details Mismatch 
+BD 
+GC 
+MCC and purpose code mismatch 
+BD 
+ 
+Note : All reqmandate error code and response will be valid for API gateway as well. 
+ 
+3.11 Code for UPI Lite  
+Response Code Description 
+TD/BD 
+DU 
+Duplicate LRN  
+ BD 
+IA 
+INVALIDPARENT AC- Account details in ARQC is wrong 
+TD 
+ID 
+INVALID DEVICE - Invalid Device details is passed in ARQC 
+TD 
+MD 
+MISMATCHING DEVICE- Mismatch in details between ARQC and Auth engine 
+TD 
+IK 
+INVALID_KEY- Keys passed in ARQC is wrong  
+TD 
+52 
+INVALID_ACCOUNT –LRN passed in ARQC is wrong 
+TD 
+12 
+INVALID_TXN – Transaction ID are wrong in ARQC 
+ TD 
+UW 
+TRAN_AMT_EXCEEDS_LIMIT –Amount passed in ReqPay is more than the MCB balance  
+ TD 
+M2 
+AMT_LIMIT_EXCEEDED – Amount is passed more than the limit amount  
+ TD 
+
+UPI Error and Response Codes 
+ Page 21 of 72 Public - UPI V 2.9 
+  
+(Cumulative 2000 limit) 
+CE 
+CRYPTO ERROR – Cred Block is incorrect 
+TD 
+AE 
+ARQC VALIDATION ERROR 
+TD 
+GE 
+ARPC GENERATION ERROR 
+TD 
+BP 
+BALANCE PRESENT – Transaction initiated with zero balance  
+ TD 
+ 
+MCB declines (Mini Core Banking ) 
+Response 
+Code  
+Purpose 
+41 and 
+42 
+Purpose 
+43 and 
+44 
+Module 
+Description 
+ 
+TD/BD 
+Error 
+Code 
+Error 
+Code 
+AV 
+U31 
+U30 
+ARQC Cred blk 
+err 
+ARQC_VALIDATION_ERROR_SIGNATURE
+_VERIFICATION_FAILED 
+while generating ARQC, if signature 
+verification failed 
+TD 
+AS 
+U31 
+U30 
+ARQC Cred blk 
+err 
+ARQC_VALIDATION_ERROR_MERCKLE_T
+REE_SIZE_MISMATCH 
+while generating ARQC, if key Size is 
+mismatched from CL 
+TD 
+AZ 
+U31 
+U30 
+ARQC Cred blk 
+err 
+ARQC_VALIDATION_ERROR_MERCKLE_T
+REE_NULL 
+while generating ARQC, if key Size is null 
+TD 
+AX 
+U31 
+U30 
+ARQC Cred blk 
+err 
+ARQC_VALIDATION_ERROR_MERCKLE_T
+REE_TIMESTAMP_MISMATCH 
+while generating ARQC, if txn timestamp is 
+mismatched  
+TD 
+AA 
+U31 
+U30 
+ARQC Cred blk 
+err 
+ARQC_VALIDATION_ERROR_MERCKLE_T
+REE_AMOUNT_MISMATCH 
+while generating ARQC, if amount is 
+mismatched  
+TD 
+AK 
+U31 
+U30 
+ARQC Cred blk 
+err 
+ARQC_VALIDATION_ERROR_INVALID_KE
+Y_EXCEPTION 
+while generating ARQC, if the key is invalid 
+TD 
+ 
+ 
+3.12 Response Code for UPI Lite Offline 
+ 
+Respons
+e Code 
+Description  
+TD/BD 
+L1  
+Credit Failed  
+TD 
+
+UPI Error and Response Codes 
+ Page 22 of 72 Public - UPI V 2.9 
+  
+L2  
+Beneficiary credit status unknown 
+TD 
+L3  
+Lite Balance limit exceeded 
+TD 
+LA 
+Debit status unknown 
+TD 
+LB  
+Payee submitted success logs after date exceeded 
+BD 
+LG 
+Payer submitted exception log after date exceeded  
+BD 
+ LT 
+Payee submitted exception log after date exceeded  
+BD 
+LR  
+Payer submitted success logs after date exceeded 
+BD 
+ 
+3.13 Response code for EMI and CC Bill payment through UPI 
+ 
+Response 
+Code 
+Discription 
+TD/BD  
+C1 
+Card Does not exists 
+BD 
+C2 
+System error/ Bill fetch failure  
+TD 
+C3 
+Invalid card/ Card not eligible (EMI – Check) 
+BD 
+C4 
+Credit Card Limit not there 
+BD 
+C5 
+System error (EMI – check) 
+TD 
+C6 
+OrgTxnId does not match (EMI – Check) 
+BD 
+C7 
+Invalid Card/ Card not eligible (EMI – SELECT) 
+BD 
+C8 
+System error (EMI – SELECT) 
+TD 
+C9 
+EMI is already created 
+BD 
+CX 
+OrgTxnId mismatch (EMI – SELECT) 
+BD 
+CF 
+Foreclose not possible 
+BD 
+CE 
+Invalid/ Missing EMI ID 
+BD 
+CP 
+Amount not eligible for EMI conversion 
+BD 
+CM 
+MCC not eligible for EMI conversion 
+BD 
+CB 
+CC Bill is already generated 
+BD 
+CZ 
+EMI is already foreclosed 
+BD 
+  
+
+UPI Error and Response Codes 
+ Page 23 of 72 Public - UPI V 2.9 
+  
+4. Codes populated by UPI  
+  
+These are the error codes populated by UPI in various validation levels  
+ 
+4.1 Response codes populated by UPI  
+The below response codes will be populated by UPI in the final response pay for DEBIT and CREDIT timeouts. 
+  
+ Response 
+code 
+Description  
+TD/BD 
+21 
+NO ACTION TAKEN (FULL REVERSAL) 
+TD 
+32 
+PARTIAL REVERSAL   
+TD 
+BT 
+ACQUIRER/BENEFICIARY UNAVAILABLE(TIMEOUT)  
+TD 
+RB 
+CREDIT REVERSAL TIMEOUT(REVERSAL)  
+TD 
+RP 
+PARTIAL DEBIT REVERSAL TIMEOUT 
+TD 
+RR 
+DEBIT REVERSAL TIMEOUT(REVERSAL)  
+TD 
+UT 
+ REMITTER/ISSUER UNAVAILABLE (TIMEOUT)  
+TD 
+ 
+4.3 UPI API message level Validations  
+This section will help UPI users to send valid data to UPI. It will give an outline of valid requests expected at UPI end. Refer API-wise request details expected at 
+UPI.  
+ 
+For ReqPay RespPay and RespAuthDetails following prefix error codes are used:  
+H – Head validation HM – Meta part under Head validation T – Txn validation S - RiskScores validation L – Rules validation  
+R – Payer validation B – Payee validation I – Info validation D – Device validation A – Ac validation C – Creds validation V – Amount validation E – Resp 
+validation  
+ 
+For MetaApi following prefix error codes are used:   
+
+UPI Error and Response Codes 
+ Page 24 of 72 Public - UPI V 2.9 
+  
+Z – Head validation, P – Payer validation, Y – Link validation, X – Txn validation, K – Ac validation, W – Creds validation, N – NewCred validation J – Payee 
+validation, O – Info validation, Q – Device validation, F – ReqRegMob validation, G – HeartBeat validation & other meta validation  
+  
+For all other error codes from UPI service layer the prefix used is U.  
+In-case of <Head/> tag missing for any API, we would see U52 error message code because we are validating orgId for any request which is contained within 
+<Head/> tag.  
+  
+4.3.1 API: ReqPay  
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+H02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/> 
+ver 
+TD 
+H03  
+TS MUST BE ISO_ZONE FORMAT  
+ 
+ts 
+TD 
+H06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+ 
+msgId 
+TD 
+U17  
+PSP IS NOT REGISTERED  
+ 
+orgId 
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/> 
+orgId 
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA. ATTRIBUTE ORGID IS 
+REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+HM1  
+META.TAG.NAME MUST BE PRESENT/VALID  
+<Meta/>  
+name  
+TD 
+ HM2  
+META.TAG.VALUE MUST BE ISO_ZONE FORMAT  
+  
+value  
+TD 
+BUSINESS VALIDATION: ELEMENT <META/> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN.  
+META ELEMENT IS GIVEN ATTRIBUTE NAME AND VALUE BOTH REQUIRED. 
+T01  
+TXN NOT PRESENT  
+<Txn/> 
+ 
+TD 
+T02  
+TXN.ID MUST BE PRESENT MAXLENGTH 35  
+ 
+id 
+TD 
+T03  
+TXN.NOTE ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 50  
+ 
+note 
+TD 
+T04  
+TXN.REFID ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 35  
+ 
+refId 
+TD 
+T05  
+TXN REFURL IS URL; MINLENGTH 1 MAXLENGTH 35  
+ 
+refUrl 
+TD 
+T06  
+TXN.TS MUST BE ISO_ZONE FORMAT  
+ 
+ts 
+TD 
+T07  
+TXN.TYPE MUST BE PRESENT/VALID  
+ 
+type 
+TD 
+T08  
+TXN.ORGTNXID MUST BE PRESENT ALPHANUMERIC;  
+MINLENGTH 1 MAXLENGTH 35  
+<for REVERSAL, 
+ChkTxn> 
+orgTxnId 
+TD 
+
+UPI Error and Response Codes 
+ Page 25 of 72 Public - UPI V 2.9 
+  
+T09  
+TXN.ORGTNXID IS ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 35  
+ 
+orgTxnId 
+TD 
+T10  
+TXN.ORGTNXID IS NOT APPLICABLE FOR THIS TYPE OF 
+TRANSACTION  
+ 
+orgTxnId 
+TD 
+T11  
+TXN.ORGRESPCD MUST BE PRESENT ALPHANUMERIC;  
+MINLENGTH 1 MAXLENGTH 3 
+<for REVERSAL> 
+ 
+TD 
+T12 
+TXN.CUSTREF MUST BE PRESENT; LENGTH 12 
+ 
+custRef 
+TD 
+T13 
+TXN.SUBTYPE MUST BE PRESENT 
+<for DEBIT|CREDIT| 
+REVERSAL> 
+subType 
+TD 
+T14 
+PURPOSE SHOULD BE PRESENT VALID VALUE 
+ 
+purpose 
+TD 
+T15 
+TXN.PURPOSE SHOULD BE 00 WHEN INITIATIONMODE 12 
+ 
+purpose 
+TD 
+IM0 
+INITIATIONMODE SHOULD BE PRESENT AND VALUE(00-32) 
+ 
+initiationMode 
+TD 
+IM1 
+INITIATIONMODE=12 (FIR) NOT VALID FOR COLLECT 
+ 
+initiationMode 
+TD 
+IM2 
+INITIATIONMODE=12 (FIR) NON-PREAPPROVED TRANSACTION IS 
+NOT ALLOWED 
+ 
+initiationMode 
+BD 
+IM3 
+CRED BLOCK SHOULD BE UPIMANDATE OR PREAPPROVED IF 
+INITIATIONMODE=11 
+ 
+initiationMode 
+TD 
+IM4 
+UPI 2.0 IS ALLOWING FIR ONLY 
+<for initiationMode is 
+other than 12> 
+initiationMode 
+TD 
+IM5 
+PAYEE PSP DOES NOT SUPPORT VERSION 2.0 
+ 
+initiationMode 
+BD 
+IM6 
+BANK/PSP IS NOT SUPPORTING VERSION 2.0 
+ 
+ 
+BD 
+BUSINESS VALIDATION: ELEMENT <TXN/> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ID & TYPE ARE MANDATORY. 
+FOR REFUND TYPE ORGTXNID IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. TXN ELEMENT HAS RISKSCORES & RULES 
+ELEMENTS REFERRED INSIDE. 
+S01  
+TXN RISKSCORE PROVIDER MUST BE PRESENT  
+ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 20  
+< RiskScores/>  
+provider  
+TD 
+S02  
+TXN RISKSCORE TYPE MUST BE PRESENT  
+ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 20  
+  
+type  
+TD 
+S03  
+TXN RISKSCORE VALUE MUST BE PRESENT  
+NUMERIC; MINLENGTH 1 MAXLENGTH 5  
+  
+value  
+TD 
+BUSINESS VALIDATION: ELEMENT < RISKSCORES /> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN.  
+L01  
+RULE MUST BE PRESENT WITHIN RULES  
+< Rules/>  
+  
+TD 
+L02  
+RULE ATTRIBUTE NAME MUST BE PRESENT; ALPHANUMERIC;  
+MINLENGTH 1 MAXLENGTH 20  
+  
+name  
+TD 
+
+UPI Error and Response Codes 
+ Page 26 of 72 Public - UPI V 2.9 
+  
+L03  
+VALUE MUST BE PRESENT; NUMERIC/DECIMAL  
+  
+value <MINAMOUNT>  
+TD 
+L04  
+RULE ATTRIBUTE VALUE MUST BE PRESENT; NUMERIC;  
+MINLENGTH 1 MAXLENGTH 255  
+  
+value <EXPIREAFTER>  
+TD 
+BUSINESS VALIDATION: ELEMENT < RULES /> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN.  
+R01  
+PAYER NOT PRESENT  
+< Payer/>  
+  
+TD 
+R02  
+PAYER.ADDR MUST BE VALID VPA MAXLENGTH 255  
+  
+addr  
+TD 
+R03  
+PAYER.NAME ALPHANUMERIC MINLENGTH 1 MAXLENGTH 99  
+  
+name  
+TD 
+R04  
+PAYER.SEQNUM NUMERIC MINLENGTH 1 MAXLENGTH 3  
+  
+seqNum  
+TD 
+R05  
+PAYER.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+ R06  
+PAYER.CODE NUMERIC OF LENGTH 4  
+  
+code  
+TD 
+BUSINESS VALIDATION: ELEMENT < PAYER /> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ADDR & TYPE ARE 
+MANDATORY. FOR ENTITY TYPE CODE IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. PAYER TAG HAS INFODEVICE AC CREDS 
+AMOUNT TAG REFERRED INSIDE.  
+B01  
+PAYEES NOT PRESENT  
+< Payee/>  
+  
+TD 
+B02  
+PAYEE NOT PRESENT  
+  
+  
+TD 
+B03  
+PAYEE.ADDR MUST BE VALID VPA MAXLENGTH 255  
+  
+addr  
+TD 
+B04  
+PAYEE.SEQNUM NUMERIC MINLENGTH 1 MAXLENGTH 3  
+  
+seqNum  
+TD 
+B05  
+PAYEE.NAME ALPHANUMERIC MINLENGTH 1 MAXLENGTH 99  
+  
+name  
+TD 
+B06  
+PAYEE.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+B07  
+PAYEE.CODE NUMERIC OF LENGTH 4  
+  
+Code  
+TD 
+B08  
+PAYER</PAYEE> ADDRESS CANNOT BE CHANGED  
+  
+addr  
+TD 
+BUSINESS VALIDATION: ELEMENT < PAYEE /> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ADDR & TYPE ARE 
+MANDATORY. FOR ENTITY TYPE CODE IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. PAYER TAG HAS INFODEVICE AC 
+AMOUNT TAG REFERRED INSIDE.  
+I01  
+PAYER/PAYEE.INFO MUST BE PRESENT  
+<Info/>  
+  
+TD 
+I02  
+PAYER/PAYEE .INFO.IDENTITY MUST BE PRESENT  
+  
+identity  
+TD 
+I03  
+PAYER/PAYEE.INFO.IDENTITY.TYPE MUST BE PRESENT  
+MINLENGTH 1 MAXLENGTH 20  
+  
+type  
+TD 
+
+UPI Error and Response Codes 
+ Page 27 of 72 Public - UPI V 2.9 
+  
+I04  
+PAYER/PAYEE .INFO.IDENTITY VERIFIEDNAME MUST BE PRESENT  
+ALPHANUMERIC MINLENGTH 1 MAXLENGTH 99  
+  
+verifiedName  
+TD 
+I05  
+PAYER/PAYEE .INFO.RATING WHITELISTED  
+MUST BE PRESENT MINLENGTH 1 MAXLENGTH 5  
+  
+verifiedAddress  
+TD 
+BUSINESS VALIDATION: ELEMENT <INFO/> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN. INFO ELEMENT IS GIVEN ALL ATTRIBUTES ARE 
+REQUIRED. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON THEIR TYPE DURING VALIDATION.  
+D01  
+PAYER/PAYEE.DEVICE MUST BE PRESENT  
+<Device/>  
+  
+TD 
+D02  
+PAYER/PAYEE. DEVICE.TAGS MUST BE PRESENT  
+  
+  
+TD 
+D03  
+PAYER/PAYEE.TAG.DEVICE.NAME/VALUE MUST BE PRESENT  
+  
+name/value  
+TD 
+D04 -  D11  
+SAME VALIDATION MESSAGE BASED ON DEVICE TYPE  
+  
+  
+TD 
+D12 
+TELECOM VALUE MUST BE MINLENGTH 1 MAXLENGTH 99 
+ 
+ 
+TD 
+D13 
+TELECOM TAG IS ALLOWED ONLY FOR TYPE=USDC/USDB 
+ 
+ 
+BD 
+BUSINESS VALIDATION: ELEMENT < DEVICE /> TAG IS MANDATORY FOR PAYER AND PAYEE FOR RESPECTIVELY PAY AND COLLECT TRANSACTION. IF 
+DEVICE TAG IS GIVEN WHERE IT IS NOT MANDATORY IT WILL BE VALIDATED. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON 
+THEIR TYPE DURING VALIDATION.  
+A01  
+PAYER/PAYEE.AC MUST BE PRESENT  
+< Ac/>  
+  
+TD 
+A02  
+PAYER/PAYEE .AC.ADDRTYPE MUST BE PRESENT  
+  
+addrType  
+TD 
+A03  
+PAYER/PAYEE .AC.DETAIL MUST BE PRESENT  
+  
+detail  
+TD 
+A04  
+PAYER/PAYEE .AC.NAME MUST BE PRESENT  
+  
+name  
+TD 
+A05  
+PAYER/PAYEE .AC.DETAIL.AADHAR MUST BE PRESENT OR NOT 
+VALID  
+  
+  
+TD 
+A06  
+PAYER/PAYEE .AC.DETAIL.ACCOUNT MUST BE PRESENT OR NOT 
+VALID  
+  
+  
+TD 
+A07  
+PAYER/PAYEE .AC.DETAIL.MOBILE MUST BE PRESENT OR NOT VALID  
+  
+  
+TD 
+A08  
+PAYER/PAYEE .AC.DETAIL.CARD MUST BE PRESENT OR NOT VALID  
+  
+  
+TD 
+ A09  
+PAYER/PAYEE .AC.DETAIL.VALUE INCORRECT FORMAT <NAME>  
+  
+  
+TD 
+BUSINESS VALIDATION: ELEMENT < AC /> TAG IS MANDATORY FOR PAYER AND PAYEE FOR RESPECTIVELY PAY AND COLLECT TRANSACTION.  
+IF AC TAG IS GIVEN WHERE IT IS NOT MANDATORY IT WILL BE VALIDATED. FOR PAY TRANSACTION IF CREDENTIAL IS PREAPPROVED AC NOT REQUIRED 
+FOR PAYER. AC VALIDATION IS DONE BASED ON AADHAR ACCOUNT MOBILE CARD. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME 
+DEPENDING UPON THEIR TYPE DURING VALIDATION.  
+C01  
+PAYER/PAYEE .CREDS NOT PRESENT  
+<Creds/>  
+  
+TD 
+
+UPI Error and Response Codes 
+ Page 28 of 72 Public - UPI V 2.9 
+  
+C02  
+PAYER/PAYEE .CREDS.CRED MUST BE PRESENT  
+  
+  
+TD 
+C03  
+PAYER/PAYEE.CRED DATA IS WRONG  
+  
+  
+TD 
+C04  
+PAYER/PAYEE .CRED.AADHAR MUST BE PRESENT  
+  
+  
+TD 
+C05  
+PAYER/PAYEE .CRED.OTP MUST BE PRESENT  
+  
+  
+TD 
+C06  
+PAYER/PAYEE .CRED.PIN MUST BE PRESENT  
+  
+  
+TD 
+C07  
+PAYER/PAYEE .CRED.CARD MUST BE PRESENT  
+  
+  
+TD 
+C08  
+PAYER/PAYEE .CRED.PREAPPROVED MUST BE PRESENT  
+  
+  
+TD 
+C09  
+PAYER/PAYEE .CRED.DATA MUST BE PRESENT  
+  
+  
+TD 
+ C10  
+PAYER/PAYEE . .CRED.DATA ENCRYPTED AUTHENTICATION MUST 
+BE PRESENT  
+  
+  
+TD 
+BUSINESS VALIDATION: ELEMENT < CREDS /> TAG IS MANDATORY FOR PAYER FOR PAY TRANSACTION. IF CREDS TAG IS GIVEN WHERE IT IS NOT 
+MANDATORY IT WILL BE VALIDATED. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON THEIR TYPE DURING VALIDATION.  
+V01    
+PAYER/PAYEE. AMOUNT MUST BE PRESENT  
+< Amount/>  
+  
+TD 
+V02    
+PAYER/PAYEE .AMOUNT.CUR MUST BE PRESENT  
+  
+curr  
+TD 
+V03    
+PAYER/PAYEE.AMOUNT.VALUE MUST BE WITHIN 18 DIGITS 
+INCLUDING TWO DECIMAL  
+  
+value  
+TD 
+V04    
+PAYER/PAYEE .AMOUNT.SPLIT.NAME MUST BE PRESENT  
+  
+  
+TD 
+V05    
+PAYER/PAYEE .AMOUNT.SPLIT.VALUE MUST BE PRESENT  
+MINLENGTH 1 MAXLENGTH 18  
+  
+  
+TD 
+V06    
+PAYEE AMOUNT CANNOT BE CHANGED  
+  
+  
+TD 
+M01  
+PAYEE.AMOUNT.CUR MUST BE CONSISTENT  
+  
+  
+TD 
+M02  
+PAYEE.AMOUNT.CUR IS INVALID  
+  
+  
+TD 
+M03  
+PAYER & PAYEE TOTAL AMOUNT NOT MATCHING  
+  
+  
+TD 
+M04  
+ONE OR MORE PAYEE AMOUNT IS MISSING  
+  
+  
+TD 
+M05  
+PAYER AND PAYEE TOTAL AMOUNT NOT MATCHING  
+  
+  
+TD 
+M06  
+MORE THAN ONE PAYEE AMOUNT IS MISSING  
+  
+  
+TD 
+M07  
+PAYER AMOUNT SHOULD BE GREATER THAN TOTAL PAYEE 
+AMOUNT  
+  
+  
+TD 
+UP1 
+NOT A VALID AMOUNT FOR THIS CATEGORY 
+ 
+ 
+BD 
+
+UPI Error and Response Codes 
+ Page 29 of 72 Public - UPI V 2.9 
+  
+BUSINESS VALIDATION: ELEMENT < AMOUNT /> TAG IS MANDATORY FOR BOTH PAYER & PAYEE. IT CHECKS CURRENCY & AMOUNT MATCHING FOR 
+PAYER & PAYEE. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON THEIR TYPE DURING VALIDATION.  
+PM0 
+MERCHANT TAG IS MANDATORY IF PAYER/PAYEE IS ENTITY 
+<Merchant/> 
+ 
+TD 
+PM1 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.SUBCODE MUST BE NUMERIC 
+AND OF LENGTH 4 
+<Identifier/> 
+subCode 
+TD 
+PM2 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.MID MUST BE OF  
+MINLENGTH 1 MAXLENGTH 20 
+ 
+mid 
+TD 
+PM3 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.SID MUST BE OF  
+MINLENGTH 1 MAXLENGTH 20 
+ 
+sid 
+TD 
+PM4 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.TID MUST BE OF  
+MINLENGTH 1 MAXLENGTH 20 
+ 
+tid 
+TD 
+PM5 
+PAYER/PAYEE.MERCHANT.NAME.BRAND MUST BE OF  
+MINLENGTH 1 MAXLENGTH 20 
+<Name/> 
+brand 
+TD 
+PM6 
+PAYER/PAYEE.MERCHANT.NAME.LEGAL MUST BE OF  
+MINLENGTH 1 MAXLENGTH 20 
+ 
+legal 
+TD 
+PM7 
+PAYER/PAYEE.MERCHANT.NAME.FRANCHISE MUST BE OF  
+MINLENGTH 1 MAXLENGTH 20 
+ 
+franchise 
+TD 
+PM8 
+PAYER/PAYEE.MERCHANT.OWNERSHIP MUST BE PRESENT 
+<Ownership/> 
+ 
+TD 
+PM9 
+PAYER/PAYEE.MERCHANT.OWNERSHIP.TYPE MUST BE PRESENT 
+ 
+type 
+TD 
+PM16 
+ALREADY PROCESSED TRANSACTION 
+ 
+ 
+TD 
+PN0 
+MERCHANT TAG SHOULD NOT BE PRESENT IF PAYER/PAYEE IS 
+PERSON 
+<Merchant/> 
+ 
+TD 
+PN1 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.MERCHANTTYPE MUST BE 
+VALID 
+ 
+type 
+TD 
+BUSINESS VALIDATION: ELEMENT <MERCHANT/> TAG IS NOT MANDATORY FOR BOTH PAYER & PAYEE. IT GIVES MERCHANT’S DETAILS USING 
+INTERMEDIATE GATEWAY.  IF MERCHANT TAG IS GIVEN, OWNERSHIP TAG AND OWNERSHIP TYPE IS MANDATORY.  
+PI0 
+INSTITUTION TAG SHOULD BE PRESENT IF  INITIATIONMODE=12  
+(FIR) 
+<Institution /> 
+ 
+TD 
+PI1 
+PAYER.INSTITUTION.TYPE MUST BE PRESENT AMONG MTO|BANK 
+ 
+type 
+TD 
+PI2 
+PAYER.INSTITUTION.ROUTE MUST BE PRESENT AMONG MTSS|RDA 
+ 
+route 
+TD 
+PI3 
+PAYER.INSTITUTION.NAME MUST BE PRESENT 
+<Name/> 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 30 of 72 Public - UPI V 2.9 
+  
+PI4 
+PAYER.INSTITUTION.NAME.VALUE MUST BE  PRESENT,MINLENGTH 
+1 MAXLENGTH 100 
+ 
+value 
+TD 
+PI5 
+PAYER.INSTITUTION.NAME.ACNUM MUST BE  PRESENT,MINLENGTH 
+1 MAXLENGTH 50 
+ 
+acNum 
+TD 
+PI6 
+PAYER.INSTITUTION.PURPOSE MUST BE PRESENT 
+<Purpose/> 
+ 
+TD 
+PI7 
+PAYER.INSTITUTION.PURPOSE.CODE MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 50 
+ 
+code 
+TD 
+PI8 
+PAYER.INSTITUTION.ORIGINATOR MUST BE PRESENT 
+<Originator/> 
+ 
+TD 
+PI9 
+PAYER.INSTITUTION.ORIGINATOR.NAME MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 50 
+ 
+name 
+TD 
+PJ1 
+PAYER.INSTITUTION.ORIGINATOR.REFNO MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 35 
+ 
+refNo 
+TD 
+PJ2 
+PAYER.INSTITUTION.ORIGINATOR.ADDRESS MUST BE PRESENT 
+<Address/> 
+ 
+TD 
+PJ3 
+PAYER.INSTITUTION.ORIGINATOR.ADDRESS.LOCATION MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 40 
+ 
+location 
+TD 
+PJ4 
+PAYER.INSTITUTION.BENEFICIARY MUST BE PRESENT 
+<Beneficiary/> 
+ 
+TD 
+PJ5 
+PAYER.INSTITUTION.BENEFICIARY.NAME MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 50 
+ 
+name 
+TD 
+PJ6 
+PAYER.INSTITUTION.ORIGINATOR.TYPE MUST BE  PRESENT, 
+INDIVIDUAL|COMPANY 
+<Originator/> 
+type 
+TD 
+PJ7 
+PAYER.INSTITUTION.ORIGINATOR.ADDRESS.CITY MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 100 
+<Address/> 
+city 
+TD 
+PJ8 
+PAYER.INSTITUTION.ORIGINATOR.ADDRESS.COUNTRY MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 100 
+ 
+country 
+TD 
+PJ9 
+PAYER.INSTITUTION.ORIGINATOR.ADDRESS.GEOCODE MUST BE  
+PRESENT, IN nn.nnnn,nn.nnnn FORMAT 
+ 
+geocode 
+TD 
+PJ0 
+PAYER.INSTITUTION.PURPOSE.NOTE MUST BE  
+PRESENT,MINLENGTH 1 MAXLENGTH 50 
+<Purpose/> 
+note 
+TD 
+PK0 
+INSTITUTION TAG SHOULD NOT BE PRESENT IF INITIATIONMODE 
+OTHER THAN 12 
+<Instituition/> 
+ 
+TD 
+BUSINESS VALIDATION: ELEMENT <INSTITUTION/> TAG IS NOT MANDATORY FOR BOTH PAYER. IT GIVES INSTITUTION DETAILS OF NRE|NRO 
+TRANSACTIONS.  
+ 
+
+UPI Error and Response Codes 
+ Page 31 of 72 Public - UPI V 2.9 
+  
+4.3.2 API : RespAuthDetails  
+ 
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+H02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+  
+ver  
+TD 
+H03  
+TS MUST BE ISO_ZONE FORMAT  
+  
+ts  
+TD 
+H06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+  
+msgId  
+TD 
+U17  
+PSP IS NOT REGISTERED  
+  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA.  
+ATTRIBUTE ORGID IS REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+E01 
+<RESP> MUST BE PRESENT  
+< Resp/>  
+    
+TD 
+E02 
+RESP.MSGID MUST BE PRESENT MAXLENGTH 35  
+  
+reqMsgId  
+TD 
+E03 
+RESP.RESULT MUST BE PRESENT ALPHANUMERIC  
+MIN LENGTH 1 MAX LENGTH 20  
+  
+result    
+TD 
+E04 
+RESP.ERRORCODE MUST BE PRESENT  
+  
+errCode   
+TD 
+E05 
+RESP.ERRORCODE SHOULD NOT BE PRESENT  
+  
+errCode  
+TD 
+BUSINESS VALIDATION: ELEMENT < RESP /> TAG IS MANDATORY. ATTRIBUTE MSGID AND RESULT ARE MANDATORY. ERRCODE IS MANDATORY IF RESULT 
+IS FAILURE.  
+T01  
+TXN NOT PRESENT  
+<Txn/>  
+  
+TD 
+T02  
+TXN.ID MUST BE PRESENT MAXLENGTH 35  
+  
+id  
+TD 
+T03  
+TXN.NOTE ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 50  
+  
+note  
+TD 
+T04  
+TXN.REFID ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 35  
+  
+refId  
+TD 
+T06  
+TXN.TS MUST BE ISO_ZONE FORMAT  
+  
+ts  
+TD 
+T07  
+TXN.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+T12 
+TXN.CUSTREF MUST BE PRESENT; LENGTH 12 
+ 
+custRef 
+TD 
+T13 
+TXN.SUBTYPE MUST BE PRESENT 
+<for DEBIT|CREDIT| 
+REVERSAL> 
+subType 
+TD 
+
+UPI Error and Response Codes 
+ Page 32 of 72 Public - UPI V 2.9 
+  
+T14 
+TXN.PURPOSE MUST BE PRESENT/VALID 
+ 
+purpose 
+TD 
+T17 
+TXN.TYPE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+IM3 
+CRED BLOCK SHOULD BE UPIMANDATE OR PREAPPROVED IF 
+INITIATIONMODE=11 
+ 
+initiationMode 
+TD 
+BUSINESS VALIDATION: ELEMENT <TXN/> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ID & TYPE ARE MANDATORY. 
+OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. TXN ELEMENT HAS RISKSCORES ELEMENTS REFERRED INSIDE.  
+TR1  
+TXN RISKSCORE PROVIDER MUST BE PRESENT ALPHANUMERIC; 
+MINLENGTH 1 MAXLENGTH 20  
+< RiskScores/>  
+provider  
+TD 
+TR2  
+TXN RISKSCORE TYPE MUST BE PRESENT ALPHANUMERIC; 
+MINLENGTH 1 MAXLENGTH 20  
+  
+type  
+TD 
+TR3  
+TXN RISKSCORE VALUE MUST BE PRESENT NUMERIC; MINLENGTH 1 
+MAXLENGTH 5  
+  
+Value  
+TD 
+BUSINESS VALIDATION: ELEMENT < RISKSCORES /> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN.  
+R01  
+PAYER NOT PRESENT  
+< Payer/>  
+  
+TD 
+R02  
+PAYER.ADDR MUST BE VALID VPA MAXLENGTH 255  
+  
+addr  
+TD 
+R03  
+PAYER.NAME ALPHANUMERIC MINLEGTH 1 MAXLENGTH 99  
+  
+name  
+TD 
+R04  
+PAYER.SEQNUM NUMERIC MINLEGTH 1 MAXLENGTH 3  
+  
+seqNum  
+TD 
+R05  
+PAYER.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+ R06  
+PAYER.CODE NUMERIC OF LENGTH 4  
+  
+code  
+TD 
+T20 
+PAYER.INSTITUTION SHOULD NOT BE PRESENT 
+<Institution/> 
+ 
+TD 
+BUSINESS VALIDATION: ELEMENT < PAYER /> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ADDR & TYPE ARE 
+MANDATORY. FOR ENTITY TYPE CODE IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. PAYER TAG HAS INFODEVICE AC CREDS 
+AMOUNT TAG REFERRED INSIDE.  
+B01  
+PAYEES NOT PRESENT  
+< Payee/>  
+  
+TD 
+B02  
+PAYEE NOT PRESENT  
+  
+  
+TD 
+B03  
+PAYEE.ADDR MUST BE VALID VPA MAXLENGTH 255  
+  
+addr  
+TD 
+B04  
+PAYEE.SEQNUM NUMERIC MINLEGTH 1 MAXLENGTH 3  
+  
+seqNum  
+TD 
+B05  
+PAYEE.NAME ALPHANUMERIC MINLEGTH 1 MAXLENGTH 99  
+  
+name  
+TD 
+B06  
+PAYEE.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+
+UPI Error and Response Codes 
+ Page 33 of 72 Public - UPI V 2.9 
+  
+B07  
+PAYEE.CODE NUMERIC OF LENGTH 4  
+  
+Code  
+TD 
+ B09  
+MULTIPLE PAYEES NOT ALLOWED  
+  
+  
+ 
+BD 
+BUSINESS VALIDATION: ELEMENT < PAYEE /> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ADDR & TYPE ARE 
+MANDATORY. FOR ENTITY TYPE CODE IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. PAYER TAG HAS INFODEVICE AC 
+AMOUNT TAG REFERRED INSIDE.  
+I01  
+PAYER/PAYEE.INFO MUST BE PRESENT  
+<Info/>  
+  
+TD 
+I02  
+PAYER/PAYEE .INFO.IDENTITY MUST BE PRESENT  
+  
+identity  
+TD 
+I03  
+PAYER/PAYEE.INFO.IDENTITY.TYPE MUST BE PRESENT  
+MINLEGTH 1 MAXLENGTH 20  
+  
+type  
+TD 
+I04  
+PAYER/PAYEE .INFO.IDENTITY VERIFIEDNAME MUST BE PRESENT  
+ALPHANUMERIC MINLEGTH 1 MAXLENGTH 99  
+  
+verifiedName  
+TD 
+I05  
+PAYER/PAYEE .INFO.RATING WHITELISTED MUST BE PRESENT 
+MINLEGTH 1 MAXLENGTH 5  
+  
+verifiedAddress  
+TD 
+BUSINESS VALIDATION: ELEMENT <INFO/> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN. INFO ELEMENT IS GIVEN ALL ATTRIBUTES ARE 
+REQUIRED. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON THEIR TYPE DURING VALIDATION.  
+D01 
+PAYER/PAYEE.DEVICE MUST BE PRESENT  
+<Device/> 
+ 
+TD 
+D02 
+PAYER/PAYEE. DEVICE.TAGS MUST BE PRESENT  
+ 
+ 
+TD 
+D03 
+PAYER/PAYEE.TAG.DEVICE.NAME/VALUE MUST BE PRESENT  
+ 
+name/value 
+TD 
+D04 -  D11 
+SAME VALIDATION MESSAGE BASED ON DEVICE TYPE  
+ 
+ 
+TD 
+D12 
+TELECOM VALUE MUST BE MINLENGTH 1 MAXLENGTH 99 
+ 
+ 
+TD 
+D13 
+TELECOM TAG IS ALLOWED ONLY FOR TYPE=USDC/USDB 
+ 
+ 
+BD 
+BUSINESS VALIDATION: ELEMENT < DEVICE /> TAG IS MANDATORY FOR PAYER AND PAYEE FOR RESPECTIVELY PAY AND COLLECT TRANSACTION. IF 
+DEVICE TAG IS GIVEN WHERE IT IS NOT MANDATORY IT WILL BE VALIDATED. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON 
+THEIR TYPE DURING VALIDATION.  
+A01  
+PAYER/PAYEE.AC MUST BE PRESENT  
+< Ac/>  
+  
+TD 
+A02  
+PAYER/PAYEE .AC.ADDRTYPE MUST BE PRESENT  
+  
+addrType  
+TD 
+A03  
+PAYER/PAYEE .AC.DETAIL MUST BE PRESENT  
+  
+detail  
+TD 
+A04  
+PAYER/PAYEE .AC.NAME MUST BE PRESENT  
+  
+name  
+TD 
+
+UPI Error and Response Codes 
+ Page 34 of 72 Public - UPI V 2.9 
+  
+A05  
+PAYER/PAYEE .AC.DETAIL.AADHAR MUST BE PRESENT OR NOT 
+VALID  
+  
+  
+TD 
+A06  
+PAYER/PAYEE .AC.DETAIL.ACCOUNT MUST BE PRESENT OR NOT 
+VALID  
+  
+  
+TD 
+A07  
+PAYER/PAYEE .AC.DETAIL.MOBILE MUST BE PRESENT OR NOT VALID  
+  
+  
+TD 
+A08  
+PAYER/PAYEE .AC.DETAIL.CARD MUST BE PRESENT OR NOT VALID  
+  
+  
+TD 
+A09  
+PAYER/PAYEE .AC.DETAIL.VALUE INCORRECT FORMAT FOR / NAME  
+  
+  
+TD 
+A10  
+PAYER/PAYEE .AC.DETAIL.VALUE MUST BE PRESENT FOR / NAME  
+  
+  
+TD 
+A11  
+PAYER/PAYEE AADHAAR BASED TRANSACTIONS ARE NOT 
+SUPPORTED PRESENTLY  
+  
+  
+BD 
+A12  
+PAYER/PAYEE IFSC BASED TRANSACTIONS ARE NOT SUPPORTED 
+PRESENTLY  
+  
+  
+BD 
+A13  
+PAYER/PAYEE MMID BASED TRANSACTIONS ARE NOT SUPPORTED 
+PRESENTLY  
+  
+  
+BD 
+ A14  
+PAYER/PAYEE CARD BASED TRANSACTIONS ARE NOT SUPPORTED 
+PRESENTLY  
+  
+  
+BD 
+BUSINESS VALIDATION: ELEMENT < AC /> TAG IS MANDATORY FOR PAYER AND PAYEE FOR RESPECTIVELY PAY AND COLLECT TRANSACTION.  
+IF AC TAG IS GIVEN WHERE IT IS NOT MANDATORY IT WILL BE VALIDATED.FOR PAY TRANSACTION IF CREDENTIAL IS PREAPPROVED AC NOT REQ UIRED 
+FOR PAYER. AC VALIDATION IS DONE BASED ON AADHAR ACCOUNT MOBILE CARD. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME 
+DEPENDING UPON THEIR TYPE DURING VALIDATION.  
+C01  
+PAYER/PAYEE .CREDS NOT PRESENT  
+<Creds/>  
+  
+TD 
+C02  
+PAYER/PAYEE .CREDS.CRED MUST BE PRESENT  
+  
+  
+TD 
+C03  
+PAYER/PAYEE.CRED DATA IS WRONG  
+  
+  
+TD 
+C04  
+PAYER/PAYEE .CRED.AADHAR MUST BE PRESENT  
+  
+  
+TD 
+C05  
+PAYER/PAYEE .CRED.OTP MUST BE PRESENT  
+  
+  
+TD 
+C06  
+PAYER/PAYEE .CRED.PIN MUST BE PRESENT  
+  
+  
+TD 
+C07  
+PAYER/PAYEE .CRED.CARD MUST BE PRESENT  
+  
+  
+TD 
+C08  
+PAYER/PAYEE .CRED.PREAPPROVED MUST BE PRESENT  
+  
+  
+TD 
+C09  
+PAYER/PAYEE .CRED.DATA MUST BE PRESENT  
+  
+  
+TD 
+C10  
+PAYER/PAYEE .CRED.DATA ENCRYPTED AUTHENTICATION MUST BE 
+PRESENT  
+  
+  
+TD 
+
+UPI Error and Response Codes 
+ Page 35 of 72 Public - UPI V 2.9 
+  
+C11  
+PAYER/PAYEE.CRED. SHOULD NOT BE SENT  
+  
+  
+TD 
+C12 
+PAYER/PAYEE.CRED.CODE SHOULD NOT BE PRESENT AND BE 
+EITHER NPCI OR UIDAI 
+  
+  
+TD 
+BUSINESS VALIDATION: ELEMENT < CREDS /> TAG IS MANDATORY FOR PAYER FOR COLLECT TRANSACTION. IF CREDS TAG IS GIVEN WHERE IT IS NOT 
+MANDATORY, IT WILL BE VALIDATED. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON THEIR TYPE DURING VALIDATION. 
+V01 
+PAYER/PAYEE. AMOUNT MUST BE PRESENT 
+< Amount/> 
+  
+TD 
+V02 
+PAYER/PAYEE .AMOUNT.CUR MUST BE PRESENT 
+  
+curr  
+TD 
+V03 
+PAYER/PAYEE. AMOUNT.VALUE MUST BE WITHIN 18 DIGITS 
+INCLUDING 2 DECIMAL  
+  
+value 
+TD 
+V04 
+PAYER/PAYEE .AMOUNT.SPLIT.NAME MUST BE PRESENT 
+  
+  
+TD 
+V05 
+PAYER/PAYEE .AMOUNT.SPLIT.VALUE MUST BE PRESENT  
+MINLENGTH 1, MAXLENGTH 18 
+ 
+ 
+TD 
+M01 
+PAYEE.AMOUNT.CUR MUST BE CONSISTENT 
+  
+  
+TD 
+M02 
+PAYER.AMOUNT.CUR MUST BE MATCHED WITH 
+PAYEE.AMOUNT.CUR 
+  
+  
+TD 
+M03 
+PAYER & PAYEE TOTAL AMOUNT NOT MATCHING 
+  
+  
+TD 
+M04 
+ONE OR MORE PAYEE AMOUNT IS MISSING 
+  
+  
+TD 
+BUSINESS VALIDATION: ELEMENT < AMOUNT /> TAG IS MANDATORY FOR BOTH PAYER & PAYEE. IT CHECKS CURRENCY & AMOUNT MATCHING FOR 
+PAYER & PAYEE. PAYER/PAYEE INCLUDED IN THE MESSAGES WILL COME DEPENDING UPON THEIR TYPE DURING VALIDATION. 
+PM0 
+MERCHANT TAG IS MANDATORY IF PAYER/PAYEE IS ENTITY 
+<Merchant/> 
+ 
+TD 
+PM1 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.SUBCODE MUST BE OF 
+LENGTH 4 
+<Identifier/> 
+subCode 
+TD 
+PM2 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.MID MUST BE OF MINLENGTH 
+1 MAXLENGTH 20 
+ 
+mid 
+TD 
+PM3 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.SID MUST BE OF MINLENGTH 
+1 MAXLENGTH 20 
+ 
+sid 
+TD 
+PM4 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.TID MUST BE OF MINLENGTH 
+1 MAXLENGTH 20 
+ 
+tid 
+TD 
+PM5 
+PAYER/PAYEE.MERCHANT.NAME.BRAND MUST BE OF MINLENGTH 
+1 MAXLENGTH 20 
+<Name/> 
+brand 
+TD 
+PM6 
+PAYER/PAYEE.MERCHANT.NAME.LEGAL MUST BE OF MINLENGTH 1 
+MAXLENGTH 20 
+ 
+legal 
+TD 
+PM7 
+PAYER/PAYEE.MERCHANT.NAME.FRANCHISE MUST BE OF 
+MINLENGTH 1 MAXLENGTH 20 
+ 
+franchise 
+TD 
+
+UPI Error and Response Codes 
+ Page 36 of 72 Public - UPI V 2.9 
+  
+PM8 
+PAYER/PAYEE.MERCHANT.OWNERSHIP MUST BE PRESENT 
+<Ownership/> 
+ 
+TD 
+PM9 
+PAYER/PAYEE.MERCHANT.OWNERSHIP.TYPE MUST BE PRESENT 
+ 
+type 
+TD 
+PN0 
+MERCHANT TAG SHOULD NOT BE PRESENT IF PAYER/PAYEE IS 
+PERSON 
+<Merchant/> 
+ 
+TD 
+PN1 
+PAYER/PAYEE.MERCHANT.IDENTIFIER.MERCHANT.TYPE MUST BE 
+VALID 
+ 
+type 
+TD 
+PN2 
+PAYER.MERCHANT.TYPE MUST BE PRESENT AMONG SMALL|LARGE 
+ 
+type 
+TD 
+BUSINESS VALIDATION: ELEMENT <MERCHANT/> TAG IS NOT MANDATORY FOR BOTH PAYER & PAYEE. IT GIVES MERCHANT’S DETAILS USING 
+INTERMEDIATE GATEWAY.  IF MERCHANT TAG IS GIVEN, OWNERSHIP TAG AND OWNERSHIP TYPE IS MANDATORY.  
+  
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 37 of 72 Public - UPI V 2.9 
+  
+  4.3.3 API : RespPay  
+  
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+H02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+  
+Ver  
+TD 
+H03  
+TS MUST BE ISO_ZONE FORMAT  
+  
+ts  
+TD 
+H06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+  
+msgId  
+TD 
+U17  
+PSP IS NOT REGISTERED  
+  
+orgId  
+TD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA. ATTRIBUTE ORGID IS 
+REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+T01  
+TXN NOT PRESENT  
+<Txn/>  
+  
+TD 
+T02  
+TXN.ID MUST BE PRESENT MAXLENGTH 35  
+  
+id  
+TD 
+T03  
+TXN.NOTE ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 50  
+  
+note  
+TD 
+T04  
+TXN.REFID ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 35  
+  
+refId  
+TD 
+T06  
+TXN.TS MUST BE ISO_ZONE FORMAT  
+  
+ts  
+TD 
+T07  
+TXN.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+T13 
+TXN.SUBTYPE MUST BE PRESENT  
+<Ref/> 
+subtype 
+TD 
+T14 
+TXN.PURPOSE MUST BE PRESENT/VALID 
+ 
+purpose 
+TD 
+IM0 
+INITIATIONMODE SHOULD BE PRESENT AND VALUE(00-24) 
+ 
+initiationMode 
+TD 
+BUSINESS VALIDATION: ELEMENT <TXN/> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ID & TYPE ARE MANDATORY. 
+OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. TXN ELEMENT HAS RISKSCORES ELEMENTS REFERRED INSIDE.  
+TR1  
+TXN RISKSCORE PROVIDER MUST BE PRESENT ALPHANUMERIC; 
+MINLENGTH 1 MAXLENGTH 20  
+< RiskScores/>  
+provider  
+TD 
+TR2  
+TXN RISKSCORE TYPE MUST BE PRESENT ALPHANUMERIC; 
+MINLENGTH 1 MAXLENGTH 20  
+  
+type  
+TD 
+TR3  
+TXN RISKSCORE VALUE MUST BE PRESENT NUMERIC; MINLENGTH 1  
+MAXLENGTH 5  
+  
+value  
+TD 
+BUSINESS VALIDATION: ELEMENT < RISKSCORES /> TAG IS NOT MANDATORY BUT WILL BE VALIDATED IF GIVEN.  
+E01  
+<RESP> MUST BE PRESENT  
+< Resp/>  
+  
+TD 
+
+UPI Error and Response Codes 
+ Page 38 of 72 Public - UPI V 2.9 
+  
+E02  
+RESP.MSGID MUST BE PRESENT MAXLENGTH 35  
+  
+reqMsgId  
+TD 
+E03  
+RESP.RESULT MUST BE PRESENT ALPHANUMERIC  
+MIN LENGTH 1 MAX LENGTH 20  
+  
+result  
+TD 
+E04  
+RESP.ERRORCODE MUST BE PRESENT  
+  
+errCode  
+TD 
+E05  
+RESP.ERRORCODE SHOULD NOT BE PRESENT  
+  
+errCode  
+TD 
+E06  
+RESP.ERRORCODE MUST BE SUCCESS OR FAILURE  
+  
+result  
+TD 
+E07  
+TYPE IS MANDATORY & ALPHANUMERIC  
+<Ref/>  
+type  
+TD 
+E08  
+SEQNUM IS MANDATORY & NUMERIC  
+  
+seqNum  
+TD 
+E09  
+ADDR IS MANDATORY & ALPHANUMERIC  
+  
+addr  
+TD 
+E10  
+SETTLEAMOUNT IS MANDATORY & DECIMAL  
+  
+settAmount  
+TD 
+E11  
+SETTLECURRENCY IS MANDATORY & TEXT  
+  
+settCurrency  
+TD 
+E12  
+APPROVALNUM IS MANDATORY & TEXT  
+  
+approvalNum  
+TD 
+E13  
+RESPCODE IS MANDATORY & ALPHANUMERIC AND MUST BE VALID  
+  
+respCode  
+TD 
+E14 
+SETTLEAMOUNT OF FAILURE CASES CANNOT BE MORE THAN ZERO 
+  
+settleAmount 
+TD 
+E15 
+INVALID RESPONSE CODE FOR THIS API 
+  
+respCode 
+TD 
+E16 
+REF.ACNUM MUST BE OF MINLENGTH 1 MAXLENGTH 16 
+ 
+acNum 
+BD 
+E17 
+REF.CODE MUST BE OF LENGTH 4 
+ 
+code 
+TD 
+E18 
+REF.IFSC MUST BE OF LENGTH 11 
+ 
+ifsc 
+BD 
+E19 
+REF.ACCTYPE MUST BE PRESENT 
+ 
+accType 
+TD 
+BUSINESS VALIDATION: ELEMENT < RESP /> TAG IS MANDATORY. ATTRIBUTE MSGID AND RESULT ARE MANDATORY.  
+ERRCODE IS MANDATORY IF RESULT IS FAILURE. REF TAG IS REFERED INSIDE RESP. IF REF ELEMENT IS GIVEN THEN THIS TAG WILL BE VALIDATED. ALL REF 
+ATTRIBUTES ARE MANDATORY. 
+ 
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 39 of 72 Public - UPI V 2.9 
+  
+4.3.4 Meta API : ReqListPsp  
+ 
+Error Code  
+Message Details  
+Element/ TAG Name  
+Attribute  
+TD/BD 
+U17  
+PSP IS NOT REGISTERED  
+<Head/>  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+Z02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/>  
+ver  
+TD 
+Z03  
+TS MUST BE ISO_ZONE FORMAT  
+<Head/>  
+ts  
+TD 
+Z06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+<Head/>  
+msgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA. ATTRIBUTE ORGID IS 
+REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+  
+  
+4.3.5 Meta API : ReqListAccPvd  
+  
+Error Code  
+Message Details  
+Element/ TAG Name  
+Attribute  
+TD/BD 
+U17  
+PSP IS NOT REGISTERED  
+<Head/>  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+Z02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/>  
+ver  
+TD 
+Z03  
+TS MUST BE ISO_ZONE FORMAT  
+<Head/>  
+ts  
+TD 
+Z06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+<Head/>  
+msgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA.  
+ATTRIBUTE ORGID IS REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+  
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 40 of 72 Public - UPI V 2.9 
+  
+4.3.6 Meta API : ReqListKeys  
+  
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+U17  
+PSP IS NOT REGISTERED  
+<Head/>  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+Z02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/>  
+ver  
+TD 
+Z03  
+TS MUST BE ISO_ZONE FORMAT  
+<Head/>  
+ts  
+TD 
+Z06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+<Head/>  
+msgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA.  
+ATTRIBUTE ORGID IS REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+ 
+ 
+4.3.7 Meta API : ReqListAccount  
+  
+Error Code  
+Message Details  
+Element/ TAG Name  
+Attribute  
+TD/BD 
+U17  
+PSP IS NOT REGISTERED  
+<Head/>  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+Z02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/>  
+ver  
+TD 
+Z03  
+TS MUST BE ISO_ZONE FORMAT  
+<Head/>  
+ts  
+TD 
+Z06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+<Head/>  
+msgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA.  
+ATTRIBUTE ORGID IS REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+P01 
+PAYER NOT PRESENT 
+< Payer/> 
+  
+TD 
+P02 
+PAYER.ADDR MUST BE VALID VPA MAXLENGTH 255 
+  
+addr 
+TD 
+P03 
+PAYER.NAME ALPHANUMERIC MINLEGTH 1 MAXLENGTH 99 
+  
+name 
+TD 
+P04 
+PAYER.SEQNUM NUMERIC MINLEGTH 1 MAXLENGTH 3 
+  
+seqNum 
+TD 
+
+UPI Error and Response Codes 
+ Page 41 of 72 Public - UPI V 2.9 
+  
+P05 
+PAYER.TYPE MUST BE PRESENT/VALID 
+  
+type 
+TD 
+P06 
+PAYER.CODE NUMERIC OF LENGTH 4 
+  
+code 
+TD 
+P09 
+PAYER.AADHAARCONSENT MUST BE PRESENT 
+ 
+aadhaarConsent 
+TD 
+BUSINESS VALIDATION: ELEMENT < PAYER /> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ADDR, TYPE, AND 
+AADHAARCONSENT ARE MANDATORY. FOR ENTITY TYPE CODE IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN. 
+Y01 
+LINK NOT PRESENT 
+< Link/> 
+  
+TD 
+Y02 
+LINK.TYPE MUST BE PRESENT/VALID 
+  
+type 
+TD 
+Y03 
+LINK.VALUE MUST BE PRESENT/VALID 
+  
+value 
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE < LINK /> ELEMENT. IT IS MANDATORY.  
+ 
+ 
+ 
+  
+  
+4.3.8 Meta API : ReqSetCre    
+  
+  
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+U17  
+PSP IS NOT REGISTERED  
+<Head/>  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+Z02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/>  
+ver  
+TD 
+Z03  
+TS MUST BE ISO_ZONE FORMAT  
+<Head/>  
+ts  
+TD 
+Z06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+<Head/>  
+msgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA.  
+ATTRIBUTE ORGID IS REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+P01  
+PAYER NOT PRESENT  
+< Payer/>  
+  
+TD 
+P02  
+PAYER.ADDR MUST BE VALID VPA MAXLENGTH 255  
+  
+addr  
+TD 
+P03  
+PAYER.NAME ALPHANUMERIC MINLEGTH 1 MAXLENGTH 99  
+  
+name  
+TD 
+P04  
+PAYER.SEQNUM NUMERIC MINLEGTH 1 MAXLENGTH 3  
+  
+seqNum  
+TD 
+P05  
+PAYER.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+
+UPI Error and Response Codes 
+ Page 42 of 72 Public - UPI V 2.9 
+  
+P06  
+PAYER.CODE NUMERIC OF LENGTH 4  
+  
+code  
+TD 
+BUSINESS VALIDATION: ELEMENT < PAYER /> TAG IS MANDATORY AND HAS TO BE PROVIDED WITH VALID DATA. ATTRIBUTE ADDR & TYPE ARE 
+MANDATORY. FOR ENTITY TYPE CODE IS MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN DATA GIVEN.  
+PAYER TAG HAS AC CREDS NEWCREDS TAG REFERRED INSIDE.  
+K01  
+PAYER/PAYEE.AC MUST BE PRESENT  
+< Ac/>  
+  
+TD 
+K02  
+PAYER/PAYEE .AC.ADDRTYPE MUST BE PRESENT  
+  
+addrType  
+TD 
+K03  
+PAYER/PAYEE .AC.DETAIL MUST BE PRESENT  
+  
+detail  
+TD 
+K04  
+PAYER/PAYEE .AC.NAME MUST BE PRESENT  
+  
+name  
+TD 
+K05  
+PAYER/PAYEE .AC.DETAIL.AADHAR MUST BE PRESENT OR NOT 
+VALID  
+  
+  
+TD 
+K06  
+PAYER/PAYEE .AC.DETAIL.ACCOUNT MUST BE PRESENT OR NOT 
+VALID  
+  
+  
+TD 
+K07  
+PAYER/PAYEE .AC.DETAIL.MOBILE MUST BE PRESENT OR NOT VALID  
+  
+  
+TD 
+K08  
+PAYER/PAYEE .AC.DETAIL.CARD MUST BE PRESENT OR NOT VALID  
+  
+  
+TD 
+K09  
+PAYER/PAYEE .AC.DETAIL.VALUE MUST BE PRESENT FOR / NAME  
+  
+  
+TD 
+BUSINESS VALIDATION: ELEMENT < AC /> TAG IS MANDATORY. AC VALIDATION IS DONE BASED ON AADHAR ACCOUNT MOBILE CARD.  
+W01  
+PAYER/PAYEE .CREDS NOT PRESENT  
+<Creds/>  
+  
+TD 
+W02  
+PAYER/PAYEE .CREDS.CRED MUST BE PRESENT  
+  
+  
+TD 
+W03  
+PAYER/PAYEE.CRED DATA IS WRONG  
+  
+  
+TD 
+W04  
+PAYER/PAYEE .CRED.AADHAR MUST BE PRESENT  
+  
+  
+TD 
+W05  
+PAYER/PAYEE .CRED.OTP MUST BE PRESENT  
+  
+  
+TD 
+W06  
+PAYER/PAYEE .CRED.PIN MUST BE PRESENT  
+  
+  
+TD 
+W07  
+PAYER/PAYEE .CRED.CARD MUST BE PRESENT  
+  
+  
+TD 
+W08  
+PAYER/PAYEE .CRED.PREAPPROVED MUST BE PRESENT  
+  
+  
+TD 
+W09  
+PAYER/PAYEE .CRED.DATA MUST BE PRESENT  
+  
+  
+TD 
+W10  
+PAYER/PAYEE . .CRED.DATA ENCRYPTED AUTHENTICATION MUST 
+BE PRESENT  
+  
+  
+TD 
+BUSINESS VALIDATION: ELEMENT < CREDS /> TAG IS MANDATORY.  
+N01 - N10  
+SAME VALIDATION LIKE CREDS.  
+<NewCred/>  
+  
+TD 
+
+UPI Error and Response Codes 
+ Page 43 of 72 Public - UPI V 2.9 
+  
+BUSINESS VALIDATION: ELEMENT < NEWCRED /> TAG IS MANDATORY.  
+ 
+ 
+4.3.9 Meta API : ReqChkTxn  
+  
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+U17  
+PSP IS NOT REGISTERED  
+<Head/>  
+orgId  
+BD 
+U52  
+PSP ORGID NOT FOUND  
+<Head/>  
+orgId  
+TD 
+Z02  
+VER NUMERIC/DECIMAL MIN LENGTH 1 MAX LENGTH 6  
+<Head/>  
+ver  
+TD 
+Z03  
+TS MUST BE ISO_ZONE FORMAT  
+<Head/>  
+Ts  
+TD 
+Z06  
+MSGID MUST BE PRESENT MAXLENGTH 35  
+<Head/>  
+msgId  
+TD 
+BUSINESS VALIDATION: API EXPECTED TO HAVE <HEAD/> ELEMENT. ATTRIBUTE VER & TS WILL BE VALIDATED IF CONTAINS DATA.  
+ATTRIBUTE ORGID IS REQUIRED AND HAS TO BE REGISTERED WITH NPCI. ATTRIBUTE MSGID IS REQUIRED.  
+X01  
+TXN NOT PRESENT  
+<Txn/>  
+  
+TD 
+X02  
+TXN.ID MUST BE PRESENT MAXLENGTH 35  
+  
+id  
+TD 
+X03  
+TXN.NOTE ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 50  
+  
+note  
+TD 
+X04  
+TXN.REFID ALPHANUMERIC; MINLENGTH 1 MAXLENGTH 35  
+  
+refId  
+TD 
+X06  
+TXN.TS MUST BE ISO_ZONE FORMAT  
+  
+ts  
+TD 
+X07  
+TXN.TYPE MUST BE PRESENT/VALID  
+  
+type  
+TD 
+X08 
+TXN.ORGTXNDATE  MUST BE PRESENT 
+ 
+orgTxnDate 
+TD 
+X09 
+TXN.ORGTXNDATE  SHOULD BE WITHIN 90 DAYS 
+ 
+orgTxnDate 
+TD 
+IM0 
+INITIATIONMODE SHOULD BE PRESENT AND VALUE(00-14) 
+ 
+initiationMode 
+TD 
+T16 
+IF SUBTYPE = MANDATE, THEN UMN IS MANDATORY 
+ 
+umn 
+TD 
+BUSINESS VALIDATION: ELEMENT <TXN/> TAG IS MANDATORY. ATTRIBUTE ID & TYPE ARE MANDATORY. OTHER ATTRIBUTES WILL BE VALIDATED IN 
+DATA GIVEN.  
+ 
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 44 of 72 Public - UPI V 2.9 
+  
+4.3.10 Few other Meta Msg Code  
+  
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+BA1 
+ TXN.TYPE MUST BE PRESENT/VALID 
+<Txn/> 
+code 
+TD 
+BA2 
+AMOUNT TAG MUST BE PRESENT. 
+<Amount/> 
+ 
+TD 
+BA3 
+BAL.DATA SHOULD BE PRESENT/VALID IF TXN.TYPE=BALCHK 
+<Bal/> 
+ 
+TD 
+F01 
+REGDETAILS MUST BE PRESENT  
+<ReqRegMob/> 
+ 
+TD 
+F02 
+REGDETAILS.DETAIL MUST BE PRESENT  
+ 
+addr 
+TD 
+F03 
+REGDETAILS.DETAIL NAME/VALUE SHOULD BE PRESENT  
+ 
+name 
+TD 
+F04 
+REGDETAILS.DETAIL NAME NOT VALID  
+ 
+seqNum 
+TD 
+F05 
+REGDETAILS.CRED NOT PRESENT  
+ 
+code 
+TD 
+F06 
+REGDETAILS.CRED DATA IS WRONG  
+ 
+type 
+TD 
+F07 
+REGDETAILS.CRED.OTP MUST BE PRESENT  
+ 
+ 
+TD 
+F08 
+REGDETAILS.CRED.PIN MUST BE PRESENT  
+ 
+identity 
+TD 
+F09 
+REGDETAILS.CRED.DATA MUST BE PRESENT  
+ 
+type 
+TD 
+F10 
+REGDETAILS.CRED.DATA ENCRYPTED AUTHENTICATION  
+MUST BE PRESENT  
+ 
+verifiedName 
+TD 
+FM2 
+REGDETAILS.TYPE MUST BE FORMAT2 
+ 
+type 
+TD 
+G01 
+HBTMSG MUST BE PRESENT  
+<HbtMsg/> 
+verifiedAddress 
+TD 
+G02 
+HBTMSG.TYPE MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G03 
+VALUE NOT VALID FOR HBTMSG.TYPE  
+ 
+ 
+TD 
+G04 
+VALUE NOT VALID FOR HBTMSGRESP.RESULT  
+<RespHbt/> 
+name,value 
+TD 
+G05 
+VALUE NOT VALID FOR HBTMSGRESP.ERRORCODE  
+ 
+ 
+TD 
+G11 
+VAELIST.VAE.OP/NAME MUST BE PRESENT/VALID  
+<ReqManageVae/> 
+ 
+TD 
+G12 
+VAELIST.VAE.NAME MUST BE PRESENT, MAXLENGTH 99  
+ 
+ 
+TD 
+G13 
+VAELIST.VAE.ADDR MUST BE VALID VPA, MAXLENGTH 255  
+ 
+name,value 
+TD 
+
+UPI Error and Response Codes 
+ Page 45 of 72 Public - UPI V 2.9 
+  
+G14 
+VAELIST.VAE.LOGO MUST BE VALID, MAXLENGTH 255  
+ 
+ 
+TD 
+G15 
+VAELIST.VAE.URL MUST BE VALID URL, MAXLENGTH 255  
+ 
+ 
+TD 
+G17 
+ VAELIST.VAE.KEY.CODE MUST BE PRESENT 
+<key/> 
+code 
+TD 
+G18 
+ VAELIST.VAE.KEY.TYPE MUST BE PRESENT 
+ 
+type 
+TD 
+G19 
+ VAELIST.VAE.KEY.KI MUST BE PRESENT 
+ 
+ki 
+TD 
+G20 
+ VAELIST.VAE.KEY.KEYVALUE MUST BE PRESENT 
+<keyValue/> 
+ 
+TD 
+G21 
+REQMSG MUST BE PRESENT  
+<ReqMsg/> 
+ 
+TD 
+G22 
+REQMSG.TYPE MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G23 
+VALUE NOT VALID FOR REQMSG.TYPE  
+ 
+ 
+TD 
+G24 
+REQMSG.ADDR MUST BE VALID VPA, MAXLENGTH 255  
+ 
+ 
+TD 
+G25 
+CERTIFICATE NOT FOUND  
+ 
+ 
+TD 
+G26 
+SIGNATURE ERROR  
+ 
+ 
+TD 
+G27 
+SIGNATURE MISMATCH  
+ 
+ 
+TD 
+G51 
+RESP.MERCHANT MUST BE PRESENT  
+ 
+ 
+TD 
+G52 
+RESP.MSGID MUST BE PRESENT, MAXLENGTH 35  
+ 
+ 
+TD 
+G53 
+RESP.RESULT MUST BE PRESENT ALPHANUMERIC,  
+MIN LENGTH 1, MAX LENGTH 20  
+ 
+ 
+TD 
+G54 
+RESP.ERRORCODE MUST BE PRESENT  
+ 
+ 
+TD 
+G55 
+RESP.ERRORCODE SHOULD NOT BE PRESENT  
+ 
+ 
+TD 
+G56 
+RESP.MASKNAME MUST BE PRESENT; MINLENGTH 1, MAXLENGTH 
+99  
+ 
+ 
+TD 
+G61 
+PAYER.INFO MUST BE PRESENT  
+ 
+ 
+TD 
+G62 
+PAYER.INFO.IDENTITY MUST BE PRESENT  
+ 
+ 
+TD 
+G63 
+PAYER.INFO.IDENTITY.TYPE MUST BE PRESENT,  
+MINLENGTH 1, MAXLENGTH 20  
+ 
+ 
+TD 
+G64 
+PAYER.INFO.IDENTITY VERIFIEDNAME MUST BE PRESENT,  
+ALPHANUMERIC, MINLENGTH 1, MAXLENGTH 99  
+ 
+ 
+TD 
+G65 
+PAYER.INFO.RATING VERIFIEDADDRESS MUST BE PRESENT,  
+MINLENGTH 1, MAXLENGTH 5  
+ 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 46 of 72 Public - UPI V 2.9 
+  
+G66 
+ACCOUNT REFERENCE NUMBER MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G67 
+ACCOUNT TYPE MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G68 
+ACCOUNT AEBA MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G69 
+ACCOUNT MBEBA MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G70 
+ACCOUNT IFSC MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G71 
+MASKED ACCOUNT NUMBER MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G72 
+ACCOUNT MMID MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G73 
+CREDS ALLOWED MUST BE PRESENT/VALID  
+ 
+ 
+TD 
+G74 
+INCORRECT CRED SUBTYPE FOR THE MOBILE BANKING 
+REGISTRATION FORMAT USED 
+ 
+ 
+BD 
+G75 
+ACCOUNT NAME MUST BE PRESENT 
+<Account/> 
+name 
+TD 
+G76 
+AADHAAR NUMBER MUST BE PRESENT IF AEBA=Y AND 
+AADHAARCONSENT=Y 
+ 
+aadhaarNo 
+TD 
+G77 
+RESP.CODE MUST BE PRESENT/VALID 
+<Resp/> 
+code 
+TD 
+G78 
+RESP.TYPE MUST BE PRESENT/VALID 
+ 
+type 
+TD 
+G79 
+RESP.IFSC MUST BE PRESENT/VALID 
+ 
+ifsc 
+TD 
+G80 
+RESP.IIN MUST BE PRESENT/VALID 
+ 
+iin 
+TD 
+G81 
+RESP.SECUREPINURL MUST BE OF MINLENGTH 1 MAXLENGTH 100 
+ 
+securePinUrl 
+TD 
+G82 
+PAYER REQIDDETAILS. NOT PRESENT 
+ 
+ 
+TD 
+G83 
+PAYER REQIDDETAILS.IDS NOT PRESENT 
+ 
+ 
+TD 
+G84 
+REQIDDETAILS.ID.NAME VALUE MUST BE PRESENT 
+ 
+ 
+TD 
+G85 
+REQIDDETAILS.ID.NAME VALUE MUST BE PRESENT MINLENGTH 
+M,MAXLENGTH N 
+ 
+ 
+TD 
+G86 
+RESPIDDETATILS NOT PRESENT 
+ 
+ 
+TD 
+G87 
+RESPIDDETAILS.ID NOT PRESENT 
+ 
+ 
+TD 
+G88 
+RESPIDDETAILS.ID DETAILS NOT PRESENT 
+ 
+ 
+TD 
+G89 
+PAYER RESPIDDETAILS.ID NAME/VALUE MUST BE PRESENT AND 
+VALID  
+ 
+ 
+TD 
+G90 
+ID DETAILS VALUE MUST BE PRESENT FOR DETAIL NAME 
+ 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 47 of 72 Public - UPI V 2.9 
+  
+G91 
+ID DETAIL VALUE INCORRECT FORMAT FOR DETAIL NAME 
+ 
+ 
+TD 
+G94 
+PAYER PAN DIFFERS FROM ORGIGINAL REQUEST 
+ 
+ 
+TD 
+G95 
+PAYER UMN DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+G96 
+ID PAN/AADHAR/VOTERID/DRIVINGLICENSE ALLOWED ONLY IF 
+TXNTYPE IS VALCUST 
+ 
+ 
+TD 
+G97 
+ID UMN ALLOWED ONLY IF TXNTYPE IS MANDATE NOTIFICATION 
+ 
+ 
+TD 
+G98 
+ID ACNATURE/ACHOLDER ALLOWED ONLY IF TXNTYPE IS 
+VALCUST 
+ 
+ 
+TD 
+J01 
+PAYEE NOT PRESENT  
+< Payee/> 
+ 
+TD 
+J02 
+PAYEE.ADDR MUST BE VALID VPA, MAXLENGTH 255  
+ 
+ 
+TD 
+J03 
+PAYEE.NAME ALPHANUMERIC, MINLENGTH 1 MAXLENGTH 99  
+ 
+ 
+TD 
+J04 
+PAYEE.SEQNUM NUMERIC, MINLENGTH 1 MAXLENGTH 3  
+ 
+ 
+TD 
+J07 
+PAYEE.CODE NUMERIC OF LENGTH 4  
+ 
+ 
+TD 
+J08 
+PAYEE.TYPE MUST BE VALID  
+NOT REQUIRED BUT 
+ VALIDATED IF GIVEN 
+ 
+TD 
+K16 
+REQUESTED PSP KEY IS NOT PRESENT IN UPI 
+<ReqListKey/> 
+ 
+TD 
+K16 
+REQUSETED PSP KEY IS NOT PRESENT IN UPI  
+ 
+ 
+TD 
+KI1 
+VAE.KEY.TAGS MUST BE PRESENT 
+<Key/> 
+code 
+TD 
+KI2 
+KEY.CODE MUST BE PRESENT, MINLENGTH 1, MAXLENGTH 20 
+ 
+type 
+TD 
+KI3 
+KEY.TYPE MUST BE PRESENT, MINLENGTH 1, MAXLENGTH 20 
+ 
+ki 
+TD 
+KI4 
+KEY.KI MUST BE PRESENT IN FORMAT YYYYMMDD 
+<KeyValue/> 
+ 
+TD 
+KI5 
+KEY.KEYVALUE MUST BE PRESENT. 
+ 
+ 
+TD 
+O01 
+PAYER/PAYEE.INFO MUST BE PRESENT  
+<Info/> 
+ 
+TD 
+O02 
+PAYER/PAYEE .INFO.IDENTITY MUST BE PRESENT  
+ 
+ 
+TD 
+O03 
+PAYER/PAYEE.INFO.IDENTITY.TYPE MUST BE PRESENT, MINLENGTH 
+1, MAXLENGTH 20  
+ 
+ 
+TD 
+O04 
+PAYER/PAYEE .INFO.IDENTITY VERIFIEDNAME MUST BE PRESENT,  
+ALPHANUMERIC, MINLENGTH 1, MAXLENGTH 99  
+ 
+ 
+TD 
+O05 
+PAYER/PAYEE .INFO.RATING WHITELISTED MUST BE PRESENT, 
+MINLENGTH 1, MAXLENGTH 5  
+ 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 48 of 72 Public - UPI V 2.9 
+  
+P07 
+PAYER.BAL MUST BE PRESENT 
+ 
+balance 
+TD 
+P08 
+PAYER.BAL.DATA MUST BE PRESENT 
+ 
+value 
+TD 
+PT1 
+PTYPE TAG VALUE SHOULD BE UPIMANDATE 
+ 
+pType 
+TD 
+PV1 
+PSP DOES NOT SUPPORT VERSION VALCUST 2.4 
+ 
+ 
+TD 
+PV2 
+PAYER PSP DOES NOT SUPPORT VERSION VALCUST 2.4 
+ 
+ 
+TD 
+PV3 
+PAYEE PSP DOES NOT SUPPORT VERSION VALCUST 2.4 
+ 
+ 
+TD 
+PV4 
+REMIT PSP DOES NOT SUPPORT VERSION VALCUST 2.4 
+ 
+ 
+TD 
+PV5 
+BENEFICIARY PSP DOES NOT SUPPORT VERSION VALCUST 2.4 
+ 
+ 
+TD 
+PY2 
+PAYEE.AADR DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PY4 
+PAYEE.CODE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+Q01 
+PAYER/PAYEE.DEVICE MUST BE PRESENT  
+<Device/> 
+ 
+TD 
+Q02 
+PAYER/PAYEE. DEVICE.TAGS MUST BE PRESENT  
+ 
+ 
+TD 
+Q03 
+PAYER/PAYEE.TAG.DEVICE.NAME/VALUE MUST BE PRESENT  
+ 
+ 
+TD 
+Q04 - Q12 
+SAME VALIDATION MESSAGE BASED ON DEVICE TYPE  
+ 
+ 
+TD 
+Q13 
+PAYEE.AMOUNT IS NOT ALLOWED ONLY IF TXNTYPE IS NOT 
+MANDATE NOTIFICATION  
+ 
+ 
+TD 
+Q14 
+PAYER AMOUNT IS NOT ALLOWED ONLY IF TXNTYPE IS 
+VALCUST/MANDATENOTIFICATION 
+ 
+ 
+TD 
+TT4 
+VERSION 2.0  LIST_PSP_KEYS TAGS NOT SUPPORTED IN 1.0 
+ 
+ 
+TD 
+UA2 
+VERSION/TAGS SENT NOT SUPPORTED BY PSP/BANK 
+ 
+ 
+TD 
+UB7 
+OTHER BANK/PSP IS NOT SUPPORTED IN 2.0 VERSION 
+ 
+ 
+TD 
+UH1 
+HEADER VERSION MISMATCHED 
+ 
+ 
+TD 
+UV2 
+REQRESP VERSION MISMATCHED 
+ 
+ 
+TD 
+ 
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 49 of 72 Public - UPI V 2.9 
+  
+ 4.3.11 Mandate Codes 
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+HV0 
+HEADER MUST BE PRESENT 
+ 
+ 
+TD 
+HV1 
+HEADER VER DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+HV2 
+HEADER TS MUST BE PRESENT 
+ 
+ 
+TD 
+HV3 
+ORGID DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+HV4 
+HEADER MSGID DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MA0 
+MANDATE NOT PRESENT 
+<Mandate/> 
+ 
+BD 
+MA1 
+MANDATE.NAME ALPHANUMERIC; MINLENGTH 1 , MAXLENGTH 
+99 
+ 
+name 
+TD 
+MA2 
+MANDATE.TXNID MUST BE PRESENT, MUST BE 35 CHARACTERS OF 
+ALPHANUMERIC 
+ 
+txnId 
+TD 
+MA3 
+MANDATE.TXNID AND TXN.ID MUST BE SAME  
+ 
+ 
+TD 
+MA4 
+MANDATE.UMN MUST BE PRESENT 
+ 
+umn 
+TD 
+MA5 
+MANDATE.UMN MUST BE PRESENT, LENGTH 32  
+ 
+umn 
+TD 
+MA6 
+MANDATE.TS MUST BE PRESENT AND SHOULD BE IN ISO_ZONE 
+FORMAT 
+ 
+ts 
+TD 
+MA7 
+MANDATE.REVOKEABLE MUST BE PRESENT,  
+REVOKABLE.TYPE MUST BE Y OR N 
+ 
+revokeable 
+TD 
+MA8 
+MANDATE.SHARETOPAYEE 'N' IS APPLICABLE ONLY FOR ONETIME 
+RECURRENCE PATTERN AS WELL AS FOR PAYER INITIATED 
+TRANSACTIONS ONLY 
+ 
+shareToPayee 
+BD 
+MA9 
+MANDATE.VALIDITY MUST BE PRESENT 
+<Validity/> 
+ 
+TD 
+MA10 
+MANDATE.UMN MUST BE PRESENT 
+ 
+ 
+TD 
+MA11 
+MANDATE.UMN SHOULD NOT BE PRESENT FOR PAYEE INITIATED 
+TRANSACTION 
+ 
+ 
+TD 
+MB0 
+MANDATE.VALIDITY.START MUST BE PRESENT, DATE FORMAT 
+DDMMYYYY, START DATE MUST BE TODAY'S DATE OR LATER 
+ 
+start 
+TD 
+MB1 
+MANDATE.VALIDITY.END MUST BE PRESENT, DATE FORMAT 
+DDMMYYYY, END DATE MUST BE GREATER THAN TODAY'S DATE 
+ 
+end 
+TD 
+
+UPI Error and Response Codes 
+ Page 50 of 72 Public - UPI V 2.9 
+  
+MB2 
+MANDATE.AMOUNT MUST BE PRESENT, VALUE AND RULE 
+SHOULD NOT BE EMPTY 
+<Amount/> 
+value 
+TD 
+MB3 
+MANDATE.AMOUNT.RULE MUST BE PRESENT, RULE MUST BE 
+EXACT/MAX 
+ 
+rule 
+TD 
+MB4 
+MANDATE.RECURRENCE MUST BE PRESENT, 
+MANDATE.RECURRENCE.PATTERN MUST BE ONETIME OR DAILY 
+OR WEEKLY 
+<Recurrence/> 
+pattern 
+TD 
+MB5 
+MANDATE.RECURRENCE.RULE MUST BE PRESENT, 
+MANDATE.RECURRENCE.RULE.TYPE MUST BE AFTER OR ON OR 
+BEFORE 
+ 
+ 
+TD 
+MB6 
+MANDATE.RECURRENCE.RULE MUST BE PRESENT, 
+MANDATE.RECURRENCE.RULE.VALUE IN BETWEEN 1 TO 7 ONLY 
+WHEN MANDATE.RECURRENCE.PATTERN IS WEEKLY 
+ 
+ 
+TD 
+MB7 
+MANDATE.RECURRENCE.RULE NOT APPLICABLE FOR 
+MANDATE.RECURRENCE.PATTERN 
+ONETIME/DAILY/WEEKLY/FORTNIGHTLY/MONTHLY/              
+BIMONTHLY/QUARTERLY/HALFYEARLY/YEARLY/ASPRESENTED 
+ 
+ 
+TD 
+MB8 
+MANDATE RECURRENCE PATTERN.BLOCK=N IS ALLOWED ONLY IF 
+THE PURPOSE CODE=14 
+ 
+ 
+TD 
+MB9 
+MANDATE RECURRENCE PATTERN. REVOKABLE=Y, ONLY Y IS 
+ALLOWED  IF THE PURPOSE CODE=14 
+ 
+ 
+TD 
+MC3 
+MANDATE.UMN CANNOT BE GENERATED BY PAYEE 
+<Mandate/> 
+umn 
+TD 
+MC4 
+GLOBAL ADDRESS NOT SUPPORTED IN MANDATE 
+<Payer/> 
+<Payee/> 
+addr 
+BD 
+MN0 
+MANDATE TAG DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN1 
+MANDATE.NAME DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN2 
+MANDATE.TXNID DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN3 
+MANDATE.UMN DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN4 
+MANDATE.TS DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN5 
+MANDATE.REVOKEABLE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN6 
+MANDATE.SHARETOPAYEE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN7 
+MANDATE.BLOCKFUND DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MN8 
+MANDATE.TYPE DIFFERS FROM ORIGINAL REQUEST, 
+MANDATE.AMOUNT DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 51 of 72 Public - UPI V 2.9 
+  
+MN9 
+MANDATE.RECURRENCE.PATTERN DIFFERS FROM ORIGINAL 
+REQUEST 
+ 
+ 
+TD 
+VZ1 
+MANDATE.RECURRENCE RULE TAG SHOULD NOT BE PRESENT-
+REMITTER BANK NOT CERTIFIED FOR 2.7 
+ 
+ 
+BD 
+VZ2 
+MANDATE.RECURRENCE RULE TAG SHOULD NOT BE PRESENT- 
+BENEFICIARY BANK NOT CERTIFIED FOR 2.7 
+ 
+ 
+BD 
+VZ3 
+MANDATE RECURRENCE RULE TAG SHOULD NOT BE PRESENT- 
+PAYER PSP NOT CERTIFIED FOR 2.7 
+ 
+ 
+BD 
+VZ4 
+MANDATE RECURRENCE RULE TAG SHOULD NOT BE PRESENT – 
+PAYEE PSP NOT CERTIFIED FOR 2.7 
+ 
+ 
+BD 
+MP0 
+BLOCKFUND IS ALLOWED ONLY IF THE PURPOSE=01 
+ 
+ 
+BD 
+MP1 
+BLOCKFUND=Y IS ALLOWED FOR CREATE/UPDATE AND 
+BLOCKFUND=N IS ALLOWED FOR REVOKE 
+ 
+ 
+BD 
+MP2 
+MANDATE.AMOUNT CAN ONLY BE UPDATED IF PURPOSE=01 
+ 
+ 
+BD 
+MP3 
+RECURRENCE PATTERN IS ALWAYS ONETIME IF PURPOSE=01 
+ 
+ 
+BD 
+MP4 
+AMOUNT RULE SHOULD BE ALWAYS MAX IF PURPOSE=01 
+<Mandate/> 
+ 
+BD 
+MP5 
+SHARETOPAYEE=Y FOR PAYER INITIATED IF PURPOSE=01 
+ 
+ 
+BD 
+MP6 
+PAYER PSP DOES NOT SUPPORT VERSION MANDATE 2.1 
+ 
+ 
+BD 
+MP7 
+PAYEE PSP DOES NOT SUPPORT VERSION MANDATE 2.1 
+ 
+ 
+BD 
+MP8 
+REMITTER BANK DOES NOT SUPPORT VERSION MANDATE 2.1 
+ 
+ 
+BD 
+MP9 
+BENIFICIARY BANK DOES NOT SUPPORTS VERSION MANDATE 2.1 
+ 
+ 
+BD 
+MV0 
+MANDATE.VALIDITY DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MV1 
+MANDATE.VALIDITY.START DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+MV2 
+MANDATE.VALIDITY.END DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PA0 
+PAYER/PAYEES.AC DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PA1 
+PAYER/PAYEES.AC.ADDRTYPE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PA2 
+PAYER/PAYEES.AC.DETAILS DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PA3 
+PAYER/PAYEES.ACCOUNT DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PR0 
+PAYER DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PR1 
+PAYER.ADDR DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 52 of 72 Public - UPI V 2.9 
+  
+PR2 
+PAYER.NAME DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PR3 
+PAYER.CODE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PR4 
+PAYER.SEQNUM DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PR5 
+PAYER.TYPE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PY1 
+PAYEES.NAME  DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PY2 
+PAYEES.ADDR DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PY3 
+PAYEES.SEQNUM DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PY4 
+PAYEE CODE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+PY5 
+PAYEES.TYPE DIFFERS FROM ORIGINAL REQUEST 
+ 
+ 
+TD 
+RM1 
+REQMANDATE MUST BE PRESENT, UMN SHOULD BE ALWAYS 
+CREATED BY PAYER (REQAUTHMANDATE) 
+ 
+ 
+ 
+TD 
+RM2 
+UMN HANDLER AND ORG ID SHOULD BE SAME 
+(REQAUTHMANDATE) 
+ 
+ 
+TD 
+RM3 
+TXNID AND MANDATE TXNID SHOULD BE SAME 
+(REQAUTHMANDATE) 
+ 
+ 
+TD 
+RM5 
+PAYEE INITIATED MANDATE SHOULD NOT HAVE SHARETOPAYEE 
+TAG (REQAUTHMANDATE) 
+ 
+ 
+TD 
+RM7 
+VALIDITY START DATE SHOULD BE GREATER THAN OR EQUAL TO 
+THE CURRENT DATE (REQAUTHMANDATE) 
+ 
+ 
+TD 
+RM8 
+VALIDITY END DATE SHOULD BE GREATER THAN OR EQUAL TO 
+THE CURRENT DATE (REQAUTHMANDATE) 
+ 
+ 
+TD 
+RM9 
+SHARETOPAYEE SHOULD BE ALLOWED ONLY FOR PAYER AND 
+RECURRENCE PATTERN SHOULD BE "ONETIME" FOR BOTH 
+PAYER/PAYEE (REQAUTHMANDATE) 
+ 
+ 
+BD 
+RM11 
+BLOCKFUND SHOULD BE "Y" WHEN MANDATE IS CREATE/UPDATE 
+(REQAUTHMANDATE) 
+ 
+ 
+TD 
+UO0 
+REMITTER BANK NOT REGISTERED (MANDATE) 
+ 
+ 
+BD 
+UO1 
+BENEFICIARY BANK NOT REGISTERED (MANDATE) 
+ 
+ 
+BD 
+UO3 
+PSP does not supports version mandate 2.1 
+ 
+ 
+BD 
+UO4 
+ReqMandateConfirmation  negative Ack received from Payee 
+ 
+ 
+TD 
+UO5 
+Final Response Mandate  negative Ack received from Payer 
+ 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 53 of 72 Public - UPI V 2.9 
+  
+UO7 
+Mandate OrgId or UMN address not matched with Payer VPA 
+Address 
+ 
+ 
+TD 
+UO8 
+Mandate UMN address either not Active or not Exists 
+ 
+ 
+TD 
+UO9 
+Mandate UMN address exists already 
+ 
+ 
+TD 
+MX0 
+ReqAuthMandate API Not Supported By Bank 
+ 
+ 
+BD 
+MX1 
+RespAuthMandate API Not Supported By Bank 
+ 
+ 
+BD 
+MX2 
+RespMandate API Not Supported By Bank 
+ 
+ 
+BD 
+MX3 
+RespMandateConfirmation API Not Supported By Bank 
+ 
+ 
+BD 
+MX4 
+ReqAuthMandate API Not Supported By Bank 
+ 
+ 
+BD 
+MX5 
+ReqMandateConfirmation API Not Supported By Bank 
+ 
+ 
+BD 
+VZ6 
+Payer PSP not certified for Mandate use case 
+ 
+ 
+BD 
+VZ8 
+Remitter bank not certified for Mandate use case 
+ 
+ 
+BD 
+4.3.12 Online Refund Codes 
+Error Code 
+Message Details 
+Element/ TAG Name 
+Attribute 
+TD/BD 
+OR1 
+REFUND IS ALLOWED ONLY FOR 2.0 
+<Txn/> 
+type 
+BD 
+OR2 
+TXN.ORGTNXID MUST BE PRESENT/ VALID FOR REFUND; 
+ALPHANUMERIC; MINLENGTH 1 , MAXLENGTH 35 
+GOING SUCCESS 
+ 
+orgTxnId 
+TD 
+OR3 
+TXN.ORGTNXDATE MUST BE PRESENT/ VALID FOR REFUND 
+ 
+orgTxnDate 
+TD 
+OR4 
+TXN.ORGRRN MUST BE PRESENT/ VALID FOR REFUND; NUMERIC; 
+LENGTH 12 
+ 
+orgRrn 
+TD 
+OR5 
+PAYEE.GLOBAL ADDRESS MUST BE ACCT NUMBER AND IFSC ONLY 
+FOR REFUND 
+<Payee/> 
+address 
+TD 
+OR6 
+PAYEE ACCOUNT DETAILS MUST BE PRESENT OR VPA MUST BE 
+GLOBAL ADDRESS(A/C NO &AMP; IFSC) . 
+ 
+account 
+TD 
+OR7 
+PAYER MUST BE ENTITY FOR TYPE REFUND 
+<Payer/> 
+type 
+TD 
+OR8 
+PAYEE MUST BE PERSON FOR TYPE REFUND 
+<Payee/> 
+type 
+TD 
+OR9 
+PAYER.CRED.PREAPPROVED MUST BE PRESENT 
+< Cred /> 
+ 
+TD 
+
+UPI Error and Response Codes 
+ Page 54 of 72 Public - UPI V 2.9 
+  
+R10 
+Payee redundant or duplicate payment instrument 
+<Payer/> 
+account 
+TD 
+R13 
+TXN.ORGTNXID MUST BE PRESENT/ VALID FOR REFUND; 
+ALPHANUMERIC; MINLENGTH 1 , MAXLENGTH 35 
+<Txn/> 
+orgTxnId 
+TD 
+R14 
+TXN.ORGTNXDATE MUST BE PRESENT/ VALID FOR REFUND 
+ 
+orgTxnDate 
+TD 
+R15 
+ TXN.ORGRRN MUST BE PRESENT/ VALID FOR REFUND; NUMERIC; 
+LENGTH 12 
+ 
+orgRrn 
+TD 
+R19 
+INITIATOR PSP MUST SUPPORT VERSION 2.2 FOR REFUND 
+<Head/> 
+version 
+TD 
+R20 
+BENEFICIARY BANK MUST SUPPORT VERSION 2.2 FOR REFUND 
+<Account/> 
+IFSC 
+TD 
+R21 
+ONLINE REFUND IS DISABLED IN UPI 
+<Txn/> 
+type 
+BD 
+R23 
+PAYER AND PAYEE AMOUNT MUST BE SAME 
+<Payer/> 
+amount 
+TD 
+R24 
+PAYER ACCOUNT DETAILS MUST BE PRESENT 
+<Account/> 
+ 
+TD 
+R25 
+MULTIPLE PAYEES NOT ALLOWED FOR REFUND 
+ 
+ 
+TD 
+R26 
+TXN.UMNEXECTS MUST BE PRESENT/VALID AND ISO_ZONE 
+FORMAT 
+ 
+ 
+TD 
+X10 
+TXN.ORGTXNID/ORGRRN/UMNEXECTS ALLOWED ONLY IF 
+TXN.TYPE IS MANDATENOTIFICATION 
+ 
+ 
+TD 
+4.3.13 PAN Validation 
+Error Code 
+Message Details 
+TD/BD 
+A15 
+Response Received before Ack 
+TD 
+U97 
+No Ack for ReqAuthValCust 
+TD 
+U98 
+Null Ack for ReqAuthValCust 
+TD 
+U99 
+Neg Ack for ReqAuthValCust 
+TD 
+UC1 
+No response for ReqAuthValCust 
+TD 
+UC2 
+No Ack for ReqValCust 
+TD 
+UC3 
+Null Ack for ReqValCust 
+TD 
+UC4 
+Neg Ack for ReqValCust 
+TD 
+UC5 
+No response for ReqValCust 
+TD 
+ 
+
+UPI Error and Response Codes 
+ Page 55 of 72 Public - UPI V 2.9 
+  
+(NOTE – Error codes U97, U98, U99 are applicable for all Meta APIs. Same highlighted here specifically for ValCust Meta API.) 
+4.3.14 UPI Global 
+Error Code 
+Message Details 
+TD/BD 
+UG1 
+Response Activation TimeOut 
+TD 
+UG3 
+Response ValQR TimeOut 
+TD 
+UG5 
+FOREX Error in ValQR 
+TD 
+UG6 
+QR Payload not found 
+TD 
+PM12 
+PAYEE_FOREX_INFO_INVALID 
+TD 
+PM14 
+Request timeout scenario for UPI International 
+BD 
+PM15 
+INCORRECT_AMOUNT_CALCULATION 
+TD 
+4.3.15 UDIR 
+Error Code 
+(by UPI) 
+Message Details 
+TD/BD 
+C15 
+Only Beneficiary can initiate Preapproved Refund. 
+BD 
+C24 
+Complaint Not Present 
+TD 
+C25 
+Complaint ReqAdjFlag not present 
+TD 
+C26 
+Complaint ReqAdjCode not present 
+TD 
+E13 
+Resp.AdjCode should be present 
+TD 
+E10 
+Ref adjAmt should be within 18 digits including 2 decimal 
+TD 
+E15 
+Ref approvalNum is mandatory & text 
+TD 
+E20 
+Resp.AdjFlag should be present 
+TD 
+R14 
+Txn.OrgTxnDate must be present/ valid 
+TD 
+T08 
+Txn.getOrgTxnId must be present/ valid; alphanumeric; minlength 1 , maxlength 35 
+TD 
+T14 
+PURPOSE SHOULD BE PRESENT VALID VALUE 
+TD 
+V01 
+ReqAdjAmount must be present 
+TD 
+
+UPI Error and Response Codes 
+ Page 56 of 72 Public - UPI V 2.9 
+  
+V03 
+ReqAdjAmount must be within 18 digits including 2 decimal 
+TD 
+UU1;UU2;UU3,UU4 
+Versioning - Complaint Rejected if bank not live (Flag - NAC) 
+TD 
+All Applicable UPI 
+Error Codes 
+Not Applicable Cases (Flag – NAC) 
+BD 
+4.3.16 Central Mapper 
+Error Code 
+Message Details 
+API 
+TD/BD 
+C30 
+Consent not present 
+ReqRegMapper, RegGetAdd 
+TD 
+C31 
+Cannot process request with Consent value other than Y 
+TD 
+C32 
+Consent name should be CMREGISTRATION 
+TD 
+C33 
+Please input proper Consent type 
+TD 
+V30 
+RegIdDetails must be present 
+TD 
+V31 
+Id must be present 
+TD 
+V32 
+Id name must be present 
+TD 
+V33 
+Id value must be present 
+TD 
+V34 
+Id must consist of alphanumeric characters only (Numeric ID) 
+TD 
+V35 
+Id must be larger than 6 digits 
+TD 
+V36 
+Id must not be of length 10/11/12  
+TD 
+V37 
+Id must be shorter than 16 digits 
+TD 
+V38 
+Id must not start with 0 
+TD 
+V39 
+Id must not end with same last three digits 
+TD 
+V40 
+Id must not contain same digits 
+TD 
+V41 
+Id must consist of alphanumeric characters only (Mobile Number) 
+TD 
+V42 
+Id must consist of proper 10 digit mobile number 
+TD 
+MM1 
+MAPPING_EXISTS 
+ReqRegMapper, RegGetAdd 
+TD 
+MM2 
+MAPPING_DOES_NOT_EXIST 
+ReqRegMapper, RegGetAdd 
+TD 
+MM3 
+MAPPING_BLOCKED 
+ReqRegMapper, RegGetAdd 
+TD 
+
+UPI Error and Response Codes 
+ Page 57 of 72 Public - UPI V 2.9 
+  
+MM4 
+MAPPING_INACTIVE 
+ReqRegMapper, RegGetAdd 
+TD 
+MM5 
+VPA_MAPPED_TO_ANOTHER_MOBILE 
+ReqRegMapper 
+TD 
+MM6 
+VPA_OF_DIFFERENT_ORG 
+ReqRegMapper, RegGetAdd 
+TD 
+MM7 
+MAPPING_ACTIVATION_NOT_ALLOWED 
+ReqRegMapper 
+TD 
+MM8 
+PREVVPA_NOT_SAME_AS_CACHE 
+ReqRegMapper 
+TD 
+MM9 
+CANNOT_ACTIVATE_DEREGISTERED_MOBILE 
+ReqRegMapper 
+TD 
+MM10 
+COOLING_PERIOD_NOT_OVER 
+ReqRegMapper 
+BD 
+MM11 
+TYPE_NOT_SUPPORTED_FOR_GETADD 
+ReqGetAdd 
+TD 
+MM12 
+TXN_SUBTYPE_ID_NO_REGIDDETAILS_PRESENT 
+ReqRegMapper, RegGetAdd 
+TD 
+MM13 
+PROPER_TXN_SUBTYPE_NOT_PRESENT 
+ReqRegMapper, RegGetAdd 
+TD 
+MM14 
+PROPER_TXN_TYPE_NOT_PRESENT 
+ReqRegMapper, RegGetAdd 
+TD 
+MM15 
+MAPPING_AGAINST_VPA_ABSENT 
+ReqRegMapper 
+TD 
+MM16 
+CANNOT_PORT_NUMERIC_ID 
+ReqRegMapper 
+TD 
+MM17 
+CHECK_ACTION_NOT_PERMITTED 
+ReqGetAdd 
+TD 
+MM18 
+ID_MAPPED_TO_DIFFERENT_VPA 
+ReqRegMapper 
+TD 
+MM19 
+PORT_ACTION_PROHIBITED 
+ReqRegMapper 
+ 
+MM20 
+VAULT_INACCESSIBLE 
+ReqRegMapper 
+ 
+MM21 
+CMID_ADDITION_PROHIBITED_BEYOND_THREE 
+ReqRegMapper 
+ 
+4.3.17 Prepaid Voucher 
+ 
+Error Code 
+Message Details 
+API 
+TD/BD 
+T28 
+Mandate Voucher amount should not exceed 
+ValAdd 
+BD 
+J10 
+ 
+Voucher Expired 
+ 
+BD 
+J11 
+ 
+Voucher Incorrect date format 
+ 
+BD 
+T30 
+PurposeCode should be "19" & InitiationMode "11|13" 
+BD 
+
+UPI Error and Response Codes 
+ Page 58 of 72 Public - UPI V 2.9 
+  
+ 
+IU0 
+ 
+UUID not present in the system 
+ 
+BD 
+T27 
+ 
+UUID Must be Valid, Alphanumeric, length must be either 32 or 36 before '@' 
+BD 
+J09 
+ 
+MCC Mismatch with Mandatecreation and ValAdd 
+ 
+BD 
+ 
+4.3.18 Aadhaar OTP 
+ 
+API Error Code  
+Description  
+TD/BD 
+A0 
+INVALID DETAILS  (mismatch between the details in ListAccount and ReqOtp/ No LK & AUA shared by remitter bank) 
+BD 
+ A20 
+BLANK/INVALID AADHAAR NUMBER  
+BD 
+UD1 
+UIDAI TIMEOUT 
+- 
+UD2 
+UIDAI DECLINE 
+- 
+ 
+4.3.19 UPI Lite  
+Error code 
+Description 
+TD/BD 
+UL1 
+LITE A/C not supplied  
+- 
+UL2 
+LITE pre-create not present – LRN is not created/Invalid LRN  
+- 
+UL3 
+LITE A/C not activated – Initiating transaction before activating the LRN 
+- 
+UL4 
+LITE ARQC generated failed GENERATE FAILED – Auth engine not able to generate ARPC during lite sync 
+- 
+UL5 
+LITE a/c deactivated  
+- 
+UL6 
+Lite Engine Unavailable /Down 
+- 
+
+UPI Error and Response Codes 
+ Page 59 of 72 Public - UPI V 2.9 
+  
+4.3.20 Credit Card on UPI  
+Error Code 
+Description  
+TD/BD 
+CC1 
+Credit Card Bin Mismatch  
+BD 
+CC2 
+Both Payer Payee Account is credit Card  
+BD 
+CC3 
+ICCW transaction are not allowed for payer account type credit card  
+BD 
+CC4 
+ERUPI transaction is not allowed for payer account type credit card  
+BD 
+CC5 
+FIR not allowed for payee/beneficiary account type credit card  
+BD 
+CC6 
+PAN validation not allowed for account type credit card 
+BD 
+CC7 
+Aadhaar OTP mode of PIN set not allowed for customer account type Credit Card 
+BD 
+CC8 
+Merchant mandatory attributes not present account type credit card  
+TD 
+4.3.21 E-RUPI & API Gateway 
+Note All reqmandate error code and response will be valid for API gateway as well 
+ 
+4.4 Errors from UPI Service Layer   
+API Error Code  
+Description  
+TD/BD 
+M16 
+AI MODEL DECLINE 
+BD 
+U01  
+THE REQUEST IS DUPLICATE  
+TD 
+U02  
+AMOUNT CAP IS EXCEEDED  
+BD 
+U03  
+NET DEBIT CAP IS EXCEEDED  
+BD 
+U04  
+REQUEST IS NOT FOUND  
+TD 
+U05  
+FORMATION IS NOT PROPER  
+TD 
+API Error Code  
+Description  
+TD/BD 
+MB7 
+Validity greater than 1 year not allowed 
+BD 
+MQ7 
+MCC Code Not Mapped with Purpose 
+BD 
+
+UPI Error and Response Codes 
+ Page 60 of 72 Public - UPI V 2.9 
+  
+U06  
+TRANSACTION ID IS MISMATCHED  
+TD 
+U07  
+VALIDATION ERROR  
+TD 
+U08  
+SYSTEM EXCEPTION  
+TD 
+U09  
+REQAUTH TIME OUT FOR PAY  
+TD 
+U10  
+ILLEGAL OPERATION  
+BD 
+U11  
+CREDENTIALS IS NOT PRESENT  
+BD 
+U12  
+AMOUNT OR CURRENCY MISMATCH  
+TD 
+U13  
+EXTERNAL ERROR  
+TD 
+U14  
+ENCRYPTION ERROR  
+TD 
+U15  
+CHECKSUM FAILED  
+TD 
+U16  
+RISK THRESHOLD EXCEEDED  
+BD 
+U17  
+PSP IS NOT REGISTERED  
+BD 
+U18  
+REQUEST AUTHORISATION ACKNOWLEDGEMENT IS NOT RECEIVED  
+TD 
+U19  
+REQUEST AUTHORISATION IS DECLINED  
+BD 
+U20  
+REQUEST AUTHORISATION TIMEOUT  
+TD 
+U21  
+REQUEST AUTHORISATION IS NOT FOUND  
+TD 
+U22  
+CM REQUEST IS DECLINED  
+TD 
+U23  
+CM REQUEST TIMEOUT  
+TD 
+U24  
+CM REQUEST ACKNOWLEDGEMENT IS NOT RECEIVED  
+TD 
+U25  
+CM URL IS NOT FOUND  
+TD 
+U26  
+PSP REQUEST CREDIT PAY ACKNOWLEDGEMENT IS NOT RECEIVED  
+TD 
+U27  
+NO RESPONSE FROM PSP  
+TD 
+U28  
+REMITTER BANK NOT AVAILABLE  
+TD 
+U29  
+ADDRESS RESOLUTION IS FAILED  
+NA 
+U30  
+DEBIT HAS BEEN FAILED  
+NA 
+U31  
+CREDIT HAS BEEN FAILED  
+NA 
+
+UPI Error and Response Codes 
+ Page 61 of 72 Public - UPI V 2.9 
+  
+U32  
+CREDIT REVERT HAS BEEN FAILED  
+TD 
+U33  
+DEBIT REVERT HAS BEEN FAILED  
+TD 
+U34  
+REVERTED  
+NA 
+U35  
+RESPONSE IS ALREADY BEEN RECEIVED  
+TD 
+U36  
+REQUEST IS ALREADY BEEN SENT  
+TD 
+U37  
+REVERSAL HAS BEEN SENT  
+TD 
+U38  
+RESPONSE IS ALREADY BEEN SENT  
+TD 
+U39  
+TRANSACTION IS ALREADY BEEN FAILED  
+TD 
+U40  
+IMPS PROCESSING FAILED IN UPI  
+TD 
+U41  
+IMPS IS SIGNED OFF  
+TD 
+U42  
+IMPS TRANSACTION IS ALREADY BEEN PROCESSED  
+TD 
+U43  
+IMPS IS DECLINED  
+NA 
+U44  
+FORM HAS BEEN SIGNED OFF  
+TD 
+U45  
+FORM PROCESSING HAS BEEN FAILED IN UPI  
+TD 
+U46  
+REQUEST CREDIT IS NOT FOUND  
+TD 
+U47  
+REQUEST DEBIT IS NOT FOUND  
+TD 
+U48  
+TRANSACTION ID IS NOT PRESENT  
+TD 
+U49  
+REQUEST MESSAGE ID IS NOT PRESENT  
+TD 
+U50  
+IFSC IS NOT PRESENT  
+BD 
+U51  
+REQUEST REFUND IS NOT FOUND  
+TD 
+U52  
+PSP ORGID NOT FOUND  
+BD 
+U53  
+PSP REQUEST PAY DEBIT ACKNOWLEDGEMENT NOT RECEIVED  
+TD 
+U54  
+TRANSACTION ID OR AMOUNT IN CREDENTIAL BLOCK DOES NOT MATCH WITH THAT IN REQPAY  
+TD 
+U55  
+MESSAGE INTEGRITY FAILED DUE TO ORGID MISMATCH  
+TD 
+U56  
+NUMBER OF PAYEES DIFFERS FROM ORIGINAL REQUEST  
+TD 
+U57  
+PAYEE AMOUNT DIFFERS FROM ORIGINAL REQUEST  
+TD 
+
+UPI Error and Response Codes 
+ Page 62 of 72 Public - UPI V 2.9 
+  
+U58  
+PAYER AMOUNT DIFFERS FROM ORIGINAL REQUEST  
+TD 
+U59  
+PAYEE ADDRESS DIFFERS FROM ORIGINAL REQUEST  
+TD 
+U60  
+PAYER ADDRESS DIFFERS FROM ORIGINAL REQUEST  
+TD 
+U61  
+PAYEE INFO DIFFERS FROM ORIGINAL REQUEST  
+TD 
+U62  
+PAYER INFO DIFFERS FROM ORIGINAL REQUEST  
+TD 
+U63  
+DEVICE REGISTRATION FAILED IN UPI  
+TD 
+U64  
+DATA TAG SHOULD CONTAIN 4 PARTS DURING DEVICE REGISTRATION  
+TD 
+U65  
+CREDS BLOCK SHOULD CONTAIN CORRECT ELEMENTS DURING DEVICE REGISTRATION  
+TD 
+U66 
+DEVICE FINGERPRINT MISMATCH  
+BD 
+U67 
+DEBIT TIMEOUT  
+TD 
+U68 
+CREDIT TIMEOUT  
+TD 
+U69 
+COLLECT EXPIRED  
+BD 
+U70 
+RECEIVED LATE RESPONSE  
+TD 
+U71 
+MERCHANT CREDIT NOT SUPPORTED IN IMPS  
+TD 
+U72 
+VAE FAILED  
+TD 
+U74 
+PAYER ACCOUNT MISMATCH  
+TD 
+U75 
+PAYEE ACCOUNT MISMATCH  
+TD 
+U76 
+MOBILE BANKING REGISTRATION FORMAT NOT SUPPORTED BY  THE ISSUER BANK  
+TD 
+U77 
+MERCHANT BLOCKED 
+TD 
+U78 
+BENEFICIARY BANK OFFLINE  
+TD 
+U80 
+PAYER PSP THROTTLE DECLINE 
+TD 
+U81 
+REMITTER BANK DEEMED CHECK DECLINE 
+TD 
+U82 
+READ TIMEOUT IN REQPAY CREDIT 
+TD 
+U84 
+BENEFICIARY BANK DEEMED CHECK DECLINE 
+TD 
+U85 
+CONNECTION TIMEOUT IN REQPAY DEBIT 
+TD 
+U86 
+REMITTER BANK THROTTLING DECLINE 
+TD 
+
+UPI Error and Response Codes 
+ Page 63 of 72 Public - UPI V 2.9 
+  
+U87 
+READ TIMEOUT IN REQPAY DEBIT 
+TD 
+U88 
+CONNECTION TIMEOUT IN REQPAY CREDIT 
+TD 
+U89 
+BENEFICIARY BANK THROTTLING DECLINE 
+TD 
+U90 
+REMITTER BANK DEEMED HIGH RESPONSE TIME CHECK DECLINE 
+TD 
+U91 
+BENEFICIARY BANK DEEMED HIGH RESPONSE TIME CHECK DECLINE 
+TD 
+U92 
+PAYER PSP NOT AVAILABLE 
+TD 
+U93 
+PAYEE PSP NOT AVAILABLE 
+TD 
+U94 
+PAYEE PSP THROTTLE DECLINE 
+TD 
+U95 
+PAYEE VPA AADHAAR OR IIN VPA IS DISABLED 
+BD 
+U96 
+PAYER AND PAYEE IFSC/ACNUM CAN'T BE SAME 
+BD 
+U97 
+PSP REQUEST META ACKNOWLEDGEMENT NOT RECEIVED 
+TD 
+U98 
+NULL ACK RECEIVED BY UPI FOR META TRANSACTION 
+TD 
+U99 
+NEGATIVE ACK RECEIVED BY UPI FOR META TRANSACTION 
+TD 
+S93 
+PAYEE_PSP_THROTTLE_DECLINE_OUTGOING_COUNT 
+TD 
+S94 
+PAYEE_PSP_THROTTLE_DECLINE_RESPONSE_TIME 
+TD 
+S95 
+BENEFICIARY_DISPATCH_FAILED 
+ 
+S96 
+REMITTER_DISPATCH_FAILED 
+ 
+S97 
+ADD_RESLN_DISPATCH_FAILED 
+ 
+S98 
+ISSUER_DISPATCH_FAILED 
+ 
+HS1 
+HSM_OFFINE 
+ 
+HS2 
+HSM_TIMEOUT 
+ 
+HS3 
+HSM_COMMUNICATION_ERROR 
+ 
+   
+  
+  
+  
+  
+  
+  
+  
+ 
+
+UPI Error and Response Codes 
+ Page 64 of 72 Public - UPI V 2.9 
+  
+4.5 Errors from UPI 2.0 Service Layer 
+API Error 
+Code  
+Description  
+API 
+TD/BD 
+U79 
+UIDAI FAILURE 
+ 
+TD 
+U81 
+UIDAI AUTH RES INVALID/FORMAT ERROR 
+ 
+TD 
+U83 
+ACCTYPE IS NOT SUPPORTED (OD) 
+ 
+BD 
+UA1 
+HEADER & URL VERSION IS MISMATCHED 
+Any Leg 
+TD 
+UA2 
+VERSION/TAGS SENT NOT SUPPORTED BY PSP/BANK 
+Any Leg 
+TD 
+UA3 
+ PAYER/PAYEE PSP,HEADER OR URL VERSION MISMATCHED 
+ReqMandate/ReqAuthMandate 
+TD 
+UA4 
+PAYER/PAYEE PSP,REQUEST & RESPONSE HEADER VERSION 
+MISMATCH 
+ReqMandate/ReqAuthMandate/RespMandate/Res
+pAuthMandate 
+TD 
+UA5 
+PAYER/PAYEE PSP,VERSION/TAGS NOT SUPPORTED BY PSP/BANK 
+ReqMandate/ReqAuthMandate 
+TD 
+UA6 
+URL VERSION MISMATCHED (NEG ACK FOR RESPAUTH. 
+ERROR CODE U18 IN FINAL RESPPAY.) 
+RespAuthMandate 
+TD 
+UA7 
+REMITTER BANK,REQUEST & RESPONSE HEADER VERSION 
+MISMATCH 
+ReqMandate/RespMandate (Remitter) 
+TD 
+UA8 
+REMITTER BANK,HEADER OR URL VERSION MISMATCHED 
+ReqMandate 
+TD 
+UA9 
+REMITTER BANK,VERSION/TAGS SENT NOT SUPPORTED BY BANK 
+ReqMandate 
+TD 
+UB1 
+BENIFICIARY BANK,REQUEST & RESPONSE HEADER VERSION 
+MISMATCH 
+ReqPayCr/ResPayCr 
+TD 
+UB2 
+BENIFICIARY BANK,HEADER OR URL VERSION MISMATCHED 
+ReqPayCr  
+TD 
+UB3 
+BENIFICIARY BANK,VERSION/TAGS SENT NOT SUPPORTED BY 
+BANK 
+ReqPayCr 
+TD 
+UB7 
+OTHER BANK/PSP IS NOT SUPPORTED IN 2.0 VERSION 
+ReqMandate/ReqAuthMandate/RespMandate/Res
+pAuthMandate 
+TD 
+UB8 
+PAYER PSP DOES NOT SUPPORTS VERSION 
+ReqMandate(Payer Initiated) 
+TD 
+UB9 
+REMITTER BANK DOES NOT SUPPORT VERSION 
+ReqMandate(remitter) 
+TD 
+UC2 
+BENEFICIARY BANK DOES NOT SUPPORT VERSION  
+ReqPayCr 
+TD 
+UM0 
+REQAUTHMANDATE ACK NOT RECEIVED 
+ReqPayCr 
+TD 
+
+UPI Error and Response Codes 
+ Page 65 of 72 Public - UPI V 2.9 
+  
+UM1 
+RESPAUTHMANDATE DECLINED BY PSP 
+ReqAuthMandate 
+- 
+UM2 
+RESPAUTHMANDATE TIMEOUT 
+RespAuthMandate 
+TD 
+UM3 
+RESPAUTHMANDATE EXPIRED 
+RespAuthMandate 
+BD 
+UM4 
+REQAUTHMANDATE NEGATIVE ACK RECEIVED FROM PSP 
+ReqAuthMandate 
+TD 
+UM5 
+RESPAUTHMANDATE NEGATIVE ACK SENT FROM UPI TO PSP 
+RespAuthMandate 
+TD 
+UM6 
+ORIGINAL REQAUTHMANDATE NOT FOUND 
+ReqAuthMandate 
+TD 
+UM7 
+REQMANDATE ACK NOT RECEIVED FROM REMITTER BANK 
+ReqMandate (Remitter) 
+TD 
+UM8 
+RESPMANDATE DECLINED BY REMITTER BANK 
+RespMandate (remitter) 
+- 
+UM9 
+RESPMANDATE TIMEOUT AT REMITTER END 
+RespMandate (remitter) 
+TD 
+UN0 
+REQMANDATE NEGATIVE ACK RECEIVED FROM REMITTER BANK 
+ReqMandate (Remitter) 
+TD 
+UN1 
+RESPMANDATE NEGATIVE ACK SENT FROM UPI TO REMITTER 
+BANK 
+RespMandate (remitter) 
+TD 
+UN2 
+ORIGINAL REQMANDATE NOT FOUND  
+ReqMandate  
+TD 
+UN3 
+RESPMANDATE ACK NOT RECEIVED FROM PAYER 
+RespMandate (Payer) 
+TD 
+UN4 
+REQMANDATECONFIRMATION ACK NOT RECEIVED FROM PAYER 
+ReqMandateConfirmation (Payer) 
+TD 
+UN5 
+PAYER PSP NOT AVAILABLE 
+ReqMandate(Payee initiated) 
+TD 
+UN6 
+PAYEE PSP NOT AVAILABLE 
+ReqMandate(Payer Initiated) 
+TD 
+UN7 
+REMITTER BANK NOT AVAILABLE 
+ReqMandate (Remitter) 
+TD 
+UN8 
+PAYER PSP NOT REGISTERED 
+ReqMandate 
+TD 
+UN9 
+PAYEE PSP NOT REGISTERED 
+ReqMandate 
+TD 
+UO0 
+REMITTER BANK NOT REGISTERED (MANDATE) 
+ReqMandate 
+TD 
+UO1 
+BENEFICIARY BANK NOT REGISTERED (MANDATE) 
+RespAuthMandate 
+TD 
+UP2 
+MANDATE AMOUNT CAP IS EXCEEDED 
+ReqMandate 
+BD 
+S99 
+Graceful decline 
+ 
+- 
+HS1 
+HSM is offline  
+ 
+- 
+HS2 
+HSM Time out  
+ 
+- 
+HS3 
+HSM communication error 
+ 
+- 
+
+UPI Error and Response Codes 
+ Page 66 of 72 Public - UPI V 2.9 
+  
+4.6 Errors and ACTN from UIDAI 
+4.6.1 ErrorCodes from UIDAI 
+Error Code  
+Description  
+100 
+"PI" (BASIC) ATTRIBUTES OF DEMOGRAPHIC DATA DID NOT MATCH 
+200 
+"PA" (ADDRESS) ATTRIBUTES OF DEMOGRAPHIC DATA DID NOT MATCH 
+300 
+BIOMETRIC DATA DID NOT MATCH 
+310 
+DUPLICATE FINGERS USED 
+311 
+DUPLICATE IRISES USED 
+312 
+FMR AND FIR CANNOT BE USED IN SAME TRANSACTION 
+313 
+SINGLE FIR RECORD CONTAINS MORE THAN ONE FINGER 
+314 
+NUMBER OF FMR/FIR SHOULD NOT EXCEED 10 
+315 
+NUMBER OF IIR SHOULD NOT EXCEED 2 
+400 
+"OTP" VALIDATION FAILED 
+401 
+"TKN" VALIDATION FAILED 
+500 
+INVALID SKEYENCRYPTION 
+501 
+INVALID VALUE FOR "CI" ATTRIBUTE IN "SKEY" ELEMENT 
+502 
+INVALID PID ENCRYPTION 
+503 
+INVALID HMAC ENCRYPTION 
+504 
+SESSION KEY REINITIATION REQUIRED DUE TO EXPIRY OR KEY OUT OF SYNC 
+505 
+SYNCHRONIZED SKEY USAGE IS NOT ALLOWED 
+510 
+INVALID AUTH XML FORMAT 
+511 
+INVALID PID XML FORMAT 
+520 
+INVALID DEVICE 
+521 
+INVALID FINGER DEVICE (FDC IN META ELEMENT) 
+522 
+INVALID IRIS DEVICE (IDC IN META ELEMENT) 
+
+UPI Error and Response Codes 
+ Page 67 of 72 Public - UPI V 2.9 
+  
+530 
+INVALID AUTHENTICATOR CODE 
+540 
+INVALID AUTH XML VERSION 
+541 
+INVALID PID XML VERSION 
+542 
+AUA NOT AUTHORIZED FOR ASA. 
+543 
+SUB-AUA NOT ASSOCIATED WITH "AUA" 
+550 
+INVALID "USES" ELEMENT ATTRIBUTES 
+561 
+REQUEST EXPIRED ("PID->TS" VALUE IS OLDER THAN N HOURS WHERE N IS A CONFIGURED THRESHOLD IN AUTHENTICATION 
+SERVER) 
+562 
+TIMESTAMP VALUE IS FUTURE TIME (VALUE SPECIFIED "PID->TS" IS AHEAD OF AUTHENTICATION SERVER TIME BEYOND ACCEPTABLE 
+THRESHOLD) 
+563 
+DUPLICATE REQUEST (THIS ERROR OCCURS WHEN EXACTLY SAME AUTHENTICATION REQUEST WAS RESENT BY AUA) 
+564 
+HMAC VALIDATION FAILED 
+565 
+LICENSE KEY HAS EXPIRED 
+566 
+INVALID LICENSE KEY 
+567 
+INVALID INPUT (THIS ERROR OCCURS WHEN SOME UNSUPPORTED CHARACTERS WERE FOUND IN INDIAN LANGUAGE VALUES, 
+"LNAME" OR "LAV") 
+568 
+UNSUPPORTED LANGUAGE 
+569 
+DIGITAL SIGNATURE VERIFICATION FAILED (THIS MEANS THAT AUTHENTICATION REQUEST XML WAS MODIFIED AFTER IT WAS 
+SIGNED) 
+570 
+INVALID KEY INFO IN DIGITAL SIGNATURE (THIS MEANS THAT CERTIFICATE USED FOR SIGNING THE AUTHENTICATION REQUEST IS 
+NOT VALID – IT IS EITHER EXPIRED, OR DOES NOT BELONG TO THE AUA OR IS NOT CREATED BY A WELL-KNOWN CERTIFICATION 
+AUTHORITY) 
+571 
+PIN REQUIRES RESET (THIS ERROR WILL BE RETURNED IF RESIDENT IS USING THE DEFAULT PIN WHICH NEEDS TO BE RESET BEFORE 
+USAGE) 
+572 
+INVALID BIOMETRIC POSITION (THIS ERROR IS RETURNED IF BIOMETRIC POSITION VALUE "POS" ATTRIBUTE IN "BIO" ELEMENT - IS 
+NOT APPLICABLE FOR A GIVEN BIOMETRIC TYPE - "TYPE" ATTRIBUTE IN "BIO" ELEMENT.) 
+573 
+PI USAGE NOT ALLOWED AS PER LICENSE 
+574 
+PA USAGE NOT ALLOWED AS PER LICENSE 
+575 
+PFA USAGE NOT ALLOWED AS PER LICENSE 
+576 
+FMR USAGE NOT ALLOWED AS PER LICENSE 
+577 
+FIR USAGE NOT ALLOWED AS PER LICENSE 
+
+UPI Error and Response Codes 
+ Page 68 of 72 Public - UPI V 2.9 
+  
+578 
+IIR USAGE NOT ALLOWED AS PER LICENSE 
+579 
+OTP USAGE NOT ALLOWED AS PER LICENSE 
+580 
+PIN USAGE NOT ALLOWED AS PER LICENSE 
+581 
+FUZZY MATCHING USAGE NOT ALLOWED AS PER LICENSE 
+582 
+LOCAL LANGUAGE USAGE NOT ALLOWED AS PER LICENSE 
+584 
+INVALID PIN CODE IN META ELEMENT 
+585 
+INVALID GEO CODE IN META ELEMENT 
+710 
+MISSING "PI" DATA AS SPECIFIED IN "USES" 
+720 
+MISSING "PA" DATA AS SPECIFIED IN "USES" 
+721 
+MISSING "PFA" DATA AS SPECIFIED IN "USES" 
+730 
+MISSING PIN DATA AS SPECIFIED IN "USES" 
+740 
+MISSING OTP DATA AS SPECIFIED IN "USES" 
+800 
+INVALID BIOMETRIC DATA 
+810 
+MISSING BIOMETRIC DATA AS SPECIFIED IN "USES" 
+811 
+MISSING BIOMETRIC DATA IN CIDR FOR THE GIVEN AADHAAR NUMBER 
+812 
+RESIDENT HAS NOT DONE "BEST FINGER DETECTION". APPLICATION SHOULD INITIATE BFD APPLICATION TO HELP RESIDENT 
+IDENTIFY THEIR BEST FINGERS. SEE AADHAAR BEST FINGER DETECTION API SPECIFICATION. 
+820 
+MISSING OR EMPTY VALUE FOR "BT" ATTRIBUTE IN "USES" ELEMENT 
+821 
+INVALID VALUE IN THE "BT" ATTRIBUTE OF "USES" ELEMENT 
+901 
+NO AUTHENTICATION DATA FOUND IN THE REQUEST (THIS CORRESPONDS TO A SCENARIO WHEREIN NONE OF THE AUTH DATA – 
+DEMO, PV, OR BIOS – IS PRESENT) 
+902 
+INVALID "DOB" VALUE IN THE "PI" ELEMENT (THIS CORRESPONDS TO A SCENARIOS WHEREIN "DOB" ATTRIBUTE IS NOT OF THE 
+FORMAT "YYYY" OR "YYYY-MM-DD", OR THE AGE OF RESIDENT IS NOT IN VALID RANGE) 
+910 
+INVALID "MV" VALUE IN THE "PI" ELEMENT 
+911 
+INVALID "MV" VALUE IN THE "PFA" ELEMENT 
+912 
+INVALID "MS" VALUE 
+913 
+BOTH "PA" AND "PFA" ARE PRESENT IN THE AUTHENTICATION REQUEST (PA AND PFA ARE MUTUALLY EXCLUSIVE) 
+930-939 
+TECHNICAL ERROR THAT ARE INTERNAL TO AUTHENTICATION SERVER 
+940 
+UNAUTHORIZED ASA CHANNEL 
+
+UPI Error and Response Codes 
+ Page 69 of 72 Public - UPI V 2.9 
+  
+941 
+UNSPECIFIED ASA CHANNEL 
+980 
+UNSUPPORTED OPTION 
+996 
+AADHAAR CANCELLED 
+997 
+AADHAAR SUSPENDED 
+998 
+INVALID AADHAAR NUMBER OR NON AVAILABILITY OF AADHAAR DATA 
+999 
+UNKNOWN ERROR 
+ 
+4.6.2 ACTN from UIDAI 
+ACTN 
+Error Code 
+Description 
+BUSINESS VALIDATION: IF AADHAAR AUTHENTICATION FAILURE (RESULT=”FAILURE”) THEN ACTN=” XXX|ZZZZ”,  XXX – SHOULD BE POPULATED 
+FROM “ERR” OF AUTHRES AND ZZZZ – SHOULD BE POPULATED IF PRESENT IN “ACTN” OF AUTHRES. ELSE ONLY XXX 
+A201 
+998 
+AADHAAR NUMBER IS INCORRECT. RESIDENT SHALL USE CORRECT AADHAAR. 
+A202 
+998 
+AUTHENTICATION TEMPORARILY NOT AVAILABLE, RESIDENT SHALL RETRY AFTER SOMETIME. 
+A301 
+997 
+AADHAAR SUSPENDED DUE TO INACTIVITY. RESIDENT SHALL FOLLOW THE REACTIVATION PROCESS. 
+A302 
+997 
+AADHAAR SUSPENDED DUE TO BIOMETRICS INTEGRITY ISSUE. RESIDENT SHALL VISIT PERMANENT ENROLMENT CENTRE 
+WITH DOCUMENT PROOFS FOR UPDATE. 
+A303 
+997 
+AADHAAR SUSPENDED DUE TO DEMOGRAPHIC INTEGRITY ISSUE. RESIDENT SHALL VISIT PERMANENT ENROLMENT 
+CENTRE / UIDAI WEBSITE WITH DOCUMENT PROOFS FOR UPDATE. 
+A304 
+997 
+AADHAAR SUSPENDED DUE TO ADDRESS DISPUTE. RESIDENT SHALL VISIT PERMANENT ENROLMENT CENTRE WITH 
+DOCUMENT PROOFS FOR UPDATE. 
+A305 
+997 
+AADHAAR SUSPENDED DUE TO PHOTO DISPUTE. RESIDENT SHALL VISIT PERMANENT ENROLMENT CENTRE WITH 
+DOCUMENT PROOFS FOR UPDATE. 
+A306 
+997 
+AADHAAR SUSPENDED DUE TO AGE DISPUTE. RESIDENT SHALL UPDATE THE AGE. 
+A307 
+997 
+AADHAAR SUSPENDED SINCE CHILD HAS NOT UPDATED BIOMETRICS AFTER AGE OF 5. RESIDENT SHALL UPDATE THE 
+BIOMETRICS. 
+A308 
+997 
+AADHAAR SUSPENDED SINCE RESIDENT HAS NOT UPDATED BIOMETRICS AFTER AGE OF 15. RESIDENT SHALL UPDATE 
+THE BIOMETRICS. 
+A309 
+997 
+AADHAAR IS LOCKED BY RESIDENT. RESIDENT SHALL FOLLOW THE UN-LOCKING PROCESS. 
+A401 
+996 
+AADHAAR CANCELLED BEING A DUPLICATE. RESIDENT SHALL USE VALID AADHAAR. 
+
+UPI Error and Response Codes 
+ Page 70 of 72 Public - UPI V 2.9 
+  
+A402 
+996 
+AADHAAR CANCELLED DUE TO DISPUTED ENROLMENT. SHALL RE-ENROL IF RESIDENT DOESN'T HAVE A VALID 
+AADHAAR. 
+A403 
+996 
+AADHAAR CANCELLED DUE TO TECHNICAL ISSUES. RESIDENT SHALL CONTACT UIDAI CONTACT CENTRE. 
+A404 
+996 
+AADHAAR CANCELLED DUE TO DISPUTED ENROLMENT (BE). SHALL RE-ENROL IF RESIDENT DOESN'T HAVE A VALID 
+AADHAAR. 
+A405 
+996 
+AADHAAR CANCELLED DUE TO ERRORNEOUS ENROLMENT (IRIS). SHALL RE-ENROL IF RESIDENT DOESN'T HAVE A VALID 
+AADHAAR. 
+NOTE: PLEASE REFER UIDAI DOCUMENT FOR MORE INFORMATION.  
+THE DOCUMENT CAN BE ACCESSED THROUGH https://authportal.uidai.gov.in/web/uidai/developer 
+  
+ 
+
+UPI Error and Response Codes 
+ Page 71 of 72 Public - UPI V 2.9 
+  
+4.7 Errors from Common Library  
+ 
+ Error Code  
+Description  
+L05  
+TECHNICAL ISSUE, PLEASE TRY AFTER SOME TIME  
+L06  
+KEY CODE HAS NOT BEEN PROVIDED IN INPUT  
+L07  
+ERROR WHILE PARSING KEY CODE FROM INPUT  
+L08  
+XML PAYLOAD HAS NOT BEEN PROVIDED IN INPUT  
+L09  
+ERROR WHILE PARSING XML PAYLOAD FROM INPUT  
+L10  
+ERROR WHILE PARSING CONTROLS FROM INPUT  
+L11  
+ERROR WHILE PARSING CONFIGURATION FROM INPUT  
+L12  
+SALT HAS NOT BEEN PROVIDED IN INPUT  
+L13  
+ERROR WHILE PARSING SALT FROM INPUT  
+L14  
+ERROR WHILE PARSING PAY INFO FROM INPUT  
+L15  
+ERROR WHILE PARSING LOCALE FROM INPUT  
+L16  
+UNKNOWN ERROR OCCURRED  
+L17  
+TRUST HAS NOT BEEN PROVIDED  
+L18  
+MANDATORY SALT VALUES HAVE NOT BEEN PROVIDED  
+L19  
+ERROR WHILE PARSING MANDATORY SALT VALUES  
+L20  
+TRUST IS NOT VALID  
+CL33 
+SESSION_GENERATION_FAILED 
+CL05 
+TOKEN ID GENERATION FAILED 
+LV5 
+Txn.type MUST BE PRESENT AND VALID 
+LV9 
+Txn.subType MUST BE PRESENT AND VALID 
+LV8 
+Txn.messageType MUST BE PRESENT AND VALID 
+ 
+ 
+
+UPI Error and Response Codes 
+ Page 72 of 72 Public - UPI V 2.9 
+  
+4.8 Errors from PSO 
+ 
+ Error Code  
+Description  
+TT1 
+DFP_TOKEN_TO_BE_ROTATED 
+TV3 
+TOKEN_USE_NOT_PERMITTED 
+TV4 
+TOKEN_NOT_ISSUED 
+ 

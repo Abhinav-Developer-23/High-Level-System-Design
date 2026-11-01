@@ -9,3 +9,7 @@ tools/svg-diagrams/node_modules/
 tools/svg-diagrams/out/
 tools/svg-diagrams/work/
 __pycache__/
+
+# macOS zip junk
+__MACOSX/
+.DS_Store

@@ -1,0 +1,8 @@
+# Normalise line endings and tell git/GitHub what is generated or binary.
+* text=auto eol=lf
+*.sqlite binary
+*.db binary
+*.png binary
+uv.lock linguist-generated=true
+data/demo/** linguist-generated=true
+web/dev/fixtures/** linguist-generated=true

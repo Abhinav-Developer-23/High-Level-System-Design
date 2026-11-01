@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>UPI Lite Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default', sequence:{showSequenceNumbers:true}});</script>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #f9f9f9; }
+    h1 { color: #1a1a2e; }
+    h2 { color: #16213e; border-bottom: 2px solid #0f3460; padding-bottom: 4px; }
+    .mermaid { background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .verified { color: #2d6a4f; font-size: 0.85rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #16213e; color: white; }
+  </style>
+</head>
+<body>
+  <h1>UPI Lite End-to-End Flow</h1>
+  <p class="verified">Verified: 2026-04-25. APIs confirmed via Kibana (now-3d).</p>
+
+  <h2>End-to-End Sequence</h2>
+  <div class="mermaid">
+  sequenceDiagram
+    autonumber
+    participant App as Mobile App
+    participant TPAP as TPAP Switch
+    participant OCIL as OCIL Gateway
+    participant TSP as TSP Switch
+    participant NPCI as NPCI
+
+    App->>TPAP: POST /upi/v2/ext/txn/lite/app-pay
+    Note over TPAP: UPILiteController.appPayRequestV2
+    TPAP->>TPAP: DB[txn_info]: INSERT status=PENDING
+    TPAP-->>App: 200 ACK (async)
+    TPAP->>OCIL: POST /upi/ext/txn/tsp/lite/v1/app-pay
+    OCIL->>TSP: POST /upi/ext/txn/tsp/lite/v1/app-pay
+    Note over TSP: UPILiteController.appPayRequest
+    TSP->>TSP: DB[txn_info]: INSERT status=PENDING
+    TSP->>NPCI: ReqPay XML (Purpose 41-44)
+    NPCI-->>TSP: 200 ACK
+    NPCI->>TSP: RespPay XML (Callback)
+    Note over TSP: NpciResponseController.respPay
+    TSP->>TSP: DB[txn_info]: UPDATE SUCCESS
+    TSP-->>OCIL: Callback
+    OCIL-->>TPAP: Callback
+    TPAP->>TPAP: DB[txn_info]: UPDATE SUCCESS
+    TPAP-->>App: Push Notification
+  </div>
+
+  <h2>TPAP Internal Flow</h2>
+  <div class="mermaid">
+  flowchart TD
+    A["POST /upi/v2/ext/txn/lite/app-pay
+Controller: UPILiteController"] --> B["LitePayServiceImpl.requestPay()"]
+    B --> DB1["DB[txn_info]
+INSERT status=PENDING"]
+    B --> DB2["DB[txn_participants]
+INSERT payer+payee"]
+    B --> C["async: ThreadConfigManager"]
+    C --> D["OCIL call
+POST /upi/ext/txn/tsp/lite/v1/app-pay"]
+  </div>
+
+  <h2>TSP Internal Flow</h2>
+  <div class="mermaid">
+  flowchart TD
+    A["POST /upi/ext/txn/tsp/lite/v1/app-pay
+Controller: UPILiteController"] --> B["LitePayServiceImpl.requestPay()"]
+    B --> DB1["DB[txn_info]
+INSERT status=PENDING"]
+    B --> C["NPCI XML: ReqPay (Purpose 41-44)"]
+    C --> D["NPCI RespPay callback"]
+    D --> DB2["DB[txn_info]
+UPDATE status, rrn"]
+    D --> E["Callback to OCIL"]
+  </div>
+
+  <h2>Active APIs (Kibana Verified)</h2>
+  <table>
+    <tr><th>Service</th><th>API URL</th><th>Hits (3d)</th><th>Controller</th></tr>
+    <tr><td>TSP</td><td>/upi/ext/txn/tsp/lite/v1/app-pay</td><td>38,132,446</td><td>UPILiteController</td></tr>
+    <tr><td>TSP</td><td>/upi/ext/txn/tsp/lite/v2/sync</td><td>11,257,036</td><td>UPILiteController</td></tr>
+    <tr><td>TSP</td><td>/upi/ext/txn/tsp/lite/v1/topup</td><td>9,363,665</td><td>UPILiteController</td></tr>
+  </table>
+
+  <h2>Key Trace Logs</h2>
+  <ul>
+    <li><strong>TPAP:</strong> <code>Lite App Pay Response { ... }</code></li>
+    <li><strong>TSP:</strong> <code>Npci req Pay Request &lt;XML&gt;</code></li>
+    <li><strong>TSP:</strong> <code>NPCI RespPay callback received</code></li>
+  </ul>
+
+</body>
+</html>

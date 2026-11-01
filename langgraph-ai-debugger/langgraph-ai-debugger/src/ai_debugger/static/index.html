@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="dark">
+  <title>AI Debugger · LangGraph</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%23151a21'/><circle cx='30' cy='30' r='10' fill='%237aa2f7'/><circle cx='70' cy='50' r='10' fill='%239ece6a'/><circle cx='30' cy='72' r='10' fill='%237aa2f7'/><path d='M30 30L70 50L30 72' stroke='%236b7682' stroke-width='5' fill='none'/></svg>">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="shell">
+    <!-- ───────────── sidebar ───────────── -->
+    <aside class="side card">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 32 32"><path d="M9 9L23 16L9 23" /><circle cx="9" cy="9" r="3.5" /><circle cx="23" cy="16" r="3.5" class="g" /><circle cx="9" cy="23" r="3.5" /></svg>
+        </div>
+        <div>
+          <div class="brand-name">AI Debugger</div>
+          <div class="brand-sub">LangGraph · tools · Claude API</div>
+        </div>
+      </div>
+      <button id="newThread" class="btn-new"><span>＋</span> New investigation</button>
+      <div class="side-label">Investigations</div>
+      <div id="threads" class="threads"></div>
+      <div class="side-foot">
+        <div class="engine">
+          <span class="orb" id="engineOrb"></span>
+          <div>
+            <div class="engine-name" id="engineName">Anthropic API</div>
+            <div class="engine-sub" id="engineSub">LangGraph tools</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ───────────── main ───────────── -->
+    <main class="main">
+      <header class="top card">
+        <label class="tog"><input type="checkbox" id="optPlan" checked><span></span>Plan</label>
+        <label class="tog"><input type="checkbox" id="optReview" checked><span></span>Review</label>
+        <div class="grow"></div>
+        <div class="chip-stat" id="statNode" title="Graph node running now">idle</div>
+        <div class="chip-stat" id="statCost" title="Cost of this investigation">$0.00</div>
+        <div class="chip-stat" id="statTools" title="Tool calls this turn">0 tools</div>
+        <div class="chip-stat" id="statQuota" title="Your questions today / daily limit · your cost this month / monthly budget">– today</div>
+        <button class="icon-btn danger hidden" id="cancelBtn" title="Cancel the run">■ Stop</button>
+      </header>
+
+      <section class="chat" id="chat">
+        <div class="hero" id="hero">
+          <h1>Debug production</h1>
+          <p>A LangGraph pipeline (triage → plan → investigate → agent ⇄ tools → review → report). The agent is
+            <b>Claude through the Anthropic API</b> with <b>LangGraph tools</b>: native DB tools on Redash
+            (get_txn, run_sql, txn_status_counts…) plus the Agent-debugger MCP servers loaded as tools: ELK, archival
+            logs, Grafana, PMM, Aerospike, Jenkins, ArgoCD, PaytmCaller, Zenduty, Jira and Confluence, Bitbucket,
+            Gmail, Drive and Notion. Everything is read-only.</p>
+          <div class="quick" id="quick"></div>
+        </div>
+      </section>
+
+      <footer class="composer card">
+        <textarea id="input" rows="1" placeholder="Paste a txn id, an alert, an NPCI code or a question… (Enter to send · Shift+Enter for a new line)"></textarea>
+        <button id="send" class="send" title="Send"><span>➤</span></button>
+      </footer>
+    </main>
+
+    <!-- ───────────── right panel ───────────── -->
+    <aside class="panel card">
+      <nav class="tabs" id="tabs">
+        <button data-tab="graph" class="on">Graph</button>
+        <button data-tab="tools">Tools <b id="toolCount">0</b></button>
+        <button data-tab="mcp">MCP <b id="mcpCount">0</b></button>
+        <button data-tab="npci">NPCI</button>
+        <button data-tab="run">Run</button>
+      </nav>
+      <div class="tab on" id="tab-graph">
+        <div class="graph-box">
+          <svg id="graphSvg" viewBox="0 0 400 638" role="img" aria-label="LangGraph state graph"></svg>
+        </div>
+        <div class="legend">
+          <span><i class="lg active"></i>running</span>
+          <span><i class="lg done"></i>done</span>
+          <span><i class="lg route"></i>route taken</span>
+          <span><i class="lg cond"></i>conditional</span>
+          <span><i class="lg opus"></i>LLM call</span>
+        </div>
+        <div class="trace-head">
+          <span>Trace route</span>
+          <span class="muted small" id="traceNote"></span>
+        </div>
+        <div id="trace" class="trace"><div class="empty">The route through the graph shows up here, step by step.</div></div>
+      </div>
+      <div class="tab" id="tab-tools">
+        <div class="empty" id="toolsEmpty">Tool calls show up here live, one card per call.</div>
+        <div id="toolList" class="tool-list"></div>
+      </div>
+      <div class="tab" id="tab-mcp">
+        <div class="mcp-head">
+          <button class="btn-ghost" id="probeBtn">Probe servers</button>
+          <span class="muted" id="probeNote">start each server and list its tools</span>
+        </div>
+        <div id="mcpList" class="mcp-list"></div>
+      </div>
+      <div class="tab" id="tab-npci">
+        <input id="npciQ" class="npci-q" placeholder="ZM, U30, 'PIN', 'beneficiary'…" autocomplete="off">
+        <div class="muted small" id="npciCount"></div>
+        <div id="npciList" class="npci-list"></div>
+      </div>
+      <div class="tab" id="tab-run">
+        <div id="runInfo" class="run-info"><div class="empty">Run details appear after the first turn.</div></div>
+      </div>
+    </aside>
+  </div>
+
+  <template id="tplTool">
+    <div class="tool">
+      <div class="tool-top">
+        <span class="srv"></span><span class="tname"></span><span class="tms"></span>
+      </div>
+      <pre class="tin"></pre>
+      <pre class="tout hidden"></pre>
+    </div>
+  </template>
+
+  <script src="/static/app.js" type="module"></script>
+</body>
+</html>

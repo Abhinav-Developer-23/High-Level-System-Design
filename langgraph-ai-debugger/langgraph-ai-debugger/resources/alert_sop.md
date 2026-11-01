@@ -1,0 +1,6 @@
+# Alert SOP
+
+| Alert | Grafana | Kibana | Possible Causes |
+|-------|---------|--------|-----------------|
+| U09 | [NPCI Timeout](https://paytmybl-grafana.paytmybl.com/d/DNTezbS7z/upi-war-room?viewPanel=171&orgId=1&refresh=2m)<br>[DB Timeout](https://paytmybl-grafana.paytmybl.com/d/DNTezbS7z/upi-war-room?viewPanel=352&orgId=1&refresh=2m) | [NPCI Timeout](https://kibana.paytmybl.com/app/r/s/OJj53)<br>[Invalid Arg PG](https://kibana.paytmybl.com/app/r/s/QlrEh)<br>[G Error (gerror field)](https://kibana.paytmybl.com/app/r/s/UEUqS) | 1. NPCI timeout error<br>2. Invalid argument PG<br>3. DB connection pool timeout<br>4. U09 also visible via `gerror` field — check G Error link |
+| Any error from PG downstream api | [PG Downstream Error](https://paytmybl-grafana.paytmybl.com/d/DNTezbS7z/upi-war-room?orgId=1&from=now-3h&to=now&viewPanel=292) | [PG HTTP Errors](https://kibana.paytmybl.com/app/discover#/?_g=(filters:!(),time:(from:now-1h,to:now))&_a=(columns:!('@timestamp',log.message,log.loggerName),dataSource:(dataViewId:'7a188ab3-b1a9-4e8b-9d99-49bfd718cc38',type:dataView),filters:!(),interval:auto,query:(language:kuery,query:'log.loggerName:%22com.paytm.tsp.httpclient.impl.PGHttpClient%22%20AND%20log.level:ERROR'),sort:!(!('@timestamp',asc)))) | 1. 500 Internal Server Error from PG<br>2. 504 Gateway Timeout from PG<br>3. Connectivity issues between TSP and PG |

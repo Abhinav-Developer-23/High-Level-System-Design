@@ -1,0 +1,41 @@
+# --- secrets: NEVER commit -------------------------------------------------
+.env
+.env.*
+!.env.example
+
+# --- python ----------------------------------------------------------------
+.venv/
+.venv-ext/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+dist/
+build/
+
+# --- runtime / generated ---------------------------------------------------
+# NOTE: git has no inline comments — a "# …" after a pattern becomes part of the pattern and the line matches nothing.
+# var/ = checkpoints.sqlite, the run store and logs. In live mode it holds REAL production data: never commit it.
+var/
+# the generated synthetic demo dataset (ai-debugger seed)
+data/demo/
+# saved reports, eval results and live-run artefacts (real data in live mode): local files only
+reports/*
+!reports/.gitkeep
+tmp/
+*.log
+
+# --- editors / os ----------------------------------------------------------
+.idea/
+.vscode/
+.DS_Store
+
+# live-mode specifics (real index/db names) — never commit
+config/systems.local.yaml
+
+# playwright artefacts
+tests/e2e/screenshots/

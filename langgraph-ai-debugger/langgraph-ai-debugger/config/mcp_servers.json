@@ -1,0 +1,463 @@
+{
+  "_comment": "Template. ${ROOT} = project root, ${NAME} = value from .env. Rendered to var/mcp.runtime.json (0600) by ai_debugger.mcp_config — never put a secret in this file. `_meta` is stripped before Claude Code sees it.",
+  "mcpServers": {
+    "tpap_redash": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_redash",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tpap/mcp/tpap_redash_mcp.py"
+      ],
+      "env": {
+        "REDASH_BASE_URL": "${REDASH_BASE_URL}",
+        "REDASH_API_KEY": "${REDASH_API_KEY}"
+      },
+      "_meta": {
+        "system": "tpap",
+        "label": "Redash — DB rows (SQL, 20s timeout)",
+        "kind": "db"
+      }
+    },
+    "tpap_trino": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_trino",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tpap/mcp/tpap_trino_mcp.py"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "Trino — DB rows",
+        "kind": "db"
+      }
+    },
+    "tpap_elk": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_elk",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tpap/mcp/tpap_elk_mcp.py"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "Elasticsearch / Kibana (3d)",
+        "kind": "logs"
+      }
+    },
+    "tpap_archival_logs": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_archival_logs",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tpap/mcp/tpap_archival_logs_mcp.py"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "Archival logs (> 3d)",
+        "kind": "logs"
+      }
+    },
+    "tpap_grafana": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_grafana",
+        "${ROOT}/.venv-ext/bin/mcp-grafana",
+        "--disable-write",
+        "--log-level",
+        "error",
+        "--enabled-tools",
+        "search,datasource,prometheus,dashboard,navigation,alerting"
+      ],
+      "env": {
+        "GRAFANA_URL": "${TPAP_GRAFANA_URL}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${TPAP_GRAFANA_SERVICE_ACCOUNT_TOKEN}",
+        "GRAFANA_ORG_ID": "${TPAP_GRAFANA_ORG_ID}"
+      },
+      "_meta": {
+        "system": "tpap",
+        "label": "Grafana + Prometheus (read-only)",
+        "kind": "metrics",
+        "deny": [
+          "alerting_manage_silences",
+          "alerting_manage_routing"
+        ]
+      }
+    },
+    "tpap_atlassian": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_atlassian",
+        "${ROOT}/.venv-ext/bin/mcp-atlassian",
+        "--read-only",
+        "--toolsets",
+        "default"
+      ],
+      "env": {
+        "JIRA_URL": "${TPAP_ATLASSIAN_URL}",
+        "JIRA_USERNAME": "${TPAP_ATLASSIAN_USERNAME}",
+        "JIRA_API_TOKEN": "${TPAP_ATLASSIAN_API_TOKEN}",
+        "CONFLUENCE_URL": "${TPAP_ATLASSIAN_URL}",
+        "CONFLUENCE_USERNAME": "${TPAP_ATLASSIAN_USERNAME}",
+        "CONFLUENCE_API_TOKEN": "${TPAP_ATLASSIAN_API_TOKEN}",
+        "READ_ONLY_MODE": "true",
+        "TOOLSETS": "default"
+      },
+      "_meta": {
+        "system": "tpap",
+        "label": "Jira + Confluence (read-only)",
+        "kind": "docs"
+      }
+    },
+    "tpap_prod_jenkins_mcp": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_prod_jenkins_mcp",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tpap/mcp/tpap_prod_jenkins_mcp.py"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "Jenkins prod (read-only, no trigger)",
+        "kind": "deploy"
+      }
+    },
+    "tpap_paytm_caller_mcp_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_paytm_caller_mcp_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tpap/mcp/tpap_paytmcaller_mcp.py"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "PaytmCaller alerts (read-only)",
+        "kind": "alerts"
+      }
+    },
+    "tpap_percona_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_percona_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/percona_readonly_mcp.py",
+        "tpap"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "PMM — MySQL engine + DB host",
+        "kind": "db"
+      }
+    },
+    "tpap_aerospike_amc_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tpap_aerospike_amc_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/aerospike_amc_readonly_mcp.py",
+        "tpap"
+      ],
+      "_meta": {
+        "system": "tpap",
+        "label": "Aerospike AMC (read-only)",
+        "kind": "cache"
+      }
+    },
+    "tsp_redash": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_redash",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tsp/mcp/tsp_redash_mcp.py"
+      ],
+      "env": {
+        "TSP_REDASH_URL": "${TSP_REDASH_URL}",
+        "TSP_REDASH_API_KEY": "${TSP_REDASH_API_KEY}"
+      },
+      "_meta": {
+        "system": "tsp",
+        "label": "Redash — DB rows (per shard)",
+        "kind": "db"
+      }
+    },
+    "tsp_elk": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_elk",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tsp/mcp/tsp_elk_mcp.py"
+      ],
+      "_meta": {
+        "system": "tsp",
+        "label": "Elasticsearch / Kibana (3d)",
+        "kind": "logs"
+      }
+    },
+    "tsp_grafana": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_grafana",
+        "${ROOT}/.venv-ext/bin/mcp-grafana",
+        "--disable-write",
+        "--log-level",
+        "error",
+        "--enabled-tools",
+        "search,datasource,prometheus,dashboard,navigation,alerting"
+      ],
+      "env": {
+        "GRAFANA_URL": "${TSP_GRAFANA_URL}",
+        "GRAFANA_SERVICE_ACCOUNT_TOKEN": "${TSP_GRAFANA_SERVICE_ACCOUNT_TOKEN}"
+      },
+      "_meta": {
+        "system": "tsp",
+        "label": "Grafana + Prometheus (read-only)",
+        "kind": "metrics",
+        "deny": [
+          "alerting_manage_silences",
+          "alerting_manage_routing"
+        ]
+      }
+    },
+    "tsp_atlassian": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_atlassian",
+        "${ROOT}/.venv-ext/bin/mcp-atlassian",
+        "--read-only",
+        "--toolsets",
+        "default"
+      ],
+      "env": {
+        "JIRA_URL": "${TSP_ATLASSIAN_URL}",
+        "JIRA_USERNAME": "${TSP_ATLASSIAN_USERNAME}",
+        "JIRA_API_TOKEN": "${TSP_ATLASSIAN_API_TOKEN}",
+        "CONFLUENCE_URL": "${TSP_ATLASSIAN_URL}",
+        "CONFLUENCE_USERNAME": "${TSP_ATLASSIAN_USERNAME}",
+        "CONFLUENCE_API_TOKEN": "${TSP_ATLASSIAN_API_TOKEN}",
+        "READ_ONLY_MODE": "true",
+        "TOOLSETS": "default"
+      },
+      "_meta": {
+        "system": "tsp",
+        "label": "Jira + Confluence (read-only)",
+        "kind": "docs"
+      }
+    },
+    "tsp_jenkins": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_jenkins",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tsp/mcp/tsp_jenkins_mcp.py"
+      ],
+      "_meta": {
+        "system": "tsp",
+        "label": "Jenkins (read-only, no trigger)",
+        "kind": "deploy"
+      }
+    },
+    "tsp_prod_argocd": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_prod_argocd",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tsp/mcp/tsp_prod_argocd_mcp.py"
+      ],
+      "_meta": {
+        "system": "tsp",
+        "label": "ArgoCD prod (read-only, no sync)",
+        "kind": "deploy"
+      }
+    },
+    "tsp_zenduty_mcp_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_zenduty_mcp_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/tsp/mcp/tsp_zenduty_mcp.py"
+      ],
+      "_meta": {
+        "system": "tsp",
+        "label": "Zenduty incidents (read-only)",
+        "kind": "alerts"
+      }
+    },
+    "tsp_percona_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_percona_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/percona_readonly_mcp.py",
+        "tsp"
+      ],
+      "_meta": {
+        "system": "tsp",
+        "label": "PMM — MySQL engine + DB host",
+        "kind": "db"
+      }
+    },
+    "tsp_aerospike_amc_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "tsp_aerospike_amc_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/aerospike_amc_readonly_mcp.py",
+        "tsp"
+      ],
+      "_meta": {
+        "system": "tsp",
+        "label": "Aerospike AMC (read-only)",
+        "kind": "cache"
+      }
+    },
+    "bitbucket_mcp": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "bitbucket_mcp",
+        "/opt/homebrew/bin/npx",
+        "--yes",
+        "bitbucket-mcp"
+      ],
+      "env": {
+        "PATH": "/opt/homebrew/bin:/usr/bin:/bin",
+        "BITBUCKET_URL": "${BITBUCKET_URL}",
+        "BITBUCKET_WORKSPACE": "${BITBUCKET_WORKSPACE}",
+        "BITBUCKET_USERNAME": "${BITBUCKET_USERNAME}",
+        "BITBUCKET_PASSWORD": "${BITBUCKET_PASSWORD}"
+      },
+      "_meta": {
+        "system": "shared",
+        "label": "Bitbucket paytmteam (writes blocked)",
+        "kind": "code",
+        "deny": [
+          "createPullRequest",
+          "updatePullRequest",
+          "declinePullRequest",
+          "mergePullRequest",
+          "approvePullRequest",
+          "unapprovePullRequest",
+          "addPullRequestComment",
+          "updatePullRequestComment",
+          "addPendingPullRequestComment",
+          "publishPendingComments",
+          "createPullRequestTask",
+          "updatePullRequestTask",
+          "resolveComment",
+          "reopenComment",
+          "runPipeline",
+          "stopPipeline",
+          "createDraftPullRequest",
+          "publishDraftPullRequest",
+          "convertTodraft",
+          "updateProjectBranchingModelSettings",
+          "updateRepositoryBranchingModelSettings"
+        ]
+      }
+    },
+    "jarvis_cursor_mcp_bitbucket": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "jarvis_cursor_mcp_bitbucket",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/jarvis_bitbucket_readonly_mcp.py"
+      ],
+      "_meta": {
+        "system": "shared",
+        "label": "Jarvis Bitbucket finmatetech (read-only)",
+        "kind": "code"
+      }
+    },
+    "google_workspace_readonly_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "google_workspace_readonly_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/google_workspace_readonly_mcp.py"
+      ],
+      "_meta": {
+        "system": "shared",
+        "label": "Google Docs / Sheets / Drive (read-only)",
+        "kind": "docs"
+      }
+    },
+    "gmail_readonly_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "gmail_readonly_cursor",
+        "${ROOT}/.venv/bin/python3",
+        "${ROOT}/mcp_servers/shared/mcp/gmail_readonly_mcp.py"
+      ],
+      "_meta": {
+        "system": "shared",
+        "label": "Gmail (read-only) — TPAP alert mails",
+        "kind": "alerts"
+      }
+    },
+    "notion_cursor": {
+      "command": "/bin/bash",
+      "args": [
+        "${ROOT}/scripts/mcp-stdio.sh",
+        "notion_cursor",
+        "/bin/bash",
+        "${ROOT}/scripts/notion-mcp.sh"
+      ],
+      "_meta": {
+        "system": "shared",
+        "label": "Notion (writes blocked unless ALLOW_NOTION_WRITES=1)",
+        "kind": "docs",
+        "deny_unless_env": "ALLOW_NOTION_WRITES",
+        "deny": [
+          "API-patch-block-children",
+          "API-update-a-block",
+          "API-delete-a-block",
+          "API-patch-page",
+          "API-post-page",
+          "API-create-a-comment",
+          "API-update-a-data-source",
+          "API-create-a-data-source",
+          "API-move-page",
+          "API-update-page-markdown"
+        ]
+      }
+    },
+    "chrome-devtools": {
+      "command": "/opt/homebrew/bin/npx",
+      "args": [
+        "-y",
+        "chrome-devtools-mcp@latest",
+        "--autoConnect"
+      ],
+      "env": {
+        "PATH": "/opt/homebrew/bin:/usr/bin:/bin"
+      },
+      "_meta": {
+        "system": "shared",
+        "label": "Chrome DevTools (drives your Chrome)",
+        "kind": "browser",
+        "default_off": true
+      }
+    }
+  }
+}

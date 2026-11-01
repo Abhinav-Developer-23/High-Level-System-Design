@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Lite Pay Money (Juspay Axis) Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default', sequence:{showSequenceNumbers:true}});</script>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #f9f9f9; }
+    h1 { color: #1a1a2e; }
+    h2 { color: #16213e; border-bottom: 2px solid #0f3460; padding-bottom: 4px; }
+    .mermaid { background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .verified { color: #2d6a4f; font-size: 0.85rem; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #16213e; color: white; }
+  </style>
+</head>
+<body>
+  <h1>Lite Pay Money (Juspay Axis) Flow</h1>
+  <p class="verified">Verified: 2026-04-27. APIs confirmed via Kibana (now-3d).</p>
+
+  <h2>End-to-End Sequence</h2>
+  <div class="mermaid">
+  sequenceDiagram
+    autonumber
+    participant User
+    participant TPAP as TPAP Switch
+    participant GW as Juspay Gateway
+    participant JSDK as Juspay API
+    participant NPCI as NPCI
+
+    Note over User, TPAP: POST /upi/ext/txn/lite/v2/app-pay
+    User->>TPAP: Initiate Lite Pay
+    TPAP->>TPAP: DB[txn_info]: INSERT (PENDING)
+    TPAP->>TPAP: DB[txn_participants]: INSERT
+    TPAP-->>User: 200 OK (Async ACK)
+    
+    TPAP->>GW: POST /lite/send-money
+    GW->>GW: Transform to LiteRequest (ARQC + LRN)
+    GW->>JSDK: POST /api/p2/merchants/transactions/sendMoney
+    
+    JSDK->>NPCI: ReqPay (ARQC)
+    NPCI-->>JSDK: RespPay
+    
+    JSDK-->>TPAP: POST /upi/int/txn/issuing/txn-callback
+    TPAP->>TPAP: DB[txn_info]: UPDATE (SUCCESS/FAILURE)
+    TPAP-->>User: Push Notification
+  </div>
+
+  <h2>TPAP Internal Flow</h2>
+  <div class="mermaid">
+  flowchart TD
+    A["POST /upi/ext/txn/lite/v2/app-pay
+Controller: UPILiteController"] --> B["LitePayService.requestPay()"]
+    B --> DB1["DB[txn_info]
+INSERT status=PENDING"]
+    B --> DB2["DB[txn_participants]
+INSERT Payer + Payee"]
+    B --> C["async: GatewayAsyncHttpClientHelper"]
+    C --> D["Juspay Gateway
+POST /lite/send-money"]
+    D --> E["await callback
+POST /txn-callback"]
+    E --> DB3["DB[txn_info]
+UPDATE status, rrn"]
+  </div>
+
+  <h2>Juspay Gateway Internal Flow</h2>
+  <div class="mermaid">
+  flowchart TD
+    A["POST /lite/send-money
+Controller: TransactionController"] --> B["Transform NPCIInTO to LiteRequest
+(Extract ARQC from credBlock)"]
+    B --> C["LiteRequestAPIClient.execute()"]
+    C --> D["Juspay API Call
+POST /sendMoney"]
+    D --> E["Receive result from Juspay"]
+    E --> F["TransactionCallbackClient
+POST /txn-callback to Switch"]
+  </div>
+
+  <h2>Active APIs (Kibana Verified)</h2>
+  <table>
+    <tr><th>Service</th><th>API URL</th><th>Hits (3d)</th><th>Controller</th></tr>
+    <tr><td>TPAP Switch</td><td>/upi/ext/txn/lite/v2/app-pay</td><td>~1.5M</td><td>UPILiteController</td></tr>
+    <tr><td>Juspay Axis</td><td>/upi/int/tpap/gateway/transaction/v1/lite/send-money</td><td>10,099,925</td><td>TransactionController</td></tr>
+    <tr><td>Juspay Axis</td><td>/upi/int/tpap/gateway/lite/v1/lite-sync</td><td>6,813,787</td><td>JuspayUpiLiteController</td></tr>
+  </table>
+
+  <h2>DB Write Points</h2>
+  <table>
+    <tr><th>Step</th><th>API</th><th>Table</th><th>Operation</th><th>Fields</th></tr>
+    <tr><td>Initiation</td><td>/app-pay</td><td>txn_info</td><td>INSERT</td><td>status=PENDING, amount, vpa</td></tr>
+    <tr><td>Initiation</td><td>/app-pay</td><td>txn_participants</td><td>INSERT</td><td>payer, payee details</td></tr>
+    <tr><td>Callback</td><td>/txn-callback</td><td>txn_info</td><td>UPDATE</td><td>status, npci_resp_code, rrn</td></tr>
+  </table>
+
+</body>
+</html>

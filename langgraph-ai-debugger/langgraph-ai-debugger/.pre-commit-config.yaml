@@ -1,0 +1,49 @@
+# Opt-in git hooks. Nothing is installed automatically:
+#   make hooks                              # install them into .git/hooks (uv run pre-commit install)
+#   uv run pre-commit run --all-files       # run everything once, without installing
+# They catch the cheap mistakes locally (formatting, lint, a committed .env, a pasted API key) before CI does.
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+        exclude: '\.md$'
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: check-yaml
+      - id: check-toml
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.16.10  # keep in step with the ruff version in uv.lock
+    hooks:
+      - id: ruff
+        args: [--fix]
+      - id: ruff-format
+
+  - repo: local
+    hooks:
+      - id: mypy
+        name: mypy (types)
+        entry: uv run mypy src/ai_debugger
+        language: system
+        pass_filenames: false
+        types: [python]
+        stages: [pre-push]  # slower than the rest, so it runs on `git push`, not on every commit
+      - id: never-commit-env
+        name: never commit .env
+        entry: ".env files hold real credentials and must never be committed (use .env.example for names)"
+        language: fail
+        files: '(^|/)\.env$'
+      - id: no-api-keys-in-source
+        name: no API keys pasted into source
+        language: pygrep
+        entry: 'AIza[0-9A-Za-z_\-]{30,}|sk-ant-[A-Za-z0-9_\-]{20,}|BEGIN [A-Z ]*PRIVATE KEY'
+        # the tests/docs/security package contain deliberately fake key-shaped strings
+        exclude: '^(tests/|docs/|src/ai_debugger/security/|\.pre-commit-config\.yaml)'
+        types: [text]

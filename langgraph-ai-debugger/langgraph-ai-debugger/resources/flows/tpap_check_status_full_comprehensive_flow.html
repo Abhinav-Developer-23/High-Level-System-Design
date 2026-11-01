@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TPAP Check Status - Full Comprehensive Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default', sequence:{showSequenceNumbers:true}});</script>
+  <style>
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 2rem; background: #f4f7f6; color: #333; line-height: 1.6; }
+    .container { max-width: 1200px; margin: 0 auto; background: white; padding: 3rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    h1 { color: #1a1a2e; border-bottom: 3px solid #0f3460; padding-bottom: 10px; margin-top: 0; }
+    h2 { color: #16213e; margin-top: 2rem; border-left: 5px solid #e94560; padding-left: 15px; }
+    .mermaid { background: #fff; padding: 1.5rem; border-radius: 8px; margin: 1.5rem 0; border: 1px solid #eee; }
+    .metric-box { display: flex; gap: 20px; margin: 1rem 0; flex-wrap: wrap; }
+    .metric-card { background: #0f3460; color: white; padding: 1rem 1.5rem; border-radius: 8px; flex: 1; min-width: 200px; }
+    .metric-value { font-size: 1.8rem; font-weight: bold; color: #e94560; }
+    .metric-label { font-size: 0.9rem; opacity: 0.8; }
+    table { border-collapse: collapse; width: 100%; margin: 1.5rem 0; font-size: 0.95rem; }
+    th, td { border: 1px solid #ddd; padding: 12px 15px; text-align: left; }
+    th { background: #16213e; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .status-active { color: #2d6a4f; font-weight: bold; }
+    .footer { margin-top: 3rem; font-size: 0.8rem; color: #777; text-align: center; border-top: 1px solid #eee; padding-top: 1rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>TPAP Check Status - Full End-to-End Flow</h1>
+    <p><strong>Verified Date:</strong> 2026-04-25</p>
+    <p>This flow documents the asynchronous transaction recovery mechanism from initial trigger to final bank reconciliation.</p>
+
+    <h2>Live Production Metrics (Current)</h2>
+    <div class="metric-box">
+      <div class="metric-card">
+        <div class="metric-value">~1.81 req/s</div>
+        <div class="metric-label">Primary Consumer Throughput</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">~2.06 req/s</div>
+        <div class="metric-label">Secondary Consumer Throughput</div>
+      </div>
+      <div class="metric-card">
+        <div class="metric-value">225M+</div>
+        <div class="metric-label">Callback Hits (3 Days)</div>
+      </div>
+    </div>
+
+    <h2>Multi-System Sequence Diagram</h2>
+    <div class="mermaid">
+    sequenceDiagram
+        autonumber
+        participant Jobs as TPAP Jobs (Set 6)
+        participant Kafka as Kafka Cluster
+        participant Cons as TPAP Consumers
+        participant TPAP as TPAP Switch
+        participant OCIL as OCIL Gateway
+        participant TSP as TSP Switch
+        participant NPCI as NPCI Boundary
+
+        Note over Jobs: Triggered by Quartz Cron
+        Jobs->>Jobs: DB[switchv2.txn_info]: SELECT status='PENDING'
+        Jobs->>Kafka: Produce: upi_jobs_primary_check_status
+        
+        Kafka->>Cons: Consume Message
+        Cons->>TPAP: POST /upi/int/txn/status-jobs
+        
+        Note over TPAP: InternalCheckTxnStatusService
+        TPAP->>OCIL: POST /upi/int/tpap/gateway/switch/transaction/v1/status
+        
+        Note over OCIL: TransactionController (Juspay Bridge)
+        OCIL->>TSP: POST /upi/ext/txn/tsp/v1/transaction/status
+        
+        Note over TSP: CheckTxnStatusService
+        TSP->>NPCI: XML: ReqChkTxn/2.0
+        NPCI-->>TSP: XML: Acknowledgement (Sync ACK)
+        
+        Note over NPCI: Processing at NPCI...
+        
+        NPCI->>TSP: XML: RespChkTxn/2.0
+        TSP-->>NPCI: XML: Acknowledgement (Sync ACK)
+        
+        Note over TSP: NpciResponseController
+        TSP->>OCIL: POST /upi/int/tpap/gateway/meta/tsp/switch/v1/req-txn-confirmation/callback
+        
+        Note over OCIL: SwitchTspController
+        OCIL->>TPAP: POST /upi/int/txn/issuing/req-txn-confirmation-callback
+        
+        Note over TPAP: InternalController
+        TPAP->>TPAP: DB[switchv2.txn_info]: UPDATE status (Final)
+    </div>
+
+    <h2>Forward Flow: API Step-by-Step</h2>
+    <table>
+      <tr>
+        <th>Step</th>
+        <th>System</th>
+        <th>API / Action</th>
+        <th>Logic Detail</th>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td>TPAP Jobs</td>
+        <td><code>Quartz Cron Trigger</code></td>
+        <td>Fetches PENDING txns from Slave DB based on time window.</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td>Kafka</td>
+        <td><code>upi_jobs_primary_check_status</code></td>
+        <td>Active topic carrying txnId and business type.</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td>TPAP Consumers</td>
+        <td><code>POST /upi/int/txn/status-jobs</code></td>
+        <td>Dispatches task to TPAP Switch for internal processing.</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td>TPAP Switch</td>
+        <td><code>POST /upi/int/tpap/gateway/switch/v1/status</code></td>
+        <td>Asynchronous call to OCIL Gateway using GatewayAsyncHttpClientHelper.</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td>OCIL Gateway</td>
+        <td><code>POST /upi/ext/txn/tsp/v1/transaction/status</code></td>
+        <td>Transforms request to TSP-compatible format.</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td>TSP Switch</td>
+        <td><code>XML: ReqChkTxn/2.0</code></td>
+        <td>Final hop: Constructs NPCI XML and sends to external boundary.</td>
+      </tr>
+    </table>
+
+    <h2>Reverse Flow: The Callback Path</h2>
+    <table>
+      <tr>
+        <th>System</th>
+        <th>Endpoint</th>
+        <th>Impact</th>
+      </tr>
+      <tr>
+        <td>TSP Switch</td>
+        <td><code>RespChkTxn (Inward)</code></td>
+        <td>Updates local TSP txn record.</td>
+      </tr>
+      <tr>
+        <td>OCIL Gateway</td>
+        <td><code>/v1/req-txn-confirmation/callback</code></td>
+        <td>Bridges the response back to TPAP VPC.</td>
+      </tr>
+      <tr>
+        <td>TPAP Switch</td>
+        <td><code>/v1/req-txn-confirmation-callback</code></td>
+        <td>Performs final DB update to terminal state.</td>
+      </tr>
+    </table>
+
+    <div class="footer">
+      Documentation generated by Gemini CLI Flow Detective &copy; 2026
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>TPAP Check Status Jobs — UPI Flow</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+  <script>mermaid.initialize({startOnLoad:true, theme:'default', sequence:{showSequenceNumbers:true}});</script>
+  <style>
+    body { font-family: monospace; padding: 2rem; background: #f9f9f9; }
+    h1 { color: #1a1a2e; }
+    h2 { color: #16213e; border-bottom: 2px solid #0f3460; padding-bottom: 4px; }
+    .mermaid { background: white; padding: 1rem; border-radius: 8px; margin: 1rem 0; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    .verified { color: #2d6a4f; font-size: 0.85rem; }
+    .dead { color: #c1121f; }
+    table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+    th, td { border: 1px solid #ccc; padding: 6px 10px; text-align: left; }
+    th { background: #16213e; color: white; }
+  </style>
+</head>
+<body>
+  <h1>TPAP Check Status Jobs Flow</h1>
+  <p class="verified">Verified: 2026-04-25. APIs and Job triggers confirmed via Kibana logs (now-3d).</p>
+
+  <!-- DIAGRAM 1: End-to-End Sequence -->
+  <h2>End-to-End Sequence (Job Trigger to Kafka)</h2>
+  <div class="mermaid">
+  sequenceDiagram
+    autonumber
+    participant Quartz as Quartz Scheduler
+    participant Jobs as tpap-transactional-jobs
+    participant DB_S as DB[switchv2.txn_info] (Slave)
+    participant Kafka as Kafka (upi_switchv2_pendingtxnv2)
+    participant DB_M as DB[txn_retry_info] (Master)
+
+    Quartz->>Jobs: Trigger Cron Job
+    Note over Jobs: executeTrigger()
+    Jobs->>DB_S: SELECT txn_id WHERE status='PENDING'
+    DB_S-->>Jobs: List of Txn IDs
+    
+    loop For Each Txn
+        Jobs->>Jobs: Construct TxnStatusPayload
+        Jobs->>Kafka: Produce Message (txnId, businessType)
+    end
+
+    Note over Jobs: If Retry Job
+    Jobs->>DB_M: UPDATE next_retry_time, retry_count
+    
+    Jobs->>Jobs: Commit Job Offset (jobs_properties)
+  </div>
+
+  <!-- DIAGRAM 2: Job Internal Flow -->
+  <h2>Job Internal Flow (Processor Logic)</h2>
+  <div class="mermaid">
+  flowchart TD
+    Start["Quartz Trigger
+SwitchV2TxnStatusJob"] --> B["UnboundedJobHelper.executeTrigger()"]
+    B --> C{Job Enabled?}
+    C -- Yes --> D["AbstractCheckStatusJobProcessor.processJob()"]
+    C -- No --> End[Exit]
+    
+    D --> E["findPendingTransaction()"]
+    E --> F["DB[txn_info] (Slave)
+Query: status=PENDING AND created_on BETWEEN (start, end)"]
+    
+    F --> G["filterMandatePendingTxn()"]
+    G --> H["pushDataToPendingTransactionTopic()"]
+    
+    H --> I["Kafka Topic: upi_switchv2_pendingtxnv2"]
+    
+    I --> J["Log: Job executed SuccessFully"]
+    J --> K["commit() -> DB[jobs_properties]"]
+  </div>
+
+  <!-- TABLE: Active Jobs -->
+  <h2>Active Jobs (Kibana Verified)</h2>
+  <table>
+    <tr><th>Job Name</th><th>Class</th><th>Hits (3d)</th><th>Kafka Topic</th></tr>
+    <tr><td>switchV2.check.status.retry.txn.job</td><td>SwitchV2CheckStatusRetryJob</td><td>High</td><td>upi_switchv2_pendingtxnv2</td></tr>
+    <tr><td>switchV2.check.status.init.txn.job</td><td>SwitchV2CheckStatusInitJob</td><td>Medium</td><td>upi_switchv2_pendingtxnv2</td></tr>
+    <tr><td>switchV2.check.status.job</td><td>SwitchV2TxnStatusJob</td><td>Medium</td><td>upi_switchv2_pendingtxnv2</td></tr>
+    <tr><td>switchV2.check.status.delayed.job</td><td>SwitchV2TxnStatusDelayedJob</td><td>Periodic</td><td>upi_switchv2_pendingtxnv2</td></tr>
+    <tr><td>switchV2.complaint.check.status.job</td><td>SwitchV2ComplaintCheckStatusJob</td><td>Periodic</td><td>upi_switchv2_pendingtxnv2</td></tr>
+  </table>
+
+  <!-- TABLE: DB Write Points -->
+  <h2>DB Write Points</h2>
+  <table>
+    <tr><th>Step</th><th>Service</th><th>Table</th><th>Operation</th><th>Purpose</th></tr>
+    <tr><td>Job Commit</td><td>tpap-transactional-jobs</td><td>jobs_properties</td><td>UPDATE</td><td>Update cursor/offset for next run</td></tr>
+    <tr><td>Retry Update</td><td>tpap-transactional-jobs</td><td>txn_retry_info</td><td>UPDATE</td><td>Set next retry time & increment count</td></tr>
+    <tr><td>Retry Delete</td><td>tpap-transactional-jobs</td><td>txn_retry_info</td><td>DELETE</td><td>Cleanup terminal or exhausted retries</td></tr>
+  </table>
+
+  <h2>Feature Flags</h2>
+  <table>
+    <tr><th>Flag</th><th>Value</th><th>Verified Via</th></tr>
+    <tr><td>switchv2.txn.status.job</td><td>true</td><td>Logs / Annotation</td></tr>
+    <tr><td>switchV2.check.status.init.txn.job</td><td>true</td><td>Logs / Annotation</td></tr>
+    <tr><td>IS_PENDING_TXN_V3_ENABLED</td><td>true</td><td>Code Logic / Cache</td></tr>
+    <tr><td>IS_TXN_STATUS_STATUS_JOB_NEW_API_ENABLED</td><td>true</td><td>DB upi_config</td></tr>
+  </table>
+
+</body>
+</html>
