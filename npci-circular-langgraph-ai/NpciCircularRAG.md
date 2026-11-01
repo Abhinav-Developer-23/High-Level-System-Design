@@ -271,7 +271,7 @@ LangChain pieces: a custom loader that turns Textract blocks into `Document`s wi
 
 ### 4.7 Embed and write
 
-- **Embedding model** (how embeddings and similarity work, and which model to pick: [section 13](#13-rag-basics-how-text-becomes-numbers)): Claude does not produce embeddings. Use a dedicated embedding model, e.g. Amazon Titan Text Embeddings V2 on Bedrock (data already lives in AWS) or Voyage AI. Store the model name and version on every chunk. Changing the model means re-embedding everything into a new collection and switching an alias, because vectors from two models aren't comparable.
+- **Embedding model** (how embeddings and similarity work, and which model to pick: [section 13](#13-rag-basics-how-text-becomes-numbers)): Claude does not produce embeddings. We use **OpenAI `text-embedding-3-small`** (1536 numbers per chunk); the circulars are public documents, so sending their text to OpenAI raises no confidentiality issue. Store the model name and version on every chunk. Changing the model means re-embedding everything into a new collection and switching an alias, because vectors from two models aren't comparable.
 - **Deterministic UUIDs:** `uuid5(circular_id + ":" + clause_path + ":" + chunk_no)`. Re-running the same file overwrites the same objects instead of creating duplicates.
 - **Write order matters:** (1) write all chunks with `visible=false`, (2) write registry and rule ledger rows in one Postgres transaction, (3) run the supersession step (section 6), (4) flip the chunks to `visible=true`, (5) mark the manifest `INDEXED`. Weaviate has no multi-object transactions, so the `visible` flag is how a half-written circular stays out of answers.
 - **Re-chunking leaves orphans:** if a new chunker produces fewer chunks, delete the leftovers with `delete_many(where=circular_id == X AND ingest_version != current)`.
@@ -754,7 +754,7 @@ The second question is a follow-up in the same thread (`pm-1`): the checkpointer
 | OCR fallback for bad pages | Claude (image/PDF input) | Only when Textract confidence is low. |
 | `understand` (query) | Claude Sonnet | Could move to a Haiku model for latency and cost; measure on the eval first. |
 | `generate` (query) | Claude Sonnet | Answer with citations. |
-| Embeddings | **Not Claude** | Titan Text Embeddings V2 or Voyage. |
+| Embeddings | **Not Claude** | OpenAI `text-embedding-3-small`. |
 
 ```python
 from datetime import date
@@ -858,13 +858,13 @@ Metrics:
 
 **RAG** (retrieval-augmented generation) is three steps: **retrieve** the passages relevant to the question, **augment** the prompt with them, and let the LLM **generate** an answer from them. The model answers from your documents instead of from memory, and can cite them. Retrieval is where embeddings come in.
 
-![Left: a clause goes through the tokenizer and the embedding model and comes out as a vector of 1024 numbers. Right: in a toy 2-D picture the question points almost the same way as the Lite clause (cosine 0.98) and far from the ISD clause (cosine 0.28)](svg/n05-embeddings-cosine.svg)
+![Left: a clause goes through the tokenizer and the embedding model and comes out as a vector of 1536 numbers. Right: in a toy 2-D picture the question points almost the same way as the Lite clause (cosine 0.98) and far from the ISD clause (cosine 0.28)](svg/n05-embeddings-cosine.svg)
 
 ### 13.1 Embedding: text → a list of numbers
 
 1. **Tokenizer.** The text is cut into word pieces (tokens), and each piece becomes an id from a fixed vocabulary.
-2. **Embedding model.** A transformer reads all the tokens together (so "limit" next to "Lite" means something different from "limit" next to "claim") and outputs **one vector**: a fixed-length list of numbers, e.g. 1024 for Titan Text Embeddings V2. A 3-word question and a 300-word clause both become 1024 numbers.
-3. **What the numbers mean.** None of them means anything on its own. Together they are a position in a 1024-dimension "meaning space". The model was trained on millions of pairs of related texts (question ↔ answer, title ↔ body) to put related texts close together and unrelated ones far apart. That's why *"tap to pay at a card machine"* lands near *"Tap & Pay on PoS"* without sharing a word.
+2. **Embedding model.** A transformer reads all the tokens together (so "limit" next to "Lite" means something different from "limit" next to "claim") and outputs **one vector**: a fixed-length list of numbers: 1536 for OpenAI `text-embedding-3-small`. A 3-word question and a 300-word clause both become 1536 numbers.
+3. **What the numbers mean.** None of them means anything on its own. Together they are a position in a 1536-dimension "meaning space". The model was trained on millions of pairs of related texts (question ↔ answer, title ↔ body) to put related texts close together and unrelated ones far apart. That's why *"tap to pay at a card machine"* lands near *"Tap & Pay on PoS"* without sharing a word.
 
 Two rules follow: use **the same model** for chunks and questions (two models = two different spaces), and when you change models, **re-embed everything**.
 
@@ -882,7 +882,7 @@ A · B = a1·b1 + a2·b2 + ... + an·bn        (dot product)
  0  -> 90 degrees apart -> unrelated
 ```
 
-Worked example with toy 3-number vectors (real ones have 1024):
+Worked example with toy 3-number vectors (real ones have 1536):
 
 | Text | Vector | Dot with question | Cosine with question |
 |---|---|---|---|
@@ -894,7 +894,7 @@ The Lite clause wins: its vector points almost the same way as the question (abo
 
 Things interviewers like to hear:
 
-- **Cosine vs dot product vs Euclidean.** If vectors are normalised to length 1 (Titan V2 can do this), cosine and dot product give the same ranking, and so does Euclidean distance. Weaviate's default metric is cosine and it reports `distance = 1 − cosine`, so smaller is closer.
+- **Cosine vs dot product vs Euclidean.** If vectors are normalised to length 1 (OpenAI's embeddings already are), cosine and dot product give the same ranking, and so does Euclidean distance. Weaviate's default metric is cosine and it reports `distance = 1 − cosine`, so smaller is closer.
 - **Search = nearest neighbours.** Comparing the question with every chunk is exact but costs O(N). Weaviate builds an **HNSW** index: a layered graph where each vector links to its near neighbours, and the search hops through the graph towards the question. That's approximate nearest neighbour search: much faster, and it occasionally misses the true best match. With a few thousand chunks, either is instant.
 - **Embeddings are bad at exact tokens.** `OC-229A`, `₹5000`, `ISD` carry little "meaning", so their vectors aren't distinctive. **BM25** (keyword search: a term scores higher the more often it appears in a chunk and the rarer it is across all chunks) catches them. **Hybrid search** runs both and fuses the scores; `alpha` sets the mix (0 = only BM25, 1 = only vectors).
 - **Similar ≠ correct.** The ₹500 and ₹1,000 clauses have almost the same vector. Similarity can't tell which one is in force, which is why validity dates and the rule ledger exist (section 6).
@@ -903,13 +903,41 @@ Things interviewers like to hear:
 
 | Model | Where it runs | Why pick it | Watch out for |
 |---|---|---|---|
-| **Amazon Titan Text Embeddings V2** (my pick here) | AWS Bedrock | Data and job are already in AWS, so text never leaves the account. 1024 dims (or 512/256), long input, cheap. | Retrieval quality is good, not top of the leaderboards. |
+| **OpenAI text-embedding-3-small** (my pick) | OpenAI API, or Azure OpenAI | Good retrieval quality, very cheap, 1536 dims, can be shortened with `dimensions`. Best supported in LangChain and Weaviate. `-large` (3072 dims) is the upgrade. | Questions are sent to OpenAI too (see below). |
+| **Amazon Titan Text Embeddings V2** | AWS Bedrock | Data never leaves the AWS account. 1024 dims (or 512/256), cheap. | Retrieval quality is good, not top of the leaderboards. |
 | **Voyage AI** (voyage-3 family) | Voyage API, also on AWS Marketplace | Anthropic's recommended embedding provider; strong retrieval quality; has finance and legal variants. | Another vendor and data agreement. |
 | **Cohere Embed** (v3 and newer) | Cohere API, Bedrock | Strong multilingual support; separate modes for documents and queries. | Must send the right `input_type` for each side. |
-| **OpenAI text-embedding-3** (small / large) | OpenAI / Azure | Popular, cheap, dimensions can be shortened. | Data goes to another provider; usually a compliance discussion in Indian payments. |
 | **BAAI bge-m3** (open source) | Self-hosted GPU/CPU | No API, data stays in-house; multilingual (Hindi); dense + sparse vectors from one model. | You run, scale and monitor it yourself. |
 
-How to choose: shortlist two or three, embed the corpus with each, and measure **recall@6 on the golden question set** (is the right clause in the top 6). Pick the cheapest one that's within a point or two of the best. For this system: **Titan V2** for the AWS fit, **Voyage** if quality matters most, **bge-m3** if nothing may leave the network.
+How to choose: shortlist two or three, embed the corpus with each, and measure **recall@6 on the golden question set** (is the right clause in the top 6). Pick the cheapest one that's within a point or two of the best. For this system: **OpenAI `text-embedding-3-small`**; `-large` if the eval shows a real gain; **Titan V2** if the company wants everything inside AWS; **bge-m3** if nothing may leave the network.
+
+**OpenAI `text-embedding-3` in this design**
+
+| | `text-embedding-3-small` (used) | `text-embedding-3-large` |
+|---|---|---|
+| Numbers per vector | 1536 | 3072 |
+| Quality | Good | Better |
+| Cost | Lowest | About 6× small |
+| Max input | 8,191 tokens | 8,191 tokens |
+
+- **Why small:** the corpus is a few thousand chunks, so neither cost nor memory is a real concern; small is the default, and you move to large only if recall@6 on the golden set improves enough to matter.
+- **Shortening vectors:** both models accept a `dimensions` parameter (e.g. large at 1024). They're trained so the first numbers carry the most meaning, so cutting the tail loses little quality and saves memory in Weaviate.
+- **Already normalised:** OpenAI returns vectors of length 1, so cosine and dot product rank the same. Weaviate's default cosine distance works as is.
+- **What leaves the company:** the chunks are public NPCI circulars, so embedding them through OpenAI is fine. The **questions** are embedded too, so they also go to OpenAI: the tool tells users not to paste customer data (VPAs, account numbers, transaction ids). If compliance wants it inside the company's cloud agreement, use the same models through **Azure OpenAI**.
+- **Same model for both sides:** chunks at ingest and questions at query time both use `text-embedding-3-small`. A different model for questions would give vectors in a different space.
+
+```python
+from langchain_openai import OpenAIEmbeddings
+
+emb = OpenAIEmbeddings(model="text-embedding-3-small")          # 1536 numbers per text
+
+# ingest: embed the clause with its contextual header
+vectors = emb.embed_documents([f"{c.header}\n{c.text}" for c in chunks])
+
+# query time: same model
+qvec = emb.embed_query("What is the UPI Lite per transaction limit?")
+# then: chunks_collection.query.hybrid(query=question, vector=qvec, alpha=0.5, filters=...)
+```
 
 ---
 
@@ -953,7 +981,7 @@ Questions an interviewer is likely to ask about this resume line. Each answer st
 
 #### Q2. Claude Sonnet doesn't produce embeddings. So what embedded your chunks?
 
-**A separate embedding model.** Anthropic doesn't offer one. Something like Amazon Titan Text Embeddings V2 on Bedrock (the data is already in AWS) or Voyage AI. Claude is used for extraction at ingest time and for answering at query time. Each chunk stores the embedding model name, because changing models means re-embedding everything into a new collection and swapping over: vectors from two models live in different spaces and can't be compared. Model options and how to choose: [section 13.3](#133-which-embedding-model-to-use).
+**A separate embedding model: OpenAI `text-embedding-3-small`.** Anthropic doesn't offer one. It's cheap, good at retrieval, gives 1536 numbers per chunk, and the circulars are public, so sending them to OpenAI is fine. Questions are embedded with the same model. Why not `-large`? The corpus is small, so I'd only switch if it measurably improved recall on the golden question set. Claude is used for extraction at ingest time and for answering at query time. Each chunk stores the embedding model name, because changing models means re-embedding everything into a new collection and swapping over: vectors from two models live in different spaces and can't be compared. Model options and how to choose: [section 13.3](#133-which-embedding-model-to-use).
 
 #### Q3. "Multiple circulars": how many? "Quickly": how quickly?
 
@@ -1149,7 +1177,7 @@ Every answer ends with a **proof** block. For each citation: the **circular id**
 
 #### Q40. How does vector similarity actually work?
 
-Text goes through a tokenizer and an embedding model and comes out as a fixed-length vector (1024 numbers for Titan V2). Texts with similar meaning get vectors pointing in similar directions, because the model was trained to put related pairs close together. Closeness is **cosine similarity**: dot product divided by the two lengths, 1 = same direction, 0 = unrelated. Weaviate finds the nearest vectors with an **HNSW** graph index (approximate, fast), and hybrid search adds **BM25** for exact tokens like `OC-229A`. Worked example in [section 13.2](#132-vector-similarity-cosine).
+Text goes through a tokenizer and an embedding model and comes out as a fixed-length vector (1536 numbers for `text-embedding-3-small`). Texts with similar meaning get vectors pointing in similar directions, because the model was trained to put related pairs close together. Closeness is **cosine similarity**: dot product divided by the two lengths, 1 = same direction, 0 = unrelated. Weaviate finds the nearest vectors with an **HNSW** graph index (approximate, fast), and hybrid search adds **BM25** for exact tokens like `OC-229A`. Worked example in [section 13.2](#132-vector-similarity-cosine).
 
 #### Q41. Have you heard of PageIndex? Why not use it instead of RAG?
 

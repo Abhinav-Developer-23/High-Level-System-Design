@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="900" height="372" viewBox="0 0 900 372" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
   <title>Text to vector, and cosine similarity</title>
-  <desc>Left: a clause is split into tokens, the embedding model turns it into 1024 numbers. Right: a toy two-dimensional picture where the question vector points almost the same way as the UPI Lite clause (cosine 0.98) and far from the ISD clause (cosine 0.28).</desc>
+  <desc>Left: a clause is split into tokens, the embedding model turns it into 1536 numbers. Right: a toy two-dimensional picture where the question vector points almost the same way as the UPI Lite clause (cosine 0.98) and far from the ISD clause (cosine 0.28).</desc>
   <defs>
     <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
     <marker id="arrB" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#58a6ff"/></marker>
@@ -17,10 +17,10 @@
   <rect x="24" y="128" width="432" height="44" rx="9" fill="#1c2128" stroke="#30363d"/>
   <text x="240" y="155" fill="#c9d1d9" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">The · per · trans · action · limit · … · Lite · ₹ · 1,000</text>
   <line x1="240" y1="172" x2="240" y2="202" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
-  <text x="252" y="192" fill="#8b949e" font-size="12">embedding model (e.g. Titan V2)</text>
+  <text x="252" y="192" fill="#8b949e" font-size="12">OpenAI <tspan fill="#79c0ff" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="11">text-embedding-3-small</tspan></text>
   <rect x="24" y="204" width="432" height="54" rx="9" fill="#3fb950" fill-opacity="0.10" stroke="#3fb950"/>
   <text x="240" y="229" fill="#56d364" font-size="13" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">[ 0.021, -0.148, 0.093, …, 0.067 ]</text>
-  <text x="240" y="248" fill="#8b949e" font-size="12" text-anchor="middle">one vector: 1024 numbers, the same length for any text</text>
+  <text x="240" y="248" fill="#8b949e" font-size="12" text-anchor="middle">one vector: 1536 numbers, the same length for any text</text>
   <text x="24" y="290" fill="#c9d1d9" font-size="12">No single number means anything. Together they place the text</text>
   <text x="24" y="308" fill="#c9d1d9" font-size="12">in a "meaning space": similar meaning → nearby vectors.</text>
   <text x="24" y="332" fill="#c9d1d9" font-size="12">Chunks and questions must use <tspan fill="#e6edf3" font-weight="600">the same model</tspan>,</text>
@@ -36,5 +36,5 @@
   <text x="713" y="226" fill="#79c0ff" font-size="12">question: "Lite limit?"</text>
   <text x="699" y="177" fill="#56d364" font-size="12">Lite clause · cos 0.98</text>
   <text x="492" y="136" fill="#e3b341" font-size="12">ISD clause · cos 0.28</text>
-  <text x="862" y="338" fill="#8b949e" font-size="11" text-anchor="end">toy 2-D picture; real vectors have 1024 dimensions</text>
+  <text x="862" y="338" fill="#8b949e" font-size="11" text-anchor="end">toy 2-D picture; real vectors have 1536 dimensions</text>
 </svg>
