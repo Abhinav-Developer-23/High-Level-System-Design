@@ -77,6 +77,17 @@ html.markview-dark #markview-container table th:not([style*="text-align"]) { tex
   display: block; margin: 22px auto; max-width: 100%; height: auto;
   border-radius: 14px; opacity: 1; box-shadow: 0 10px 30px rgba(0, 0, 0, .45);
 }
+/* Syntax colours (GitHub dark). MarkView runs highlight.js, but its dark theme leaves most tokens grey */
+html.markview-dark #markview-container pre code { color: #e6edf3; }
+html.markview-dark #markview-container pre code .hljs-keyword, html.markview-dark #markview-container pre code .hljs-doctag, html.markview-dark #markview-container pre code .hljs-type,
+html.markview-dark #markview-container pre code .hljs-template-tag, html.markview-dark #markview-container pre code .hljs-variable.language_ { color: #ff7b72 !important; }
+html.markview-dark #markview-container pre code .hljs-title, html.markview-dark #markview-container pre code .hljs-title.function_, html.markview-dark #markview-container pre code .hljs-section { color: #d2a8ff !important; }
+html.markview-dark #markview-container pre code .hljs-title.class_, html.markview-dark #markview-container pre code .hljs-built_in, html.markview-dark #markview-container pre code .hljs-symbol { color: #ffa657 !important; }
+html.markview-dark #markview-container pre code .hljs-string, html.markview-dark #markview-container pre code .hljs-regexp, html.markview-dark #markview-container pre code .hljs-meta .hljs-string { color: #a5d6ff !important; }
+html.markview-dark #markview-container pre code .hljs-number, html.markview-dark #markview-container pre code .hljs-literal, html.markview-dark #markview-container pre code .hljs-attr, html.markview-dark #markview-container pre code .hljs-attribute,
+html.markview-dark #markview-container pre code .hljs-meta, html.markview-dark #markview-container pre code .hljs-operator, html.markview-dark #markview-container pre code .hljs-variable { color: #79c0ff !important; }
+html.markview-dark #markview-container pre code .hljs-name, html.markview-dark #markview-container pre code .hljs-tag, html.markview-dark #markview-container pre code .hljs-selector-tag { color: #7ee787 !important; }
+html.markview-dark #markview-container pre code .hljs-params, html.markview-dark #markview-container pre code .hljs-subst { color: #e6edf3 !important; }
 /* Code comments in yellow so they stand out on the dark background */
 html.markview-dark #markview-container pre code .hljs-comment,
 html.markview-dark #markview-container pre code .hljs-quote { color: #e3b341 !important; font-style: italic; }

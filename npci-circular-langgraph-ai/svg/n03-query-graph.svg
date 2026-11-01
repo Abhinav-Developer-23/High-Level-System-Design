@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="840" viewBox="0 0 800 840" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>The question-answering LangGraph</title>
+  <desc>START to understand. Conditional edges from understand: rule_value or what_changed to rule_lookup, explain to retrieve, off-topic or no product to clarify_or_refuse. rule_lookup to retrieve. Then retrieve, rerank, resolve_versions, generate, check_grounding. Conditional edges from check_grounding: ok to cite_sources then END, retry once back to retrieve, give_up to not_found. Solid gray arrows are normal edges, dashed amber arrows are conditional edges.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="799" height="839" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- START -->
+  <rect x="325" y="22" width="70" height="24" rx="12" fill="#3fb950" fill-opacity="0.13" stroke="#3fb950"/>
+  <text x="360" y="39" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">START</text>
+  <line x1="360" y1="46" x2="360" y2="68" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <g font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="14" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <!-- understand -->
+    <rect x="240" y="70" width="240" height="50" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+    <text x="360" y="91">understand</text>
+    <!-- rule_lookup -->
+    <rect x="24" y="170" width="190" height="50" rx="9" fill="#39c5cf" fill-opacity="0.10" stroke="#39c5cf"/>
+    <text x="119" y="191">rule_lookup</text>
+    <!-- refuse -->
+    <rect x="560" y="170" width="216" height="50" rx="9" fill="#f85149" fill-opacity="0.10" stroke="#f85149"/>
+    <text x="668" y="191">clarify_or_refuse</text>
+    <!-- retrieve -->
+    <rect x="240" y="270" width="240" height="50" rx="9" fill="#39c5cf" fill-opacity="0.10" stroke="#39c5cf"/>
+    <text x="360" y="291">retrieve</text>
+    <!-- rerank -->
+    <rect x="240" y="350" width="240" height="50" rx="9" fill="#1c2128" stroke="#30363d"/>
+    <text x="360" y="371">rerank</text>
+    <!-- resolve_versions -->
+    <rect x="240" y="430" width="240" height="50" rx="9" fill="#d29922" fill-opacity="0.10" stroke="#d29922"/>
+    <text x="360" y="451">resolve_versions</text>
+    <!-- generate -->
+    <rect x="240" y="510" width="240" height="50" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+    <text x="360" y="531">generate</text>
+    <!-- check_grounding -->
+    <rect x="240" y="590" width="240" height="50" rx="9" fill="#1c2128" stroke="#30363d"/>
+    <text x="360" y="611">check_grounding</text>
+    <!-- not_found -->
+    <rect x="560" y="590" width="216" height="50" rx="9" fill="#f85149" fill-opacity="0.10" stroke="#f85149"/>
+    <text x="668" y="611">not_found</text>
+  </g>
+
+  <g font-size="12" fill="#8b949e" text-anchor="middle">
+    <text x="360" y="110">Claude: intent, product, as_of</text>
+    <text x="119" y="210">ledger version on as_of</text>
+    <text x="668" y="210">"which product?" / off-topic</text>
+    <text x="360" y="310">hybrid · valid on as_of · top 20</text>
+    <text x="360" y="390">cross-encoder: 20 → 6</text>
+    <text x="360" y="470">label current vs history</text>
+    <text x="360" y="550">Claude Sonnet, cited answer</text>
+    <text x="360" y="630">every number in a source?</text>
+    <text x="668" y="630">"not in the circulars"</text>
+  </g>
+
+  <!-- conditional edges from understand -->
+  <polyline points="240,95 119,95 119,168" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="127" y="140" fill="#e3b341" font-size="11">rule_value / what_changed</text>
+  <polyline points="480,95 668,95 668,168" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="676" y="140" fill="#e3b341" font-size="11">off-topic / no product</text>
+  <line x1="360" y1="120" x2="360" y2="268" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="368" y="200" fill="#e3b341" font-size="11">explain</text>
+
+  <!-- rule_lookup -> retrieve -->
+  <polyline points="119,220 119,295 238,295" fill="none" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="127" y="262" fill="#8b949e" font-size="11">fetch clause text to cite</text>
+
+  <!-- main chain -->
+  <line x1="360" y1="320" x2="360" y2="348" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="360" y1="400" x2="360" y2="428" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="360" y1="480" x2="360" y2="508" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <line x1="360" y1="560" x2="360" y2="588" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- conditional edges from check_grounding -->
+  <polyline points="480,603 520,603 520,295 482,295" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="528" y="450" fill="#e3b341" font-size="11">retry (once)</text>
+  <line x1="480" y1="628" x2="558" y2="628" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="520" y="622" fill="#e3b341" font-size="11" text-anchor="middle">give_up</text>
+  <line x1="360" y1="640" x2="360" y2="668" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="368" y="659" fill="#e3b341" font-size="11">ok</text>
+
+  <!-- cite_sources -->
+  <rect x="240" y="670" width="240" height="64" rx="9" fill="#3fb950" fill-opacity="0.12" stroke="#3fb950"/>
+  <text x="360" y="691" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">cite_sources</text>
+  <text x="360" y="709" fill="#8b949e" font-size="12" text-anchor="middle">proof: circular id, clause, page,</text>
+  <text x="360" y="725" fill="#8b949e" font-size="12" text-anchor="middle">quoted text, PDF link</text>
+  <line x1="360" y1="734" x2="360" y2="756" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+
+  <!-- END -->
+  <rect x="325" y="758" width="70" height="24" rx="12" fill="#3fb950" fill-opacity="0.13" stroke="#3fb950"/>
+  <text x="360" y="775" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">END</text>
+  <line x1="668" y1="220" x2="668" y2="250" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="668" y="266" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">END</text>
+  <line x1="668" y1="640" x2="668" y2="668" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="668" y="684" fill="#56d364" font-size="12" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">END</text>
+
+  <!-- legend -->
+  <line x1="24" y1="814" x2="64" y2="814" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <text x="72" y="818" fill="#8b949e" font-size="12">normal edge</text>
+  <line x1="170" y1="814" x2="210" y2="814" stroke="#d29922" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arrA)"/>
+  <text x="218" y="818" fill="#8b949e" font-size="12">conditional edge (route function picks one)</text>
+</svg>
