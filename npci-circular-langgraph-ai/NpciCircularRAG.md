@@ -1279,6 +1279,15 @@ What we did, in order:
 
 **Result:** measured on the golden question set after each step, higher accuracy (more questions with the right clause in the top 6 and the right answer) and **far fewer hallucinations**, because the model only answers from clauses it must quote, and the grounding check blocks anything else.
 
+**If they ask what these are** (one breath each; details in [section 15](#15-making-rag-more-accurate-bm25-fusion-reranking-and-mmr)):
+
+| Term | What it is | Simple example |
+|---|---|---|
+| **BM25** | Keyword search. A clause scores high when it contains the question's words, especially **rare** words, and long clauses don't win just for being long. | Question has "OC-229A". Only a few clauses contain that exact token, so BM25 ranks them first. Vector search alone often misses it because an id carries little "meaning". |
+| **Hybrid search** | Run BM25 and vector search together and merge the two ranked lists (`alpha` sets the mix). | BM25 finds "OC-229A"; vectors find "tap to pay at a card machine" → "Tap & Pay on PoS". |
+| **Reranking** | A second model (a cross-encoder) reads the question **and** one clause **together** and scores how well that clause answers it. Slow, so it only reorders the top ~40 from search. | For "Tap & Pay limit on PoS without extra authentication", search ranks OC-186A's intro first (same topic); the reranker puts "capped at ₹5000, no additional factor of authentication" first (the actual answer). |
+| **MMR** (Maximal Marginal Relevance) | Picks the final chunks one at a time: relevant to the question **and** not a near-copy of what's already picked. `λ × relevance − (1 − λ) × similarity to picked`. | Top results are "respond in 23 days" twice (from two circulars) and "7 days grace". MMR keeps one "23 days" and adds "7 days grace", so the answer has both facts. |
+
 > [!WARNING]
 > Quote real numbers only if you measured them (e.g. "recall@6 went from X to Y"). If you didn't, say *"measured on a golden set of ~100 questions after each change"* and describe the direction. Don't invent percentages.
 
