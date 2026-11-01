@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="760" viewBox="0 0 900 760" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Resuming a thread on a follow-up</title>
+  <desc>The browser sends the old thread_id. The graph loads the latest checkpoint, merges the new message in, skips plan because an agent conversation exists, appends the new task, sends the whole conversation to the Anthropic API, runs the tools it asks for, saves a checkpoint after each node and streams events back.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+    <marker id="arrP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="759" rx="14" fill="#161b22" stroke="#30363d"/>
+  <rect x="10" y="24" width="140" height="36" rx="8" fill="#1c2128" fill-opacity="1" stroke="#30363d"/>
+  <text x="80" y="47" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Browser</text>
+  <line x1="80" y1="60" x2="80" y2="610" stroke="#30363d" stroke-width="2" stroke-dasharray="4 5"/>
+  <rect x="180" y="24" width="140" height="36" rx="8" fill="#1c2128" fill-opacity="1" stroke="#30363d"/>
+  <text x="250" y="47" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">FastAPI server</text>
+  <line x1="250" y1="60" x2="250" y2="610" stroke="#30363d" stroke-width="2" stroke-dasharray="4 5"/>
+  <rect x="380" y="24" width="140" height="36" rx="8" fill="#1c2128" fill-opacity="1" stroke="#30363d"/>
+  <text x="450" y="47" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle">Graph (LangGraph)</text>
+  <line x1="450" y1="60" x2="450" y2="610" stroke="#30363d" stroke-width="2" stroke-dasharray="4 5"/>
+  <rect x="570" y="24" width="140" height="36" rx="8" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf"/>
+  <text x="640" y="47" fill="#56d4dd" font-size="13" font-weight="600" text-anchor="middle">Checkpointer</text>
+  <line x1="640" y1="60" x2="640" y2="610" stroke="#30363d" stroke-width="2" stroke-dasharray="4 5"/>
+  <text x="640" y="78" fill="#8b949e" font-size="11" text-anchor="middle">var/checkpoints.sqlite</text>
+  <rect x="742" y="24" width="140" height="36" rx="8" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+  <text x="812" y="47" fill="#d2a8ff" font-size="13" font-weight="600" text-anchor="middle">Anthropic API</text>
+  <line x1="812" y1="60" x2="812" y2="610" stroke="#30363d" stroke-width="2" stroke-dasharray="4 5"/>
+  <text x="812" y="78" fill="#8b949e" font-size="11" text-anchor="middle">via ChatAnthropic</text>
+  <line x1="80" y1="128" x2="247" y2="128" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="90" y="103" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" data-nocheck="1">POST /api/chat</text>
+  <text x="90" y="120" fill="#c9d1d9" font-size="12"  data-nocheck="1">{message, thread_id}</text>
+  <line x1="250" y1="182" x2="447" y2="182" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="260" y="157" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" data-nocheck="1">astream(input, config)</text>
+  <text x="260" y="174" fill="#c9d1d9" font-size="12"  data-nocheck="1">config = {thread_id: "7f3a…"}</text>
+  <line x1="450" y1="236" x2="637" y2="236" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#arrT)"/>
+  <text x="460" y="211" fill="#c9d1d9" font-size="12"  data-nocheck="1">get latest checkpoint</text>
+  <text x="460" y="228" fill="#c9d1d9" font-size="12"  data-nocheck="1">for thread_id 7f3a…</text>
+  <line x1="640" y1="290" x2="453" y2="290" stroke="#39c5cf" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrT)"/>
+  <text x="460" y="265" fill="#c9d1d9" font-size="12"  data-nocheck="1">saved state: messages, system,</text>
+  <text x="460" y="282" fill="#c9d1d9" font-size="12"  data-nocheck="1">agent_messages, txn_rows …</text>
+  <rect x="300" y="312" width="300" height="54" rx="8" fill="#1c2128" stroke="#30363d"/>
+  <text x="314" y="334" fill="#e6edf3" font-size="13">merge input {question, options} into it</text>
+  <text x="314" y="353" fill="#c9d1d9" font-size="13">then run START → triage → npci</text>
+  <rect x="300" y="392" width="300" height="54" rx="8" fill="#d29922" fill-opacity="0.12" stroke="#d29922"/>
+  <text x="314" y="414" fill="#e3b341" font-size="13">route_after_npci(): agent_messages exist</text>
+  <text x="314" y="433" fill="#e3b341" font-size="13">→ investigate (skip plan): add new task</text>
+  <line x1="450" y1="492" x2="809" y2="492" stroke="#bc8cff" stroke-width="1.5" marker-end="url(#arrP)"/>
+  <text x="460" y="467" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" data-nocheck="1">agent: system + agent_messages</text>
+  <text x="460" y="484" fill="#c9d1d9" font-size="12"  data-nocheck="1">turn 1's tool calls + results + new task</text>
+  <line x1="812" y1="546" x2="453" y2="546" stroke="#bc8cff" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrP)"/>
+  <text x="460" y="521" fill="#c9d1d9" font-size="12"  data-nocheck="1">AIMessage with tool calls → tools → agent …</text>
+  <text x="460" y="538" fill="#c9d1d9" font-size="12"  data-nocheck="1">until it answers without a tool call</text>
+  <line x1="450" y1="594" x2="637" y2="594" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#arrT)"/>
+  <text x="460" y="569" fill="#c9d1d9" font-size="12"  data-nocheck="1">save a checkpoint</text>
+  <text x="460" y="586" fill="#c9d1d9" font-size="12"  data-nocheck="1">after every node</text>
+  <line x1="450" y1="594" x2="83" y2="594" stroke="#3fb950" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrG)"/>
+  <text x="90" y="569" fill="#c9d1d9" font-size="12"  data-nocheck="1">SSE events: node_start,</text>
+  <text x="90" y="586" fill="#c9d1d9" font-size="12"  data-nocheck="1">tool_use, final report</text>
+  <rect x="24" y="636" width="852" height="100" rx="10" fill="#58a6ff" fill-opacity="0.08" stroke="#58a6ff"/>
+  <text x="44" y="662" fill="#79c0ff" font-size="14" font-weight="600">One memory: the whole conversation lives in the checkpoint</text>
+  <text x="44" y="686" fill="#c9d1d9" font-size="13"><tspan fill="#56d4dd" font-weight="600">agent_messages</tspan> holds every task, tool call and tool result of this thread (reducer: add_messages).</text>
+  <text x="44" y="708" fill="#c9d1d9" font-size="13">The <tspan fill="#d2a8ff" font-weight="600">Anthropic API is stateless</tspan>: every call sends the whole list again.</text>
+  <text x="44" y="728" fill="#8b949e" font-size="12">So resuming a thread = load the checkpoint, append one HumanMessage, call the model.</text>
+</svg>

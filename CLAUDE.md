@@ -36,6 +36,7 @@ Keep MySQL console output / EXPLAIN result sets as code blocks. They're not diag
 ## Repo notes
 
 - This repo is fully vibe-coded: Claude writes and maintains all the notes, diagrams and tooling. Own the result end to end (accuracy, rendering, links, git state); don't hand steps back to the user.
+- Don't write or maintain unit tests for any code in this repo (e.g. `langgraph-ai-debugger/`): no test files, no pytest setup, no test step in CI. Check changes by linting, importing, or a quick throwaway run instead.
 - Keep `main` complete. All work must end up in `main`: before finishing, check `git branch -a` (fetch with Windows git first) and merge any branch that has commits missing from `main` (`git branch -r --no-merged main` must be empty), then push.
 - Many files have CRLF line endings. Preserve them when rewriting a file.
 - Git has no user identity configured in WSL. Pass it with `git -c user.name=… -c user.email=…`, matching earlier commits.

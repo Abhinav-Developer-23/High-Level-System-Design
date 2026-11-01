@@ -1,0 +1,86 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="720" viewBox="0 0 900 720" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Production data model</title>
+  <desc>Five groups of tables in one database: users, threads and LangGraph's checkpoint tables (deleted 30 days after the last activity), and llm_calls and usage_daily, which keep billing data after the conversation is gone.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="719" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="450" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">ONE DATABASE: WHAT EXPIRES AFTER 30 DAYS AND WHAT IS KEPT</text>
+  <line x1="24" y1="50" x2="876" y2="50" stroke="#30363d"/>
+  <rect x="24" y="70" width="250" height="187" rx="9" fill="#1c2128" stroke="#58a6ff" stroke-opacity="0.8"/>
+  <path d="M24 104 V79 Q24 70 33 70 H265 Q274 70 274 79 V104 Z" fill="#58a6ff" fill-opacity="0.13"/>
+  <text x="38" y="92" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">users</text>
+  <rect x="219.6" y="78" width="44.4" height="20" rx="10" fill="#58a6ff" fill-opacity="0.16" stroke="#58a6ff"/>
+  <text x="241.8" y="92" fill="#79c0ff" font-size="11" font-weight="600" text-anchor="middle">kept</text>
+  <text x="38" y="124" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">id  (login name)  PK</text>
+  <text x="38" y="143" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">display_name, email</text>
+  <text x="38" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">team, role</text>
+  <text x="38" y="181" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">daily_question_limit</text>
+  <text x="38" y="200" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">monthly_budget_usd</text>
+  <text x="38" y="219" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">is_blocked</text>
+  <text x="38" y="238" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">created_at</text>
+  <rect x="324" y="70" width="250" height="187" rx="9" fill="#1c2128" stroke="#d29922" stroke-opacity="0.8"/>
+  <path d="M324 104 V79 Q324 70 333 70 H565 Q574 70 574 79 V104 Z" fill="#d29922" fill-opacity="0.13"/>
+  <text x="338" y="92" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">threads</text>
+  <rect x="473.4" y="78" width="90.6" height="20" rx="10" fill="#d29922" fill-opacity="0.16" stroke="#d29922"/>
+  <text x="518.7" y="92" fill="#e3b341" font-size="11" font-weight="600" text-anchor="middle">TTL 30 days</text>
+  <text x="338" y="124" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">id  = LangGraph thread_id  PK</text>
+  <text x="338" y="143" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">user_id → users</text>
+  <text x="338" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">title, system, intent</text>
+  <text x="338" y="181" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">status, turns, cost_usd</text>
+  <text x="338" y="200" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">created_at, updated_at</text>
+  <text x="338" y="219" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">expires_at = last msg + 30 d</text>
+  <text x="338" y="238" fill="#8b949e" font-size="12" ></text>
+  <rect x="624" y="70" width="250" height="187" rx="9" fill="#1c2128" stroke="#d29922" stroke-opacity="0.8"/>
+  <path d="M624 104 V79 Q624 70 633 70 H865 Q874 70 874 79 V104 Z" fill="#d29922" fill-opacity="0.13"/>
+  <text x="638" y="92" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">LangGraph tables</text>
+  <rect x="773.4" y="78" width="90.6" height="20" rx="10" fill="#d29922" fill-opacity="0.16" stroke="#d29922"/>
+  <text x="818.7" y="92" fill="#e3b341" font-size="11" font-weight="600" text-anchor="middle">TTL 30 days</text>
+  <text x="638" y="124" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">checkpoints</text>
+  <text x="638" y="143" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">  thread_id, checkpoint_id,</text>
+  <text x="638" y="162" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">  parent_checkpoint_id, metadata</text>
+  <text x="638" y="181" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">checkpoint_blobs</text>
+  <text x="638" y="200" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">  thread_id, channel, blob</text>
+  <text x="638" y="219" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">checkpoint_writes</text>
+  <text x="638" y="238" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">  thread_id, checkpoint_id, task_id</text>
+  <text x="638" y="273" fill="#8b949e" font-size="11">created and used by LangGraph’s checkpointer</text>
+  <rect x="24" y="400" width="250" height="168" rx="9" fill="#1c2128" stroke="#3fb950" stroke-opacity="0.8"/>
+  <path d="M24 434 V409 Q24 400 33 400 H265 Q274 400 274 409 V434 Z" fill="#3fb950" fill-opacity="0.13"/>
+  <text x="38" y="422" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">usage_daily</text>
+  <rect x="153.60000000000002" y="408" width="110.39999999999999" height="20" rx="10" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950"/>
+  <text x="208.8" y="422" fill="#56d364" font-size="11" font-weight="600" text-anchor="middle">kept 13 months</text>
+  <text x="38" y="454" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(user_id, day)  PK</text>
+  <text x="38" y="473" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">user_id → users</text>
+  <text x="38" y="492" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">questions</text>
+  <text x="38" y="511" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">input / cache_read /</text>
+  <text x="38" y="530" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">  cache_write / output tokens</text>
+  <text x="38" y="549" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">cost_usd</text>
+  <rect x="324" y="400" width="250" height="187" rx="9" fill="#1c2128" stroke="#3fb950" stroke-opacity="0.8"/>
+  <path d="M324 434 V409 Q324 400 333 400 H565 Q574 400 574 409 V434 Z" fill="#3fb950" fill-opacity="0.13"/>
+  <text x="338" y="422" fill="#e6edf3" font-size="14" font-weight="700" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">llm_calls</text>
+  <rect x="453.6" y="408" width="110.39999999999999" height="20" rx="10" fill="#3fb950" fill-opacity="0.16" stroke="#3fb950"/>
+  <text x="508.79999999999995" y="422" fill="#56d364" font-size="11" font-weight="600" text-anchor="middle">kept 13 months</text>
+  <text x="338" y="454" fill="#e3b341" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">(id, created_at)  PK</text>
+  <text x="338" y="473" fill="#79c0ff" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">user_id → users</text>
+  <text x="338" y="492" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">thread_id  (no FK)</text>
+  <text x="338" y="511" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">turn, node, model</text>
+  <text x="338" y="530" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">4 token counts, cost_usd</text>
+  <text x="338" y="549" fill="#c9d1d9" font-size="12" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">duration_ms, request_id</text>
+  <text x="338" y="568" fill="#8b949e" font-size="12" >partitioned by month</text>
+  <polyline points="274,140 321,140" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="299.0" y="132" fill="#8b949e" font-size="11" text-anchor="middle" data-nocheck="1">1 : N</text>
+  <polyline points="574,140 621,140" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="599.0" y="132" fill="#e3b341" font-size="11" text-anchor="middle" data-nocheck="1">1 : N</text>
+  <polyline points="84,257 84,397" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="94" y="375" fill="#8b949e" font-size="11" text-anchor="start" data-nocheck="1">1 : N</text>
+  <polyline points="384,257 384,397" fill="none" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arr)"/>
+  <text x="394" y="360" fill="#8b949e" font-size="11" text-anchor="start" data-nocheck="1">thread_id kept as text:</text>
+  <text x="394" y="375" fill="#8b949e" font-size="11" text-anchor="start" data-nocheck="1">the bill outlives the thread</text>
+  <polyline points="324,520 277,520" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="299.0" y="512" fill="#8b949e" font-size="11" text-anchor="middle" data-nocheck="1">sum</text>
+  <text x="299.0" y="538" fill="#8b949e" font-size="11" text-anchor="middle" data-nocheck="1">per day</text>
+  <line x1="24" y1="640" x2="876" y2="640" stroke="#21262d"/>
+  <text x="24" y="666" fill="#c9d1d9" font-size="13">30 days after a thread’s last message, its <tspan fill="#e3b341">threads</tspan> row and all its <tspan fill="#e3b341">checkpoint</tspan> rows are deleted together.</text>
+  <text x="24" y="688" fill="#c9d1d9" font-size="13"><tspan fill="#56d364">usage_daily</tspan> and <tspan fill="#56d364">llm_calls</tspan> stay: the monthly budget, billing and reports still need them.</text>
+</svg>

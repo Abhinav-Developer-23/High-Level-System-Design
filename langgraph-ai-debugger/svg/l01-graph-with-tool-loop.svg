@@ -1,0 +1,106 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="1010" viewBox="0 0 900 1010" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>The AI debugger as a LangGraph graph</title>
+  <desc>Nodes triage, clarify, npci, plan, investigate, agent, tools, ask_user, npci_enrich, review and report. agent and tools form the tool loop. Solid gray arrows are normal edges; dashed amber arrows are conditional edges chosen by route functions.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+    <marker id="arrT" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#39c5cf"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="899" height="1009" rx="14" fill="#161b22" stroke="#30363d"/>
+  <text x="450" y="36" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5" text-anchor="middle">THE GRAPH THAT build_graph() WIRES UP</text>
+  <line x1="24" y1="50" x2="876" y2="50" stroke="#30363d"/>
+  <rect x="385" y="68" width="70" height="24" rx="12" fill="#3fb950" fill-opacity="0.13" stroke="#3fb950"/>
+  <text x="420.0" y="85" fill="#56d364" font-size="12" font-weight="700" text-anchor="middle">START</text>
+  <polyline points="420.0,92 420.0,118" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="300" y="120" width="240" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="420.0" y="142" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">triage</text>
+  <text x="420.0" y="161" fill="#8b949e" font-size="12" text-anchor="middle">regex: system, intent, ids</text>
+  <polyline points="540,146 637,146" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="589" y="139" fill="#e3b341" font-size="12" text-anchor="middle">no system</text>
+  <rect x="640" y="120" width="170" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="725.0" y="142" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">clarify</text>
+  <text x="725.0" y="161" fill="#8b949e" font-size="12" text-anchor="middle">ask “tpap or tsp?”</text>
+  <polyline points="810,146 824,146" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="826" y="134" width="50" height="24" rx="12" fill="#f85149" fill-opacity="0.13" stroke="#f85149"/>
+  <text x="851.0" y="151" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">END</text>
+  <polyline points="420.0,172 420.0,218" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="430.0" y="200" fill="#e3b341" font-size="12" text-anchor="start">system known</text>
+  <rect x="300" y="220" width="240" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="420.0" y="242" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">npci</text>
+  <text x="420.0" y="261" fill="#8b949e" font-size="12" text-anchor="middle">decode error codes in question</text>
+  <polyline points="420.0,272 420.0,318" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="430.0" y="300" fill="#e3b341" font-size="12" text-anchor="start">new question</text>
+  <polyline points="300,246 240,246 240,436 297,436" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="232" y="332" fill="#e3b341" font-size="12" text-anchor="end">follow-up:</text>
+  <text x="232" y="348" fill="#e3b341" font-size="12" text-anchor="end">skip plan</text>
+  <polyline points="540,246 868,246 868,852 543,852" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="860" y="300" fill="#e3b341" font-size="12" text-anchor="end">pure code lookup</text>
+  <text x="860" y="316" fill="#e3b341" font-size="12" text-anchor="end">(no LLM at all)</text>
+  <rect x="300" y="320" width="240" height="52" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+  <text x="420.0" y="342" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">plan</text>
+  <text x="420.0" y="361" fill="#d2a8ff" font-size="12" text-anchor="middle">LLM: numbered plan, no tools</text>
+  <polyline points="420.0,372 420.0,418" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="300" y="420" width="240" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="420.0" y="442" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">investigate</text>
+  <text x="420.0" y="461" fill="#8b949e" font-size="12" text-anchor="middle">add the task as a message</text>
+  <polyline points="420.0,472 420.0,518" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="430.0" y="500" fill="#e3b341" font-size="12" text-anchor="start">under trigger</text>
+  <polyline points="540,446 617,446" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="578" y="439" fill="#e3b341" font-size="12" text-anchor="middle">≥ 120k</text>
+  <rect x="620" y="420" width="200" height="52" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+  <text x="720.0" y="442" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">compact</text>
+  <text x="720.0" y="461" fill="#d2a8ff" font-size="12" text-anchor="middle">summarize old turns</text>
+  <polyline points="720,472 720,500 560,500 543,518" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="300" y="520" width="240" height="52" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+  <text x="420.0" y="542" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">agent</text>
+  <text x="420.0" y="561" fill="#d2a8ff" font-size="12" text-anchor="middle">LLM + bound tools</text>
+  <polyline points="540,536 617,536" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="578" y="529" fill="#e3b341" font-size="12" text-anchor="middle">tool calls</text>
+  <rect x="620" y="520" width="200" height="52" rx="9" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf"/>
+  <text x="720.0" y="542" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">tools</text>
+  <text x="720.0" y="561" fill="#56d4dd" font-size="12" text-anchor="middle">ToolNode runs them</text>
+  <polyline points="620,558 543,558" fill="none" stroke="#39c5cf" stroke-width="1.5" marker-end="url(#arrT)"/>
+  <text x="580" y="576" fill="#56d4dd" font-size="12" text-anchor="middle">results</text>
+  <polyline points="480.0,572 480.0,600 617,600 617,612" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="560" y="595" fill="#e3b341" font-size="12" text-anchor="middle" data-nocheck="1">AskUser</text>
+  <rect x="560" y="614" width="170" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="645.0" y="636" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">ask_user</text>
+  <text x="645.0" y="655" fill="#8b949e" font-size="12" text-anchor="middle">show question, stop</text>
+  <polyline points="730,640 764,640" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="766" y="628" width="50" height="24" rx="12" fill="#f85149" fill-opacity="0.13" stroke="#f85149"/>
+  <text x="791.0" y="645" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">END</text>
+  <polyline points="420.0,572 420.0,638" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="410.0" y="612" fill="#e3b341" font-size="12" text-anchor="end">no tool calls</text>
+  <rect x="300" y="640" width="240" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="420.0" y="662" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">npci_enrich</text>
+  <text x="420.0" y="681" fill="#8b949e" font-size="12" text-anchor="middle">decode codes found in findings</text>
+  <polyline points="420.0,692 420.0,738" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="430.0" y="720" fill="#e3b341" font-size="12" text-anchor="start">review on</text>
+  <polyline points="300,666 270,666 270,830 297,830" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="262" y="716" fill="#e3b341" font-size="12" text-anchor="end">review off</text>
+  <rect x="300" y="740" width="240" height="52" rx="9" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+  <text x="420.0" y="762" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">review</text>
+  <text x="420.0" y="781" fill="#d2a8ff" font-size="12" text-anchor="middle">LLM: grade answer → JSON</text>
+  <polyline points="300,766 190,766 190,458 297,458" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="182" y="600" fill="#e3b341" font-size="12" text-anchor="end">gaps found and</text>
+  <text x="182" y="616" fill="#e3b341" font-size="12" text-anchor="end">loops left: retry</text>
+  <polyline points="420.0,792 420.0,838" fill="none" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="430.0" y="820" fill="#e3b341" font-size="12" text-anchor="start">pass, or no loops left</text>
+  <rect x="300" y="840" width="240" height="52" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="420.0" y="862" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">report</text>
+  <text x="420.0" y="881" fill="#8b949e" font-size="12" text-anchor="middle">build the final markdown</text>
+  <polyline points="420.0,892 420.0,918" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <rect x="390" y="920" width="60" height="24" rx="12" fill="#f85149" fill-opacity="0.13" stroke="#f85149"/>
+  <text x="420.0" y="937" fill="#ff7b72" font-size="12" font-weight="700" text-anchor="middle">END</text>
+  <line x1="24" y1="958" x2="876" y2="958" stroke="#21262d"/>
+  <line x1="32" y1="980" x2="66" y2="980" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="74" y="984" fill="#c9d1d9" font-size="12" text-anchor="start">edge</text>
+  <line x1="124" y1="980" x2="158" y2="980" stroke="#d29922" stroke-width="1.5" stroke-dasharray="6 4" marker-end="url(#arrA)"/>
+  <text x="166" y="984" fill="#c9d1d9" font-size="12" text-anchor="start">conditional edge</text>
+  <rect x="300" y="970" width="26" height="18" rx="5" fill="#bc8cff" fill-opacity="0.12" stroke="#bc8cff"/>
+  <text x="334" y="984" fill="#c9d1d9" font-size="12" text-anchor="start">LLM node (Anthropic API)</text>
+  <rect x="510" y="970" width="26" height="18" rx="5" fill="#39c5cf" fill-opacity="0.12" stroke="#39c5cf"/>
+  <text x="544" y="984" fill="#c9d1d9" font-size="12" text-anchor="start">ToolNode</text>
+  <rect x="640" y="970" width="26" height="18" rx="5" fill="#1c2128" stroke="#30363d"/>
+  <text x="674" y="984" fill="#c9d1d9" font-size="12" text-anchor="start">plain Python</text>
+</svg>
