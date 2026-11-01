@@ -1256,9 +1256,33 @@ The circulars are public, so the corpus needs no per-document access control. Th
 
 ### 16.6 Curveballs
 
-#### Q53. What was the hardest problem?
+#### Q53. What was the hardest part of this project?
 
-**Currency, not search.** The obvious design (embed every PDF, retrieve top-k) happily returns the old ₹500 clause next to the ₹1,000 one, and the model sometimes picks the old one. The fix: tag each clause with the rule it sets, fetch every clause of the asked rule by that tag, and let the latest one in force win at query time, without ever editing stored data. (Tell this as your own story only if it happened that way; otherwise present it as the main design risk you planned for.)
+**Accuracy.** Getting *an* answer was easy; getting the *right* answer, every time, from scanned circulars that amend each other was the hard part. A wrong limit with a confident tone is worse than no tool at all, because a PM might build on it.
+
+The first version (embed every clause, take the top 5, ask the LLM) failed in four ways:
+
+| What went wrong | Example |
+|---|---|
+| The right clause never reached the prompt | "OC-229A" or "₹5000" in the question; vector search ranked the clause 9th |
+| Near-copies filled the prompt | 5 slots spent on one clause; the "7 days grace" part of the answer was missing |
+| The old value won | ₹500 and ₹1,000 clauses look almost identical as vectors |
+| The model filled gaps from memory | an answer with a number that wasn't in any retrieved clause |
+
+What we did, in order:
+
+1. **Made proof mandatory.** Every answer must cite the circular, clause and page, quote the sentence, and link the PDF. If it can't, it says "not found". A grounding check rejects any answer whose numbers aren't in the cited clauses. This came first because it made every other failure **visible**: a wrong answer now arrives with the wrong clause next to it, so we could see whether retrieval or the model was at fault.
+2. **Added BM25 next to vector search (hybrid).** Exact tokens like `OC-229A`, `ISD` and `₹5000` started being found, and `alpha` was tuned on the golden question set.
+3. **Added a cross-encoder reranker.** It reads the question and each clause together, so the clause that actually answers moved to the top instead of one that's only about the same topic.
+4. **Added MMR.** The final 6 stopped being copies of one clause, so answers that need two facts (23 days **and** 7 days grace) got both.
+5. **Fetched every clause of the asked rule by `rule_key`, latest in force wins.** That fixed ₹500 vs ₹1,000.
+
+**Result:** measured on the golden question set after each step, higher accuracy (more questions with the right clause in the top 6 and the right answer) and **far fewer hallucinations**, because the model only answers from clauses it must quote, and the grounding check blocks anything else.
+
+> [!WARNING]
+> Quote real numbers only if you measured them (e.g. "recall@6 went from X to Y"). If you didn't, say *"measured on a golden set of ~100 questions after each change"* and describe the direction. Don't invent percentages.
+
+**30-second version:** *"Accuracy. The first version sometimes missed the right clause, filled the prompt with duplicates, returned the superseded ₹500, or answered from memory. So first we made proof mandatory: every answer cites circular, clause and page with the quote, and a grounding check rejects numbers not in the sources. That made failures visible. Then we added BM25 for exact tokens like OC-229A, a cross-encoder reranker, and MMR to remove duplicates, plus fetching every clause of a rule so the latest one wins. Measured on a golden set after each step: higher accuracy and far fewer hallucinations."*
 
 #### Q54. What would you do differently?
 
