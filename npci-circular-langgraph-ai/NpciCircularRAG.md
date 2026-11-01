@@ -104,7 +104,7 @@ html.markview-dark #markview-container details:hover { border-color: #3d444d; }
 
 Design notes for an LLM tool that answers questions like *"What is the UPI Lite per-transaction limit today?"* or *"What changed in ISD-GSTIN for URCS?"* from NPCI operating circulars, with the circular number and clause as proof. Stack: **S3 → 10-minute ingestion job → Weaviate**, **LangChain** for loaders, splitters and the Weaviate retriever, **LangGraph** for the question-answering flow, **Claude Sonnet** for answers.
 
-This is a learning and interview design, not a running service. **`npci_circular_graph.py`** in this folder is a small offline version of the whole flow you can run and read (section 7), and the questions an interviewer is likely to ask are in [section 13](#13-interview-trick-questions).
+This is a learning and interview design, not a running service. **`npci_circular_graph.py`** in this folder is a small offline version of the whole flow you can run and read (section 7), and the questions an interviewer is likely to ask are in [section 15](#15-interview-trick-questions).
 
 **Resume line this backs:**
 
@@ -124,7 +124,9 @@ This is a learning and interview design, not a running service. **`npci_circular
 10. [Operations, failure handling and security](#10-operations-failure-handling-and-security)
 11. [Trade-offs and what I would change](#11-trade-offs-and-what-i-would-change)
 12. [The 60-second pitch](#12-the-60-second-pitch)
-13. [Interview trick questions](#13-interview-trick-questions)
+13. [RAG basics: how text becomes numbers](#13-rag-basics-how-text-becomes-numbers)
+14. [PageIndex: what it is, and why I used vector RAG instead](#14-pageindex-what-it-is-and-why-i-used-vector-rag-instead)
+15. [Interview trick questions](#15-interview-trick-questions)
 
 ---
 
@@ -269,7 +271,7 @@ LangChain pieces: a custom loader that turns Textract blocks into `Document`s wi
 
 ### 4.7 Embed and write
 
-- **Embedding model:** Claude does not produce embeddings. Use a dedicated embedding model, e.g. Amazon Titan Text Embeddings V2 on Bedrock (data already lives in AWS) or Voyage AI. Store the model name and version on every chunk. Changing the model means re-embedding everything into a new collection and switching an alias, because vectors from two models aren't comparable.
+- **Embedding model** (how embeddings and similarity work, and which model to pick: [section 13](#13-rag-basics-how-text-becomes-numbers)): Claude does not produce embeddings. Use a dedicated embedding model, e.g. Amazon Titan Text Embeddings V2 on Bedrock (data already lives in AWS) or Voyage AI. Store the model name and version on every chunk. Changing the model means re-embedding everything into a new collection and switching an alias, because vectors from two models aren't comparable.
 - **Deterministic UUIDs:** `uuid5(circular_id + ":" + clause_path + ":" + chunk_no)`. Re-running the same file overwrites the same objects instead of creating duplicates.
 - **Write order matters:** (1) write all chunks with `visible=false`, (2) write registry and rule ledger rows in one Postgres transaction, (3) run the supersession step (section 6), (4) flip the chunks to `visible=true`, (5) mark the manifest `INDEXED`. Weaviate has no multi-object transactions, so the `visible` flag is how a half-written circular stays out of answers.
 - **Re-chunking leaves orphans:** if a new chunker produces fewer chunks, delete the leftovers with `delete_many(where=circular_id == X AND ingest_version != current)`.
@@ -852,14 +854,98 @@ Metrics:
 
 ---
 
-## 13. Interview trick questions
+## 13. RAG basics: how text becomes numbers
+
+**RAG** (retrieval-augmented generation) is three steps: **retrieve** the passages relevant to the question, **augment** the prompt with them, and let the LLM **generate** an answer from them. The model answers from your documents instead of from memory, and can cite them. Retrieval is where embeddings come in.
+
+![Left: a clause goes through the tokenizer and the embedding model and comes out as a vector of 1024 numbers. Right: in a toy 2-D picture the question points almost the same way as the Lite clause (cosine 0.98) and far from the ISD clause (cosine 0.28)](svg/n05-embeddings-cosine.svg)
+
+### 13.1 Embedding: text → a list of numbers
+
+1. **Tokenizer.** The text is cut into word pieces (tokens), and each piece becomes an id from a fixed vocabulary.
+2. **Embedding model.** A transformer reads all the tokens together (so "limit" next to "Lite" means something different from "limit" next to "claim") and outputs **one vector**: a fixed-length list of numbers, e.g. 1024 for Titan Text Embeddings V2. A 3-word question and a 300-word clause both become 1024 numbers.
+3. **What the numbers mean.** None of them means anything on its own. Together they are a position in a 1024-dimension "meaning space". The model was trained on millions of pairs of related texts (question ↔ answer, title ↔ body) to put related texts close together and unrelated ones far apart. That's why *"tap to pay at a card machine"* lands near *"Tap & Pay on PoS"* without sharing a word.
+
+Two rules follow: use **the same model** for chunks and questions (two models = two different spaces), and when you change models, **re-embed everything**.
+
+### 13.2 Vector similarity: cosine
+
+"Close" is measured by the **angle** between two vectors, using cosine similarity:
+
+```text
+cosine(A, B) = (A · B) / (|A| × |B|)
+
+A · B = a1·b1 + a2·b2 + ... + an·bn        (dot product)
+|A|   = sqrt(a1² + a2² + ... + an²)         (length)
+
+ 1  -> same direction  -> same meaning
+ 0  -> 90 degrees apart -> unrelated
+```
+
+Worked example with toy 3-number vectors (real ones have 1024):
+
+| Text | Vector | Dot with question | Cosine with question |
+|---|---|---|---|
+| Question: "Lite per-txn limit?" | `[0.9, 0.1, 0.4]` | | |
+| Lite clause: "limit for UPI Lite shall be ₹1,000" | `[0.8, 0.2, 0.5]` | 0.72 + 0.02 + 0.20 = **0.94** | 0.94 / (0.990 × 0.964) = **0.98** |
+| ISD clause: "update window 15th to month end" | `[0.1, 0.9, 0.2]` | 0.09 + 0.09 + 0.08 = **0.26** | 0.26 / (0.990 × 0.927) = **0.28** |
+
+The Lite clause wins: its vector points almost the same way as the question (about 10° apart; the ISD clause is about 74° away).
+
+Things interviewers like to hear:
+
+- **Cosine vs dot product vs Euclidean.** If vectors are normalised to length 1 (Titan V2 can do this), cosine and dot product give the same ranking, and so does Euclidean distance. Weaviate's default metric is cosine and it reports `distance = 1 − cosine`, so smaller is closer.
+- **Search = nearest neighbours.** Comparing the question with every chunk is exact but costs O(N). Weaviate builds an **HNSW** index: a layered graph where each vector links to its near neighbours, and the search hops through the graph towards the question. That's approximate nearest neighbour search: much faster, and it occasionally misses the true best match. With a few thousand chunks, either is instant.
+- **Embeddings are bad at exact tokens.** `OC-229A`, `₹5000`, `ISD` carry little "meaning", so their vectors aren't distinctive. **BM25** (keyword search: a term scores higher the more often it appears in a chunk and the rarer it is across all chunks) catches them. **Hybrid search** runs both and fuses the scores; `alpha` sets the mix (0 = only BM25, 1 = only vectors).
+- **Similar ≠ correct.** The ₹500 and ₹1,000 clauses have almost the same vector. Similarity can't tell which one is in force, which is why validity dates and the rule ledger exist (section 6).
+
+### 13.3 Which embedding model to use
+
+| Model | Where it runs | Why pick it | Watch out for |
+|---|---|---|---|
+| **Amazon Titan Text Embeddings V2** (my pick here) | AWS Bedrock | Data and job are already in AWS, so text never leaves the account. 1024 dims (or 512/256), long input, cheap. | Retrieval quality is good, not top of the leaderboards. |
+| **Voyage AI** (voyage-3 family) | Voyage API, also on AWS Marketplace | Anthropic's recommended embedding provider; strong retrieval quality; has finance and legal variants. | Another vendor and data agreement. |
+| **Cohere Embed** (v3 and newer) | Cohere API, Bedrock | Strong multilingual support; separate modes for documents and queries. | Must send the right `input_type` for each side. |
+| **OpenAI text-embedding-3** (small / large) | OpenAI / Azure | Popular, cheap, dimensions can be shortened. | Data goes to another provider; usually a compliance discussion in Indian payments. |
+| **BAAI bge-m3** (open source) | Self-hosted GPU/CPU | No API, data stays in-house; multilingual (Hindi); dense + sparse vectors from one model. | You run, scale and monitor it yourself. |
+
+How to choose: shortlist two or three, embed the corpus with each, and measure **recall@6 on the golden question set** (is the right clause in the top 6). Pick the cheapest one that's within a point or two of the best. For this system: **Titan V2** for the AWS fit, **Voyage** if quality matters most, **bge-m3** if nothing may leave the network.
+
+---
+
+## 14. PageIndex: what it is, and why I used vector RAG instead
+
+**What it is.** [PageIndex](https://github.com/VectifyAI/PageIndex) is an open-source project by VectifyAI that does **"vectorless, reasoning-based RAG"**. Instead of chunking and embedding, it builds a **table-of-contents tree** for each long document: each node has a title, page range and summary. At question time an LLM reads the tree and **reasons** about which branch to open, step by step, like an analyst flipping to the right chapter of an annual report. No embeddings, no vector database. Its argument: similarity isn't relevance, and long professional documents need navigation, not nearest neighbours. The project reports 98.7% on the FinanceBench benchmark; that's its own number, not independently verified.
+
+| | Vector RAG (this design) | PageIndex | Whole document in Claude's context |
+|---|---|---|---|
+| Finds text by | Similarity (+ BM25, + filters) | LLM reasoning over a document's ToC tree | The model reads everything |
+| Best for | Many short or medium documents | A few very long, well-structured documents | One or two documents that fit in context |
+| Cost per question | One embedding + one vector query (milliseconds) | Several LLM calls while walking the tree | Tokens for the whole document, every time |
+| Exact filters (date, product) | Yes, native | No; you'd add them yourself | No |
+| Explainable | Scores + metadata | A readable reasoning path | Hard |
+
+**Why not PageIndex here:**
+
+1. **The corpus is many short circulars, not a few long reports.** Most circulars are 1 to 3 pages, a few are 20. PageIndex shines at navigating *inside* a long document; my main problem is picking the right clause *across* hundreds of documents. A 2-page circular's tree is five nodes; there's nothing to navigate.
+2. **The hard problem is currency, not navigation.** Neither approach knows that ₹500 was replaced by ₹1,000. I need validity dates, a rule ledger and date filters anyway, and those fit naturally next to a vector index with metadata filters.
+3. **Cost and latency.** Every PageIndex question means several LLM calls while walking the tree. Vector search is one embedding and a millisecond lookup, and Claude is called once to answer.
+4. **Determinism.** Filters like "valid on 1 Sep 2026 and product = URCS_GST" are exact and testable. LLM navigation can take a different path on a different day.
+
+**Where I would use it:** a long document like the 19-page OC-239 annexure or a master circular. Pick the circular with metadata and vector search first, then navigate inside it PageIndex-style, or simply give the whole circular to Claude, since it fits in context. My clause-aware chunks (`4.2 Pre-Compliance Response > a`) already keep a light version of that tree.
+
+**One line for the interview:** *"PageIndex is great for navigating a few long, structured documents. Ours is hundreds of short circulars where the hard part is knowing which rule is current, so vector search with date and product filters plus a rule ledger fit better and cost less. For the few long annexures I'd add tree-style navigation or just use long context."*
+
+---
+
+## 15. Interview trick questions
 
 Questions an interviewer is likely to ask about this resume line. Each answer starts with the one-line version to say out loud, then the detail if they push.
 
 > [!WARNING]
 > Every number you say (how many circulars, how many users, latency, accuracy) will be probed. Only quote numbers you can defend. If you don't have a measured number, describe how you **would** measure it. That answer is safer than an invented figure.
 
-### 13.1 Probing the resume line itself
+### 15.1 Probing the resume line itself
 
 #### Q1. Your resume says LangChain. Your folder says LangGraph. Which one?
 
@@ -867,7 +953,7 @@ Questions an interviewer is likely to ask about this resume line. Each answer st
 
 #### Q2. Claude Sonnet doesn't produce embeddings. So what embedded your chunks?
 
-**A separate embedding model.** Anthropic doesn't offer one. Something like Amazon Titan Text Embeddings V2 on Bedrock (the data is already in AWS) or Voyage AI. Claude is used for extraction at ingest time and for answering at query time. Each chunk stores the embedding model name, because changing models means re-embedding everything into a new collection and swapping over: vectors from two models live in different spaces and can't be compared.
+**A separate embedding model.** Anthropic doesn't offer one. Something like Amazon Titan Text Embeddings V2 on Bedrock (the data is already in AWS) or Voyage AI. Claude is used for extraction at ingest time and for answering at query time. Each chunk stores the embedding model name, because changing models means re-embedding everything into a new collection and swapping over: vectors from two models live in different spaces and can't be compared. Model options and how to choose: [section 13.3](#133-which-embedding-model-to-use).
 
 #### Q3. "Multiple circulars": how many? "Quickly": how quickly?
 
@@ -892,7 +978,7 @@ Weaviate gives **hybrid search (BM25 + vector) with metadata filters in one quer
 PMs and engineers at the PSP: limits ("Tap & Pay PoS cap?"), timelines ("days to respond to an MCC dispute?"), applicability ("does this apply to RuPay credit card on UPI?") and "what changed in the latest circular about X". That shaped the design: value questions go to the exact rule ledger, explanation questions go to RAG.
 
 
-### 13.2 Ingestion, OCR and chunking
+### 15.2 Ingestion, OCR and chunking
 
 #### Q7. Why poll S3 every 10 minutes instead of using S3 event notifications?
 
@@ -943,7 +1029,7 @@ They match lots of queries ("claim", "MCC", "merchant") but contain no answers. 
 Regex with tolerance for spaces, "No.", dashes and 2- or 4-digit year ends, then normalise: `NPCI/UPI/OC No. 229A/2026 – 2027` → `UPI-OC-229A-2026-27`, `base_no=229`, `suffix=A`. Claude also extracts it; if they disagree, the regex wins and the file is flagged.
 
 
-### 13.3 Versioning: the ₹500 → ₹1,000 family of questions
+### 15.3 Versioning: the ₹500 → ₹1,000 family of questions
 
 #### Q17. UPI Lite limit was ₹500 in one circular and ₹1,000 in a later one. How do you overwrite the old data?
 
@@ -1019,7 +1105,7 @@ Same idea, yes. Temporal tables give you the history of a row, but here the hard
 
 **Same model, more operations.** Store rules at the right grain (product, parameter, scope; lists as one row per member), and have Claude turn each new circular into **change operations**: `NEW`, `REPLACE`, `ADD_MEMBER`, `REMOVE_MEMBER`, `EXTEND_SCOPE`, `TEMPORARY`, `CORRECT`, `WITHDRAW`, `RESTATE`, `REFERENCE_ONLY`, plus future or past effective dates. One deterministic function applies them as "close these rows, open these rows"; nothing is deleted. The samples cover four of them: 161A adds 19 countries (`ADD_MEMBER`), 229A removes the receivable section (`REMOVE_MEMBER`), 186A adds PoS next to QR (`EXTEND_SCOPE`), Lite ₹500 → ₹1,000 (`REPLACE`). The read side never changes: every question is "rows valid on the asked date". Anything that closes or voids a row waits for a reviewer. Details in [section 6.7](#67-every-kind-of-change-one-model-twelve-operations).
 
-### 13.4 Retrieval and generation
+### 15.4 Retrieval and generation
 
 #### Q31. User types "OC-229A". Vector search returns garbage. Why, and what did you do?
 
@@ -1061,49 +1147,57 @@ For **follow-ups**. "What's the Lite limit?" then "and before that?" — the sec
 Every answer ends with a **proof** block. For each citation: the **circular id**, the **clause** and **page**, the **exact sentence** quoted from the circular, whether that rule is current or was later superseded (and by which circular), and a link to the PDF (pre-signed S3 URL, plus the NPCI URL when known). The user can verify the answer in one click instead of trusting the bot. `cite_sources` in `npci_circular_graph.py` builds it.
 
 
-### 13.5 Evaluation, operations and cost
+#### Q40. How does vector similarity actually work?
 
-#### Q40. How do you know the answers are right?
+Text goes through a tokenizer and an embedding model and comes out as a fixed-length vector (1024 numbers for Titan V2). Texts with similar meaning get vectors pointing in similar directions, because the model was trained to put related pairs close together. Closeness is **cosine similarity**: dot product divided by the two lengths, 1 = same direction, 0 = unrelated. Weaviate finds the nearest vectors with an **HNSW** graph index (approximate, fast), and hybrid search adds **BM25** for exact tokens like `OC-229A`. Worked example in [section 13.2](#132-vector-similarity-cosine).
+
+#### Q41. Have you heard of PageIndex? Why not use it instead of RAG?
+
+PageIndex skips embeddings: it builds a table-of-contents tree per document and lets an LLM reason its way to the right section. It's strong for a few long, structured documents. My corpus is hundreds of short circulars, and the hard part is which rule is *current*, which needs date and product filters and a rule ledger, not navigation. It also costs several LLM calls per question versus one millisecond vector lookup. For a long annexure I'd navigate inside it, or put the whole circular in Claude's context. See [section 14](#14-pageindex-what-it-is-and-why-i-used-vector-rag-instead).
+
+### 15.5 Evaluation, operations and cost
+
+#### Q42. How do you know the answers are right?
 
 A **golden set** of ~100 questions written with a compliance person, each with the expected answer and expected clause. Crucially it contains **version traps**: superseded values, as-of dates, future effective dates, partial supersession, product confusion, ids, and questions whose answer isn't in the corpus. Metrics: retrieval recall, answer correctness, **currency accuracy** (did it give the version valid on the asked date), citation correctness. It runs on every prompt, chunking or model change.
 
-#### Q41. What do you monitor in production?
+#### Q43. What do you monitor in production?
 
 Ingest: run success, files `FAILED`, time since last good run, review queue age, OCR confidence. Query: p95 latency, Claude errors and rate limits, `not_found` rate, thumbs-down rate. A rising `not_found` rate usually means a circular is missing.
 
-#### Q42. What does a question cost, and how long does it take?
+#### Q44. What does a question cost, and how long does it take?
 
 Don't quote a figure you didn't measure. The shape: two Claude calls per question (`understand` + `generate`), a few thousand input tokens each (six chunks + system prompt), one embedding call, one Weaviate query, one rerank. The system prompt is cached. Ingest cost is negligible: a few circulars a week. Latency is dominated by the generate call; stream the answer so the user sees text immediately.
 
-#### Q43. How does it scale? What if there are 100× more documents?
+#### Q45. How does it scale? What if there are 100× more documents?
 
 The corpus is small (circulars, maybe tens of thousands of chunks over many years). One Weaviate node handles that; replicate for availability, not for size. At 100× you'd add shards, and you'd keep relying on **filters** (product, date) to shrink the search space. The ingest job scales by processing files in parallel, still one at a time per file.
 
-#### Q44. Access control: can everyone see everything?
+#### Q46. Access control: can everyone see everything?
 
 The circulars are public, so the corpus needs no per-document access control. The tool sits behind SSO. If internal interpretation notes were added later, they'd need a `visibility` field and a filter by user group, applied in the retriever, never left to the prompt.
 
 
-### 13.6 Curveballs
+### 15.6 Curveballs
 
-#### Q45. What was the hardest problem?
+#### Q47. What was the hardest problem?
 
 **Currency, not search.** Early on the obvious design (embed every PDF, retrieve top-k) happily returns the superseded ₹500 clause next to the ₹1,000 one, and the model sometimes picks the old one. The fix was the validity-window metadata, the rule ledger and the review step. (Tell this as your own story only if it happened that way; otherwise present it as the main design risk you planned for.)
 
-#### Q46. What would you do differently?
+#### Q48. What would you do differently?
 
 - pgvector in the existing Postgres instead of a separate Weaviate, given the corpus size.
 - Build the golden set on day one, before choosing chunk size or `alpha`.
 - Show a "what changed" diff view per circular, since that turned out to be the most useful kind of question.
 
-#### Q47. A PM acts on a wrong answer and the bank gets fined. Whose fault?
+#### Q49. A PM acts on a wrong answer and the bank gets fined. Whose fault?
 
 The tool is a **finder, not an authority**. Every answer cites the circular and clause, links the PDF, says when the rule took effect, and ends with "check the source circular before acting". Compliance still signs off. That framing has to be in the product from day one, not added after an incident.
 
-#### Q48. Could this become an agent that tells engineers which code to change?
+#### Q50. Could this become an agent that tells engineers which code to change?
 
 Possible next step: map rule facts to config keys (e.g. `UPI_LITE.per_txn_limit` → the switch's limit config) and raise a ticket when a rule version changes. I'd keep it as "propose a ticket for a human", not "change the config", for the same reason the supersession needs approval.
 
-#### Q49. Why Claude Sonnet and not a bigger or smaller model?
+#### Q51. Why Claude Sonnet and not a bigger or smaller model?
 
 Sonnet is the balance point: good at structured extraction from messy OCR text and at careful cited answers, at moderate cost and latency. The plan was to measure on the eval whether `understand` (a small classification step) can move to a Haiku model for lower latency, and whether a larger model improves the hardest supersession classifications enough to matter.
