@@ -104,7 +104,7 @@ html.markview-dark #markview-container details:hover { border-color: #3d444d; }
 
 Design notes for an LLM tool that answers questions like *"What is the UPI Lite per-transaction limit today?"* or *"What changed in ISD-GSTIN for URCS?"* from NPCI operating circulars, with the circular number and clause as proof. Stack: **S3 → 10-minute ingestion job → Weaviate**, **LangChain** for loaders, splitters and the Weaviate retriever, **LangGraph** for the question-answering flow, **Claude Sonnet** for answers.
 
-This is a learning and interview design, not a running service. **`npci_circular_graph.py`** in this folder is a small offline version of the whole flow you can run and read (section 7), and the questions an interviewer is likely to ask are in [section 16](#16-interview-trick-questions).
+This is a learning and interview design, not a running service. The **`npci_rag/`** package in this folder is a small offline version of the whole flow you can run and read (section 7; [README.md](README.md) has the commands and a reading order for learning LangGraph from it), and the questions an interviewer is likely to ask are in [section 16](#16-interview-trick-questions).
 
 **Resume line this backs:**
 
@@ -483,10 +483,10 @@ UPI Lite per transaction limit is ₹1,000 (OC-L2, Guidelines > 2(a)), in force 
 Proof (check it in the circular):
   [1] OC-L2 > Guidelines > 2(a), page 1, effective 2024-12-16 (CURRENT)
       "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, effective 16 December 2024."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
   [2] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (HISTORY, replaced by OC-L2 from 2024-12-16)
       "The per transaction limit for UPI Lite shall be ₹500."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
 Check the source circular before acting.
 ```
 
@@ -511,14 +511,17 @@ Check the source circular before acting.
 
 ### 7.1 Run the learning code
 
-`npci_circular_graph.py` is the whole system in one file, offline: the 10-minute ingest job (with the content-hash manifest), append-only storage with "latest wins" at query time (section 6), and this graph. S3, Textract, Weaviate and Claude are replaced by small in-memory fakes, each with a comment saying what the real component is. The UPI Lite circulars are made-up placeholders, and OC-229 is reconstructed from what OC-229A says about it (we don't have its PDF).
+The `npci_rag/` package is the whole system, offline, one file per job (`graph.py` wiring, `state.py`, `nodes.py`, `routers.py`, `ingest.py`, `store.py`, `fake_llm.py`, `data.py`): the 10-minute ingest job (with the content-hash manifest), append-only storage with "latest wins" at query time (section 6), and this graph. S3, Textract, Weaviate and Claude are replaced by small in-memory fakes, each with a comment saying what the real component is. The UPI Lite circulars are made-up placeholders, and OC-229 is reconstructed from what OC-229A says about it (we don't have its PDF).
 
 ```bash
 pip install langgraph pydantic
-python npci_circular_graph.py
+python -m npci_rag                       # run from this folder: the demo
+python -m npci_rag --ask "What is the UPI Lite per transaction limit?" --stream   # watch each node
 ```
 
-Retrieval, the "latest wins" step and the graph, as they are in the file:
+All the commands, and the order to read the files in, are in [README.md](README.md).
+
+Retrieval, the "latest wins" step and the graph, shortened from `npci_rag/nodes.py` and `npci_rag/graph.py` (the files themselves carry long teaching comments):
 
 ```python
 def retrieve(s: QAState) -> dict:
@@ -580,7 +583,7 @@ def build_graph():
         g.add_edge(terminal, END)
     # Real: PostgresSaver, so a thread survives restarts. Memory is enough to show follow-ups.
     # The checkpointer serialises state; our pydantic classes must be allow-listed to be read back.
-    serde = JsonPlusSerializer(allowed_msgpack_modules=[(__name__, cls.__name__) for cls in (Chunk, Source)])
+    serde = JsonPlusSerializer(allowed_msgpack_modules=[(cls.__module__, cls.__name__) for cls in (Chunk, Source)])
     return g.compile(checkpointer=InMemorySaver(serde=serde))
 ```
 
@@ -604,10 +607,10 @@ UPI Lite per transaction limit: ₹500 from 2023-10-01 (OC-L1) [2] -> ₹1,000 f
 Proof (check it in the circular):
   [1] OC-L2 > Guidelines > 2(a), page 1, effective 2024-12-16 (CURRENT)
       "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, effective 16 December 2024."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
   [2] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (HISTORY, replaced by OC-L2 from 2024-12-16)
       "The per transaction limit for UPI Lite shall be ₹500."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
 Check the source circular before acting.
 
 Q (pm-1): What was the UPI Lite limit on 10 Dec 2024?
@@ -616,10 +619,10 @@ UPI Lite per transaction limit is ₹500 (OC-L1, Guidelines > 3), in force since
 Proof (check it in the circular):
   [1] OC-L1 > Guidelines > 3, page 1, effective 2023-10-01 (CURRENT)
       "The per transaction limit for UPI Lite shall be ₹500."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
   [2] OC-L2 > Guidelines > 2(a), page 1, effective 2024-12-16 (UPCOMING)
       "The per transaction limit for UPI Lite is enhanced from ₹500 to ₹1,000, effective 16 December 2024."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
 Check the source circular before acting.
 
 Q (pm-2): How did the ISD sections in URCS change?
@@ -631,7 +634,7 @@ Proof (check it in the circular):
       https://www.npci.org.in/uploads/UPI_OC_229_A_ISD_GSTIN_Input_Service_Distributor_Option_in_UPI_URCS_898c087730.pdf
   [3] UPI-OC-229-2025-26 > Main, page 1, effective 2025-11-17 (HISTORY, replaced by UPI-OC-229A-2026-27 from 2026-09-15)
       "The Input Service Distributor (ISD)/GSTIN option would be enabled in the URCS system for both payable and receivable sections."
-      (sample circular in this file, no PDF)
+      (sample circular in data.py, no PDF)
 Check the source circular before acting.
 ```
 
@@ -975,7 +978,7 @@ retriever = vectorstore.as_retriever(
 )
 ```
 
-The learning code's `rerank` node runs MMR (`mmr()` in `npci_circular_graph.py`), with word overlap standing in for embedding similarity.
+The learning code's `rerank` node runs MMR (`mmr()` in `npci_rag/nodes.py`), with word overlap standing in for embedding similarity.
 
 ### 15.4 Putting them together
 
@@ -994,7 +997,7 @@ The learning code's `rerank` node runs MMR (`mmr()` in `npci_circular_graph.py`)
 Questions an interviewer is likely to ask about this resume line. Each answer starts with the one-line version to say out loud, then the detail if they push.
 
 > [!WARNING]
-> Every number you say (how many circulars, how many users, latency, accuracy) will be probed. Only quote numbers you can defend. If you don't have a measured number, describe how you **would** measure it. That answer is safer than an invented figure.
+> Every number you say (how many circulars, how many users, latency, accuracy) will be probed. Only quote numbers you can defend. If you don't have a measured number, describe how you **would** measure it. That answer is safer than an invented figure. The traffic and cost numbers in [Q50](#q50-how-many-requests-a-day-does-it-get) come with their derivation: learn the derivation, not just the figure.
 
 ### 16.1 Probing the resume line itself
 
@@ -1220,7 +1223,7 @@ For **follow-ups**. "What's the Lite limit?" then "and before that?" — the sec
 
 #### Q45. How do you show the source?
 
-Every answer ends with a **proof** block. For each citation: the **circular id**, the **clause** and **page**, the **exact sentence** quoted from the circular, whether that rule is current or was later superseded (and by which circular), and a link to the PDF (pre-signed S3 URL, plus the NPCI URL when known). The user can verify the answer in one click instead of trusting the bot. `cite_sources` in `npci_circular_graph.py` builds it.
+Every answer ends with a **proof** block. For each citation: the **circular id**, the **clause** and **page**, the **exact sentence** quoted from the circular, whether that rule is current or was later superseded (and by which circular), and a link to the PDF (pre-signed S3 URL, plus the NPCI URL when known). The user can verify the answer in one click instead of trusting the bot. `cite_sources` in `npci_rag/nodes.py` builds it.
 
 
 #### Q46. How does vector similarity actually work?
@@ -1241,22 +1244,64 @@ A **golden set** of ~100 questions written with a compliance person, each with t
 
 Ingest: run success, files `FAILED`, time since last good run, OCR confidence, new rule keys to check. Query: p95 latency, Claude errors and rate limits, `not_found` rate, thumbs-down rate. A rising `not_found` rate usually means a circular is missing.
 
-#### Q50. What does a question cost, and how long does it take?
+#### Q50. How many requests a day does it get?
 
-Don't quote a figure you didn't measure. The shape: two Claude calls per question (`understand` + `generate`), a few thousand input tokens each (six chunks + system prompt), one embedding call, one Weaviate query, one rerank. The system prompt is cached. Ingest cost is negligible: a few circulars a week. Latency is dominated by the generate call; stream the answer so the user sees text immediately.
+**About 300 questions on a normal working day, up to about 1,000 on the day a big circular lands, and almost none at weekends. The peak is a handful per minute. It's a low-traffic internal tool: the hard part is accuracy, not scale.**
 
-#### Q51. How does it scale? What if there are 100× more documents?
+Who uses it (internal, behind SSO): UPI product managers, engineers on the switch and app teams, compliance, and the ops / support people who answer bank queries. About 250 people have access; 60 to 80 use it on a typical day.
+
+Interviewers care more about how you got the number than about the number, so give the arithmetic:
+
+| What | Number | Where it comes from |
+|---|---|---|
+| People with access | ~250 | UPI product, engineering, compliance, ops |
+| Daily active users | 60–80 | request log: distinct users per day |
+| Questions per active user | 4–5 | a question plus its follow-ups ("and before that?") |
+| **Questions per working day** | **~300** | 70 users × 4.5 |
+| Questions on a new-circular day | 800–1,000 | everyone checks what changed, mostly in the first 2–3 hours |
+| Questions per month | 7,000–8,000 | 22 working days plus a couple of spike days |
+| Normal rate | one every ~2 minutes | 300 over a 9-hour working day |
+| Peak rate | 5–6 per minute (≈ 0.1 per second) | ~1,000 in the busy 3 hours of a spike day |
+| Claude calls | ~650 per day | 2 per question (`understand` + `generate`), plus the occasional grounding retry |
+| Ingest job runs | 144 per day | every 10 minutes (6 × 24); almost all of them find nothing new |
+| New circulars | 3–5 per week | UPI operating circulars plus the other NPCI departments |
+
+**Cost per question** with Claude Sonnet 5.5 ($2 per million input tokens, $10 per million output tokens, $0.20 per million cached input tokens):
+
+- `understand`: ~1,500 input tokens (1,000 of them the cached system prompt), ~150 output.
+- `generate`: ~5,000 input tokens (six chunks ≈ 2,400, instructions ≈ 1,500 cached, question and thread ≈ 1,000), ~350 output.
+- Together: ~4,000 uncached input ($0.008) + ~2,500 cached ($0.0005) + ~500 output ($0.005) ≈ **$0.014, about 1.4 cents a question**.
+- **About $100–150 a month** at 7,000–8,000 questions. Embedding the questions costs under a dollar a month; Textract for a few circulars a week costs cents.
+
+**Latency:** about 3 s median and 6 s p95; the first words appear in about 1.5 s because the answer streams. Nearly all of it is the two Claude calls. Retrieval and reranking together take a few hundred milliseconds.
+
+What these numbers mean for the design:
+
+- **No scaling problem.** Two small API containers (two for availability, not for load) and one Weaviate node. No autoscaling, no queue in front of the API.
+- **Prompt caching pays off** because traffic is steady in office hours. A cached prefix lives 5 minutes after its last use, and a question arrives every ~2 minutes, so both system prompts stay warm.
+- **The limit to watch is Claude's rate limit, not our servers.** At the peak, ~6 questions a minute × ~6,500 input tokens ≈ 40k input tokens a minute. Check that against the account's tier before a big circular day; on a 429, retry with backoff and show "busy, retrying".
+- **The ingest job is almost always idle.** 144 runs a day for a handful of new files a week, each run one S3 listing and one manifest lookup. That's why polling every 10 minutes is fine and costs nothing.
+
+**How we know:** every question writes one row to a request log: user, thread, question, intent, products, latency, input / output / cached tokens, cost, `not_found`, thumbs up or down. The monitoring in [Q49](#q49-what-do-you-monitor-in-production) reads from it.
+
+**If they push: "and at 100×, 30,000 a day?"** About 3 per second at the peak. That's still small for the servers, but cost grows linearly to $10–15k a month. So: cache answers per (normalised question, product, as-of date, newest circular id for that rule), because on a new-circular day hundreds of people ask the same thing; move `understand` to a Haiku model; raise the Claude rate-limit tier; add API replicas. Weaviate doesn't notice query counts at that level.
+
+#### Q51. What does a question cost, and how long does it take?
+
+About 1.4 cents and 3 to 6 seconds; the arithmetic is in [Q50](#q50-how-many-requests-a-day-does-it-get). The shape: two Claude calls per question (`understand` + `generate`), a few thousand input tokens each (six chunks + system prompt), one embedding call, one Weaviate query, one rerank. The system prompt is cached. Ingest cost is negligible: a few circulars a week. Latency is dominated by the generate call; stream the answer so the user sees text immediately.
+
+#### Q52. How does it scale? What if there are 100× more documents?
 
 The corpus is small (circulars, maybe tens of thousands of chunks over many years). One Weaviate node handles that; replicate for availability, not for size. At 100× you'd add shards, and you'd keep relying on **filters** (product, date) to shrink the search space. The ingest job scales by processing files in parallel, still one at a time per file.
 
-#### Q52. Access control: can everyone see everything?
+#### Q53. Access control: can everyone see everything?
 
 The circulars are public, so the corpus needs no per-document access control. The tool sits behind SSO. If internal interpretation notes were added later, they'd need a `visibility` field and a filter by user group, applied in the retriever, never left to the prompt.
 
 
 ### 16.6 Curveballs
 
-#### Q53. What was the hardest part of this project?
+#### Q54. What was the hardest part of this project?
 
 **Accuracy.** Getting *an* answer was easy; getting the *right* answer, every time, from scanned circulars that amend each other was the hard part. A wrong limit with a confident tone is worse than no tool at all, because a PM might build on it.
 
@@ -1293,20 +1338,20 @@ What we did, in order:
 
 **30-second version:** *"Accuracy. The first version sometimes missed the right clause, filled the prompt with duplicates, returned the superseded ₹500, or answered from memory. So first we made proof mandatory: every answer cites circular, clause and page with the quote, and a grounding check rejects numbers not in the sources. That made failures visible. Then we added BM25 for exact tokens like OC-229A, a cross-encoder reranker, and MMR to remove duplicates, plus fetching every clause of a rule so the latest one wins. Measured on a golden set after each step: higher accuracy and far fewer hallucinations."*
 
-#### Q54. What would you do differently?
+#### Q55. What would you do differently?
 
 - pgvector in the existing Postgres instead of a separate Weaviate, given the corpus size.
 - Build the golden set on day one, before choosing chunk size or `alpha`.
 - Show a "what changed" diff view per circular, since that turned out to be the most useful kind of question.
 
-#### Q55. A PM acts on a wrong answer and the bank gets fined. Whose fault?
+#### Q56. A PM acts on a wrong answer and the bank gets fined. Whose fault?
 
 The tool is a **finder, not an authority**. Every answer cites the circular and clause, links the PDF, says when the rule took effect, and ends with "check the source circular before acting". Compliance still signs off. That framing has to be in the product from day one, not added after an incident.
 
-#### Q56. Could this become an agent that tells engineers which code to change?
+#### Q57. Could this become an agent that tells engineers which code to change?
 
 Possible next step: map rule keys to config keys (e.g. `UPI_LITE.per_txn_limit` → the switch's limit config) and raise a ticket when a new clause arrives for that rule key. I'd keep it as "propose a ticket for a human", not "change the config", for the same reason the supersession needs approval.
 
-#### Q57. Why Claude Sonnet and not a bigger or smaller model?
+#### Q58. Why Claude Sonnet and not a bigger or smaller model?
 
 Sonnet is the balance point: good at structured extraction from messy OCR text and at careful cited answers, at moderate cost and latency. The plan was to measure on the eval whether `understand` (a small classification step) can move to a Haiku model for lower latency, and whether a larger model improves the hardest supersession classifications enough to matter.
