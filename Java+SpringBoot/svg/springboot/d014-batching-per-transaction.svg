@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="712" viewBox="0 0 920 712" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+  <title>Hibernate batches only inside one transaction</title>
+  <desc>Section 1: 10 API calls each saving 1 row. Each call has its own transaction, so the database gets 10 single inserts and 10 round trips; 10 batches of 1 means batching can't help, because Hibernate never merges transactions. Section 2: one API call saves 100 rows with batch_size 50: the persistence context queues INSERT × 100 and sends two executeBatch calls of 50 inserts, 2 round trips instead of 100, all before commit and before the response. Section 3: batching across calls needs your own buffer, not Hibernate: calls 1..N write into an in-memory buffer or queue flushed every 100 ms or 500 rows, Kafka if it must survive a crash, which sends one bulk insert. Option 1, respond after the flush: data is committed when the user sees 200 OK, but every call waits up to the flush interval. Option 2, respond before the flush: fast responses, but a crash loses rows the user was told were saved, and reads may not see the new row yet. Same trade-off as Kafka's linger.ms; Hibernate avoids it by batching only inside one transaction.</desc>
+  <defs>
+    <marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#d29922"/></marker>
+  </defs>
+  <rect x="0.5" y="0.5" width="919" height="711" rx="14" fill="#161b22" stroke="#30363d"/>
+
+  <!-- ===== 1: 10 calls x 1 row ===== -->
+  <text x="24" y="40" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">1 · 10 API CALLS, EACH SAVES 1 ROW</text>
+  <g font-size="13" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <rect x="24" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="63" y="76">call 1</text>
+    <rect x="112" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="151" y="76">call 2</text>
+    <rect x="200" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="239" y="76">call 3</text>
+    <rect x="288" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="327" y="76">call 4</text>
+    <rect x="376" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="415" y="76">call 5</text>
+    <rect x="464" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="503" y="76">call 6</text>
+    <rect x="552" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="591" y="76">call 7</text>
+    <rect x="640" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="679" y="76">call 8</text>
+    <rect x="728" y="56" width="78" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="767" y="76">call 9</text>
+    <rect x="816" y="56" width="80" height="48" rx="8" fill="#1c2128" stroke="#30363d"/><text x="856" y="76">call 10</text>
+  </g>
+  <g font-size="12" fill="#d2a8ff" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">
+    <text x="63" y="95">tx 1</text><text x="151" y="95">tx 2</text><text x="239" y="95">tx 3</text><text x="327" y="95">tx 4</text><text x="415" y="95">tx 5</text>
+    <text x="503" y="95">tx 6</text><text x="591" y="95">tx 7</text><text x="679" y="95">tx 8</text><text x="767" y="95">tx 9</text><text x="856" y="95">tx 10</text>
+  </g>
+  <g stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)">
+    <line x1="63" y1="104" x2="63" y2="136"/><line x1="151" y1="104" x2="151" y2="136"/><line x1="239" y1="104" x2="239" y2="136"/>
+    <line x1="327" y1="104" x2="327" y2="136"/><line x1="415" y1="104" x2="415" y2="136"/><line x1="503" y1="104" x2="503" y2="136"/>
+    <line x1="591" y1="104" x2="591" y2="136"/><line x1="679" y1="104" x2="679" y2="136"/><line x1="767" y1="104" x2="767" y2="136"/>
+    <line x1="856" y1="104" x2="856" y2="136"/>
+  </g>
+  <rect x="24" y="138" width="872" height="36" rx="8" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="460" y="161" fill="#e6edf3" font-size="13" text-anchor="middle"><tspan font-weight="600">database</tspan>  ·  10 single INSERTs  ·  10 round trips</text>
+  <text x="24" y="200" fill="#ff7b72" font-size="13" font-weight="600">✗  10 batches of 1: batching can't help here</text>
+  <text x="24" y="220" fill="#8b949e" font-size="12.5">Each call has its own transaction and persistence context. Hibernate never merges them.</text>
+
+  <line x1="24" y1="240" x2="896" y2="240" stroke="#21262d"/>
+
+  <!-- ===== 2: 1 call x 100 rows ===== -->
+  <text x="24" y="266" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">2 · 1 API CALL SAVES 100 ROWS  (BATCH_SIZE = 50)</text>
+  <rect x="24" y="282" width="150" height="56" rx="9" fill="#1c2128" stroke="#30363d"/>
+  <text x="99" y="305" fill="#e6edf3" font-size="13" font-weight="600" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">POST /orders</text>
+  <text x="99" y="325" fill="#8b949e" font-size="12" text-anchor="middle">100 line items</text>
+  <line x1="174" y1="310" x2="208" y2="310" stroke="#8b949e" stroke-width="1.6" marker-end="url(#arr)"/>
+  <rect x="210" y="282" width="230" height="56" rx="9" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-opacity=".7"/>
+  <text x="325" y="305" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">persistence context (tx)</text>
+  <text x="325" y="325" fill="#d2a8ff" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">INSERT ×100 queued</text>
+  <g font-size="12" fill="#e6edf3" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">
+    <text x="557" y="294">executeBatch() · 50 inserts</text>
+    <text x="557" y="324">executeBatch() · 50 inserts</text>
+  </g>
+  <g stroke="#3fb950" stroke-width="2.6" marker-end="url(#arrG)">
+    <line x1="442" y1="302" x2="672" y2="302"/>
+    <line x1="442" y1="332" x2="672" y2="332"/>
+  </g>
+  <rect x="676" y="282" width="220" height="56" rx="9" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="786" y="305" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">database</text>
+  <text x="786" y="325" fill="#56d4dd" font-size="12" text-anchor="middle">2 round trips</text>
+  <text x="24" y="364" fill="#56d364" font-size="13" font-weight="600">✓  2 round trips instead of 100, all before commit and before the response</text>
+
+  <line x1="24" y1="384" x2="896" y2="384" stroke="#21262d"/>
+
+  <!-- ===== 3: across calls ===== -->
+  <text x="24" y="410" fill="#8b949e" font-size="12" font-weight="700" letter-spacing="1.5">3 · BATCHING ACROSS CALLS = YOUR OWN BUFFER, NOT HIBERNATE</text>
+  <g font-size="13" font-weight="600" fill="#e6edf3" text-anchor="middle">
+    <rect x="24" y="426" width="110" height="28" rx="7" fill="#1c2128" stroke="#30363d"/><text x="79" y="445">call 1</text>
+    <rect x="24" y="460" width="110" height="28" rx="7" fill="#1c2128" stroke="#30363d"/><text x="79" y="479">call 2</text>
+    <rect x="24" y="494" width="110" height="28" rx="7" fill="#1c2128" stroke="#30363d"/><text x="79" y="513">call N</text>
+  </g>
+  <g stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)">
+    <line x1="134" y1="440" x2="178" y2="462"/>
+    <line x1="134" y1="474" x2="178" y2="474"/>
+    <line x1="134" y1="508" x2="178" y2="486"/>
+  </g>
+  <rect x="180" y="426" width="250" height="96" rx="9" fill="#d29922" fill-opacity=".12" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="305" y="456" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">in-memory buffer / queue</text>
+  <text x="305" y="478" fill="#e3b341" font-size="12.5" text-anchor="middle">flush every 100 ms or 500 rows</text>
+  <text x="305" y="500" fill="#8b949e" font-size="12" text-anchor="middle">Kafka if it must survive a crash</text>
+  <text x="553" y="464" fill="#e6edf3" font-size="12" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">one bulk insert</text>
+  <line x1="430" y1="474" x2="674" y2="474" stroke="#d29922" stroke-width="2.6" marker-end="url(#arrA)"/>
+  <rect x="676" y="446" width="220" height="56" rx="9" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-opacity=".7"/>
+  <text x="786" y="469" fill="#e6edf3" font-size="14" font-weight="600" text-anchor="middle">database</text>
+  <text x="786" y="489" fill="#56d4dd" font-size="12" text-anchor="middle">fewer, bigger writes</text>
+
+  <rect x="24" y="546" width="430" height="110" rx="10" fill="#d29922" fill-opacity=".08" stroke="#d29922" stroke-opacity=".7"/>
+  <text x="40" y="572" fill="#e3b341" font-size="14" font-weight="700">Option 1: respond after the flush</text>
+  <text x="40" y="598" fill="#c9d1d9" font-size="13"><tspan fill="#56d364">✓</tspan>  data is committed when the user sees 200 OK</text>
+  <text x="40" y="622" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72">✗</tspan>  every call waits up to the flush interval</text>
+  <text x="40" y="644" fill="#8b949e" font-size="12">latency goes up by as much as 100 ms</text>
+
+  <rect x="466" y="546" width="430" height="110" rx="10" fill="#f85149" fill-opacity=".08" stroke="#f85149" stroke-opacity=".7"/>
+  <text x="482" y="572" fill="#ff7b72" font-size="14" font-weight="700">Option 2: respond before the flush</text>
+  <text x="482" y="598" fill="#c9d1d9" font-size="13"><tspan fill="#56d364">✓</tspan>  fast responses</text>
+  <text x="482" y="622" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72">✗</tspan>  a crash loses rows the user was told were saved</text>
+  <text x="482" y="644" fill="#c9d1d9" font-size="13"><tspan fill="#ff7b72">✗</tspan>  reads may not see the new row yet</text>
+
+  <text x="24" y="688" fill="#8b949e" font-size="12.5">Same trade-off as Kafka's <tspan font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">linger.ms</tspan>. Hibernate avoids it by batching only inside one transaction.</text>
+</svg>

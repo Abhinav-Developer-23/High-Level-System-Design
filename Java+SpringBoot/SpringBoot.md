@@ -1723,6 +1723,135 @@ At startup Spring Data creates a **proxy** for each repository interface. CRUD m
 HikariCP, default `maximum-pool-size` = 10. Bigger isn't better: the database has limited cores, and hundreds of connections thrash it. Start small (a common rule: about cores × 2 for the DB server, shared across all app instances), watch `hikaricp.connections.pending` and acquire time in metrics, and keep transactions short so connections return quickly. `connection-timeout` (30 s default) is how long a request waits for a free connection before failing.
 </details>
 
+### Write-behind and JDBC batching
+
+Two separate ideas that people often mix up:
+
+| | On by default? | What it means |
+|---|---|---|
+| **Write-behind** (deferred flush) | Yes, always | `save()` / `persist()` sends **no SQL**. Hibernate records the change in the persistence context's **action queue** and sends the SQL later, at **flush** time |
+| **JDBC batching** | **No** (`hibernate.jdbc.batch_size` is unset, in Hibernate and in Boot) | At flush, identical statements (`insert into order_item …` × 50) go to the DB in **one** `executeBatch()` call: one network round trip instead of 50 |
+
+A flush happens:
+
+1. just before the transaction commits (when the `@Transactional` method returns),
+2. before a query that reads tables with pending changes (`FlushMode.AUTO`), so the query sees your own writes,
+3. when you call `entityManager.flush()` or `repository.saveAndFlush()`.
+
+**Why batch?** Each statement costs a round trip to the DB, and that round trip usually costs more than the insert itself. 1,000 inserts at 1 ms RTT spend about **1 s just waiting on the network**. With `batch_size=50` that drops to 20 round trips, about **20 ms**, plus the DB's own work. On MySQL, `rewriteBatchedStatements=true` also turns each batch into one multi-row `insert … values (…),(…),(…)`, which is cheaper to parse and log.
+
+![Hibernate write-behind and JDBC batching in one request: POST /orders with 100 line items calls repo.save(item) 100 times inside @Transactional; the persistence context queues INSERT ×100 with no SQL sent yet; at commit Hibernate flushes to the database and 200 OK goes out only after commit; by default (batch_size not set) that is 100 inserts and 100 round trips, about 100 ms of network wait at 1 ms RTT; with hibernate.jdbc.batch_size=50 it is two executeBatch calls of 50 inserts, 2 round trips, about 2 ms plus DB work; MySQL needs rewriteBatchedStatements=true so each batch becomes one multi-row insert; no waiting, because a batch holds only this transaction's statements and is sent before commit, before the response](svg/springboot/d013-hibernate-write-behind-batching.svg)
+
+#### Turning it on
+
+```properties
+spring.jpa.properties.hibernate.jdbc.batch_size=50
+# group statements by entity so interleaved parent/child inserts don't break batches
+spring.jpa.properties.hibernate.order_inserts=true
+spring.jpa.properties.hibernate.order_updates=true
+# dev only: logs "N JDBC batches" so you can check batching works
+spring.jpa.properties.hibernate.generate_statistics=true
+
+# MySQL: without this the driver still sends the batched statements one by one
+spring.datasource.url=jdbc:mysql://localhost:3306/shop?rewriteBatchedStatements=true
+# PostgreSQL: jdbc:postgresql://localhost:5432/shop?reWriteBatchedInserts=true
+```
+
+The id generator matters. With `GenerationType.IDENTITY` (auto-increment), Hibernate must run each `INSERT` **immediately** to read back the generated id, so **insert batching is silently disabled** (updates and deletes still batch). Use a sequence with a pooled allocation, so Hibernate gets 50 ids in one call and assigns them in memory:
+
+```java
+@Entity
+public class OrderItem {
+    @Id
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_item_seq")
+    @SequenceGenerator(name = "order_item_seq", sequenceName = "order_item_seq", allocationSize = 50)
+    private Long id;
+}
+```
+
+MySQL has no sequences (Hibernate emulates them with a table, which is slower). For bulk inserts on MySQL, either generate ids in the app (UUIDv7 / TSID) or skip JPA and use `JdbcTemplate.batchUpdate()`.
+
+For a big import, flush and clear every `batch_size` rows. Otherwise every saved entity stays managed in memory, and each flush dirty-checks all of them:
+
+```java
+@Transactional
+public void importItems(List<ItemRow> rows) {
+    for (int i = 0; i < rows.size(); i++) {
+        entityManager.persist(toEntity(rows.get(i)));
+        if ((i + 1) % 50 == 0) {          // same as batch_size
+            entityManager.flush();        // send this batch
+            entityManager.clear();        // drop managed entities: memory and dirty checking stay small
+        }
+    }
+}
+```
+
+#### Does batching make the API slower?
+
+**No.** The fear comes from **Kafka-style batching** (`linger.ms`), where the producer **waits** for more messages to fill a batch, trading latency for throughput. Hibernate never waits:
+
+- A batch holds only the statements of **the current transaction**. Writes from different API calls are never combined.
+- The batch is sent at flush, which happens **before commit**, which happens **before the controller returns**. Nothing is held back past the request.
+- So the client still gets its response only after the data is committed. The commit just comes **sooner**, because there were fewer round trips.
+
+That also means batching only helps when **one call writes many rows** of the same type ("create order with 50 line items", "import a CSV"). If a user calls a "save one row" API 10 times, that's 10 transactions and 10 single inserts. Batching plays no part. Batching **across** calls is something you build yourself with a buffer or queue, and that version **does** cost latency or durability:
+
+![Hibernate batches only inside one transaction: 10 API calls each saving 1 row means 10 transactions, 10 single inserts and 10 round trips, so batching can't help because Hibernate never merges transactions; 1 API call saving 100 rows with batch_size 50 sends two executeBatch calls of 50 inserts, 2 round trips instead of 100, all before commit and before the response; batching across calls needs your own in-memory buffer or queue flushed every 100 ms or 500 rows, Kafka if it must survive a crash, with one bulk insert; option 1, respond after the flush, keeps data committed when the user sees 200 OK but every call waits up to the flush interval; option 2, respond before the flush, is fast but a crash loses rows the user was told were saved and reads may not see the new row yet; same trade-off as Kafka's linger.ms](svg/springboot/d014-batching-per-transaction.svg)
+
+Where batching **can** hurt:
+
+- **Huge transactions.** 100k rows in one transaction hold their row locks until commit, so other requests block on them. Commit in chunks (e.g. 1,000 rows per transaction).
+- **Oversized batches.** Very large batches use more memory and can hit packet limits (MySQL `max_allowed_packet`). 20–100 is the sweet spot; 30–50 is common.
+
+#### Gotchas
+
+| Gotcha | What happens | Fix |
+|---|---|---|
+| `GenerationType.IDENTITY` | Every insert runs immediately to get its id: insert batching silently off | `SEQUENCE` + `allocationSize`. On MySQL: app-generated ids or `JdbcTemplate.batchUpdate()` |
+| MySQL URL without `rewriteBatchedStatements=true` | Hibernate builds batches, but the driver sends the statements one by one | Add it to the JDBC URL |
+| Entities interleaved (order, item, order, item…) | Each switch of statement type closes the batch, so you get batches of 1 | `order_inserts=true`, `order_updates=true` |
+| Errors show up late | A unique-key violation is thrown at flush/commit, not on the `save()` line. A `try/catch` around `save()` misses it. A `BatchUpdateException` doesn't say clearly which row failed | `saveAndFlush()` where you need the error right there; validate before saving |
+| Persistence context keeps growing | Thousands of managed entities: memory grows and each flush gets slower | `flush()` + `clear()` every `batch_size` rows, or a `StatelessSession` |
+| `saveAll()` | Just loops over `save()`. It isn't batching by itself | The config above |
+| You set the id yourself (e.g. a UUID) and call `save()` | Spring Data thinks the entity isn't new, calls `merge()`, and runs a **SELECT per row** before the insert | Implement `Persistable<ID>` (`isNew()`), or add a `@Version` field |
+| `show_sql` / `spring.jpa.show-sql` | Logs every statement even when they are batched, so it can't prove batching | `hibernate.generate_statistics=true` ("N JDBC batches executed") or datasource-proxy |
+
+> [!IMPORTANT]
+> Interview answer: **"Hibernate is write-behind: `save()` only queues the change in the persistence context, and SQL goes out at flush, just before commit. JDBC batching is off by default. With `hibernate.jdbc.batch_size` set, identical statements go out in one `executeBatch()`, so N round trips become N / batch_size. It doesn't add latency, because it never waits for more data: it only batches the current transaction's statements, and they're flushed before commit and before the response. Watch for IDENTITY ids disabling insert batching, MySQL's `rewriteBatchedStatements`, constraint errors that only show up at flush, and the persistence context growing during bulk loads."**
+
+<details>
+<summary><b>Q6. Does Hibernate write to the DB in batches? Why?</b></summary>
+
+Not by default. It always defers writes (write-behind) until flush, but sends each statement separately unless you set `spring.jpa.properties.hibernate.jdbc.batch_size` (e.g. 50). With it set, identical statements in the same flush are sent with one `executeBatch()`. The reason is round trips: 1,000 inserts at 1 ms RTT is about 1 s of network wait one by one, versus 20 round trips (about 20 ms) in batches of 50. Add `order_inserts` / `order_updates` so mixed entities still form full batches, and `rewriteBatchedStatements=true` on MySQL.
+</details>
+
+<details>
+<summary><b>Q7. Doesn't batching increase API latency?</b></summary>
+
+No. Kafka-style batching waits (`linger.ms`) for more messages to arrive. Hibernate doesn't wait for anything: a batch holds only the current transaction's queued statements and is sent at flush, before commit, before the response. Fewer round trips means the request finishes **faster**. It can only hurt indirectly: a huge transaction holds row locks until commit and blocks other requests, so commit bulk loads in chunks.
+</details>
+
+<details>
+<summary><b>Q8. A user calls a "save one row" API 10 times. Is that 1 batch or 10?</b></summary>
+
+10, and each is a batch of 1, so batching does nothing here. Every API call runs its own transaction with its own persistence context, and Hibernate never merges statements across transactions. Batching only helps when one call writes many rows (an order with 50 items, a CSV import). To batch across calls you need your own buffer or queue (e.g. Kafka plus a consumer doing bulk inserts). Then you either make callers wait for the flush (higher latency) or answer before the data is written (a crash can lose rows the user was told were saved, and reads may lag).
+</details>
+
+<details>
+<summary><b>Q9. You set batch_size, but the statistics show no batching. Why?</b></summary>
+
+The usual causes:
+
+1. The ids use `GenerationType.IDENTITY`, so every insert runs immediately to get its id.
+2. MySQL without `rewriteBatchedStatements=true` (batches exist in Hibernate, but the driver sends rows one by one).
+3. Different entity types are interleaved and `order_inserts` is off.
+4. The code calls `saveAndFlush()` or `flush()` after every row.
+5. Each row is saved in its own transaction (e.g. `@Transactional` on a per-row method, or no transaction around the loop).
+6. The property has the wrong prefix: in Boot it must be `spring.jpa.properties.hibernate.jdbc.batch_size`.
+
+Check with `hibernate.generate_statistics=true`, not `show_sql`.
+</details>
+
 ---
 
 ## 7. Configuration and production
@@ -1793,6 +1922,8 @@ Every endpoint now requires authentication. Boot creates a default user `user` w
 | Default bean scope? | Singleton |
 | Beans created lazily or eagerly? | Eagerly at startup (singletons) |
 | Default JPA fetch type? | `@ManyToOne` / `@OneToOne` EAGER · `@OneToMany` / `@ManyToMany` LAZY |
+| JDBC batching on by default? | No. Set `spring.jpa.properties.hibernate.jdbc.batch_size` |
+| Does Hibernate batch across API calls? | No, only inside one transaction |
 | Default `@Transactional` rollback? | `RuntimeException` and `Error` only |
 | Default propagation? | `REQUIRED` |
 | Default proxy type in Boot? | CGLIB |
