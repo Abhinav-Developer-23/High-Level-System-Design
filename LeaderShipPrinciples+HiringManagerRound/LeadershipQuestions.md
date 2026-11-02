@@ -1923,5 +1923,163 @@ I needed to take the feedback seriously, understand why each point mattered, and
 
 ---
 
+### <span style="color:red">Q14. How do you use AI in your day-to-day tasks?</span>
+
+**Also asked as:**
+- <span style="color:red">*Do you use AI coding tools? How do you make sure the output is correct?*</span>
+- <span style="color:red">*How has AI changed the way you work?*</span>
+
+> **💡 Principle:** Learn and Be Curious · Invent and Simplify · Insist on the Highest Standards · Ownership · Earn Trust
+
+---
+
+#### Claude Code + MCP Servers — AI Wired Into My Daily Tools (STAR Format)
+
+---
+
+#### Situation
+
+As a backend engineer on Paytm UPI (TPAP and TSP), most of my day is not writing new code. It is moving between tools:
+
+* **Jira** for tickets and acceptance criteria, **Confluence** for runbooks and design docs
+* **Grafana** for Prometheus metrics, Loki logs, alerts and the on-call schedule
+* **Kibana / Elasticsearch** to search logs by `txn_id` or RRN
+* **Redash** to query `txn_info` and other tables on the read replica
+* **Bitbucket** for PRs and pipelines, **Jenkins** for builds and deploys
+
+A simple question like *"why did this txn fail?"* or *"what does this ticket need?"* meant opening 5–6 tabs, copying ids between them and stitching the answer together by hand. A chat AI in the browser did not help much, because it could not see any of this data. I had to copy-paste logs into it.
+
+---
+
+#### Task
+
+I wanted AI to do the **legwork** (fetching, correlating, summarising, first drafts) while I stay responsible for the **judgment**: the root cause, the design and what goes to production. It also had to be safe: no writes to prod, no PII leaving our systems, nothing posted in my name without me seeing it.
+
+---
+
+#### Action
+
+##### 1. Connected my tools to Claude Code through MCP servers
+
+**MCP (Model Context Protocol)** is an open standard. Each MCP server exposes a tool's API (search logs, run a PromQL query, read a PR) as functions the AI can call. Claude Code is the client: it runs in my terminal inside the repo, so it sees the code and, through MCP, the live data too.
+
+| MCP server | What it gives the AI | How I use it |
+|---|---|---|
+| **Atlassian** (Jira + Confluence) | Read tickets, linked issues, sprint boards, Confluence pages | Pull the ticket and its acceptance criteria before coding; find the runbook for an alert |
+| **Grafana** | PromQL, Loki logs, Tempo traces, alert rules, dashboards, on-call | Error rate per PSP handle / bank, latency, which alert fired and why |
+| **ELK** | Elasticsearch log search | All logs for one `txn_id` / RRN across services |
+| **Redash** | Read-only SQL on the replica | `txn_info` state, retry rows, counts by status |
+| **Bitbucket** | PR diff, comments, pipeline steps and logs | PR review, reading why a pipeline step failed |
+| **Jenkins** | Build and deploy status | "What was deployed to this service in the last 2 hours?" |
+
+I configured **separate servers for TPAP and TSP**, so the AI always queries the right environment and never mixes the two products' data.
+
+##### 2. Daily workflows
+
+**a) Oncall alert / failed txn debugging**
+
+When an alert fires I ask in one prompt: *"UPI success rate dropped for pthdfc in the last 30 min. Find out why."* Claude Code then:
+
+1. Reads the alert rule and runs the PromQL to see **which handle / bank / error code** moved
+2. Pulls a few sample failed `txn_id`s and searches their logs in ELK
+3. Checks `txn_info` in Redash for the status pattern
+4. Checks Jenkins / Bitbucket for a **recent deploy** on the affected service
+5. Gives me a timeline and a hypothesis, **with the query and log lines behind each claim**
+
+I verify the key evidence myself before acting. What used to be 20–30 minutes of tab switching is now about 5 minutes of reading and checking.
+
+**b) Jira ticket → code**
+
+*"Read UPI-1234, find where this lives in the codebase and propose a plan."* It reads the ticket and the code, and gives me a plan first (plan mode). I correct the plan, then let it implement. It runs the build and lint, and I review the diff line by line like any other PR.
+
+**c) PR reviews**
+
+It fetches the Bitbucket diff and reviews it against our checklist: idempotency, retries, logging, null handling, DB indexes. It drafts comments. **I decide** which ones are real and post them myself.
+
+**d) Pipeline failures and docs**
+
+* Pipeline red → it reads the failing step's logs and tells me the actual error, instead of me scrolling 2,000 lines.
+* After an incident → it drafts the RCA (timeline, impact, root cause, action items) from the evidence it already gathered. I edit it and put it on Confluence.
+
+##### 3. Making it repeatable
+
+* A **`CLAUDE.md`** in each repo with our conventions, build commands and "never do X" rules, so I don't repeat context every session.
+* **Custom slash commands** for repeated flows, e.g. a debug-txn command that runs the same ELK → Redash → Grafana steps for any `txn_id`.
+
+##### 4. Guardrails: how I keep it safe
+
+* **Read-only access** for prod data: logs, metrics, Redash on the replica. The AI cannot change prod data.
+* **Permission prompts** for anything outward-facing: posting a PR comment, moving a Jira ticket, merging. Nothing goes out in my name unseen.
+* **No secrets or raw PII** in prompts. Logs are already masked (VPA, account numbers), and we only use the company-approved AI setup.
+* **Evidence or it didn't happen:** every claim must point to a query, log line or code line. If it can't show evidence, I treat it as a guess.
+
+---
+
+#### Result
+
+| Task | Before | With Claude Code + MCP |
+|---|---|---|
+| Alert / failed txn investigation | 20–30 min, 5–6 tabs | ~5 min, mostly verifying |
+| Understanding a new ticket + finding the code | ~1 hour | 10–15 min |
+| Reading a failed pipeline | Scroll raw logs | One-line cause + the failing step |
+| RCA first draft | 1–2 hours | ~20 min of editing |
+
+* I spend my time on **judgment** (is this the real cause, is this design right) instead of copy-pasting ids between tabs.
+* New teammates use the same setup and slash commands, so they can debug without knowing every dashboard by heart.
+* This daily use is also how I found the gap for PMs that led to the team-wide LangGraph debugging tool in [Q3](#span-stylecolorredq3-whats-the-most-complicated-project-youve-worked-onspan). That tool serves people who don't use a terminal; this setup is my own engineering workflow.
+
+> [!NOTE]
+> The numbers above are rough personal estimates, not measured metrics. Say "roughly" in the interview.
+
+---
+
+#### What I Learned
+
+1. **AI is only as good as the data it can see.** A chat window with pasted logs is weak; the same model with live access to logs, metrics and code is genuinely useful.
+2. **Keep the judgment, delegate the legwork.** AI fetches, correlates and drafts. I own root cause, design and anything that reaches production.
+3. **Guardrails first:** read-only access, permission prompts and evidence for every claim are what make it safe to use on a payments system.
+
+---
+
+#### Leadership Principles This Story Hits
+
+| Principle | How |
+|---|---|
+| **Learn and Be Curious** | Learned MCP and Claude Code on my own and wired them into our actual tools |
+| **Invent and Simplify** | Replaced 5–6 tab investigations with one prompt; packaged repeated flows as slash commands |
+| **Insist on the Highest Standards** | Every AI claim must come with a query or log line; I review every diff myself |
+| **Ownership** | AI does the legwork, but I own the root cause, the code and what goes to prod |
+| **Earn Trust** | Read-only prod access, no PII in prompts, nothing posted in my name without review |
+
+---
+
+#### Power Phrases to Use
+
+- *"I don't paste logs into a chatbot. I gave the AI read-only access to the same tools I use, through MCP."*
+- *"AI does the legwork; I keep the judgment."*
+- *"Every claim it makes has to come with the query or log line behind it, otherwise I treat it as a guess."*
+- *"It reads, I decide. Anything outward-facing (PR comments, Jira moves, merges) goes through me."*
+
+---
+
+#### Likely Follow-up Questions & Quick Answers
+
+**"What is MCP, in simple words?"**
+> *"A standard plug for AI tools. Each MCP server wraps one system (Jira, Grafana, ELK) and exposes its actions as functions. Claude Code discovers those functions and calls them when it needs data. I only configure which servers it can use and with what credentials."*
+
+**"Has the AI ever been wrong? How did you catch it?"**
+> *"Yes. During one alert it blamed a deploy that had gone out 10 minutes earlier. When I checked the per-bank PromQL it had run, only one bank's handle was failing while the others were fine on the same build, so it was a bank-side issue, not our deploy. That's why I always check the evidence, not the summary."*
+
+**"What about data security and PII?"**
+> *"Prod access is read-only and on the replica, logs are already masked, no secrets go in prompts, and we use the company-approved AI setup. Anything that writes outside my machine needs my approval."*
+
+**"Doesn't relying on AI make you weaker as an engineer?"**
+> *"It removes the copy-paste part, not the thinking. I still read every diff, verify every root cause and make the design calls. If anything, I now look at more evidence per incident than before, because fetching it is cheap."*
+
+**"How is this different from the LangGraph tool in Q3?"**
+> *"Q3 is a product I built for the team, mainly PMs and oncall, with its own UI, guardrails and evals. This is my personal engineering workflow: Claude Code in the terminal plus MCP servers, for coding, reviews and debugging."*
+
+---
+
 <!-- Add more questions below -->
 
