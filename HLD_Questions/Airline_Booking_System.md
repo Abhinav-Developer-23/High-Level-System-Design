@@ -20,7 +20,7 @@
 
 ### 3. What is the expected scale?
 
-**Why ask:** Sizes the search cache, the number of database shards and how hot a single flight can get.
+**Why ask:** Sizes the search cache and the database, tells us whether one database is enough, and how hot a single flight can get.
 
 **Interviewer Answer:** About 5,000 flights a day and about 550K passengers a day (~200M a year). Flights are on sale about 11 months (~331 days) ahead. Searches are roughly 1,000× bookings once partners and metasearch (Google Flights, Kayak) are counted. Fare sales cause 10× spikes.
 
@@ -53,7 +53,7 @@
 
 ### 8. Trip types and group size? Round trips, connecting flights?
 
-**Why ask:** Round trips and connections mean one booking touches several flights, which may live on different database shards, so all of them must succeed together or none (a saga). Keeping to one nonstop flight makes every booking a single local transaction.
+**Why ask:** Round trips and connections mean one booking touches several flights that must all succeed together or none, and search has to build connecting itineraries. Keeping to one nonstop flight makes every booking one simple database transaction.
 
 **Interviewer Answer:** Keep it simple: one-way, a single origin and destination, nonstop flights only (no connections, no round trips). So **every booking is exactly one flight**. Up to 9 passengers per booking.
 
@@ -170,7 +170,7 @@ Route cache        ~1,500 nonstop routes × 331 days × ~2 KB (that day's flight
 
 1. **Search is the volume problem:** 1,000 reads per write. Cache it, and never let search touch the inventory database directly.
 2. **Booking is the correctness problem:** only ~120 writes a second at a fare-sale peak, but many land on the same flight at the same time.
-3. **One booking = one flight, and one flight is small:** at most ~400 seats and ~25 fare classes, all on one database shard. So every hold, payment commit and cancellation is a single **local** transaction.
+3. **One booking = one flight, and the data is small:** ~27 GB of seats and ~500 GB of bookings a year fit on one PostgreSQL primary, so **no sharding**. Every hold, payment commit and cancellation is a single database transaction.
 
 </details>
 
@@ -410,7 +410,7 @@ X-Request-Id: req_77b1e0d2
 
 **Notes:**
 
-1. **All or nothing:** every passenger and every chosen seat is held, or nothing is. It's one local transaction on the flight's shard.
+1. **All or nothing:** every passenger and every chosen seat is held, or nothing is. It's one database transaction.
 2. 201, not 202: the hold finishes during the request (~100–300 ms), and the user needs the answer now.
 3. Errors: 409 `SEAT_UNAVAILABLE` (lists the seats) · 409 `FARE_SOLD_OUT` · 409 `PRICE_CHANGED` (with the new price; the user must accept it) · 410 `OFFER_EXPIRED` · 429 too many active holds for this user.
 
@@ -542,7 +542,7 @@ PUT /v1/bookings/{pnr}/seats
 
 **Notes:**
 
-1. One local transaction on that flight's shard: take the new seats (only if `AVAILABLE`), then free the old ones. If any new seat is taken, nothing changes (409).
+1. One database transaction: take the new seats (only if `AVAILABLE`), then free the old ones. If any new seat is taken, nothing changes (409).
 2. A paid seat triggers a small payment via API 4's flow.
 
 ### 7. Cancel Booking
@@ -629,7 +629,7 @@ POST  /v1/bookings/{pnr}/cancellation         → cancel
 
 ### 1. Flight Instances & Fare Inventory (PostgreSQL — Inventory DB)
 
-**Database:** PostgreSQL, **sharded by `flight_instance_id`**. Everything about one flight on one date lives on one shard.
+**Database:** PostgreSQL, one primary with a synchronous standby and read replicas (no sharding; see Deep Dive 12). Owned by the Inventory Service.
 
 **Schema**
 
@@ -711,11 +711,11 @@ WHERE flight_instance_id = :f AND cabin = :cabin
 
 **Interview line**
 
-"Inventory lives in PostgreSQL, sharded by flight. Each fare class has a limit from Revenue Management and each cabin is capped at its physical seats, with no overbooking. A hold is one conditional update on each row, so the database itself refuses to sell past the limit."
+"Inventory lives in PostgreSQL. Each fare class has a limit from Revenue Management and each cabin is capped at its physical seats, with no overbooking. A hold is one conditional update on each row, so the database itself refuses to sell past the limit."
 
 ### 2. Seats, Holds & Manifest (PostgreSQL — Inventory DB)
 
-**Database:** same Inventory DB shard as the flight. **One row per physical seat per flight.**
+**Database:** the same Inventory DB. **One row per physical seat per flight.**
 
 **Schema**
 
@@ -790,7 +790,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 2. The conditional `UPDATE … WHERE status = 'AVAILABLE'` is atomic per row: of two requests for 12A, exactly one changes 1 row.
 3. ~160 rows per flight; the whole seat map is one indexed range read.
 
-**Why the manifest is on the flight's shard:** questions like "who is on DL2301 tomorrow?" (rebooking, check-in, TSA lists) are by flight, and the Booking DB is sharded by PNR. Writing the manifest at payment time keeps those queries on one shard. *(our addition)*
+**Why a manifest table in the Inventory DB:** questions like "who is on DL2301 tomorrow?" (rebooking, check-in, TSA lists) are by flight, and the passenger list belongs to the flight. Writing it at payment time answers them with one indexed read, without the Inventory Service calling into the Booking DB. *(our addition)*
 
 **Interview line**
 
@@ -798,7 +798,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 
 ### 3. Bookings / PNR (PostgreSQL — Booking DB)
 
-**Database:** PostgreSQL, **sharded by `pnr`**. One booking, with its passengers and tickets, lives on one shard.
+**Database:** PostgreSQL, one primary with a synchronous standby and read replicas (no sharding). Owned by the Booking Service.
 
 **Schema**
 
@@ -813,9 +813,9 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 | `total_amount` | `INT` | NOT NULL | cents |
 | `currency` | `CHAR(3)` | NOT NULL |  |
 | `contact` | `JSONB` | NOT NULL | email, phone (encrypted) |
-| `flight_instance_id` | `VARCHAR` | NOT NULL | the one flight; points to its Inventory DB shard |
+| `flight_instance_id` | `VARCHAR` | NOT NULL | the one flight (row in the Inventory DB) |
 | `fare_class` | `CHAR(1)` | NOT NULL | `"K"` |
-| `hold_id` | `VARCHAR` | NOT NULL | the seat_holds row on that shard |
+| `hold_id` | `VARCHAR` | NOT NULL | the `seat_holds` row in the Inventory DB |
 | `hold_expires_at` | `TIMESTAMPTZ` | NULL |  |
 | `version` | `INT` | NOT NULL | optimistic locking for status changes |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
@@ -823,6 +823,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 
 **Indexes & constraints**
 
+- `INDEX (user_id, created_at)` → "My Trips"
 - `INDEX (status, updated_at)` → the reconciler's "stuck in PAYMENT_PENDING?" query
 
 **🗃️ `booking_passengers`** · one row per passenger
@@ -870,20 +871,20 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 
 **Why a separate Booking DB from the Inventory DB:**
 
-1. **Different keys:** inventory is read by flight; bookings are read by PNR or by user. One shard key can't serve both.
+1. **Different owners:** the Inventory Service owns seats and counts; the Booking Service owns bookings, passengers and payments. Each service owns its own data.
 2. **Different load:** inventory is hot for a few flights during a sale; bookings grow steadily and are kept for years.
 
-**Why PNR as the shard key:** every booking call (`/bookings/{pnr}/…`) carries the PNR, so it goes straight to one shard. "My Trips" uses a small `user_bookings (user_id, pnr)` table sharded by `user_id`.
+**Lookups:** every booking call (`/bookings/{pnr}/…`) is a primary-key read on `pnr`; "My Trips" uses `INDEX (user_id, created_at)`.
 
 **Outbox:** the booking status change and its event row are written in **one transaction**. A relay (or CDC) publishes outbox rows to Kafka. So "booking ticketed but the confirmation email was never triggered" can't happen. *(transactional outbox pattern)*
 
 **Interview line**
 
-"Bookings live in PostgreSQL sharded by PNR: a bookings row that points to its one flight, the passengers, and one ticket per passenger. Every change appends to a history table and writes an outbox row in the same transaction, so events to Kafka are never lost."
+"Bookings live in PostgreSQL: a bookings row that points to its one flight, the passengers, and one ticket per passenger. Every change appends to a history table and writes an outbox row in the same transaction, so events to Kafka are never lost."
 
 ### 4. Payments (PostgreSQL — Booking DB)
 
-**Database:** same shard as the booking (sharded by `pnr`). Based on AlgoMaster's payment schema (Shopify 6.4).
+**Database:** the Booking DB, next to the bookings. Based on AlgoMaster's payment schema (Shopify 6.4).
 
 **Schema**
 
@@ -911,7 +912,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 | `gateway_response` | `JSONB` | NULL |  |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
 
-**Why the payment state lives next to the booking:** the reconciler (HLD Flow 4) needs the booking status and the payment status together to decide "capture" or "void"; same shard means one read.
+**Why the payment state lives next to the booking:** the reconciler (HLD Flow 4) needs the booking status and the payment status together to decide "capture" or "void"; same database means one read.
 
 **Interview line**
 
@@ -980,7 +981,7 @@ The user picked fares (and maybe seats) and clicks Continue (API 3).
 1. **API Gateway:** checks the token and the per-user hold limit (e.g. at most 2 active holds).
 2. **Booking Service, dedup:** insert a `bookings` row with `idempotency_key`, status `HELD`. A duplicate key → it's a retry: return the existing booking.
 3. **Verify the offer:** check the `offerId` signature and expiry (410 if expired).
-4. **Hold the flight:** call the Inventory Service: `hold(flightInstanceId, holdId, fareClass, n, seats)`. The flight's shard runs **one local transaction**:
+4. **Hold the flight:** call the Inventory Service: `hold(flightInstanceId, holdId, fareClass, n, seats)`. The Inventory DB runs **one transaction**:
 
    4.1 `fare_inventory`: `held + n` if `sold + held + n <= seats_for_sale`, else `FARE_SOLD_OUT`.
 
@@ -998,7 +999,7 @@ The user picked fares (and maybe seats) and clicks Continue (API 3).
 
 **Interview line**
 
-"Creating a booking is one local transaction on the flight's shard: a conditional increment of the fare and cabin counters, and a conditional AVAILABLE→HELD update on each chosen seat. Either everything is held or nothing is. The booking is HELD with a 15-minute countdown."
+"Creating a booking is one database transaction: a conditional increment of the fare and cabin counters, and a conditional AVAILABLE→HELD update on each chosen seat. Either everything is held or nothing is. The booking is HELD with a 15-minute countdown."
 
 ### 4. Flow: Pay & Ticket
 
@@ -1014,7 +1015,7 @@ The user enters their card and clicks Pay (API 4).
 4. **Authorize** the card at the gateway (same idempotency key).
 
    4.1 Declined → hold back to `ACTIVE`, booking back to `HELD`, return 402. The user can try another card until the original 15 minutes are up.
-5. **Commit the flight** (one local transaction on its shard): `seat_holds` → `CONVERTED`, seats `HELD → BOOKED` (only where `hold_id` is ours), `held - n`, `sold + n`, insert `flight_manifest` rows.
+5. **Commit the flight** (one Inventory DB transaction): `seat_holds` → `CONVERTED`, seats `HELD → BOOKED` (only where `hold_id` is ours), `held - n`, `sold + n`, insert `flight_manifest` rows.
 6. **Capture** the payment. Booking → `CONFIRMED`, with an outbox event, in one transaction.
 7. **Ticketing:** take numbers from the Ticketing Service's pre-allocated block, insert `tickets` rows, booking → `TICKETED`, outbox event `BOOKING_TICKETED`.
 8. **Return 200** with the tickets.
@@ -1036,11 +1037,11 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 **Interview line**
 
-"Payment first freezes the holds so they can't expire mid-payment, then authorizes the card, commits the seats on the flight's shard, captures, and issues tickets. Every step is idempotent and its result is stored, so a reconciler can finish or roll back any booking that crashed halfway: capture if seats were committed, void if they weren't."
+"Payment first freezes the holds so they can't expire mid-payment, then authorizes the card, commits the seats, captures, and issues tickets. Every step is idempotent and its result is stored, so a reconciler can finish or roll back any booking that crashed halfway: capture if seats were committed, void if they weren't."
 
 ### 5. Flow: Hold Expiry
 
-1. **The Hold Sweeper runs every 30 seconds** on each Inventory shard: `SELECT … FROM seat_holds WHERE status = 'ACTIVE' AND expires_at < now() LIMIT 500 FOR UPDATE SKIP LOCKED`.
+1. **The Hold Sweeper runs every 30 seconds** against the Inventory DB: `SELECT … FROM seat_holds WHERE status = 'ACTIVE' AND expires_at < now() LIMIT 500 FOR UPDATE SKIP LOCKED`.
 
    1.1 2–3 sweeper instances run at once; `SKIP LOCKED` gives each different rows.
 2. **For each expired hold, one transaction:** seats `HELD → AVAILABLE` (where `hold_id` matches), `held - n` on the fare and cabin rows, hold → `RELEASED`.
@@ -1056,7 +1057,7 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 1. **Quote:** `GET cancellation-quote` applies fare rules: within 24 hours of booking (and 7+ days before departure) → full refund; otherwise refund, travel credit or nothing per fare.
 2. **Cancel (POST):** check `quoteId` is valid and the booking isn't flown or checked in.
-3. **Release inventory:** seats `BOOKED → AVAILABLE`, `sold - n`, delete the manifest rows. One local transaction on the flight's shard, idempotent by PNR.
+3. **Release inventory:** seats `BOOKED → AVAILABLE`, `sold - n`, delete the manifest rows. One transaction, idempotent by PNR.
 4. **Booking → `CANCELLED`**, coupons → `REFUNDED`, payment → `REFUND_PENDING`, outbox events. One transaction.
 5. **Return 200** with `refundStatus: PENDING`.
 6. **Async:** the Payment Service calls the gateway's refund (idempotency key = `refund:{pnr}`); a webhook marks it `REFUNDED`. The Notification Service emails the receipt.
@@ -1082,13 +1083,13 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 1. **Operations cancels DL2301** → `schedule-changed` event on Kafka.
 2. **Inventory Service:** flight status → `CANCELLED`, stop selling it, the Search Indexer removes it from search.
-3. **Re-accommodation worker** reads the flight's `flight_manifest` (one shard) and queues one job per PNR, ordered by priority: top loyalty tiers, premium cabins, then everyone else.
+3. **Re-accommodation worker** reads the flight's `flight_manifest` and queues one job per PNR, ordered by priority: top loyalty tiers, premium cabins, then everyone else.
 4. **Each job:** find the next nonstop flights on the same route, hold and commit on the new flight with an **airline override** (any open seat in the same cabin, ignoring fare-class limits), reissue the tickets, append `REBOOKED` to `booking_events`.
 5. **Notify** the passenger with the new flight and an option to accept or take a refund (US DOT rules require a refund if they don't accept the alternative).
 
 **Interview line**
 
-"A flight cancellation is an event. Workers read that flight's manifest from one shard, rebook each PNR in priority order using the same atomic holds with an airline override, and notify passengers, on a separate worker pool so normal bookings aren't slowed down."
+"A flight cancellation is an event. Workers read that flight's manifest, rebook each PNR in priority order using the same atomic holds with an airline override, and notify passengers, on a separate worker pool so normal bookings aren't slowed down."
 
 ---
 
@@ -1182,7 +1183,7 @@ return acquired
 
 **Why we don't follow AlgoMaster's recommendation for airlines** *(our addition)*:
 
-1. **Load:** a blockbuster opening sends 100–1000× traffic at one show. Our peak is ~360 holds/s across **all** flights, and each is one ~1 ms statement on the flight's shard. The database alone is fast enough, so Redis buys nothing.
+1. **Load:** a blockbuster opening sends 100–1000× traffic at one show. Our peak is ~360 holds/s across **all** flights, and each is one ~1 ms statement. The database alone is fast enough, so Redis buys nothing.
 2. **One source of truth:** with two-phase, "is 12A held?" has two answers (Redis and the database) that must be kept in sync.
 3. **AlgoMaster's own edge case:** the Redis lock can expire while the bank is processing, someone else takes the seats, and the user must be refunded. We freeze the hold in the database before charging (Deep Dive 2), so that path can't happen.
 4. **When we'd switch:** if a single flight ever saw thousands of holds per second, put the Redis lock in front as a fast filter and keep the database update as the final check.
@@ -1197,7 +1198,7 @@ return acquired
 | Redis lock (`SET NX EX` + Lua) | Hint only (failover can lose locks) | Very high | Medium | Only as a pre-filter for extreme spikes |
 | Two-phase (Redis + DB), AlgoMaster's pick | Strong (DB is final) | High | Higher (two systems in sync) | Movie blockbusters; not needed at our load |
 
-**Why the database is enough here:** even at a fare-sale peak we do ~360 holds per second across all flights, and each touches only ~2–4 rows on one shard. PostgreSQL does thousands of these per second. Redis would add a second system to keep in sync for throughput we don't need. *(our addition)*
+**Why the database is enough here:** even at a fare-sale peak we do ~360 holds per second across all flights, and each touches only ~2–4 rows. PostgreSQL does thousands of these per second. Redis would add a second system to keep in sync for throughput we don't need. *(our addition)*
 
 **Interview line**
 
@@ -1257,22 +1258,20 @@ This is AlgoMaster's **reservation with TTL** (Shopify 6.2, Approach 3): `availa
 
 **With one nonstop flight per booking (our scope):**
 
-1. **Every write is one local transaction** on the flight's shard: hold, commit after payment, cancel, change seat. No distributed transaction, no saga.
+1. **Every write is one database transaction:** hold, commit after payment, cancel, change seat.
 2. **Groups (up to 9 passengers):** one statement with `n = 9` and all 9 seats, so a group gets all seats or none, never 7 of 9.
 3. **A failure leaves nothing behind:** if the hold fails, the transaction rolls back; if the service crashes, the hold expires on its own.
 
 **Likely follow-up: "Now add round trips and connections."** *(our addition)*
 
-1. One booking now touches 2–4 flights, possibly on **different shards**. A distributed transaction (2PC) would lock rows on several shards while waiting for the slowest one, so avoid it.
-2. **Saga in the Booking Service:** hold flight 1, then flight 2, …; if one fails → **compensate** by releasing the earlier holds, return 409.
-3. **The TTL is the saga's safety net:** if the service crashes before compensating, the earlier holds expire in 15 minutes anyway.
-4. **Hold the scarcest flight first** (lowest `seatsLeft` in the cache), so the most likely failure happens before anything else is held.
-5. **Payment commit** goes flight by flight; each commit is idempotent (`WHERE hold_id = ours`), so the reconciler can finish a half-committed booking.
-6. **Search** must precompute connections through hubs (ATL, DTW, MSP, SLC …) with minimum connection times.
+1. One booking now touches 2–4 flights. With one Inventory DB (no sharding), that's still **one transaction**: hold every flight's fare row and seats together, or roll back.
+2. **Avoid deadlocks:** update the flights in a fixed order (sorted by `flight_instance_id`), so two bookings sharing flights always lock in the same order.
+3. **Search** must precompute connections through hubs (ATL, DTW, MSP, SLC …) with minimum connection times.
+4. **Only if inventory were ever sharded** would the flights sit on different databases. Then use a **saga**: hold one flight at a time, release the earlier ones if a later one fails, and let the hold TTL clean up after a crash.
 
 **Interview line**
 
-"Because a booking is one nonstop flight, every hold, payment commit and cancellation is a single local transaction on that flight's shard, with no saga. If we add connections later, the Booking Service holds each flight in turn and releases the earlier ones if a later one fails, and the hold TTL cleans up after a crash."
+"Because a booking is one nonstop flight, every hold, payment commit and cancellation is a single database transaction. If we add connections later, one database still lets us hold all the flights in one transaction, locking them in a fixed order; a saga would only be needed if we sharded inventory."
 
 ### Deep Dive 5: "How do you make sure we never charge twice, and never charge without a seat?"
 
@@ -1311,16 +1310,16 @@ AlgoMaster's flash-sale strategies (Shopify 6.3), applied to a fare sale:
 
    3.1 **How it works (AlgoMaster movie 6.3):** a Redis sorted set `queue:sale:{saleId}`, scored by join time. An admitter lets in N users a minute and gives each a signed token valid for 5 minutes; the hold API requires the token, so refreshing the page can't skip the line. Queue position is pushed to the browser every ~10 s.
 
-   3.2 **AlgoMaster's geographic sharding** (NYC users only compete with NYC users) doesn't fit flights: an ATL→LGA flight is bought from everywhere. We shard by flight instead, which spreads a sale across many shards because it covers many flights.
+   3.2 **AlgoMaster's geographic sharding** (NYC users only compete with NYC users) doesn't fit flights: an ATL→LGA flight is bought from everywhere. At our load we don't shard at all (Deep Dive 12).
 4. **Admission control at the gateway:** rate limits per user, IP and partner; 429 with retry-after as a safety net.
 5. **Shorter holds and hold limits during the sale** (Deep Dive 2 and 8), so seats cycle back quickly.
 6. **Graceful degradation:** turn off non-essential calls (seat-map upsell, recommendations) to protect search and booking.
-7. **Hot flight?** The writes for one flight hit one shard, but at most a few hundred holds per second, and each touches different seat rows. The real hot spot is the `fare_inventory` row for the $49 class. It's still fine at this rate; if it weren't, split the class into several counter rows ("sub-buckets") and pick one at random. *(our addition)*
+7. **Hot flight?** At most a few hundred holds per second land on one flight, and each touches different seat rows. The real hot spot is the `fare_inventory` row for the $49 class. It's still fine at this rate; if it weren't, split the class into several counter rows ("sub-buckets") and pick one at random. *(our addition)*
 8. **Why not a lottery (AlgoMaster Strategy 4)?** Fares are a price, not a scarce collectible; people expect first come, first served. A lottery fits a "1 free ticket" contest, not a fare sale.
 
 **Interview line**
 
-"Pre-warm caches and scale ahead of the sale, keep search entirely on cache, put a waiting room in front of checkout only, rate-limit at the gateway, and shorten holds. The database handles the few hundred holds per second because each one is a tiny conditional update on one shard."
+"Pre-warm caches and scale ahead of the sale, keep search entirely on cache, put a waiting room in front of checkout only, rate-limit at the gateway, and shorten holds. The database handles the few hundred holds per second because each one is a tiny conditional update."
 
 ### Deep Dive 7: "Search results are cached. What if the price changed?"
 
@@ -1369,15 +1368,28 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 3. **Kafka down:** bookings still work. Events wait in the outbox table and are published when Kafka recovers. Confirmation emails and cache updates are late, nothing is lost.
 4. **Payment gateway down:** circuit breaker; switch to a secondary gateway; holds stay valid, so the user can retry. If both are down, show "payments temporarily unavailable" and keep the hold.
 5. **Booking Service instance dies mid-checkout:** the reconciler finishes or rolls back (Flow 4); holds expire on their own if it died before payment.
-6. **Whole region down:** search is served from every region. Inventory writes have one primary region per shard with a warm standby region; failover is a planned, tested procedure. Active-active writes for the same seat across regions would need consensus, which isn't worth it at ~120 writes/s. *(our addition)*
+6. **Whole region down:** search is served from every region. Each database has one primary region with a warm standby region; failover is a planned, tested procedure. Active-active writes for the same seat across regions would need consensus, which isn't worth it at ~120 writes/s. *(our addition)*
 
-### Deep Dive 12: "How does the data grow, and how do you shard it?"
+### Deep Dive 12: "Do you need to shard the database?"
 
-1. **Inventory DB, sharded by `flight_instance_id`:** one flight's fare rows, seats, holds and manifest are always on one shard, so every hold and commit is local. ~27 GB of seats for 11 months of flights; a few shards are plenty, and old flights (departed) move to an archive after a few weeks.
-2. **Booking DB, sharded by `pnr`:** ~500 GB a year, kept ~7 years for finance and audit. Recent years stay in PostgreSQL; older bookings go to cheap storage (S3 + a query engine) for support and audit.
-3. **"My Trips" by user:** `user_bookings (user_id, pnr)`, sharded by `user_id`.
-4. **Hot flight:** a hot flight is a hot **shard**, but one flight is only a few hundred rows; the limit is per-row contention, handled in Deep Dive 6.
-5. **Tooling:** Citus (PostgreSQL) or Vitess-style routing by shard key; the PNR or flight ID tells the router which shard to hit.
+**No, not at this scale.** *(our addition)*
+
+1. **Size:** the Inventory DB is ~27 GB of seats plus ~3 GB of fare rows for 11 months of flights; the Booking DB grows ~500 GB a year. One PostgreSQL primary handles that comfortably.
+2. **Writes:** ~120 bookings/s and ~360 holds/s at a fare-sale peak, each a tiny transaction. One primary does thousands per second.
+3. **Reads:** search never hits the databases (Redis); booking lookups and "My Trips" can use read replicas.
+4. **Setup:** per database, one primary, one synchronous standby in another zone (no lost commits on failover, Deep Dive 11) and read replicas.
+5. **Growth:** departed flights move from the Inventory DB to an archive after a few weeks; bookings older than ~2 years go to cheap storage (S3 + a query engine), kept ~7 years for finance and audit. Partition the append-only `booking_events` and `payment_events` by month (primary key `(event_id, created_at)`), so old months are detached cheaply. `bookings` isn't partitioned: PostgreSQL would then need the partition column inside its unique `pnr` and `idempotency_key` keys.
+
+**Likely follow-up: "When would you shard, and how?"**
+
+1. **When:** the primary runs out of write capacity or storage (e.g. 10× the airline, or many airlines on one platform).
+2. **Inventory DB by `flight_instance_id`:** everything for one flight stays on one shard, so a hold is still one local transaction.
+3. **Booking DB by `pnr`:** every booking call carries the PNR; "My Trips" then needs a small `user_bookings (user_id, pnr)` table.
+4. **Tooling:** Citus (PostgreSQL) or Vitess-style routing by shard key.
+
+**Interview line**
+
+"I wouldn't shard: about 30 GB of inventory and 500 GB of bookings a year, with a few hundred small writes a second, fit on one PostgreSQL primary with a synchronous standby and read replicas. If we outgrew it, I'd shard inventory by flight and bookings by PNR, so every transaction stays on one shard."
 
 ### Deep Dive 13: "Can other users see seats turn grey while they're choosing?"
 
