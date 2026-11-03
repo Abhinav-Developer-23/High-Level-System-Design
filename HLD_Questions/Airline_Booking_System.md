@@ -633,53 +633,58 @@ POST  /v1/bookings/{pnr}/cancellation         → cancel
 
 **Schema**
 
-```text
-flight_instances                      → one row per flight per date
-─────────────────────────────────────────────────────────────────────────────
-flight_instance_id  VARCHAR    PK            → "DL2301-20261220"
-flight_number       VARCHAR    NOT NULL      → "DL2301"
-origin              CHAR(3)    NOT NULL      → "ATL"
-destination         CHAR(3)    NOT NULL      → "LGA"
-depart_at           TIMESTAMPTZ NOT NULL
-arrive_at           TIMESTAMPTZ NOT NULL
-aircraft_config     VARCHAR    NOT NULL      → "A321-191" (which seat map)
-status              ENUM       NOT NULL      → SCHEDULED | DELAYED | CANCELLED | DEPARTED
-```
+**🗃️ `flight_instances`** · one row per flight per date
 
-```text
-cabin_inventory                       → one row per flight per cabin (hard cap = physical seats)
-─────────────────────────────────────────────────────────────────────────────
-flight_instance_id  VARCHAR    PK (part 1)
-cabin               ENUM       PK (part 2)   → MAIN | COMFORT | PREMIUM_SELECT | FIRST
-physical_seats      SMALLINT   NOT NULL      → 150 seats really on the plane (no overbooking)
-sold                SMALLINT   NOT NULL      → paid places
-held                SMALLINT   NOT NULL      → places in active holds
-CHECK (sold + held <= physical_seats)
-```
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `flight_instance_id` | `VARCHAR` | 🔑 PK | `"DL2301-20261220"` |
+| `flight_number` | `VARCHAR` | NOT NULL | `"DL2301"` |
+| `origin` | `CHAR(3)` | NOT NULL | `"ATL"` |
+| `destination` | `CHAR(3)` | NOT NULL | `"LGA"` |
+| `depart_at` | `TIMESTAMPTZ` | NOT NULL |  |
+| `arrive_at` | `TIMESTAMPTZ` | NOT NULL |  |
+| `aircraft_config` | `VARCHAR` | NOT NULL | `"A321-191"` (which seat map) |
+| `status` | `ENUM` | NOT NULL | `SCHEDULED` · `DELAYED` · `CANCELLED` · `DEPARTED` |
 
-```text
-fare_inventory                        → one row per flight per fare class
-─────────────────────────────────────────────────────────────────────────────
-flight_instance_id  VARCHAR    PK (part 1)
-fare_class          CHAR(1)    PK (part 2)   → "K"
-cabin               ENUM       NOT NULL      → MAIN
-seats_for_sale      SMALLINT   NOT NULL      → max places this class may sell, from Revenue Management
-sold                SMALLINT   NOT NULL
-held                SMALLINT   NOT NULL
-price               INT        NOT NULL      → one-way price per passenger, in cents
-updated_at          TIMESTAMPTZ NOT NULL
-CHECK (sold + held <= seats_for_sale)
-```
+**🗃️ `cabin_inventory`** · one row per flight per cabin (hard cap = physical seats)
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `flight_instance_id` | `VARCHAR` | 🔑 PK (1) |  |
+| `cabin` | `ENUM` | 🔑 PK (2) | `MAIN` · `COMFORT` · `PREMIUM_SELECT` · `FIRST` |
+| `physical_seats` | `SMALLINT` | NOT NULL | 150 seats really on the plane (no overbooking) |
+| `sold` | `SMALLINT` | NOT NULL | paid places |
+| `held` | `SMALLINT` | NOT NULL | places in active holds |
+
+**Indexes & constraints**
+
+- `CHECK (sold + held <= physical_seats)`
+
+**🗃️ `fare_inventory`** · one row per flight per fare class
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `flight_instance_id` | `VARCHAR` | 🔑 PK (1) |  |
+| `fare_class` | `CHAR(1)` | 🔑 PK (2) | `"K"` |
+| `cabin` | `ENUM` | NOT NULL | MAIN |
+| `seats_for_sale` | `SMALLINT` | NOT NULL | max places this class may sell, from Revenue Management |
+| `sold` | `SMALLINT` | NOT NULL |  |
+| `held` | `SMALLINT` | NOT NULL |  |
+| `price` | `INT` | NOT NULL | one-way price per passenger, in cents |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL |  |
+
+**Indexes & constraints**
+
+- `CHECK (sold + held <= seats_for_sale)`
 
 **Example rows for `DL2301-20261220`, Main Cabin**
 
-```text
-fare_class  seats_for_sale  sold  held  price
-Y           150             2     0     54900    → full fare, almost never closes
-M           60              41    3     31900
-K           30              27    2     18900    → "Only 1 left"
-E           20              20    0     12900    → basic economy, sold out (closed)
-```
+| fare_class | seats_for_sale | sold | held | price | |
+|:---:|---:|---:|---:|---:|:---|
+| `Y` | 150 | 2 | 0 | $549 | full fare, almost never closes |
+| `M` | 60 | 41 | 3 | $319 | |
+| `K` | 30 | 27 | 2 | $189 | 🟠 "Only 1 left" |
+| `E` | 20 | 20 | 0 | $129 | 🔴 basic economy, sold out (closed) |
 
 **How a hold takes places (one transaction, both rows):**
 
@@ -714,46 +719,49 @@ WHERE flight_instance_id = :f AND cabin = :cabin
 
 **Schema**
 
-```text
-flight_seats                          → one row per seat per flight (~160 per flight)
-─────────────────────────────────────────────────────────────────────────────
-flight_instance_id  VARCHAR    PK (part 1)
-seat_no             VARCHAR    PK (part 2)   → "12A"
-cabin               ENUM       NOT NULL
-position            ENUM       NOT NULL      → WINDOW | MIDDLE | AISLE
-features            VARCHAR    NULL          → "EXIT_ROW,EXTRA_LEGROOM"
-status              ENUM       NOT NULL      → AVAILABLE | HELD | BOOKED | BLOCKED
-hold_id             VARCHAR    NULL          → which hold owns it (status HELD)
-hold_expires_at     TIMESTAMPTZ NULL
-pnr                 VARCHAR    NULL          → which booking owns it (status BOOKED)
-passenger_id        BIGINT     NULL
-updated_at          TIMESTAMPTZ NOT NULL
-```
+**🗃️ `flight_seats`** · one row per seat per flight (~160 per flight)
 
-```text
-seat_holds                            → one row per booking (a booking is one flight)
-─────────────────────────────────────────────────────────────────────────────
-hold_id             VARCHAR    PK            → "h_GH7K2P" (one per booking)
-flight_instance_id  VARCHAR    NOT NULL
-pnr                 VARCHAR    NOT NULL      → the HELD booking
-fare_class          CHAR(1)    NOT NULL
-passenger_count     SMALLINT   NOT NULL
-seat_nos            VARCHAR    NULL          → "12A,12C" (seat selection is optional)
-status              ENUM       NOT NULL      → ACTIVE | CONFIRMING | CONVERTED | RELEASED
-expires_at          TIMESTAMPTZ NOT NULL
-INDEX (status, expires_at)                   → the sweeper's "what has expired?" query
-```
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `flight_instance_id` | `VARCHAR` | 🔑 PK (1) |  |
+| `seat_no` | `VARCHAR` | 🔑 PK (2) | `"12A"` |
+| `cabin` | `ENUM` | NOT NULL |  |
+| `position` | `ENUM` | NOT NULL | `WINDOW` · `MIDDLE` · `AISLE` |
+| `features` | `VARCHAR` | NULL | `"EXIT_ROW,EXTRA_LEGROOM"` |
+| `status` | `ENUM` | NOT NULL | `AVAILABLE` · `HELD` · `BOOKED` · `BLOCKED` |
+| `hold_id` | `VARCHAR` | NULL | which hold owns it (status HELD) |
+| `hold_expires_at` | `TIMESTAMPTZ` | NULL |  |
+| `pnr` | `VARCHAR` | NULL | which booking owns it (status BOOKED) |
+| `passenger_id` | `BIGINT` | NULL |  |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL |  |
 
-```text
-flight_manifest                       → who is on this flight (written at payment)
-─────────────────────────────────────────────────────────────────────────────
-flight_instance_id  VARCHAR    PK (part 1)
-pnr                 VARCHAR    PK (part 2)
-passenger_id        BIGINT     PK (part 3)
-fare_class          CHAR(1)    NOT NULL
-seat_no             VARCHAR    NULL          → NULL = no seat yet, assigned at check-in
-loyalty_tier        ENUM       NULL          → used to order rebooking on cancellations
-```
+**🗃️ `seat_holds`** · one row per booking (a booking is one flight)
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `hold_id` | `VARCHAR` | 🔑 PK | `"h_GH7K2P"` (one per booking) |
+| `flight_instance_id` | `VARCHAR` | NOT NULL |  |
+| `pnr` | `VARCHAR` | NOT NULL | the HELD booking |
+| `fare_class` | `CHAR(1)` | NOT NULL |  |
+| `passenger_count` | `SMALLINT` | NOT NULL |  |
+| `seat_nos` | `VARCHAR` | NULL | `"12A,12C"` (seat selection is optional) |
+| `status` | `ENUM` | NOT NULL | `ACTIVE` · `CONFIRMING` · `CONVERTED` · `RELEASED` |
+| `expires_at` | `TIMESTAMPTZ` | NOT NULL |  |
+
+**Indexes & constraints**
+
+- `INDEX (status, expires_at)` → the sweeper's "what has expired?" query
+
+**🗃️ `flight_manifest`** · who is on this flight (written at payment)
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `flight_instance_id` | `VARCHAR` | 🔑 PK (1) |  |
+| `pnr` | `VARCHAR` | 🔑 PK (2) |  |
+| `passenger_id` | `BIGINT` | 🔑 PK (3) |  |
+| `fare_class` | `CHAR(1)` | NOT NULL |  |
+| `seat_no` | `VARCHAR` | NULL | NULL = no seat yet, assigned at check-in |
+| `loyalty_tier` | `ENUM` | NULL | used to order rebooking on cancellations |
 
 **Hold seats (the seat lock):**
 
@@ -792,67 +800,71 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 
 **Schema**
 
-```text
-bookings                              → one row per booking (PNR)
-─────────────────────────────────────────────────────────────────────────────
-pnr                 CHAR(6)    PK            → "GH7K2P", random, no 0/O or 1/I
-user_id             BIGINT     NULL          → NULL for guests
-idempotency_key     VARCHAR    UNIQUE        → from API 3; a retry returns the same PNR
-status              ENUM       NOT NULL      → HELD | PAYMENT_PENDING | CONFIRMED | TICKETED
-                                               | CANCELLED | EXPIRED | FAILED
-total_amount        INT        NOT NULL      → cents
-currency            CHAR(3)    NOT NULL
-contact             JSONB      NOT NULL      → email, phone (encrypted)
-flight_instance_id  VARCHAR    NOT NULL      → the one flight; points to its Inventory DB shard
-fare_class          CHAR(1)    NOT NULL      → "K"
-hold_id             VARCHAR    NOT NULL      → the seat_holds row on that shard
-hold_expires_at     TIMESTAMPTZ NULL
-version             INT        NOT NULL      → optimistic locking for status changes
-created_at          TIMESTAMPTZ NOT NULL
-updated_at          TIMESTAMPTZ NOT NULL
-INDEX (status, updated_at)                   → the reconciler's "stuck in PAYMENT_PENDING?" query
-```
+**🗃️ `bookings`** · one row per booking (PNR)
 
-```text
-booking_passengers                    → one row per passenger
-─────────────────────────────────────────────────────────────────────────────
-passenger_id        BIGINT     PK
-pnr                 CHAR(6)    NOT NULL
-first_name, last_name           VARCHAR  NOT NULL
-date_of_birth, gender           (encrypted, for Secure Flight)
-known_traveler_number           VARCHAR  NULL (encrypted)
-loyalty_number                  VARCHAR  NULL
-```
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `pnr` | `CHAR(6)` | 🔑 PK | `"GH7K2P"`, random, no 0/O or 1/I |
+| `user_id` | `BIGINT` | NULL | NULL for guests |
+| `idempotency_key` | `VARCHAR` | ✳️ UNIQUE | from API 3; a retry returns the same PNR |
+| `status` | `ENUM` | NOT NULL | `HELD` · `PAYMENT_PENDING` · `CONFIRMED` · `TICKETED` · `CANCELLED` · `EXPIRED` · `FAILED` |
+| `total_amount` | `INT` | NOT NULL | cents |
+| `currency` | `CHAR(3)` | NOT NULL |  |
+| `contact` | `JSONB` | NOT NULL | email, phone (encrypted) |
+| `flight_instance_id` | `VARCHAR` | NOT NULL | the one flight; points to its Inventory DB shard |
+| `fare_class` | `CHAR(1)` | NOT NULL | `"K"` |
+| `hold_id` | `VARCHAR` | NOT NULL | the seat_holds row on that shard |
+| `hold_expires_at` | `TIMESTAMPTZ` | NULL |  |
+| `version` | `INT` | NOT NULL | optimistic locking for status changes |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
+| `updated_at` | `TIMESTAMPTZ` | NOT NULL |  |
 
-```text
-tickets                               → one row per passenger (one flight, so one coupon each)
-─────────────────────────────────────────────────────────────────────────────
-ticket_number       CHAR(13)   PK            → "0062345678901"
-pnr                 CHAR(6)    NOT NULL
-passenger_id        BIGINT     NOT NULL
-seat_no             VARCHAR    NULL
-coupon_status       ENUM       NOT NULL      → OPEN | CHECKED_IN | FLOWN | REFUNDED | EXCHANGED
-```
+**Indexes & constraints**
 
-```text
-booking_events                        → append-only history (never updated or deleted)
-─────────────────────────────────────────────────────────────────────────────
-event_id            BIGINT     PK
-pnr                 CHAR(6)    NOT NULL
-type                VARCHAR    NOT NULL      → HELD, PAID, TICKETED, SEAT_CHANGED, CANCELLED, REBOOKED …
-actor               VARCHAR    NOT NULL      → user, agent, system (sweeper, rebooking)
-payload             JSONB      NOT NULL
-created_at          TIMESTAMPTZ NOT NULL
-```
+- `INDEX (status, updated_at)` → the reconciler's "stuck in PAYMENT_PENDING?" query
 
-```text
-outbox                                → events waiting to be published to Kafka
-─────────────────────────────────────────────────────────────────────────────
-id                  BIGINT     PK
-topic               VARCHAR    NOT NULL      → "booking-events"
-payload             JSONB      NOT NULL      → {"type": "BOOKING_TICKETED", "pnr": "GH7K2P", …}
-published_at        TIMESTAMPTZ NULL         → NULL = not yet published
-```
+**🗃️ `booking_passengers`** · one row per passenger
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `passenger_id` | `BIGINT` | 🔑 PK |  |
+| `pnr` | `CHAR(6)` | NOT NULL |  |
+| `first_name` | `VARCHAR` | NOT NULL | exactly as on the ID |
+| `last_name` | `VARCHAR` | NOT NULL | exactly as on the ID |
+| `date_of_birth` | `DATE` | NOT NULL | encrypted, for Secure Flight |
+| `gender` | `CHAR(1)` | NOT NULL | encrypted, for Secure Flight |
+| `known_traveler_number` | `VARCHAR` | NULL | TSA PreCheck number, encrypted |
+| `loyalty_number` | `VARCHAR` | NULL | SkyMiles number |
+
+**🗃️ `tickets`** · one row per passenger (one flight, so one coupon each)
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `ticket_number` | `CHAR(13)` | 🔑 PK | `"0062345678901"` |
+| `pnr` | `CHAR(6)` | NOT NULL |  |
+| `passenger_id` | `BIGINT` | NOT NULL |  |
+| `seat_no` | `VARCHAR` | NULL |  |
+| `coupon_status` | `ENUM` | NOT NULL | `OPEN` · `CHECKED_IN` · `FLOWN` · `REFUNDED` · `EXCHANGED` |
+
+**🗃️ `booking_events`** · append-only history (never updated or deleted)
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `event_id` | `BIGINT` | 🔑 PK |  |
+| `pnr` | `CHAR(6)` | NOT NULL |  |
+| `type` | `VARCHAR` | NOT NULL | HELD, PAID, TICKETED, SEAT_CHANGED, CANCELLED, REBOOKED … |
+| `actor` | `VARCHAR` | NOT NULL | user, agent, system (sweeper, rebooking) |
+| `payload` | `JSONB` | NOT NULL |  |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
+
+**🗃️ `outbox`** · events waiting to be published to Kafka
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `id` | `BIGINT` | 🔑 PK |  |
+| `topic` | `VARCHAR` | NOT NULL | `"booking-events"` |
+| `payload` | `JSONB` | NOT NULL | `{"type": "BOOKING_TICKETED", "pnr": "GH7K2P", …}` |
+| `published_at` | `TIMESTAMPTZ` | NULL | NULL = not yet published |
 
 **Why a separate Booking DB from the Inventory DB:**
 
@@ -873,30 +885,29 @@ published_at        TIMESTAMPTZ NULL         → NULL = not yet published
 
 **Schema**
 
-```text
-payments                              → one row per payment attempt
-─────────────────────────────────────────────────────────────────────────────
-payment_id          VARCHAR    PK            → "pay_01J8ZQ4K"
-pnr                 CHAR(6)    NOT NULL
-idempotency_key     VARCHAR    UNIQUE        → from API 4; also sent to the gateway
-gateway_payment_id  VARCHAR    NULL          → the gateway's ID, set after authorize
-amount              INT        NOT NULL      → cents
-currency            CHAR(3)    NOT NULL
-status              ENUM       NOT NULL      → CREATED | AUTHORIZED | CAPTURED | VOIDED
-                                               | DECLINED | REFUND_PENDING | REFUNDED | UNKNOWN
-created_at, updated_at          TIMESTAMPTZ
-```
+**🗃️ `payments`** · one row per payment attempt
 
-```text
-payment_events                        → append-only log of every gateway call and answer
-─────────────────────────────────────────────────────────────────────────────
-event_id            BIGINT     PK
-payment_id          VARCHAR    NOT NULL
-type                VARCHAR    NOT NULL      → AUTHORIZED, CAPTURED, VOIDED, REFUNDED, TIMEOUT …
-amount              INT        NULL          → for partial refunds
-gateway_response    JSONB      NULL
-created_at          TIMESTAMPTZ NOT NULL
-```
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `payment_id` | `VARCHAR` | 🔑 PK | `"pay_01J8ZQ4K"` |
+| `pnr` | `CHAR(6)` | NOT NULL |  |
+| `idempotency_key` | `VARCHAR` | ✳️ UNIQUE | from API 4; also sent to the gateway |
+| `gateway_payment_id` | `VARCHAR` | NULL | the gateway's ID, set after authorize |
+| `amount` | `INT` | NOT NULL | cents |
+| `currency` | `CHAR(3)` | NOT NULL |  |
+| `status` | `ENUM` | NOT NULL | `CREATED` · `AUTHORIZED` · `CAPTURED` · `VOIDED` · `DECLINED` · `REFUND_PENDING` · `REFUNDED` · `UNKNOWN` |
+| `created_at,` | `updated_at` | TIMESTAMPTZ |  |
+
+**🗃️ `payment_events`** · append-only log of every gateway call and answer
+
+| Column | Type | Key | Notes |
+|:---|:---|:---|:---|
+| `event_id` | `BIGINT` | 🔑 PK |  |
+| `payment_id` | `VARCHAR` | NOT NULL |  |
+| `type` | `VARCHAR` | NOT NULL | AUTHORIZED, CAPTURED, VOIDED, REFUNDED, TIMEOUT … |
+| `amount` | `INT` | NULL | for partial refunds |
+| `gateway_response` | `JSONB` | NULL |  |
+| `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
 
 **Why the payment state lives next to the booking:** the reconciler (HLD Flow 4) needs the booking status and the payment status together to decide "capture" or "void"; same shard means one read.
 
@@ -908,19 +919,13 @@ created_at          TIMESTAMPTZ NOT NULL
 
 **Database:** Redis cluster. Everything here can be rebuilt from the schedule and the Inventory DB.
 
-```text
-flights:{origin}:{destination}:{date}  → that day's nonstop flights on the route
-   value: ["DL2301-20261220", "DL2405-20261220", "DL1123-20261220", …]
-   built nightly from the schedule, updated when Ops adds or cancels a flight
-
-avail:{flightInstanceId}               → HASH  fareClass → "seatsLeft|price"
-   e.g. avail:DL2301-20261220  {Y: "148|54900", M: "16|31900", K: "1|18900", E: "0|12900"}
-   updated within seconds by the Search Indexer from inventory-events
-
-search:{hash of query}                 → the full search response, TTL 60 s
-seatmap:{flightInstanceId}             → the seat map response, TTL 5 s
-holds:user:{userId}                    → number of active holds (bot limit, Deep Dive 8)
-```
+| Key | Holds | Example | Kept fresh by |
+|:---|:---|:---|:---|
+| `flights:{origin}:{destination}:{date}` | that day's nonstop flights on the route (list) | `["DL2301-20261220", "DL2405-20261220", …]` | nightly build from the schedule, plus Ops add / cancel events |
+| `avail:{flightInstanceId}` | seats left + price per fare class (hash) | `{Y: "148/54900", K: "1/18900", E: "0/12900"}` | Search Indexer, from `inventory-events`, within seconds |
+| `search:{hash of query}` | the full search response | — | TTL 60 s |
+| `seatmap:{flightInstanceId}` | the seat map response | — | TTL 5 s |
+| `holds:user:{userId}` | number of active holds (bot limit, Deep Dive 8) | `2` | +1 on hold, −1 on pay / expiry |
 
 **Why Redis, not Elasticsearch:** flight search isn't text search. It's "which nonstop flights go from A to B on this date, and which fares are open", which is a key lookup plus a little arithmetic. Keep the flight lists and seat counts in memory. *(our addition)*
 
