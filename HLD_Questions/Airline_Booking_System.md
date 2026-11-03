@@ -193,10 +193,7 @@ Find nonstop flights and fares on one route for one day. Results come from cache
 **Headers**
 
 ```text
-// 1. Authorization — optional. Guests can search; a signed-in user may see member fares
-Authorization: Bearer <user-token>
-
-// 2. X-Request-Id — traces this one request across gateway → services → caches
+// 1. X-Request-Id — traces this one request across gateway → services → caches
 X-Request-Id: req_3f9a21c7
 ```
 
@@ -242,9 +239,6 @@ X-Request-Id: req_3f9a21c7
       // 1.2 fares — one per fare family that still has enough seats for all passengers
       "fares": [
         {
-          // offerId — signed token: flight + fare class + price + expiry.
-          //   Passed to API 3. The server re-checks everything, so a stale offer is safe
-          "offerId": "of_9Xk2...sig",
           "fareFamily": "MAIN",
           "fareClass": "K",
 
@@ -259,17 +253,14 @@ X-Request-Id: req_3f9a21c7
         }
       ]
     }
-  ],
-
-  // 2. offersExpireAt — after this, API 3 returns 410 and the user must search again
-  "offersExpireAt": "2026-11-03T10:30:00Z"
+  ]
 }
 ```
 
 **Notes:**
 
 1. Served from Redis: the route's flight list for that day plus cached seat counts. Search never reads the Inventory DB.
-2. `offerId` is signed (HMAC) so a client can't edit the price, and expires after 30 minutes. *(our addition)*
+2. Public endpoint: no login needed, so no `Authorization` header. Abuse is handled by the gateway's rate limits.
 3. Errors: 400 same origin and destination, date in the past, more than 9 passengers · 429 too many searches (bots scraping fares).
 
 ### 2. Get Seat Map
@@ -353,8 +344,11 @@ X-Request-Id: req_77b1e0d2
   //    A retry after a timeout returns the same booking instead of holding seats twice
   "idempotencyKey": "4c1d8e2a-6f0b-4b7e-9a35-1e2f3d4c5b6a",
 
-  // 2. offerId — the chosen flight + fare, from API 1
-  "offerId": "of_9Xk2...sig",
+  // 2. the chosen flight + fare from API 1, and the price the user saw
+  //    The server re-checks seats and price against the database, so stale search data is safe
+  "flightInstanceId": "DL2301-20261220",
+  "fareClass": "K",
+  "expectedTotalPrice": { "amount": 37800, "currency": "USD" },
 
   // 3. passengers — names exactly as on the ID (needed for the ticket and TSA Secure Flight)
   //    3.1 passengerRef: a client-side label used to link seats to passengers.
@@ -412,7 +406,7 @@ X-Request-Id: req_77b1e0d2
 
 1. **All or nothing:** every passenger and every chosen seat is held, or nothing is. It's one database transaction.
 2. 201, not 202: the hold finishes during the request (~100–300 ms), and the user needs the answer now.
-3. Errors: 409 `SEAT_UNAVAILABLE` (lists the seats) · 409 `FARE_SOLD_OUT` · 409 `PRICE_CHANGED` (with the new price; the user must accept it) · 410 `OFFER_EXPIRED` · 429 too many active holds for this user.
+3. Errors: 409 `SEAT_UNAVAILABLE` (lists the seats) · 409 `FARE_SOLD_OUT` · 409 `PRICE_CHANGED` (with the new price; the user must accept it) · 429 too many active holds for this user.
 
 ### Why two calls: hold first, then pay?
 
@@ -826,26 +820,6 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 | `seat_no` | `VARCHAR` | NULL |  |
 | `coupon_status` | `ENUM` | NOT NULL | `OPEN` · `CHECKED_IN` · `FLOWN` · `REFUNDED` · `EXCHANGED` |
 
-**🗃️ `booking_events`** · append-only history (never updated or deleted)
-
-| Column | Type | Key | Notes |
-|:---|:---|:---|:---|
-| `event_id` | `BIGINT` | 🔑 PK |  |
-| `pnr` | `CHAR(6)` | NOT NULL |  |
-| `type` | `VARCHAR` | NOT NULL | HELD, PAID, TICKETED, CANCELLED, REBOOKED … |
-| `actor` | `VARCHAR` | NOT NULL | user, agent, system (sweeper, rebooking) |
-| `payload` | `JSONB` | NOT NULL |  |
-| `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
-
-**🗃️ `outbox`** · events waiting to be published to Kafka
-
-| Column | Type | Key | Notes |
-|:---|:---|:---|:---|
-| `id` | `BIGINT` | 🔑 PK |  |
-| `topic` | `VARCHAR` | NOT NULL | `"booking-events"` |
-| `payload` | `JSONB` | NOT NULL | `{"type": "BOOKING_TICKETED", "pnr": "GH7K2P", …}` |
-| `published_at` | `TIMESTAMPTZ` | NULL | NULL = not yet published |
-
 **Why a separate Booking DB from the Inventory DB:**
 
 1. **Different owners:** the Inventory Service owns seats and counts; the Booking Service owns bookings, passengers and payments. Each service owns its own data.
@@ -853,11 +827,11 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 
 **Lookups:** every booking call (`/bookings/{pnr}/…`) is a primary-key read on `pnr`; "My Trips" uses `INDEX (user_id, created_at)`.
 
-**Outbox:** the booking status change and its event row are written in **one transaction**. A relay (or CDC) publishes outbox rows to Kafka. So "booking ticketed but the confirmation email was never triggered" can't happen. *(transactional outbox pattern)*
+**Events:** after a status change commits, the Booking Service publishes the event to Kafka (`booking-events`), retrying if Kafka is slow. Consumers dedupe by PNR + event type, so a retried event is harmless.
 
 **Interview line**
 
-"Bookings live in PostgreSQL: a bookings row that points to its one flight, the passengers, and one ticket per passenger. Every change appends to a history table and writes an outbox row in the same transaction, so events to Kafka are never lost."
+"Bookings live in PostgreSQL: a bookings row that points to its one flight, the passengers, and one ticket per passenger. After each status change commits, the service publishes an event to Kafka for emails, Secure Flight and cache updates."
 
 ### 4. Payments (PostgreSQL — Booking DB)
 
@@ -942,8 +916,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 3. **Flights:** read `flights:ATL:LGA:2026-12-20` from Redis.
 4. **Seat counts and prices:** one multi-get of `avail:{flightInstanceId}` for those flights.
 5. **Build fares:** for each flight and fare family, find the cheapest fare class with `seatsLeft ≥ passengers`. Price × passengers.
-6. **Sign offers:** each fare gets an `offerId` (flight + fare class + price + expiry, HMAC-signed).
-7. **Sort, store in the response cache for 60 s, return.**
+6. **Sort, store in the response cache for 60 s, return.**
 
 **Why staleness is safe:** search can show a K fare that sold out 2 seconds ago. The hold (Flow 3) checks the real database and returns `FARE_SOLD_OUT` or `PRICE_CHANGED`. A stale search costs a retry, never an oversell.
 
@@ -957,22 +930,21 @@ The user picked fares (and maybe seats) and clicks Continue (API 3).
 
 1. **API Gateway:** checks the token and the per-user hold limit (e.g. at most 2 active holds).
 2. **Booking Service, dedup:** insert a `bookings` row with `idempotency_key`, status `HELD`. A duplicate key → it's a retry: return the existing booking.
-3. **Verify the offer:** check the `offerId` signature and expiry (410 if expired).
-4. **Hold the flight:** call the Inventory Service: `hold(flightInstanceId, holdId, fareClass, n, seats)`. The Inventory DB runs **one transaction**:
+3. **Hold the flight:** call the Inventory Service: `hold(flightInstanceId, holdId, fareClass, n, seats)`. The Inventory DB runs **one transaction**:
 
-   4.1 `fare_inventory`: `held + n` if `sold + held + n <= seats_for_sale`, else `FARE_SOLD_OUT`.
+   3.1 `fare_inventory`: `held + n` if `sold + held + n <= seats_for_sale`, else `FARE_SOLD_OUT`.
 
-   4.2 `cabin_inventory`: `held + n` if still within `physical_seats`, else roll back.
+   3.2 `cabin_inventory`: `held + n` if still within `physical_seats`, else roll back.
 
-   4.3 `flight_seats`: chosen seats → `HELD` (only if `AVAILABLE` or an expired hold). Fewer rows changed than seats asked → roll back, `SEAT_UNAVAILABLE`.
+   3.3 `flight_seats`: chosen seats → `HELD` (only if `AVAILABLE` or an expired hold). Fewer rows changed than seats asked → roll back, `SEAT_UNAVAILABLE`.
 
-   4.4 Insert the `seat_holds` row (`ACTIVE`, `expires_at = now + 15 min`).
+   3.4 Insert the `seat_holds` row (`ACTIVE`, `expires_at = now + 15 min`).
 
-   4.5 Read the current fare price from the same row. If it's higher than the offer → return it, and the Booking Service answers `PRICE_CHANGED`.
-5. **Hold fails** → the transaction rolled back, so there is nothing to undo. Mark the booking `FAILED`, return 409.
-6. **Held:** save the passengers, return 201 with `pnr`, `holdExpiresAt` and the price.
+   3.5 Read the current fare price from the same row. If it's higher than `expectedTotalPrice` → return it, and the Booking Service answers `PRICE_CHANGED`.
+4. **Hold fails** → the transaction rolled back, so there is nothing to undo. Mark the booking `FAILED`, return 409.
+5. **Held:** save the passengers, return 201 with `pnr`, `holdExpiresAt` and the price.
 
-**Why the hold ID is deterministic** (`h_{pnr}`): if the Booking Service retries step 4, the Inventory Service sees the same `hold_id` and returns the existing hold instead of holding twice. *(our addition)*
+**Why the hold ID is deterministic** (`h_{pnr}`): if the Booking Service retries step 3, the Inventory Service sees the same `hold_id` and returns the existing hold instead of holding twice. *(our addition)*
 
 **Interview line**
 
@@ -993,10 +965,10 @@ The user enters their card and clicks Pay (API 4).
 
    4.1 Declined → hold back to `ACTIVE`, booking back to `HELD`, return 402. The user can try another card until the original 15 minutes are up.
 5. **Commit the flight** (one Inventory DB transaction): `seat_holds` → `CONVERTED`, seats `HELD → BOOKED` (only where `hold_id` is ours), `held - n`, `sold + n`, insert `flight_manifest` rows.
-6. **Capture** the payment. Booking → `CONFIRMED`, with an outbox event, in one transaction.
-7. **Ticketing:** take numbers from the Ticketing Service's pre-allocated block, insert `tickets` rows, booking → `TICKETED`, outbox event `BOOKING_TICKETED`.
+6. **Capture** the payment. Booking → `CONFIRMED`.
+7. **Ticketing:** take numbers from the Ticketing Service's pre-allocated block, insert `tickets` rows, booking → `TICKETED`, then publish `BOOKING_TICKETED` to Kafka.
 8. **Return 200** with the tickets.
-9. **Async from the outbox:** Notification Service sends the confirmation and e-tickets; Secure Flight receives passenger data; Search Indexer updates seat counts.
+9. **Async from Kafka:** Notification Service sends the confirmation and e-tickets; Secure Flight receives passenger data; Search Indexer updates seat counts.
 
 **Why authorize → commit → capture** (AlgoMaster, Shopify 6.4): if the commit fails for any reason, we **void** the authorization, which is instant and free. Capturing first would force a refund, which takes days and may cost fees.
 
@@ -1035,7 +1007,7 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 1. **Quote:** `GET cancellation-quote` applies fare rules: within 24 hours of booking (and 7+ days before departure) → full refund; otherwise refund, travel credit or nothing per fare.
 2. **Cancel (POST):** check `quoteId` is valid and the booking isn't flown or checked in.
 3. **Release inventory:** seats `BOOKED → AVAILABLE`, `sold - n`, delete the manifest rows. One transaction, idempotent by PNR.
-4. **Booking → `CANCELLED`**, coupons → `REFUNDED`, payment → `REFUND_PENDING`, outbox events. One transaction.
+4. **Booking → `CANCELLED`**, coupons → `REFUNDED`, payment → `REFUND_PENDING`. One transaction, then publish `BOOKING_CANCELLED`.
 5. **Return 200** with `refundStatus: PENDING`.
 6. **Async:** the Payment Service calls the gateway's refund (idempotency key = `refund:{pnr}`); a webhook marks it `REFUNDED`. The Notification Service emails the receipt.
 
@@ -1054,14 +1026,14 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 **Interview line**
 
-"Cancelling releases the seats right away so they can be resold, marks the booking cancelled with an outbox event in one transaction, and runs the refund in the background with its own idempotency key. Fare rules and the 24-hour rule decide refund versus credit."
+"Cancelling releases the seats right away so they can be resold, marks the booking cancelled in one transaction, publishes an event, and runs the refund in the background with its own idempotency key. Fare rules and the 24-hour rule decide refund versus credit."
 
 ### 7. Flow: Flight Cancelled (Re-accommodation)
 
 1. **Operations cancels DL2301** → `schedule-changed` event on Kafka.
 2. **Inventory Service:** flight status → `CANCELLED`, stop selling it, the Search Indexer removes it from search.
 3. **Re-accommodation worker** reads the flight's `flight_manifest` and queues one job per PNR, ordered by priority: top loyalty tiers, premium cabins, then everyone else.
-4. **Each job:** find the next nonstop flights on the same route, hold and commit on the new flight with an **airline override** (any open seat in the same cabin, ignoring fare-class limits), reissue the tickets, append `REBOOKED` to `booking_events`.
+4. **Each job:** find the next nonstop flights on the same route, hold and commit on the new flight with an **airline override** (any open seat in the same cabin, ignoring fare-class limits), reissue the tickets, publish `BOOKING_REBOOKED`.
 5. **Notify** the passenger with the new flight and an option to accept or take a refund (US DOT rules require a refund if they don't accept the alternative).
 
 **Interview line**
@@ -1300,10 +1272,10 @@ AlgoMaster's flash-sale strategies (Shopify 6.3), applied to a fare sale:
 
 ### Deep Dive 7: "Search results are cached. What if the price changed?"
 
-1. **Search may be stale; booking never is.** The offer carries the price the user saw; the hold reads the live price in the same transaction.
+1. **Search may be stale; booking never is.** The hold request carries the price the user saw (`expectedTotalPrice`); the hold reads the live price in the same transaction.
 2. **Price went up:** return 409 `PRICE_CHANGED` with the new price. The user must accept it. Never charge a different price silently.
 3. **Price went down:** book at the lower price (good customer experience, and it's what's in the database).
-4. **How fresh is the cache?** Inventory changes go out through CDC → `inventory-events` → Search Indexer → `avail:{flight}` within a few seconds. Revenue Management price changes flow the same way.
+4. **How fresh is the cache?** After each commit the Inventory Service publishes to `inventory-events` → Search Indexer → `avail:{flight}` within a few seconds. Revenue Management price changes flow the same way.
 5. **Why not invalidate search responses on every change?** One sale changes one flight, but that flight appears in thousands of cached searches. A 60-second TTL is simpler and good enough, because the hold is the real check. *(our addition)*
 
 ### Deep Dive 8: "Bots hold seats without buying (seat spinning). How do you stop it?" *(our addition)*
@@ -1326,7 +1298,7 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 ### Deep Dive 9: "Travel agents and Expedia sell the same seats. How do you stay consistent?" *(our addition)*
 
 1. **One inventory:** partners call the same Hold and Pay services through a partner gateway, so a partner hold and a web hold compete for the same rows.
-2. **Partners cache availability** too, so they also get `FARE_SOLD_OUT` / `PRICE_CHANGED` on stale offers.
+2. **Partners cache availability** too, so they also get `FARE_SOLD_OUT` / `PRICE_CHANGED` on stale data.
 3. **Protect ourselves:** a separate rate limit and search quota per partner, and partner search served only from cache, so a partner's traffic spike can't slow down delta.com.
 
 ### Deep Dive 10: "A storm cancels 1,000 flights. How do you rebook 150K passengers?" *(our addition)*
@@ -1342,7 +1314,7 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 
 1. **Inventory or Booking DB primary dies:** a standby in another zone takes over in seconds. Use **synchronous replication to at least one standby** for these two databases: with async replication, a failover could lose a just-committed `BOOKED` seat and sell it again. *(our addition)* Callers retry with the same idempotency keys.
 2. **Redis down:** search falls back to the schedule and Inventory DB **replicas** with strict rate limits and fewer results. Holds and bookings don't depend on Redis at all (only the bot-limit counter, which fails open with a stricter gateway rate limit).
-3. **Kafka down:** bookings still work. Events wait in the outbox table and are published when Kafka recovers. Confirmation emails and cache updates are late, nothing is lost.
+3. **Kafka down:** bookings still work. The services retry publishing with backoff, so confirmation emails and cache updates arrive late. If a service also crashes before its retry succeeds, the event is lost; the daily reconciliation finds ticketed bookings with no confirmation sent and re-sends them.
 4. **Payment gateway down:** circuit breaker; switch to a secondary gateway; holds stay valid, so the user can retry. If both are down, show "payments temporarily unavailable" and keep the hold.
 5. **Booking Service instance dies mid-checkout:** the reconciler finishes or rolls back (Flow 4); holds expire on their own if it died before payment.
 6. **Whole region down:** search is served from every region. Each database has one primary region with a warm standby region; failover is a planned, tested procedure. Active-active writes for the same seat across regions would need consensus, which isn't worth it at ~120 writes/s. *(our addition)*
@@ -1355,7 +1327,7 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 2. **Writes:** ~120 bookings/s and ~360 holds/s at a fare-sale peak, each a tiny transaction. One primary does thousands per second.
 3. **Reads:** search never hits the databases (Redis); booking lookups and "My Trips" can use read replicas.
 4. **Setup:** per database, one primary, one synchronous standby in another zone (no lost commits on failover, Deep Dive 11) and read replicas.
-5. **Growth:** departed flights move from the Inventory DB to an archive after a few weeks; bookings older than ~2 years go to cheap storage (S3 + a query engine), kept ~7 years for finance and audit. Partition the append-only `booking_events` and `payment_events` by month (primary key `(event_id, created_at)`), so old months are detached cheaply. `bookings` isn't partitioned: PostgreSQL would then need the partition column inside its unique `pnr` and `idempotency_key` keys.
+5. **Growth:** departed flights move from the Inventory DB to an archive after a few weeks; bookings older than ~2 years go to cheap storage (S3 + a query engine), kept ~7 years for finance and audit. Partition the append-only `payment_events` by month (primary key `(event_id, created_at)`), so old months are detached cheaply. `bookings` isn't partitioned: PostgreSQL would then need the partition column inside its unique `pnr` and `idempotency_key` keys.
 
 **Likely follow-up: "When would you shard, and how?"**
 
@@ -1412,14 +1384,14 @@ Based on AlgoMaster movie follow-up 7.1 (WebSocket seat updates).
 3. **Stuck bookings:** count of `PAYMENT_PENDING` / `CONFIRMED` older than 2 minutes (the reconciler's queue). Alert if it grows.
 4. **Payment success rate per gateway** and authorize / capture latency; circuit breaker opened.
 5. **Search:** p99 latency, cache hit rate, search-to-book ratio per partner.
-6. **Freshness:** lag from inventory change to updated `avail:{flight}` (CDC + Kafka lag).
+6. **Freshness:** lag from inventory change to updated `avail:{flight}` (Kafka lag).
 7. **Daily reconciliation mismatches** between captured payments and ticketed bookings.
 8. **Re-accommodation queue depth** during disruptions.
 
 **Logs, tracing and audit:**
 
 1. **Tracing:** `X-Request-Id` follows one checkout through gateway → Booking → Inventory → Payment → Ticketing.
-2. **Audit trail:** `booking_events` and `payment_events` answer "what happened to my booking?" for support and chargebacks.
+2. **Audit trail:** `payment_events` (every gateway call) plus `bookings.updated_at` and the logs answer "what happened to my booking?" for support and chargebacks.
 
 **Interview line**
 
@@ -1441,9 +1413,9 @@ Based on AlgoMaster movie follow-up 7.1 (WebSocket seat updates).
 4. **Booking lookup:** PNR + last name, rate-limited per IP, and the same 404 for "wrong name" and "no such PNR", so codes can't be scanned.
 5. **Bots and scraping:** rate limits and bot detection at the gateway; hold limits per user (Deep Dive 8).
 6. **Fraud screening** before capture: e.g. last-minute one-way international trip on a brand-new card → step-up (3-D Secure) or manual review.
-7. **Signed offers:** the price in an `offerId` is HMAC-signed and re-checked server-side, so nobody can edit a price on the client.
+7. **Prices are never trusted from the client:** the hold re-reads the price from the database; `expectedTotalPrice` only triggers `PRICE_CHANGED`.
 8. **Signed webhooks:** verify payment gateway webhook signatures, so nobody can fake "refund completed".
 
 **Interview line**
 
-"Cards are tokenized by the gateway so they never reach us, passenger identity data is encrypted and masked, partners and users are authenticated separately with rate limits, booking lookups can't be enumerated, and every price and webhook is signature-checked."
+"Cards are tokenized by the gateway so they never reach us, passenger identity data is encrypted and masked, partners and users are authenticated separately with rate limits, booking lookups can't be enumerated, prices are always re-read from the database, and webhooks are signature-checked."
