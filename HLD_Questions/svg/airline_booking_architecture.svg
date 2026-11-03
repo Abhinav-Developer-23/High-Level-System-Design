@@ -35,7 +35,7 @@
 <polyline points="335,336 335,360" fill="none" stroke="#444" stroke-width="1.6" marker-start="url(#ah)" marker-end="url(#ah)"/>
 <rect x="480" y="100" width="220" height="64" rx="10" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.8"/>
 <text x="590.0" y="128.5" class="t" text-anchor="middle" fill="#1565C0">Search Service</text>
-<text x="590.0" y="147.5" class="s" text-anchor="middle">itineraries · cached fares</text>
+<text x="590.0" y="147.5" class="s" text-anchor="middle">nonstop flights · cached fares</text>
 <rect x="480" y="190" width="220" height="64" rx="10" fill="#E3F2FD" stroke="#1565C0" stroke-width="1.8"/>
 <text x="590.0" y="218.5" class="t" text-anchor="middle" fill="#1565C0">Booking Service</text>
 <text x="590.0" y="237.5" class="s" text-anchor="middle">PNR · orchestrates checkout</text>
@@ -64,7 +64,7 @@
 <path d="M770,104 L770,160 A110.0,9 0 0 0 990,160 L990,104" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.8"/>
 <ellipse cx="880.0" cy="104" rx="110.0" ry="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.8"/>
 <text x="880.0" y="132" class="t" text-anchor="middle" fill="#2E7D32">Redis</text>
-<text x="880.0" y="150" class="s" text-anchor="middle">itineraries · seat counts</text>
+<text x="880.0" y="150" class="s" text-anchor="middle">flight lists · seat counts</text>
 <path d="M770,196 L770,268 A110.0,9 0 0 0 990,268 L990,196" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.8"/>
 <ellipse cx="880.0" cy="196" rx="110.0" ry="9" fill="#E8F5E9" stroke="#2E7D32" stroke-width="1.8"/>
 <text x="880.0" y="224" class="t" text-anchor="middle" fill="#2E7D32">Booking DB</text>

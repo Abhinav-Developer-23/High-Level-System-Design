@@ -51,11 +51,11 @@
 
 **Interviewer Answer:** No. Revenue Management (an external system) sets prices and how many seats each fare class may sell. We store what it gives us and must never sell at a price that is no longer valid.
 
-### 8. Trip types and group size?
+### 8. Trip types and group size? Round trips, connecting flights?
 
-**Why ask:** Round trips and connections mean one booking touches several flights, which may live on different database shards. All of them must succeed together, or none.
+**Why ask:** Round trips and connections mean one booking touches several flights, which may live on different database shards, so all of them must succeed together or none (a saga). Keeping to one nonstop flight makes every booking a single local transaction.
 
-**Interviewer Answer:** One-way and round-trip, nonstop or with connections. Up to 9 passengers per booking. Multi-city is a bonus.
+**Interviewer Answer:** Keep it simple: one-way, a single origin and destination, nonstop flights only (no connections, no round trips). So **every booking is exactly one flight**. Up to 9 passengers per booking.
 
 ### 9. What about payments, refunds and the 24-hour rule?
 
@@ -79,11 +79,11 @@
 
 ### 1. Flight Search
 
-Users search by origin, destination, dates, passenger count and cabin, for one-way or round trips. Results include nonstop and connecting itineraries with prices per fare, sorted by price or duration.
+Users search by origin, destination, date, passenger count and cabin. One-way, nonstop flights only: results list that day's flights on the route with prices per fare, sorted by price or departure time.
 
 ### 2. Fare & Seat Availability
 
-Show which fares are still for sale on each flight and, for a chosen flight, a seat map with available seats, seat types (window, aisle, exit row) and seat prices.
+Show which fares are still for sale on each flight and, for the chosen flight, a seat map with available seats, seat types (window, aisle, exit row) and seat prices.
 
 ### 3. Hold Seats During Checkout
 
@@ -91,7 +91,7 @@ When a user starts a booking, temporarily hold their fare-class places and chose
 
 ### 4. Booking, Payment & Ticketing
 
-Create a booking (PNR with a 6-character confirmation code), take payment through a payment gateway, and issue one e-ticket per passenger. The booking is all-or-nothing across every flight and every passenger.
+Create a booking (PNR with a 6-character confirmation code), take payment through a payment gateway, and issue one e-ticket per passenger. One booking is one flight, and it is all-or-nothing across every passenger.
 
 ### 5. Manage Booking
 
@@ -161,16 +161,16 @@ Searches           350K bookings × 1,000 (look-to-book) ≈ 350M / day
 ```text
 Seat rows          5,000 flights × ~160 seats × 331 days ≈ 265M rows × ~100 B ≈ 27 GB
 Fare inventory     5,000 flights × ~20 fare classes × 331 days ≈ 33M rows ≈ 3 GB
-Bookings           350K / day × ~4 KB (PNR, passengers, segments, tickets) ≈ 1.4 GB / day ≈ 500 GB / year
+Bookings           350K / day × ~4 KB (PNR, passengers, tickets) ≈ 1.4 GB / day ≈ 500 GB / year
                    kept ~7 years for finance and audit ≈ 3.5 TB
-Itinerary cache    ~50K origin–destination pairs × 331 days × ~5 KB ≈ 80 GB → Redis cluster
+Route cache        ~1,500 nonstop routes × 331 days × ~2 KB (that day's flight list) ≈ 1 GB → Redis
 ```
 
 **Key insights**
 
 1. **Search is the volume problem:** 1,000 reads per write. Cache it, and never let search touch the inventory database directly.
 2. **Booking is the correctness problem:** only ~120 writes a second at a fare-sale peak, but many land on the same flight at the same time.
-3. **One flight is small:** at most ~400 seats and ~25 fare classes. All of one flight's inventory fits on one database shard, so holding seats on one flight is always a **local** transaction.
+3. **One booking = one flight, and one flight is small:** at most ~400 seats and ~25 fare classes, all on one database shard. So every hold, payment commit and cancellation is a single **local** transaction.
 
 </details>
 
@@ -188,7 +188,7 @@ Itinerary cache    ~50K origin–destination pairs × 331 days × ~5 KB ≈ 80 G
 GET /v1/flights/search
 ```
 
-Find itineraries and fares. Results come from cache, so they can be a few seconds stale.
+Find nonstop flights and fares on one route for one day. Results come from cache, so they can be a few seconds stale.
 
 **Headers**
 
@@ -208,10 +208,8 @@ X-Request-Id: req_3f9a21c7
   "origin": "ATL",
   "destination": "LGA",
 
-  // 2. departDate / returnDate — local dates at the departure airport.
-  //    2.1 returnDate omitted → one-way.
+  // 2. departDate — local date at the departure airport (one-way only)
   "departDate": "2026-12-20",
-  "returnDate": "2026-12-27",
 
   // 3. passengers — counts by type. 1–9 in total (airline limit per booking)
   "adults": 2,
@@ -220,7 +218,7 @@ X-Request-Id: req_3f9a21c7
   // 4. cabin — MAIN | COMFORT | PREMIUM_SELECT | FIRST
   "cabin": "MAIN",
 
-  // 5. sort — PRICE | DURATION | DEPARTURE_TIME
+  // 5. sort — PRICE | DEPARTURE_TIME
   "sort": "PRICE"
 }
 ```
@@ -229,31 +227,26 @@ X-Request-Id: req_3f9a21c7
 
 ```jsonc
 {
-  // 1. outbound / inbound — itineraries for each direction (inbound only for round trips)
-  "outbound": [
+  // 1. flights — nonstop flights on this route and date
+  "flights": [
     {
-      // 1.1 segments — one per flight; a connection has two or more
-      "segments": [
-        {
-          // flightInstanceId — one flight on one date. Every later call uses this ID
-          "flightInstanceId": "DL2301-20261220",
-          "flightNumber": "DL2301",
-          "origin": "ATL",
-          "destination": "LGA",
-          "departAt": "2026-12-20T08:05:00-05:00",
-          "arriveAt": "2026-12-20T10:20:00-05:00",
-          "aircraft": "A321"
-        }
-      ],
+      // 1.1 flightInstanceId — one flight on one date. Every later call uses this ID
+      "flightInstanceId": "DL2301-20261220",
+      "flightNumber": "DL2301",
+      "origin": "ATL",
+      "destination": "LGA",
+      "departAt": "2026-12-20T08:05:00-05:00",
+      "arriveAt": "2026-12-20T10:20:00-05:00",
+      "aircraft": "A321",
 
       // 1.2 fares — one per fare family that still has enough seats for all passengers
       "fares": [
         {
-          // offerId — signed token: itinerary + fare class per segment + price + expiry.
+          // offerId — signed token: flight + fare class + price + expiry.
           //   Passed to API 3. The server re-checks everything, so a stale offer is safe
           "offerId": "of_9Xk2...sig",
           "fareFamily": "MAIN",
-          "fareClasses": ["K"],               // one per segment
+          "fareClass": "K",
 
           // totalPrice — fare for all passengers, in cents (taxes and seat fees are added in API 3's breakdown)
           "totalPrice": { "amount": 37800, "currency": "USD" },
@@ -268,17 +261,14 @@ X-Request-Id: req_3f9a21c7
     }
   ],
 
-  // 2. inbound — same shape as outbound
-  "inbound": [],
-
-  // 3. offersExpireAt — after this, API 3 returns 410 and the user must search again
+  // 2. offersExpireAt — after this, API 3 returns 410 and the user must search again
   "offersExpireAt": "2026-11-03T10:30:00Z"
 }
 ```
 
 **Notes:**
 
-1. Served from Redis: precomputed itineraries plus cached seat counts. Search never reads the Inventory DB.
+1. Served from Redis: the route's flight list for that day plus cached seat counts. Search never reads the Inventory DB.
 2. `offerId` is signed (HMAC) so a client can't edit the price, and expires after 30 minutes. *(our addition)*
 3. Errors: 400 same origin and destination, date in the past, more than 9 passengers · 429 too many searches (bots scraping fares).
 
@@ -340,7 +330,7 @@ Authorization: Bearer <user-token>
 POST /v1/bookings
 ```
 
-Hold fare-class places (and chosen seats) on every flight of the trip for 15 minutes, and create the booking in `HELD` status. This is the "seat lock" step.
+Hold fare-class places (and chosen seats) on the flight for 15 minutes, and create the booking in `HELD` status. This is the "seat lock" step.
 
 **Headers**
 
@@ -363,8 +353,8 @@ X-Request-Id: req_77b1e0d2
   //    A retry after a timeout returns the same booking instead of holding seats twice
   "idempotencyKey": "4c1d8e2a-6f0b-4b7e-9a35-1e2f3d4c5b6a",
 
-  // 2. offerIds — one per direction (outbound, inbound), from API 1
-  "offerIds": ["of_9Xk2...sig", "of_Q7m1...sig"],
+  // 2. offerId — the chosen flight + fare, from API 1
+  "offerId": "of_9Xk2...sig",
 
   // 3. passengers — names exactly as on the ID (needed for the ticket and TSA Secure Flight)
   //    3.1 passengerRef: a client-side label used to link seats to passengers.
@@ -382,11 +372,8 @@ X-Request-Id: req_77b1e0d2
     { "passengerRef": "p2", "type": "ADULT", "firstName": "Riya", "lastName": "Kumar", "dateOfBirth": "1997-09-03", "gender": "F" }
   ],
 
-  // 4. seatSelections — optional. Passengers without a seat get one at check-in
-  "seatSelections": [
-    { "passengerRef": "p1", "flightInstanceId": "DL2301-20261220", "seatNo": "12A" },
-    { "passengerRef": "p2", "flightInstanceId": "DL2301-20261220", "seatNo": "12C" }
-  ],
+  // 4. seats — optional, passengerRef → seat. Passengers without a seat get one at check-in
+  "seats": { "p1": "12A", "p2": "12C" },
 
   // 5. contact — where confirmations and flight alerts go
   "contact": { "email": "abhinav@example.com", "phone": "+919876543210" }
@@ -408,23 +395,22 @@ X-Request-Id: req_77b1e0d2
 
   // 4. price — re-checked against live inventory now, may differ from the search
   "price": {
-    "fare":     { "amount": 64000, "currency": "USD" },
-    "taxes":    { "amount": 9800,  "currency": "USD" },
+    "fare":     { "amount": 37800, "currency": "USD" },
+    "taxes":    { "amount": 5800,  "currency": "USD" },
     "seatFees": { "amount": 4500,  "currency": "USD" },
-    "total":    { "amount": 78300, "currency": "USD" }
+    "total":    { "amount": 48100, "currency": "USD" }
   },
 
-  // 5. segments — what is held on each flight
-  "segments": [
-    { "flightInstanceId": "DL2301-20261220", "fareClass": "K", "seats": { "p1": "12A", "p2": "12C" } },
-    { "flightInstanceId": "DL1488-20261227", "fareClass": "K", "seats": {} }
-  ]
+  // 5. what is held
+  "flightInstanceId": "DL2301-20261220",
+  "fareClass": "K",
+  "seats": { "p1": "12A", "p2": "12C" }
 }
 ```
 
 **Notes:**
 
-1. **All or nothing:** every flight, every passenger and every chosen seat is held, or nothing is.
+1. **All or nothing:** every passenger and every chosen seat is held, or nothing is. It's one local transaction on the flight's shard.
 2. 201, not 202: the hold finishes during the request (~100–300 ms), and the user needs the answer now.
 3. Errors: 409 `SEAT_UNAVAILABLE` (lists the seats) · 409 `FARE_SOLD_OUT` · 409 `PRICE_CHANGED` (with the new price; the user must accept it) · 410 `OFFER_EXPIRED` · 429 too many active holds for this user.
 
@@ -467,7 +453,7 @@ Content-Type: application/json
   "paymentMethod": { "type": "CARD", "token": "tok_1PqR8sT..." },
 
   // 3. amount — the total the user saw. If it doesn't match the booking's total → 409
-  "amount": { "amount": 78300, "currency": "USD" }
+  "amount": { "amount": 48100, "currency": "USD" }
 }
 ```
 
@@ -518,18 +504,16 @@ GET /v1/users/{userId}/bookings            → "My Trips" (signed-in user)
     { "passengerRef": "p1", "name": "Abhinav Kumar", "ticketNumber": "0062345678901" }
   ],
 
-  // 3. segments — per flight: fare class, flight status and each passenger's seat
-  "segments": [
-    {
-      "flightInstanceId": "DL2301-20261220",
-      "fareClass": "K",
-      "flightStatus": "SCHEDULED",          // SCHEDULED | DELAYED | CANCELLED | DEPARTED
-      "seats": { "p1": "12A", "p2": "12C" }
-    }
-  ],
+  // 3. flight — fare class, flight status and each passenger's seat
+  "flight": {
+    "flightInstanceId": "DL2301-20261220",
+    "fareClass": "K",
+    "flightStatus": "SCHEDULED",            // SCHEDULED | DELAYED | CANCELLED | DEPARTED
+    "seats": { "p1": "12A", "p2": "12C" }
+  },
 
   // 4. totalPaid
-  "totalPaid": { "amount": 78300, "currency": "USD" }
+  "totalPaid": { "amount": 48100, "currency": "USD" }
 }
 ```
 
@@ -551,8 +535,7 @@ PUT /v1/bookings/{pnr}/seats
   // 1. idempotencyKey — a retry never charges a seat fee twice
   "idempotencyKey": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
 
-  // 2. seats — the full seat list for this flight (PUT replaces it)
-  "flightInstanceId": "DL2301-20261220",
+  // 2. seats — the full seat list for the booking (PUT replaces it)
   "seats": { "p1": "14A", "p2": "14B" }
 }
 ```
@@ -579,7 +562,7 @@ POST  /v1/bookings/{pnr}/cancellation         → cancel
   // 2. outcome — REFUND (to the card) | TRAVEL_CREDIT | NONE, from fare rules
   //    2.1 Within 24 hours of booking (and 7+ days before departure): full REFUND (DOT rule)
   "outcome": "REFUND",
-  "amount": { "amount": 78300, "currency": "USD" },
+  "amount": { "amount": 48100, "currency": "USD" },
   "validUntil": "2026-11-03T10:45:00Z"
 }
 ```
@@ -748,9 +731,9 @@ updated_at          TIMESTAMPTZ NOT NULL
 ```
 
 ```text
-seat_holds                            → one row per booking per flight
+seat_holds                            → one row per booking (a booking is one flight)
 ─────────────────────────────────────────────────────────────────────────────
-hold_id             VARCHAR    PK            → "h_GH7K2P_DL2301-20261220"
+hold_id             VARCHAR    PK            → "h_GH7K2P" (one per booking)
 flight_instance_id  VARCHAR    NOT NULL
 pnr                 VARCHAR    NOT NULL      → the HELD booking
 fare_class          CHAR(1)    NOT NULL
@@ -805,7 +788,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 
 ### 3. Bookings / PNR (PostgreSQL — Booking DB)
 
-**Database:** PostgreSQL, **sharded by `pnr`**. One booking, with its passengers, segments and tickets, lives on one shard.
+**Database:** PostgreSQL, **sharded by `pnr`**. One booking, with its passengers and tickets, lives on one shard.
 
 **Schema**
 
@@ -820,6 +803,9 @@ status              ENUM       NOT NULL      → HELD | PAYMENT_PENDING | CONFIR
 total_amount        INT        NOT NULL      → cents
 currency            CHAR(3)    NOT NULL
 contact             JSONB      NOT NULL      → email, phone (encrypted)
+flight_instance_id  VARCHAR    NOT NULL      → the one flight; points to its Inventory DB shard
+fare_class          CHAR(1)    NOT NULL      → "K"
+hold_id             VARCHAR    NOT NULL      → the seat_holds row on that shard
 hold_expires_at     TIMESTAMPTZ NULL
 version             INT        NOT NULL      → optimistic locking for status changes
 created_at          TIMESTAMPTZ NOT NULL
@@ -839,21 +825,9 @@ loyalty_number                  VARCHAR  NULL
 ```
 
 ```text
-booking_segments                      → one row per flight in the booking
+tickets                               → one row per passenger (one flight, so one coupon each)
 ─────────────────────────────────────────────────────────────────────────────
-segment_id          BIGINT     PK
-pnr                 CHAR(6)    NOT NULL
-flight_instance_id  VARCHAR    NOT NULL      → points to the Inventory DB shard
-fare_class          CHAR(1)    NOT NULL
-hold_id             VARCHAR    NOT NULL      → the seat_holds row on that shard
-status              ENUM       NOT NULL      → HELD | BOOKED | CANCELLED
-```
-
-```text
-tickets                               → one row per passenger per flight ("coupon")
-─────────────────────────────────────────────────────────────────────────────
-ticket_number       CHAR(13)   PK (part 1)   → "0062345678901" (one per passenger)
-segment_id          BIGINT     PK (part 2)
+ticket_number       CHAR(13)   PK            → "0062345678901"
 pnr                 CHAR(6)    NOT NULL
 passenger_id        BIGINT     NOT NULL
 seat_no             VARCHAR    NULL
@@ -891,7 +865,7 @@ published_at        TIMESTAMPTZ NULL         → NULL = not yet published
 
 **Interview line**
 
-"Bookings live in PostgreSQL sharded by PNR: a bookings row, passengers, one segment per flight and one ticket coupon per passenger per flight. Every change appends to a history table and writes an outbox row in the same transaction, so events to Kafka are never lost."
+"Bookings live in PostgreSQL sharded by PNR: a bookings row that points to its one flight, the passengers, and one ticket per passenger. Every change appends to a history table and writes an outbox row in the same transaction, so events to Kafka are never lost."
 
 ### 4. Payments (PostgreSQL — Booking DB)
 
@@ -935,10 +909,9 @@ created_at          TIMESTAMPTZ NOT NULL
 **Database:** Redis cluster. Everything here can be rebuilt from the schedule and the Inventory DB.
 
 ```text
-itin:{origin}:{destination}:{date}     → precomputed itineraries for that day
-   value: [["DL2301-20261220"], ["DL1102-20261220","DL881-20261220"], …]
-   built nightly from the schedule: nonstops + valid connections through hubs
-   (ATL, DTW, MSP, SLC, JFK, LAX, SEA, BOS), respecting minimum connection times
+flights:{origin}:{destination}:{date}  → that day's nonstop flights on the route
+   value: ["DL2301-20261220", "DL2405-20261220", "DL1123-20261220", …]
+   built nightly from the schedule, updated when Ops adds or cancels a flight
 
 avail:{flightInstanceId}               → HASH  fareClass → "seatsLeft|price"
    e.g. avail:DL2301-20261220  {Y: "148|54900", M: "16|31900", K: "1|18900", E: "0|12900"}
@@ -949,11 +922,11 @@ seatmap:{flightInstanceId}             → the seat map response, TTL 5 s
 holds:user:{userId}                    → number of active holds (bot limit, Deep Dive 8)
 ```
 
-**Why Redis, not Elasticsearch:** flight search isn't text search. It's "which flights connect A to B on this date, and which fares are open", which is a key lookup plus a little arithmetic. Precompute the itineraries and keep seat counts in memory. *(our addition)*
+**Why Redis, not Elasticsearch:** flight search isn't text search. It's "which nonstop flights go from A to B on this date, and which fares are open", which is a key lookup plus a little arithmetic. Keep the flight lists and seat counts in memory. *(our addition)*
 
 **Interview line**
 
-"Search never touches the inventory database. Itineraries are precomputed per route and day, and seat counts and prices are cached per flight in Redis and refreshed from inventory events within seconds. The hold call re-checks everything against the real database."
+"Search never touches the inventory database. The flight list per route and day is precomputed, and seat counts and prices are cached per flight in Redis and refreshed from inventory events within seconds. The hold call re-checks everything against the real database."
 
 ---
 
@@ -981,17 +954,17 @@ holds:user:{userId}                    → number of active holds (bot limit, De
 
 1. **API Gateway:** rate-limits per user / IP / partner, then forwards to the Search Service.
 2. **Response cache:** look up `search:{hash}`. Hit → return (most popular searches during a sale hit here).
-3. **Itineraries:** read `itin:ATL:LGA:2026-12-20` (and the return date) from Redis.
-4. **Seat counts and prices:** one multi-get of `avail:{flightInstanceId}` for every flight in those itineraries.
-5. **Build fares:** for each itinerary, find the cheapest fare class with `seatsLeft ≥ passengers` on every segment. Add up prices and taxes.
-6. **Sign offers:** each fare gets an `offerId` (itinerary + fare classes + price + expiry, HMAC-signed).
+3. **Flights:** read `flights:ATL:LGA:2026-12-20` from Redis.
+4. **Seat counts and prices:** one multi-get of `avail:{flightInstanceId}` for those flights.
+5. **Build fares:** for each flight and fare family, find the cheapest fare class with `seatsLeft ≥ passengers`. Price × passengers.
+6. **Sign offers:** each fare gets an `offerId` (flight + fare class + price + expiry, HMAC-signed).
 7. **Sort, store in the response cache for 60 s, return.**
 
 **Why staleness is safe:** search can show a K fare that sold out 2 seconds ago. The hold (Flow 3) checks the real database and returns `FARE_SOLD_OUT` or `PRICE_CHANGED`. A stale search costs a retry, never an oversell.
 
 **Interview line**
 
-"Search is entirely cache-driven: precomputed itineraries plus per-flight seat counts in Redis, refreshed from inventory events. Results can be seconds stale, which is fine because the booking step re-validates against the database."
+"Search is entirely cache-driven: precomputed flight lists per route and day plus per-flight seat counts in Redis, refreshed from inventory events. Results can be seconds stale, which is fine because the booking step re-validates against the database."
 
 ### 3. Flow: Create Booking (Hold)
 
@@ -999,8 +972,8 @@ The user picked fares (and maybe seats) and clicks Continue (API 3).
 
 1. **API Gateway:** checks the token and the per-user hold limit (e.g. at most 2 active holds).
 2. **Booking Service, dedup:** insert a `bookings` row with `idempotency_key`, status `HELD`. A duplicate key → it's a retry: return the existing booking.
-3. **Verify offers:** check each `offerId` signature and expiry (410 if expired).
-4. **Hold each flight:** for every segment, call the Inventory Service: `hold(flightInstanceId, holdId, fareClass, n, seats)`. The flight's shard runs **one local transaction**:
+3. **Verify the offer:** check the `offerId` signature and expiry (410 if expired).
+4. **Hold the flight:** call the Inventory Service: `hold(flightInstanceId, holdId, fareClass, n, seats)`. The flight's shard runs **one local transaction**:
 
    4.1 `fare_inventory`: `held + n` if `sold + held + n <= seats_for_sale`, else `FARE_SOLD_OUT`.
 
@@ -1011,14 +984,14 @@ The user picked fares (and maybe seats) and clicks Continue (API 3).
    4.4 Insert the `seat_holds` row (`ACTIVE`, `expires_at = now + 15 min`).
 
    4.5 Read the current fare price from the same row. If it's higher than the offer → return it, and the Booking Service answers `PRICE_CHANGED`.
-5. **Any segment fails → release the ones already held** (compensation), mark the booking `FAILED`, return 409.
-6. **All held:** save passengers and segments, return 201 with `pnr`, `holdExpiresAt` and the price.
+5. **Hold fails** → the transaction rolled back, so there is nothing to undo. Mark the booking `FAILED`, return 409.
+6. **Held:** save the passengers, return 201 with `pnr`, `holdExpiresAt` and the price.
 
-**Why the hold ID is deterministic** (`h_{pnr}_{flightInstanceId}`): if the Booking Service retries step 4, the Inventory Service sees the same `hold_id` and returns the existing hold instead of holding twice. *(our addition)*
+**Why the hold ID is deterministic** (`h_{pnr}`): if the Booking Service retries step 4, the Inventory Service sees the same `hold_id` and returns the existing hold instead of holding twice. *(our addition)*
 
 **Interview line**
 
-"Creating a booking holds every flight in its own local transaction on that flight's shard: a conditional increment of the fare and cabin counters, and a conditional AVAILABLE→HELD update on each chosen seat. If any flight fails, we release the others. The booking is HELD with a 15-minute countdown."
+"Creating a booking is one local transaction on the flight's shard: a conditional increment of the fare and cabin counters, and a conditional AVAILABLE→HELD update on each chosen seat. Either everything is held or nothing is. The booking is HELD with a 15-minute countdown."
 
 ### 4. Flow: Pay & Ticket
 
@@ -1026,15 +999,15 @@ The user enters their card and clicks Pay (API 4).
 
 1. **Dedup:** insert a `payments` row with the `idempotencyKey`. A duplicate → return the stored result.
 2. **Check the booking:** status `HELD`, amount matches, `hold_expires_at` in the future. Otherwise 409 / 410, **before** any charge.
-3. **Freeze the holds:** for each segment, `seat_holds` `ACTIVE → CONFIRMING` and `expires_at + 10 min`, only if still `ACTIVE` and not expired. Booking → `PAYMENT_PENDING`.
+3. **Freeze the hold:** `seat_holds` `ACTIVE → CONFIRMING` and `expires_at + 10 min`, only if still `ACTIVE` and not expired. Booking → `PAYMENT_PENDING`.
 
-   3.1 If any hold already expired → 410, nothing charged.
+   3.1 If the hold already expired → 410, nothing charged.
 
    3.2 The sweeper never touches `CONFIRMING` holds, so the seats can't expire while the bank is thinking.
 4. **Authorize** the card at the gateway (same idempotency key).
 
-   4.1 Declined → holds back to `ACTIVE`, booking back to `HELD`, return 402. The user can try another card until the original 15 minutes are up.
-5. **Commit each flight** (local transaction per shard): `seat_holds` → `CONVERTED`, seats `HELD → BOOKED` (only where `hold_id` is ours), `held - n`, `sold + n`, insert `flight_manifest` rows.
+   4.1 Declined → hold back to `ACTIVE`, booking back to `HELD`, return 402. The user can try another card until the original 15 minutes are up.
+5. **Commit the flight** (one local transaction on its shard): `seat_holds` → `CONVERTED`, seats `HELD → BOOKED` (only where `hold_id` is ours), `held - n`, `sold + n`, insert `flight_manifest` rows.
 6. **Capture** the payment. Booking → `CONFIRMED`, with an outbox event, in one transaction.
 7. **Ticketing:** take numbers from the Ticketing Service's pre-allocated block, insert `tickets` rows, booking → `TICKETED`, outbox event `BOOKING_TICKETED`.
 8. **Return 200** with the tickets.
@@ -1056,7 +1029,7 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 **Interview line**
 
-"Payment first freezes the holds so they can't expire mid-payment, then authorizes the card, commits the seats on each flight's shard, captures, and issues tickets. Every step is idempotent and its result is stored, so a reconciler can finish or roll back any booking that crashed halfway: capture if seats were committed, void if they weren't."
+"Payment first freezes the holds so they can't expire mid-payment, then authorizes the card, commits the seats on the flight's shard, captures, and issues tickets. Every step is idempotent and its result is stored, so a reconciler can finish or roll back any booking that crashed halfway: capture if seats were committed, void if they weren't."
 
 ### 5. Flow: Hold Expiry
 
@@ -1076,7 +1049,7 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 1. **Quote:** `GET cancellation-quote` applies fare rules: within 24 hours of booking (and 7+ days before departure) → full refund; otherwise refund, travel credit or nothing per fare.
 2. **Cancel (POST):** check `quoteId` is valid and the booking isn't flown or checked in.
-3. **Release inventory per flight:** seats `BOOKED → AVAILABLE`, `sold - n`, delete the manifest rows. Local transaction per shard, idempotent by PNR.
+3. **Release inventory:** seats `BOOKED → AVAILABLE`, `sold - n`, delete the manifest rows. One local transaction on the flight's shard, idempotent by PNR.
 4. **Booking → `CANCELLED`**, coupons → `REFUNDED`, payment → `REFUND_PENDING`, outbox events. One transaction.
 5. **Return 200** with `refundStatus: PENDING`.
 6. **Async:** the Payment Service calls the gateway's refund (idempotency key = `refund:{pnr}`); a webhook marks it `REFUNDED`. The Notification Service emails the receipt.
@@ -1085,15 +1058,15 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 **Interview line**
 
-"Cancelling releases the seats on each flight right away so they can be resold, marks the booking cancelled with an outbox event in one transaction, and runs the refund in the background with its own idempotency key. Fare rules and the 24-hour rule decide refund versus credit."
+"Cancelling releases the seats right away so they can be resold, marks the booking cancelled with an outbox event in one transaction, and runs the refund in the background with its own idempotency key. Fare rules and the 24-hour rule decide refund versus credit."
 
 ### 7. Flow: Flight Cancelled (Re-accommodation)
 
 1. **Operations cancels DL2301** → `schedule-changed` event on Kafka.
 2. **Inventory Service:** flight status → `CANCELLED`, stop selling it, the Search Indexer removes it from search.
-3. **Re-accommodation worker** reads the flight's `flight_manifest` (one shard) and queues one job per PNR, ordered by priority: connecting passengers about to miss onward flights, top loyalty tiers, premium cabins, then everyone else.
-4. **Each job:** search alternatives, hold and commit on the new flight with an **airline override** (any open seat in the same cabin, ignoring fare-class limits), exchange the coupons, append `REBOOKED` to `booking_events`.
-5. **Notify** the passenger with the new itinerary and an option to accept or take a refund (US DOT rules require a refund if they don't accept the alternative).
+3. **Re-accommodation worker** reads the flight's `flight_manifest` (one shard) and queues one job per PNR, ordered by priority: top loyalty tiers, premium cabins, then everyone else.
+4. **Each job:** find the next nonstop flights on the same route, hold and commit on the new flight with an **airline override** (any open seat in the same cabin, ignoring fare-class limits), reissue the tickets, append `REBOOKED` to `booking_events`.
+5. **Notify** the passenger with the new flight and an option to accept or take a refund (US DOT rules require a refund if they don't accept the alternative).
 
 **Interview line**
 
@@ -1220,18 +1193,26 @@ This is AlgoMaster's **reservation with TTL** (Shopify 6.2, Approach 3): `availa
 
 "There are two hard limits. Counts per fare class and per cabin, with the cabin capped at its physical seats so we never overbook, are checked atomically in the WHERE clause of every hold. Physical seats are rows, so an assigned seat can never be double-booked. Supporting overbooking later would only change the cabin limit column."
 
-### Deep Dive 4: "A round trip with a connection is 4 flights on different shards. How is it all-or-nothing?"
+### Deep Dive 4: "Why is one flight per booking simpler? What changes if the interviewer adds round trips or connections?"
 
-1. **Each flight is a local transaction** on its own shard (Flow 3, step 4). There's no distributed transaction (2PC) across shards: it would lock rows on several shards while waiting for the slowest one.
-2. **The Booking Service runs a saga:** hold flight 1, flight 2, flight 3, flight 4. If flight 3 fails → **compensate**: release holds 1 and 2, return 409.
-3. **The TTL is the saga's safety net:** if the Booking Service crashes before compensating, holds 1 and 2 simply expire in 15 minutes. Nothing is stuck forever. *(our addition)*
-4. **Order:** hold the scarcest flight first (lowest `seatsLeft` from the cache), so the most likely failure happens before we've held anything else. *(our addition)*
-5. **Groups (up to 9 passengers):** one statement per flight with `n = 9` and all 9 seats, so a group gets all seats or none, never 7 of 9.
-6. **Payment commit uses the same saga idea:** commit flight by flight; each commit is idempotent (`WHERE hold_id = ours`), so the reconciler can finish a half-committed booking.
+**With one nonstop flight per booking (our scope):**
+
+1. **Every write is one local transaction** on the flight's shard: hold, commit after payment, cancel, change seat. No distributed transaction, no saga.
+2. **Groups (up to 9 passengers):** one statement with `n = 9` and all 9 seats, so a group gets all seats or none, never 7 of 9.
+3. **A failure leaves nothing behind:** if the hold fails, the transaction rolls back; if the service crashes, the hold expires on its own.
+
+**Likely follow-up: "Now add round trips and connections."** *(our addition)*
+
+1. One booking now touches 2–4 flights, possibly on **different shards**. A distributed transaction (2PC) would lock rows on several shards while waiting for the slowest one, so avoid it.
+2. **Saga in the Booking Service:** hold flight 1, then flight 2, …; if one fails → **compensate** by releasing the earlier holds, return 409.
+3. **The TTL is the saga's safety net:** if the service crashes before compensating, the earlier holds expire in 15 minutes anyway.
+4. **Hold the scarcest flight first** (lowest `seatsLeft` in the cache), so the most likely failure happens before anything else is held.
+5. **Payment commit** goes flight by flight; each commit is idempotent (`WHERE hold_id = ours`), so the reconciler can finish a half-committed booking.
+6. **Search** must precompute connections through hubs (ATL, DTW, MSP, SLC …) with minimum connection times.
 
 **Interview line**
 
-"Each flight is a local transaction on its own shard, and the Booking Service runs a saga across them: hold one by one, and release the earlier ones if a later one fails. Holds expire on their own, so even a crash mid-saga can't leave seats blocked."
+"Because a booking is one nonstop flight, every hold, payment commit and cancellation is a single local transaction on that flight's shard, with no saga. If we add connections later, the Booking Service holds each flight in turn and releases the earlier ones if a later one fails, and the hold TTL cleans up after a crash."
 
 ### Deep Dive 5: "How do you make sure we never charge twice, and never charge without a seat?"
 
@@ -1301,10 +1282,10 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 
 1. **Event-driven, async:** each cancellation is a `schedule-changed` event; the Re-accommodation workers process one job per PNR (Flow 7).
 2. **Separate worker pool and rate limit**, so rebooking never starves normal bookings of database capacity.
-3. **Priority order:** passengers who will miss connections, then top loyalty tiers and premium cabins, then everyone else.
+3. **Priority order:** top loyalty tiers and premium cabins, then everyone else, and the earliest replacement flights first.
 4. **Competing for the same seats:** rebooking uses the same atomic hold, so two cancelled flights' passengers can't get the same seat on the next flight. Rebooked passengers use an override (any open seat in the cabin, ignoring fare-class limits), but never more than physical seats, since we don't overbook.
 5. **Notify in bulk** through the Notification Service's high-priority (transactional) queue.
-6. **Refund option:** if the new itinerary isn't accepted, refund automatically, as US DOT rules require for cancelled or significantly changed flights.
+6. **Refund option:** if the new flight isn't accepted, refund automatically, as US DOT rules require for cancelled or significantly changed flights.
 
 ### Deep Dive 11: "What if a database, Redis, Kafka or the payment gateway is down?"
 
@@ -1312,7 +1293,7 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 2. **Redis down:** search falls back to the schedule and Inventory DB **replicas** with strict rate limits and fewer results. Holds and bookings don't depend on Redis at all (only the bot-limit counter, which fails open with a stricter gateway rate limit).
 3. **Kafka down:** bookings still work. Events wait in the outbox table and are published when Kafka recovers. Confirmation emails and cache updates are late, nothing is lost.
 4. **Payment gateway down:** circuit breaker; switch to a secondary gateway; holds stay valid, so the user can retry. If both are down, show "payments temporarily unavailable" and keep the hold.
-5. **Booking Service instance dies mid-checkout:** the reconciler finishes or rolls back (Flow 4); holds expire on their own if the hold saga was cut off (Deep Dive 4).
+5. **Booking Service instance dies mid-checkout:** the reconciler finishes or rolls back (Flow 4); holds expire on their own if it died before payment.
 6. **Whole region down:** search is served from every region. Inventory writes have one primary region per shard with a warm standby region; failover is a planned, tested procedure. Active-active writes for the same seat across regions would need consensus, which isn't worth it at ~120 writes/s. *(our addition)*
 
 ### Deep Dive 12: "How does the data grow, and how do you shard it?"
