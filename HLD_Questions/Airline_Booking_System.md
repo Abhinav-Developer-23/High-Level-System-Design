@@ -782,6 +782,8 @@ SET status = 'BOOKED', pnr = :pnr, passenger_id = :p, hold_id = NULL, hold_expir
 WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- only our own hold
 ```
 
+**Same split as AlgoMaster's movie design:** `screens.seat_layout` (JSONB) holds the static physical layout, and `show_seats` holds the status of each seat for one show. Ours: the aircraft config is the layout, and `flight_seats` is the status of each seat for one flight.
+
 **Why seats are rows, not a JSON seat map:**
 
 1. Two users picking 12A and 14C touch **different rows**, so they never block each other.
@@ -1059,6 +1061,17 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 5. **Return 200** with `refundStatus: PENDING`.
 6. **Async:** the Payment Service calls the gateway's refund (idempotency key = `refund:{pnr}`); a webhook marks it `REFUNDED`. The Notification Service emails the receipt.
 
+**Refund policy as data** (AlgoMaster movie 7.2 uses a time-to-showtime table; airlines use fare rules). Example values, set by the business, not hard-coded:
+
+| When / fare | Movie (AlgoMaster) | Airline (example) |
+|:---|:---|:---|
+| Within 24 h of booking, departure 7+ days away | — | 100% refund (US DOT rule) |
+| > 24 h before start | 100% | refundable fare: 100% · standard fare: travel credit |
+| 2–24 h before start | 50% | standard fare: travel credit |
+| < 2 h before / no-show | 0% | basic economy: no value |
+
+7. **Released seats go back on sale at once** (AlgoMaster movie 7.2): seats `AVAILABLE`, an `inventory-events` message updates the cached seat counts, and anyone viewing the live seat map sees them turn free (Deep Dive 13).
+
 **Change of flight (exchange)** *(our addition)*: hold the new flight first, collect the fare difference, commit the new flight, then release the old one. If the new hold fails, the old booking is untouched.
 
 **Interview line**
@@ -1081,7 +1094,22 @@ A reconciler runs every minute and finds bookings stuck in `PAYMENT_PENDING` or 
 
 ## 🔍 Deep Dives
 
-> The follow-up questions interviewers push on, answered for this design. Deep Dives 1–6 are the airline versions of the movie-booking / e-commerce deep dives (seat locking, holds with TTL, overselling, payments, flash sales); 7–12 are airline-specific.
+> The follow-up questions interviewers push on, answered for this design. Deep Dives 1–6 and 13 map AlgoMaster's **Design Movie Booking System** deep dives (6.1–6.4, 7.1–7.2) and its **Design Shopify** payment and flash-sale deep dives onto flights; 7–12 are airline-specific.
+
+**Movie booking (AlgoMaster) → Airline (ours)**
+
+| Movie booking | Airline | Where |
+|:---|:---|:---|
+| `shows` (one movie on one screen at one time) | `flight_instances` (one flight on one date) | DB 1 |
+| `screens.seat_layout` (JSONB, physical layout) | the aircraft config | DB 1 |
+| `show_seats`, "the critical table" | `flight_seats` | DB 2 |
+| Two-phase reservation: Redis soft lock, then database at payment | one conditional update on the database row | Deep Dive 1 |
+| Hybrid expiry: Redis TTL + active check + cleanup job | hold row expiry + lazy check + sweeper | Deep Dive 2 |
+| (no equivalent: a seat is the only inventory) | fare-class and cabin **counts**, because most passengers don't pick a seat | Deep Dive 3 |
+| Saga: refund if seats can't be marked after payment | freeze hold → authorize → commit → capture (void, not refund) | Deep Dive 5 |
+| Virtual waiting room, seat-holding limits | fare-sale waiting room, hold limits | Deep Dives 6 and 8 |
+| WebSocket live seat map (follow-up 7.1) | live seat map | Deep Dive 13 |
+| Tiered refunds by time to showtime (7.2) | fare rules + DOT 24-hour rule | Flow 6 |
 
 ---
 
@@ -1102,7 +1130,7 @@ COMMIT;
 1. **Pros:** simple and correct; the second request waits, then sees `HELD`.
 2. **Cons:** holds a lock across two round trips; with multiple seats in a different order, two transactions can **deadlock** (A locks 12A then 12B, B locks 12B then 12A). Fix: always lock seats in sorted order.
 
-**Approach 2: Optimistic locking (version column)**
+**Approach 2: Optimistic locking (version column)** (AlgoMaster movie, Approach 1)
 
 ```sql
 SELECT status, version FROM flight_seats WHERE … AND seat_no = '12A';      -- version = 7
@@ -1112,6 +1140,7 @@ UPDATE flight_seats SET status = 'HELD', version = 8 … WHERE … AND version =
 
 1. **Pros:** no lock held while thinking.
 2. **Cons:** an extra read, and retries under contention.
+3. **AlgoMaster's version** puts both conditions in one update: `WHERE seat_id IN ('A1','A2','A3') AND status = 'available' AND version = 5`, and fails the whole reservation if fewer than 3 rows changed. The `status` condition alone already does the job, which is our Approach 3.
 
 **Approach 3: Atomic conditional update (our choice)**
 
@@ -1126,14 +1155,37 @@ WHERE flight_instance_id = :f AND seat_no IN ('12A', '12C')
 2. **Cons:** the caller only learns "not all seats were free", so it re-reads to say which (cheap).
 3. **Deadlocks:** two overlapping multi-seat holds could in theory lock rows in different orders. We sort the seat numbers before the update and the index is scanned in key order, so both lock in the same order. If a deadlock ever happens, PostgreSQL aborts one transaction; we return 409 and the user picks again.
 
-**Approach 4: Redis lock with TTL (the classic movie-booking answer)**
+**Approach 4: Redis distributed lock** (AlgoMaster movie, Approach 2)
 
-```text
-SET seat:DL2301-20261220:12A  h_GH7K2P  NX  EX 900     → OK = ours, nil = taken
+```lua
+-- KEYS = lock:flight:DL2301-20261220:seat:12A, …:12C   ARGV = holdId, ttlSeconds
+local acquired = {}
+for i, key in ipairs(KEYS) do
+  if redis.call('SET', key, ARGV[1], 'NX', 'EX', ARGV[2]) then
+    table.insert(acquired, key)
+  else
+    for _, k in ipairs(acquired) do redis.call('DEL', k) end   -- all or nothing
+    return nil
+  end
+end
+return acquired
 ```
 
-1. **Pros:** very fast, and expiry is built in.
-2. **Cons:** now there are **two sources of truth**. Redis replicates asynchronously, so a failover can lose a lock and let a second user hold 12A. The database must still check at payment time, so the lock is only a hint. And the hold must survive 15 minutes plus payment, while Redis keys just vanish.
+1. **Pros:** under 1 ms; the Lua script makes a multi-seat lock all-or-nothing; the TTL releases abandoned seats by itself.
+2. **Cons:** a second system next to the database; Redis replicates asynchronously, so a failover can lose a lock (split-brain) and let a second user lock 12A; Redis and the database can drift apart.
+
+**Approach 5: Two-phase reservation** (AlgoMaster movie, Approach 3, **their recommendation**)
+
+1. **Phase 1, soft lock (Redis):** at "Reserve", run the Lua lock above with a 10-minute TTL; also save the reservation in the database as `pending`, so ownership survives a Redis outage.
+2. **Phase 2, hard lock (database):** at payment, check the Redis locks are still held, charge with an idempotency key, mark seats `booked` in a transaction, then delete the locks.
+3. **If the database update fails after payment:** refund (saga).
+
+**Why we don't follow AlgoMaster's recommendation for airlines** *(our addition)*:
+
+1. **Load:** a blockbuster opening sends 100–1000× traffic at one show. Our peak is ~360 holds/s across **all** flights, and each is one ~1 ms statement on the flight's shard. The database alone is fast enough, so Redis buys nothing.
+2. **One source of truth:** with two-phase, "is 12A held?" has two answers (Redis and the database) that must be kept in sync.
+3. **AlgoMaster's own edge case:** the Redis lock can expire while the bank is processing, someone else takes the seats, and the user must be refunded. We freeze the hold in the database before charging (Deep Dive 2), so that path can't happen.
+4. **When we'd switch:** if a single flight ever saw thousands of holds per second, put the Redis lock in front as a fast filter and keep the database update as the final check.
 
 **Comparison**
 
@@ -1142,7 +1194,8 @@ SET seat:DL2301-20261220:12A  h_GH7K2P  NX  EX 900     → OK = ours, nil = take
 | Pessimistic `FOR UPDATE` | Strong | Low under contention | Low (watch lock order) | OK, but slower |
 | Optimistic version | Strong | Medium (retries) | Medium | OK |
 | **Atomic conditional update** | **Strong** | **High (one statement)** | **Low** | **✅ our choice** |
-| Redis `SET NX EX` | Hint only (failover can lose locks) | Very high | High (two systems) | Only as a pre-filter for extreme spikes |
+| Redis lock (`SET NX EX` + Lua) | Hint only (failover can lose locks) | Very high | Medium | Only as a pre-filter for extreme spikes |
+| Two-phase (Redis + DB), AlgoMaster's pick | Strong (DB is final) | High | Higher (two systems in sync) | Movie blockbusters; not needed at our load |
 
 **Why the database is enough here:** even at a fare-sale peak we do ~360 holds per second across all flights, and each touches only ~2–4 rows on one shard. PostgreSQL does thousands of these per second. Redis would add a second system to keep in sync for throughput we don't need. *(our addition)*
 
@@ -1162,6 +1215,8 @@ This is AlgoMaster's **reservation with TTL** (Shopify 6.2, Approach 3): `availa
 | **Lazy expiry (our addition)** | The hold query treats `HELD` with `hold_expires_at < now()` as free | Counters still need the sweeper |
 | Redis key TTL + keyspace notifications | Key expires, a listener releases the seat | Notifications are fire-and-forget: a disconnected listener misses them, and the seat stays held forever |
 | Delay queue (e.g. SQS delay) | Send "check hold h1" with a 15-minute delay | Extra system; a hold extended during payment needs the message re-sent (SQS max delay is 15 min) |
+
+**Same idea as AlgoMaster's "Hybrid (Recommended)" expiry:** they combine a Redis TTL (seats free at 10 minutes), an active check when serving seat maps (show expired holds as available), and a cleanup job every minute (fix the database). We get the same three layers on one database row: `hold_expires_at` (the TTL), the lazy check inside the hold query, and the 30-second sweeper.
 
 **The race everyone forgets: payment vs expiry**
 
@@ -1227,6 +1282,10 @@ Based on AlgoMaster's payment deep dive (Shopify 6.4), applied to tickets.
 2. **Authorize → commit seats → capture.** If committing fails, void (free and instant) instead of refund (days, fees).
 3. **Freeze the hold before authorizing** (Deep Dive 2), so we never authorize money for seats that are about to expire.
 4. **Timeouts are not failures:** query the gateway's status by idempotency key before deciding anything.
+
+   4.1 **Key format** (AlgoMaster movie 6.4): `{pnr}:{attemptNumber}`, e.g. `GH7K2P:1`. A retry of the same attempt reuses the key (no double charge); trying a different card after a decline is a new attempt with a new key.
+
+   4.2 **AlgoMaster movie's saga:** charge, then mark seats booked; if marking fails (their example: the Redis lock expired during payment), compensate with a refund. Our order (freeze hold → authorize → commit → capture) means the compensation is a free **void**, and the "lock expired mid-payment" case can't happen.
 5. **State machine** with every transition in `payment_events`:
 
 ```text
@@ -1249,6 +1308,10 @@ AlgoMaster's flash-sale strategies (Shopify 6.3), applied to a fare sale:
 1. **Pre-warm (always):** fare-sale routes are known in advance. Pre-build their search results, scale Search and Booking Services up before 10 AM, and serve static pages from the CDN.
 2. **Search stays on cache:** at ~120K searches/s, search reads only Redis and the 60 s response cache. The Inventory DB sees only holds.
 3. **Waiting room for checkout only:** when hold requests exceed what we want to admit (e.g. 2,000 active checkouts), new users get "You're in line, about 2 minutes". It admits users at a steady rate, first come first served. Search stays open. *(entry column in the diagram)*
+
+   3.1 **How it works (AlgoMaster movie 6.3):** a Redis sorted set `queue:sale:{saleId}`, scored by join time. An admitter lets in N users a minute and gives each a signed token valid for 5 minutes; the hold API requires the token, so refreshing the page can't skip the line. Queue position is pushed to the browser every ~10 s.
+
+   3.2 **AlgoMaster's geographic sharding** (NYC users only compete with NYC users) doesn't fit flights: an ATL→LGA flight is bought from everywhere. We shard by flight instead, which spreads a sale across many shards because it covers many flights.
 4. **Admission control at the gateway:** rate limits per user, IP and partner; 429 with retry-after as a safety net.
 5. **Shorter holds and hold limits during the sale** (Deep Dive 2 and 8), so seats cycle back quickly.
 6. **Graceful degradation:** turn off non-essential calls (seat-map upsell, recommendations) to protect search and booking.
@@ -1271,8 +1334,15 @@ AlgoMaster's flash-sale strategies (Shopify 6.3), applied to a fare sale:
 
 Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to block competitors or resell. The fix is limits on holds, not on searches:
 
-1. **Max active holds per user and device** (e.g. 2), checked at the gateway with `holds:user:{userId}` in Redis.
-2. **Max seats per hold:** 9 passengers.
+| Rule | Movie (AlgoMaster 6.3) | Airline (ours) | Why |
+|:---|:---|:---|:---|
+| Max seats per transaction | 10 | 9 passengers | stop hoarding; 9 is the usual airline limit |
+| Max concurrent holds | 1 per show | 1 per flight, 2 overall | one active checkout at a time |
+| Hold timeout | 10 min, non-extendable | 15 min, extended **only** while the bank processes the payment | no seat expires mid-payment |
+| Cool-down after failed / expired holds | 5 min | 5 min, longer after repeats | stop rapid retry abuse |
+
+1. **Enforced at the gateway** with `holds:user:{userId}` in Redis (user ID for signed-in users, IP + session for guests).
+2. **Max seats per hold:** 9 passengers, also enforced in the hold API.
 3. **Require sign-in or a CAPTCHA** for holds on nearly full flights, and after repeated expired holds.
 4. **Shorter holds** for accounts with many expired holds.
 5. **Monitor the hold-to-ticket rate** per user, IP range and partner; very low rates mean abuse.
@@ -1308,6 +1378,33 @@ Real airlines have been hit by bots that repeatedly hold seats for 15 minutes to
 3. **"My Trips" by user:** `user_bookings (user_id, pnr)`, sharded by `user_id`.
 4. **Hot flight:** a hot flight is a hot **shard**, but one flight is only a few hundred rows; the limit is per-row contention, handled in Deep Dive 6.
 5. **Tooling:** Citus (PostgreSQL) or Vitess-style routing by shard key; the PNR or flight ID tells the router which shard to hit.
+
+### Deep Dive 13: "Can other users see seats turn grey while they're choosing?"
+
+Based on AlgoMaster movie follow-up 7.1 (WebSocket seat updates).
+
+1. **Without it:** the seat map is cached for 5 seconds; a user can click a seat that was just taken and gets a 409 (API 3), then the app refreshes the map. Fine for most flights.
+2. **With it:** when the user opens the seat map, the browser subscribes to `flight:{flightInstanceId}:seats`.
+3. **Fan-out:** the Inventory Service publishes every seat change (hold, release, book) to Redis Pub/Sub on that channel; every real-time server is subscribed and pushes the change to its own connected users.
+4. **Message:**
+
+```jsonc
+{
+  "type": "seatUpdate",
+  "flightInstanceId": "DL2301-20261220",
+  "seats": [ { "seatNo": "12A", "status": "OCCUPIED" }, { "seatNo": "12C", "status": "OCCUPIED" } ],
+  // timestamp — clients ignore updates older than what they already show
+  "timestamp": "2026-11-03T10:00:05Z"
+}
+```
+
+5. **Scale (AlgoMaster's numbers):** ~10,000 connections per server, so 100,000 people viewing seat maps need ~10 servers; sticky sessions so a reconnect lands on the same server.
+6. **SSE instead of WebSocket** *(our addition)*: updates only go server → browser, so Server-Sent Events are enough (same choice as our Notification Service's in-app channel), with built-in reconnect.
+7. **Worth it for airlines?** *(our addition)* Contention per flight is much lower than a blockbuster show, so build it only for fare sales and nearly full flights; the hold's 409 is still the real check.
+
+**Interview line**
+
+"For a live seat map, the Inventory Service publishes every seat change to a Redis Pub/Sub channel per flight, and real-time servers push it over SSE or WebSocket to everyone viewing that flight. It's a nicety on top: the atomic hold is still what prevents double booking."
 
 ---
 
