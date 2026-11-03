@@ -95,7 +95,7 @@ Create a booking (PNR with a 6-character confirmation code), take payment throug
 
 ### 5. Manage Booking
 
-Look up a booking by confirmation code and last name, change seats, and cancel with a refund or travel credit according to fare rules (including free cancellation within 24 hours).
+Look up a booking by confirmation code and last name, and cancel with a refund or travel credit according to fare rules (including free cancellation within 24 hours).
 
 ### 6. Notifications
 
@@ -522,30 +522,7 @@ GET /v1/users/{userId}/bookings            → "My Trips" (signed-in user)
 1. Guest lookup needs both the code and the last name, and is rate-limited per IP, so nobody can scan codes to find other people's trips. *(our addition)*
 2. Errors: 404 (also returned when the last name doesn't match, so we don't reveal which codes exist).
 
-### 6. Change Seat
-
-```text
-PUT /v1/bookings/{pnr}/seats
-```
-
-**Request**
-
-```jsonc
-{
-  // 1. idempotencyKey — a retry never charges a seat fee twice
-  "idempotencyKey": "1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d",
-
-  // 2. seats — the full seat list for the booking (PUT replaces it)
-  "seats": { "p1": "14A", "p2": "14B" }
-}
-```
-
-**Notes:**
-
-1. One database transaction: take the new seats (only if `AVAILABLE`), then free the old ones. If any new seat is taken, nothing changes (409).
-2. A paid seat triggers a small payment via API 4's flow.
-
-### 7. Cancel Booking
+### 6. Cancel Booking
 
 ```text
 GET   /v1/bookings/{pnr}/cancellation-quote   → what the user gets back (refund or credit)
@@ -608,7 +585,7 @@ POST  /v1/bookings/{pnr}/cancellation         → cancel
 **Why POST:** finance, support and chargeback disputes need the booking forever, and the user needs the refund details in the response.
 
 <details>
-<summary><b>8. Partner Distribution (GDS / OTA)</b></summary>
+<summary><b>7. Partner Distribution (GDS / OTA)</b></summary>
 
 **For learning only. In the interview, one line is enough:** "Partners call the same Search, Hold and Pay APIs through a partner gateway with their own keys, quotas and rate limits."
 
@@ -855,7 +832,7 @@ WHERE flight_instance_id = :f AND seat_no = :seat AND hold_id = :holdId;  -- onl
 |:---|:---|:---|:---|
 | `event_id` | `BIGINT` | 🔑 PK |  |
 | `pnr` | `CHAR(6)` | NOT NULL |  |
-| `type` | `VARCHAR` | NOT NULL | HELD, PAID, TICKETED, SEAT_CHANGED, CANCELLED, REBOOKED … |
+| `type` | `VARCHAR` | NOT NULL | HELD, PAID, TICKETED, CANCELLED, REBOOKED … |
 | `actor` | `VARCHAR` | NOT NULL | user, agent, system (sweeper, rebooking) |
 | `payload` | `JSONB` | NOT NULL |  |
 | `created_at` | `TIMESTAMPTZ` | NOT NULL |  |
@@ -1258,7 +1235,7 @@ This is AlgoMaster's **reservation with TTL** (Shopify 6.2, Approach 3): `availa
 
 **With one nonstop flight per booking (our scope):**
 
-1. **Every write is one database transaction:** hold, commit after payment, cancel, change seat.
+1. **Every write is one database transaction:** hold, commit after payment, cancel.
 2. **Groups (up to 9 passengers):** one statement with `n = 9` and all 9 seats, so a group gets all seats or none, never 7 of 9.
 3. **A failure leaves nothing behind:** if the hold fails, the transaction rolls back; if the service crashes, the hold expires on its own.
 
