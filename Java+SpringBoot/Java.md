@@ -4016,19 +4016,80 @@ Performance for free (better G1, ZGC, compact strings, faster startup), less boi
 </details>
 
 <details>
-<summary><b>Q6. Default methods in interfaces vs abstract classes?</b></summary>
+<summary><b>Q6. What is a default method in an interface?</b></summary>
+
+A method in an interface that has a body, marked with the `default` keyword (added in Java 8). Classes that implement the interface get it automatically and can override it if they want.
+
+```java
+interface Greeter {
+    String name();                                         // abstract: every class must implement it
+    default String greet() { return "Hello, " + name(); }  // default: has a body, inherited for free
+}
+
+class English implements Greeter {
+    public String name() { return "World"; }              // no need to write greet()
+}
+
+new English().greet();                                     // "Hello, World"
+```
+
+**Why it exists:** before Java 8, adding a method to an interface broke every class that implemented it. Default methods let the JDK add `Collection.stream()`, `List.sort()` and `Iterable.forEach()` without breaking millions of existing classes.
+
+**Rules worth knowing:**
+- A default method is always `public`.
+- It can't use instance fields (interfaces have none). It can only call other methods of the interface.
+- You can't write a default `equals`, `hashCode` or `toString`. That's a compile error, because the version from `Object` would always win anyway.
+- Default methods don't count towards the "one abstract method" of a functional interface.
+- A `static` method in an interface is different: it isn't inherited, so you call it as `Greeter.helper()`, not on an object.
+</details>
+
+<details>
+<summary><b>Q7. A class implements two interfaces that have the same default method. Which one runs, and how do you call one explicitly?</b></summary>
+
+If both interfaces are unrelated and both give a default body, **neither runs: the code doesn't compile**. Java refuses to guess, so the class must override the method itself.
+
+```java
+interface Camera { default String start() { return "Camera on"; } }
+interface Phone  { default String start() { return "Phone on"; } }
+
+class SmartPhone implements Camera, Phone { }
+// compile error: class SmartPhone inherits unrelated defaults for start() from types Camera and Phone
+```
+
+**Calling one explicitly:** override the method and use `InterfaceName.super.method()` to pick the version you want, or call both.
+
+```java
+class SmartPhone implements Camera, Phone {
+    @Override
+    public String start() {
+        return Phone.super.start();                        // pick Phone's version: "Phone on"
+        // or both: Camera.super.start() + ", " + Phone.super.start()
+    }
+}
+```
+
+`X.super.m()` only works when `X` is an interface the class implements directly.
+
+**Which method wins, in order:**
+1. **The class wins.** If the class or any superclass has the method, that version runs and the interface defaults are ignored.
+2. **The more specific interface wins.** If `Phone extends Camera` and both define `start()`, `Phone`'s version runs. No override is needed.
+3. **Otherwise it's ambiguous** and the class must override, as above. This also applies when one interface has the method as abstract and the other has a default.
+</details>
+
+<details>
+<summary><b>Q8. Default methods in interfaces vs abstract classes?</b></summary>
 
 Both can hold method bodies now. An abstract class can have state (instance fields), constructors and non-public members, and a class can extend only one. An interface has no instance state, and a class can implement many. Default methods were added so interfaces could evolve (e.g. `Collection.stream()`) without breaking existing implementations. If two interfaces give the same default method, the class must override it and choose.
 </details>
 
 <details>
-<summary><b>Q7. What is a functional interface?</b></summary>
+<summary><b>Q9. What is a functional interface?</b></summary>
 
 An interface with exactly one abstract method (default and static methods don't count), so it can be implemented with a lambda or method reference. `@FunctionalInterface` makes the compiler enforce it. Examples: `Runnable`, `Comparator`, `Function`, `Predicate`, `Supplier`, `Consumer`.
 </details>
 
 <details>
-<summary><b>Q8. map vs flatMap in streams?</b></summary>
+<summary><b>Q10. map vs flatMap in streams?</b></summary>
 
 `map` turns each element into exactly one element. `flatMap` turns each element into a stream and joins all those streams into one, flattening a level of nesting.
 
@@ -4040,25 +4101,25 @@ nested.stream().flatMap(List::stream).toList();         // [a, b, c]
 </details>
 
 <details>
-<summary><b>Q9. Intermediate vs terminal operations? Are streams lazy?</b></summary>
+<summary><b>Q11. Intermediate vs terminal operations? Are streams lazy?</b></summary>
 
 Intermediate operations (`filter`, `map`, `sorted`, `distinct`) return a new stream and are lazy: they only describe the pipeline. Terminal operations (`collect`, `forEach`, `count`, `findFirst`, `reduce`) run it. Elements flow through the whole pipeline one at a time, so `findFirst` can stop early. A stream can be consumed only once.
 </details>
 
 <details>
-<summary><b>Q10. Does var make Java dynamically typed?</b></summary>
+<summary><b>Q12. Does var make Java dynamically typed?</b></summary>
 
 No. The compiler infers the type from the initializer, and the variable keeps that static type forever: `var x = 1; x = "a";` doesn't compile. It only works for local variables with an initializer, and it should be used when the type is obvious from the right-hand side.
 </details>
 
 <details>
-<summary><b>Q11. What are sealed classes for?</b></summary>
+<summary><b>Q13. What are sealed classes for?</b></summary>
 
 To limit which classes can extend a type: `sealed interface Payment permits Card, Upi, Cash`. It models a closed set of variants (like an enum, but each variant can carry different data), and lets a pattern-matching `switch` be exhaustive without a `default`, so adding a new variant becomes a compile error everywhere it isn't handled.
 </details>
 
 <details>
-<summary><b>Q12. What is an LTS release?</b></summary>
+<summary><b>Q14. What is an LTS release?</b></summary>
 
 A Long-Term Support version that vendors keep patching for years, while non-LTS versions get updates for only 6 months. LTS versions so far: 8, 11, 17, 21 and 25; a new one every 2 years. Production systems normally run an LTS.
 </details>
