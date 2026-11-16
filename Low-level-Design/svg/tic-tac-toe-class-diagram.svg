@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="910" height="800" viewBox="0 0 910 800" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+<title>Tic Tac Toe class diagram</title>
+<desc>Game owns a Board, which owns size x size Cells. Game has 2 Players and uses GameStatus. Player and Cell use the Symbol enum.</desc>
+<defs>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+<marker id="dia" viewBox="0 0 14 10" refX="0" refY="5" markerWidth="14" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path d="M0,5 L7,0 L14,5 L7,10 z" fill="#58a6ff"/></marker>
+</defs>
+<rect x="0.5" y="0.5" width="909" height="799" rx="14" fill="#161b22" stroke="#30363d"/>
+<text x="40" y="42" font-size="12" font-weight="bold" letter-spacing="1.5" fill="#8b949e">TIC TAC TOE · CLASS DIAGRAM</text>
+<line x1="190" y1="250" x2="190" y2="328" stroke="#58a6ff" stroke-width="1.8" marker-start="url(#dia)"/>
+<line x1="190" y1="530" x2="190" y2="608" stroke="#58a6ff" stroke-width="1.8" marker-start="url(#dia)"/>
+<line x1="340" y1="100" x2="568" y2="100" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+<path d="M340,220 H455.0 V370 H568" fill="none" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+<line x1="720.0" y1="450" x2="720.0" y2="608" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+<line x1="340" y1="660" x2="568" y2="660" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+<rect x="40" y="70" width="300" height="180" rx="9" fill="#1c2128" stroke="#58a6ff" stroke-width="1.5"/>
+<path d="M49,70 H331 A9,9 0 0 1 340,79 V106 H40 V79 A9,9 0 0 1 49,70 Z" fill="#58a6ff" fill-opacity=".14"/>
+<line x1="40" y1="106" x2="340" y2="106" stroke="#58a6ff" stroke-opacity=".6"/>
+<text x="190.0" y="93" text-anchor="middle" font-size="15" font-weight="600" fill="#79c0ff">Game</text>
+<text x="54" y="126" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- board : Board</text>
+<text x="54" y="146" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- players : Player[]</text>
+<text x="54" y="166" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- currentPlayerIndex : int</text>
+<text x="54" y="186" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- status : GameStatus</text>
+<line x1="40" y1="198" x2="340" y2="198" stroke="#30363d"/>
+<text x="54" y="218" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ Game(p1, p2, boardSize)</text>
+<text x="54" y="238" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ makeMove(row, col)</text>
+<rect x="40" y="330" width="300" height="200" rx="9" fill="#1c2128" stroke="#58a6ff" stroke-width="1.5"/>
+<path d="M49,330 H331 A9,9 0 0 1 340,339 V366 H40 V339 A9,9 0 0 1 49,330 Z" fill="#58a6ff" fill-opacity=".14"/>
+<line x1="40" y1="366" x2="340" y2="366" stroke="#58a6ff" stroke-opacity=".6"/>
+<text x="190.0" y="353" text-anchor="middle" font-size="15" font-weight="600" fill="#79c0ff">Board</text>
+<text x="54" y="386" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- grid : Cell[][]</text>
+<text x="54" y="406" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- size : int</text>
+<line x1="40" y1="418" x2="340" y2="418" stroke="#30363d"/>
+<text x="54" y="438" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ Board(size)</text>
+<text x="54" y="458" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ placeSymbol(row, col, symbol)</text>
+<text x="54" y="478" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ isCellEmpty(row, col) : boolean</text>
+<text x="54" y="498" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ isFull() : boolean</text>
+<text x="54" y="518" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ printBoard()</text>
+<rect x="40" y="610" width="300" height="120" rx="9" fill="#1c2128" stroke="#39c5cf" stroke-width="1.5"/>
+<path d="M49,610 H331 A9,9 0 0 1 340,619 V646 H40 V619 A9,9 0 0 1 49,610 Z" fill="#39c5cf" fill-opacity=".14"/>
+<line x1="40" y1="646" x2="340" y2="646" stroke="#39c5cf" stroke-opacity=".6"/>
+<text x="190.0" y="633" text-anchor="middle" font-size="15" font-weight="600" fill="#56d4dd">Cell</text>
+<text x="54" y="666" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- symbol : Symbol</text>
+<line x1="40" y1="678" x2="340" y2="678" stroke="#30363d"/>
+<text x="54" y="698" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ Cell()</text>
+<text x="54" y="718" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ isEmpty() : boolean</text>
+<rect x="570" y="70" width="300" height="138" rx="9" fill="#1c2128" stroke="#bc8cff" stroke-width="1.5"/>
+<path d="M579,70 H861 A9,9 0 0 1 870,79 V116 H570 V79 A9,9 0 0 1 579,70 Z" fill="#bc8cff" fill-opacity=".14"/>
+<line x1="570" y1="116" x2="870" y2="116" stroke="#bc8cff" stroke-opacity=".6"/>
+<text x="720.0" y="87" text-anchor="middle" font-size="11" fill="#8b949e">«enumeration»</text>
+<text x="720.0" y="106" text-anchor="middle" font-size="15" font-weight="600" fill="#d2a8ff">GameStatus</text>
+<text x="584" y="136" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">IN_PROGRESS</text>
+<text x="584" y="156" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">WINNER_X</text>
+<text x="584" y="176" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">WINNER_O</text>
+<text x="584" y="196" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">DRAW</text>
+<rect x="570" y="330" width="300" height="120" rx="9" fill="#1c2128" stroke="#39c5cf" stroke-width="1.5"/>
+<path d="M579,330 H861 A9,9 0 0 1 870,339 V366 H570 V339 A9,9 0 0 1 579,330 Z" fill="#39c5cf" fill-opacity=".14"/>
+<line x1="570" y1="366" x2="870" y2="366" stroke="#39c5cf" stroke-opacity=".6"/>
+<text x="720.0" y="353" text-anchor="middle" font-size="15" font-weight="600" fill="#56d4dd">Player</text>
+<text x="584" y="386" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- name : String</text>
+<text x="584" y="406" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">- symbol : Symbol</text>
+<line x1="570" y1="418" x2="870" y2="418" stroke="#30363d"/>
+<text x="584" y="438" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#79c0ff">+ Player(name, symbol)</text>
+<rect x="570" y="610" width="300" height="118" rx="9" fill="#1c2128" stroke="#bc8cff" stroke-width="1.5"/>
+<path d="M579,610 H861 A9,9 0 0 1 870,619 V656 H570 V619 A9,9 0 0 1 579,610 Z" fill="#bc8cff" fill-opacity=".14"/>
+<line x1="570" y1="656" x2="870" y2="656" stroke="#bc8cff" stroke-opacity=".6"/>
+<text x="720.0" y="627" text-anchor="middle" font-size="11" fill="#8b949e">«enumeration»</text>
+<text x="720.0" y="646" text-anchor="middle" font-size="15" font-weight="600" fill="#d2a8ff">Symbol</text>
+<text x="584" y="676" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">X</text>
+<text x="584" y="696" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">O</text>
+<text x="584" y="716" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace" font-size="12" fill="#c9d1d9">EMPTY</text>
+<text x="200" y="294.0" text-anchor="start" font-size="12" fill="#8b949e" data-nocheck="1">owns 1 (composition)</text>
+<text x="200" y="574.0" text-anchor="start" font-size="12" fill="#8b949e" data-nocheck="1">owns size × size (composition)</text>
+<text x="455.0" y="92" text-anchor="middle" font-size="12" fill="#8b949e" data-nocheck="1">uses</text>
+<text x="463.0" y="299.0" text-anchor="start" font-size="12" fill="#8b949e" data-nocheck="1">has 2 players</text>
+<text x="730.0" y="534.0" text-anchor="start" font-size="12" fill="#8b949e" data-nocheck="1">uses</text>
+<text x="455.0" y="652" text-anchor="middle" font-size="12" fill="#8b949e" data-nocheck="1">uses</text>
+<line x1="24" y1="736" x2="886" y2="736" stroke="#21262d"/>
+<rect x="40" y="755" width="14" height="14" rx="3" fill="#58a6ff" fill-opacity=".25" stroke="#58a6ff"/>
+<text x="62" y="766" font-size="12" fill="#c9d1d9">Core class</text>
+<rect x="160" y="755" width="14" height="14" rx="3" fill="#39c5cf" fill-opacity=".25" stroke="#39c5cf"/>
+<text x="182" y="766" font-size="12" fill="#c9d1d9">Data class</text>
+<rect x="280" y="755" width="14" height="14" rx="3" fill="#bc8cff" fill-opacity=".25" stroke="#bc8cff"/>
+<text x="302" y="766" font-size="12" fill="#c9d1d9">Enum</text>
+<line x1="358" y1="762" x2="394" y2="762" stroke="#58a6ff" stroke-width="1.8" marker-start="url(#dia)"/>
+<text x="402" y="766" font-size="12" fill="#c9d1d9">owns (composition)</text>
+<line x1="548" y1="762" x2="584" y2="762" stroke="#8b949e" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="592" y="766" font-size="12" fill="#c9d1d9">has</text>
+<line x1="646" y1="762" x2="682" y2="762" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arr)"/>
+<text x="690" y="766" font-size="12" fill="#c9d1d9">uses</text>
+</svg>

@@ -36,7 +36,7 @@ The user said the best parts of the original session were: the interactive discu
 
 ### 1.1 Session start checklist
 1. Read this file completely.
-2. Read the finished example: `HLD_Questions/Notification_service.md` (section 13).
+2. Read the finished example: `new-high-level-design/Notification_service.md` (section 13).
 3. Ask the user: which system, which sources, and where the sources are.
 4. Read the sources (section 7). Find the right chapter and pages.
 5. Agree on the folder name, and ask before creating the Notion page (section 9).
@@ -269,7 +269,7 @@ These went down well and are explained in the finished notes. Reuse them when th
 4. **Code-block colours** are Notion's own (comments show dim grey) and can't be changed. The user accepted that.
 5. **Images:** `POST https://api.notion.com/v1/file_uploads` with `{"filename": "x.png", "content_type": "image/png"}` → POST the file as multipart form data (field `file`) to the returned `upload_url` → add an `image` block `{"type": "file_upload", "file_upload": {"id": "<upload id>"}}`. Upload a PNG, not an SVG.
 6. Long batches of Notion calls can take minutes. Run them in the background if your tool has a time limit.
-7. A helper library may already exist at `~/.hld_tools/cardlib.py`, with functions `to_md`, `to_notion`, `append_card_after`, `replace_card`, `md_card_to_blocks` and `sync_card_from_md`. Its `MD` and `PAGE` constants point to the Notification System notes (`HLD_Questions/Notification_service.md`) and its Notion page; change them for a new system. Appendix B has a minimal standalone version.
+7. A helper library may already exist at `~/.hld_tools/cardlib.py`, with functions `to_md`, `to_notion`, `append_card_after`, `replace_card`, `md_card_to_blocks` and `sync_card_from_md`. Its `MD` and `PAGE` constants point to the Notification System notes (`new-high-level-design/Notification_service.md`) and its Notion page; change them for a new system. Appendix B has a minimal standalone version.
 
 ---
 
@@ -318,7 +318,7 @@ These went down well and are explained in the finished notes. Reuse them when th
 
 ## 13. The reference example
 
-`HLD_Questions/Notification_service.md` and its Notion page are the finished, approved example of everything above. **Read it fully before starting a new system**, and copy its structure, depth and tone: the same sections in the same order, the same card formats, the same interview lines.
+`new-high-level-design/Notification_service.md` and its Notion page are the finished, approved example of everything above. **Read it fully before starting a new system**, and copy its structure, depth and tone: the same sections in the same order, the same card formats, the same interview lines.
 
 ---
 

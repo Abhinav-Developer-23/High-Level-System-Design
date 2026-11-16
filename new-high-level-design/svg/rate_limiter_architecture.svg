@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="760" viewBox="0 0 960 760" font-family="Segoe UI, Inter, system-ui, -apple-system, sans-serif" style="font-variant-ligatures:none">
+<title>Rate Limiter — High-Level Design</title>
+<desc>Clients reach the API Gateway through a load balancer. The gateway asks the Rate Limiter Service, which keeps rules in memory and runs one Lua script on a Redis Cluster holding the counters. Allowed requests go to backend services; blocked ones get 429. Admins change rules through the Rules Service, which saves them in MySQL; rate limiter nodes pull changed rules every 30 seconds.</desc>
+<defs>
+<marker id="mg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8b949e"/></marker>
+<marker id="mgr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3fb950"/></marker>
+<marker id="mr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f85149"/></marker>
+<marker id="mp" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#bc8cff"/></marker>
+<marker id="mo" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f0883e"/></marker>
+</defs>
+<rect x="0.5" y="0.5" width="959" height="759" rx="14" fill="#161b22" stroke="#30363d"/>
+<text x="28" y="40" font-size="18" fill="#e6edf3" text-anchor="start" font-weight="700">Rate Limiter — High-Level Design</text>
+<text x="104" y="78" font-size="12" fill="#8b949e" text-anchor="middle" font-weight="bold" letter-spacing="1.5">CALLERS</text>
+<text x="289" y="78" font-size="12" fill="#8b949e" text-anchor="middle" font-weight="bold" letter-spacing="1.5">ENTRY</text>
+<text x="474" y="78" font-size="12" fill="#8b949e" text-anchor="middle" font-weight="bold" letter-spacing="1.5">GATEWAY</text>
+<text x="650" y="78" font-size="12" fill="#8b949e" text-anchor="middle" font-weight="bold" letter-spacing="1.5">CHECK</text>
+<text x="848" y="78" font-size="12" fill="#8b949e" text-anchor="middle" font-weight="bold" letter-spacing="1.5">BACKEND</text>
+<rect x="24" y="96" width="160" height="54" rx="10" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+<text x="104.0" y="119.0" font-size="15" fill="#e6edf3" text-anchor="middle" font-weight="600">Mobile / Web</text>
+<text x="104.0" y="139.0" font-size="13" fill="#c9d1d9" text-anchor="middle">user ID · IP</text>
+<rect x="24" y="166" width="160" height="54" rx="10" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+<text x="104.0" y="189.0" font-size="15" fill="#e6edf3" text-anchor="middle" font-weight="600">3rd-party apps</text>
+<text x="104.0" y="209.0" font-size="13" fill="#c9d1d9" text-anchor="middle">API key</text>
+<rect x="224" y="128" width="130" height="60" rx="10" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+<text x="289.0" y="154.0" font-size="15" fill="#e6edf3" text-anchor="middle" font-weight="600">Load</text>
+<text x="289.0" y="174.0" font-size="13" fill="#c9d1d9" text-anchor="middle">Balancer</text>
+<rect x="394" y="118" width="160" height="80" rx="10" fill="#58a6ff" fill-opacity=".12" stroke="#58a6ff" stroke-width="1.8"/>
+<text x="474.0" y="154.0" font-size="15" fill="#79c0ff" text-anchor="middle" font-weight="600">API Gateway</text>
+<text x="474.0" y="174.0" font-size="13" fill="#c9d1d9" text-anchor="middle">N instances</text>
+<rect x="760" y="118" width="176" height="80" rx="10" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+<text x="848.0" y="154.0" font-size="15" fill="#e6edf3" text-anchor="middle" font-weight="600">Backend services</text>
+<text x="848.0" y="174.0" font-size="13" fill="#c9d1d9" text-anchor="middle">Feed · Orders · Auth</text>
+<polyline points="184,123 204,123 204,150 222,150" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#mg)"/>
+<polyline points="184,193 204,193 204,166 222,166" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#mg)"/>
+<polyline points="354,158 392,158" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#mg)"/>
+<polyline points="554,140 758,140" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#mgr)"/>
+<text x="656" y="130" font-size="12" fill="#56d364" text-anchor="middle" font-weight="600">(4) allowed → forward</text>
+<text x="656" y="158" font-size="12" fill="#8b949e" text-anchor="middle">+ X-RateLimit-* headers</text>
+<polyline points="430,198 430,250 104,250 104,222" fill="none" stroke="#f85149" stroke-width="1.8" marker-end="url(#mr)"/>
+<text x="267" y="270" font-size="12" fill="#ff7b72" text-anchor="middle" font-weight="600">(4) blocked → 429 + Retry-After</text>
+<rect x="560" y="290" width="180" height="120" rx="10" fill="#3fb950" fill-opacity=".12" stroke="#3fb950" stroke-width="2.6"/>
+<text x="650" y="326" font-size="15" fill="#56d364" text-anchor="middle" font-weight="600">Rate Limiter Service</text>
+<text x="650" y="346" font-size="13" fill="#c9d1d9" text-anchor="middle">N stateless nodes</text>
+<rect x="585" y="364" width="130" height="22" rx="11" fill="#bc8cff" fill-opacity=".16" stroke="#bc8cff" stroke-width="1"/>
+<text x="650.0" y="379" font-size="12" fill="#d2a8ff" text-anchor="middle" font-weight="600">rules in memory</text>
+<polyline points="500,198 500,320 558,320" fill="none" stroke="#8b949e" stroke-width="1.8" marker-end="url(#mg)"/>
+<text x="508" y="262" font-size="12" fill="#8b949e" text-anchor="start">(1) check (API 1)</text>
+<polyline points="558,380 470,380 470,200" fill="none" stroke="#3fb950" stroke-width="1.8" marker-end="url(#mgr)"/>
+<text x="460" y="300" font-size="12" fill="#56d364" text-anchor="end" font-weight="600">(3) allowed / blocked</text>
+<path d="M570,480 L570,570 A80.0,10 0 0 0 730,570 L730,480" fill="#bc8cff" fill-opacity=".12" stroke="#bc8cff" stroke-width="1.8"/>
+<ellipse cx="650.0" cy="480" rx="80.0" ry="10" fill="#1c2128" stroke="#bc8cff" stroke-width="1.8"/>
+<text x="650.0" y="504" font-size="15" fill="#d2a8ff" text-anchor="middle" font-weight="600">Redis Cluster</text>
+<text x="650.0" y="524" font-size="13" fill="#c9d1d9" text-anchor="middle">2 counters per client</text>
+<text x="650.0" y="542" font-size="13" fill="#c9d1d9" text-anchor="middle">sharded · 1 replica</text>
+<polyline points="650,410 650,468" fill="none" stroke="#bc8cff" stroke-width="1.8" marker-end="url(#mp)"/>
+<text x="640" y="436" font-size="12" fill="#d2a8ff" text-anchor="end">(2) one Lua script: read 2 counters,</text>
+<text x="640" y="452" font-size="12" fill="#d2a8ff" text-anchor="end">decide, INCR if allowed</text>
+<path d="M796,310 L796,386 A70.0,10 0 0 0 936,386 L936,310" fill="#39c5cf" fill-opacity=".12" stroke="#39c5cf" stroke-width="1.8"/>
+<ellipse cx="866.0" cy="310" rx="70.0" ry="10" fill="#1c2128" stroke="#39c5cf" stroke-width="1.8"/>
+<text x="866.0" y="334" font-size="15" fill="#56d4dd" text-anchor="middle" font-weight="600">MySQL</text>
+<text x="866.0" y="354" font-size="13" fill="#c9d1d9" text-anchor="middle">rate_limit_rules</text>
+<polyline points="796,350 742,350" fill="none" stroke="#8b949e" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#mg)"/>
+<text x="840" y="422" font-size="12" fill="#8b949e" text-anchor="middle">nodes pull changed</text>
+<text x="840" y="438" font-size="12" fill="#8b949e" text-anchor="middle">rules every 30 s</text>
+<rect x="796" y="620" width="140" height="60" rx="10" fill="#f0883e" fill-opacity=".12" stroke="#f0883e" stroke-width="1.8"/>
+<text x="866.0" y="646.0" font-size="15" fill="#ffa657" text-anchor="middle" font-weight="600">Rules Service</text>
+<text x="866.0" y="666.0" font-size="13" fill="#c9d1d9" text-anchor="middle">admin API</text>
+<polyline points="912,618 912,398" fill="none" stroke="#f0883e" stroke-width="1.8" marker-end="url(#mo)"/>
+<text x="902" y="600" font-size="12" fill="#ffa657" text-anchor="end">save rule</text>
+<text x="104" y="600" font-size="12" fill="#8b949e" text-anchor="middle" font-weight="bold" letter-spacing="1.5">ADMIN</text>
+<rect x="24" y="620" width="160" height="60" rx="10" fill="#1c2128" stroke="#30363d" stroke-width="1.5"/>
+<text x="104.0" y="646.0" font-size="15" fill="#e6edf3" text-anchor="middle" font-weight="600">Admin tool</text>
+<text x="104.0" y="666.0" font-size="13" fill="#c9d1d9" text-anchor="middle">ops / admins</text>
+<polyline points="184,650 794,650" fill="none" stroke="#f0883e" stroke-width="1.8" marker-end="url(#mo)"/>
+<text x="489" y="640" font-size="12" fill="#ffa657" text-anchor="middle" font-family="Cascadia Code, JetBrains Mono, Consolas, monospace">PUT /v1/ratelimit/rules/{ruleId} (API 3)</text>
+<line x1="28" y1="714" x2="54" y2="714" stroke="#3fb950" stroke-width="2.2"/>
+<text x="60" y="718" font-size="12" fill="#8b949e" text-anchor="start">allowed</text>
+<line x1="135" y1="714" x2="161" y2="714" stroke="#f85149" stroke-width="2.2"/>
+<text x="167" y="718" font-size="12" fill="#8b949e" text-anchor="start">blocked</text>
+<line x1="242" y1="714" x2="268" y2="714" stroke="#bc8cff" stroke-width="2.2"/>
+<text x="274" y="718" font-size="12" fill="#8b949e" text-anchor="start">in memory</text>
+<line x1="363" y1="714" x2="389" y2="714" stroke="#39c5cf" stroke-width="2.2"/>
+<text x="395" y="718" font-size="12" fill="#8b949e" text-anchor="start">on disk</text>
+<line x1="470" y1="714" x2="496" y2="714" stroke="#f0883e" stroke-width="2.2"/>
+<text x="502" y="718" font-size="12" fill="#8b949e" text-anchor="start">rule change</text>
+<line x1="605" y1="714" x2="631" y2="714" stroke="#8b949e" stroke-width="2.2" stroke-dasharray="6 5"/>
+<text x="637" y="718" font-size="12" fill="#8b949e" text-anchor="start">background pull</text>
+<text x="28" y="744" font-size="12" fill="#8b949e" text-anchor="start">Fail open: if the Rate Limiter Service or Redis is down, the gateway lets requests through.</text>
+</svg>
