@@ -25,6 +25,10 @@ Keep MySQL console output / EXPLAIN result sets as code blocks. They're not diag
 - **Mermaid** (a ```` ```mermaid ```` block, which MarkView renders and themes dark automatically) for simple diagrams that will change: flowcharts, sequence diagrams, ER diagrams, state machines. They stay editable as text. Don't add a theme `%%{init}%%`; MarkView picks the theme itself.
 - **Hand-made SVG** (via the steps above) when layout carries the meaning, e.g. T1/T2 schedule lanes, timelines with crash points, B+ trees, before/after panels.
 
+## MHTML pages (AlgoMaster-style)
+
+`node tools/mhtml/md2mhtml.js <doc.md> <out.mhtml> [--title …] [--sub …] [--crumbs A/B/C] [--link "label|url"]` turns a doc into one self-contained `.mhtml` page in the AlgoMaster look (`tools/mhtml/theme.css`, same theme as `HLD_Questions/Airline_Booking_System.mhtml`). It drops the quiz toggles, the `<style>` block and the doc's TOC, embeds the SVGs, and uses no JavaScript (Chrome opens .mhtml sandboxed): the sidebar is CSS scroll markers and the light/dark switch is a `<details>`. `DBMS/DBMS1.mhtml` is built this way; regenerate it when `DBMS1.md` changes (the exact command is in its commit message).
+
 ## Dark styling and callouts
 
 - `tools/svg-diagrams/markview-style.html` is a `<style>` block for MarkView's dark theme: headings, tables, code, blockquotes, callouts and diagram images. It targets `html.markview-dark #markview-container`. Paste it at the top of a doc only when the user asks for it. `DBMS/DBMS1.md` has it; when the file changes, update that copy too. MarkView renders raw HTML without sanitizing, so `<style>` works there; GitHub strips it.
