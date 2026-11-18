@@ -184,8 +184,8 @@ h2,h3{scroll-margin-top:18px}
 .inner{max-width:1100px}
 h5{font-size:15.5px;margin:22px 0 8px;font-weight:700;color:var(--tx2)}
 h6{font-size:14px;margin:18px 0 6px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.05em}
-h4{color:var(--pri2)}
-h3{padding-left:12px;border-left:3px solid var(--pri)}
+.md h4{color:var(--pri2)}
+.md h3{padding-left:12px;border-left:3px solid var(--pri)}
 .sec>hr:last-child,.sec>hr:first-child{display:none}
 hr{border:0;height:1px;margin:30px 0;background:linear-gradient(90deg,transparent,var(--bd2) 15%,var(--bd2) 85%,transparent)}
 .sec ul,.sec ol{padding-left:26px;margin:0 0 16px;color:var(--tx2)}

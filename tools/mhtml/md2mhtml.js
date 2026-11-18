@@ -143,7 +143,7 @@ const html = `<!DOCTYPE html>
 <details class="theme-dt"><summary class="theme-btn" title="Toggle light / dark"><span class="sun">☀ Light</span><span class="moon">☾ Dark</span></summary></details></div>
 <div class="layout">
 <nav class="side"><div class="side-h">On this page</div><ol>${navHtml}</ol></nav>
-<main class="content"><div class="inner">
+<main class="content"><div class="inner md">
 <header class="hero">
 <div class="crumbs">${crumbs}</div>
 <h1>${esc(docTitle)}</h1>
@@ -158,30 +158,6 @@ ${body}
 </body></html>
 `;
 
-// ---------- 4. wrap as MHTML (quoted-printable, CRLF, like Chrome's "Save as MHTML") ----------
-function qp(str) {
-  const bytes = Buffer.from(str.replace(/\r\n/g, '\n'), 'utf8'), lines = [];
-  let line = '';
-  const push = tok => { if (line.length + tok.length > 75) { lines.push(line + '='); line = ''; } line += tok; };
-  for (let i = 0; i < bytes.length; i++) {
-    const b = bytes[i];
-    if (b === 10) {
-      if (/[ \t]$/.test(line)) { const c = line.slice(-1); line = line.slice(0, -1); push('=' + c.charCodeAt(0).toString(16).toUpperCase().padStart(2, '0')); }
-      lines.push(line); line = ''; continue;
-    }
-    push((b >= 33 && b <= 126 && b !== 61) || b === 32 || b === 9 ? String.fromCharCode(b) : '=' + b.toString(16).toUpperCase().padStart(2, '0'));
-  }
-  if (line) lines.push(line);
-  return lines.join('\r\n');
-}
-const boundary = '----MultipartBoundary--' + require('crypto').randomBytes(16).toString('hex') + '----';
-const subjectQ = /^[\x20-\x7e]*$/.test(docTitle) ? docTitle : `=?utf-8?B?${Buffer.from(docTitle).toString('base64')}?=`;
-const mhtml = [
-  'From: <Saved by Blink>', `Subject: ${subjectQ}`, `Date: ${new Date().toUTCString()}`, 'MIME-Version: 1.0',
-  'Content-Type: multipart/related;', '\ttype="text/html";', `\tboundary="${boundary}"`, '', '',
-  `--${boundary}`, 'Content-Type: text/html; charset="utf-8"', 'Content-ID: <frame-main@mhtml.blink>',
-  'Content-Transfer-Encoding: quoted-printable', '', qp(html), '', `--${boundary}--`, '',
-].join('\r\n');
-fs.writeFileSync(outPath, mhtml);
-{ const o = path.join(__dirname, '../svg-diagrams/out'); fs.mkdirSync(o, { recursive: true }); fs.writeFileSync(path.join(o, 'mhtml-last.html'), html); } // plain HTML copy for previewing (git-ignored)
-console.log(`wrote ${outPath} (${(mhtml.length / 1e6).toFixed(2)} MB):`, stats);
+// ---------- 4. wrap as MHTML ----------
+const size = require('./lib').writeMhtml(outPath, html, docTitle);
+console.log(`wrote ${outPath} (${(size / 1e6).toFixed(2)} MB):`, stats);
