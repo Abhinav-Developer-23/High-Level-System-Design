@@ -1,13 +1,13 @@
 From: <Saved by Blink>
 Subject: Design a Digital Wallet System | System Design Interview
-Date: Wed, 18 Nov 2026 19:59:20 GMT
+Date: Fri, 20 Nov 2026 04:51:37 GMT
 MIME-Version: 1.0
 Content-Type: multipart/related;
 	type="text/html";
-	boundary="----MultipartBoundary--7d34aa6379e7e76705c14554779f2367----"
+	boundary="----MultipartBoundary--66515255e2d1fa220c05ebe62f81ef32----"
 
 
-------MultipartBoundary--7d34aa6379e7e76705c14554779f2367----
+------MultipartBoundary--66515255e2d1fa220c05ebe62f81ef32----
 Content-Type: text/html; charset="utf-8"
 Content-ID: <frame-main@mhtml.blink>
 Content-Transfer-Encoding: quoted-printable
@@ -530,9 +530,11 @@ Durability &amp; failover</a></li><li><a href=3D"#deep-dive-12-how-do-you-p=
 rove-the-money-is-right-every-day">Deep Dive 12: Reconciliation &amp; audit=
 </a></li><li><a href=3D"#deep-dive-13-how-do-you-enforce-limits-stop-fraud-=
 and-secure-the-wallet">Deep Dive 13: Limits, fraud &amp; security</a></li><=
-/ol></li><li><a href=3D"#failure-scenarios-cheat-sheet" class=3D"l2">9. Fai=
-lure Cheat Sheet</a></li><li><a href=3D"#quick-revision" class=3D"l2">10. Q=
-uick Revision</a></li></ol></nav>
+li><a href=3D"#deep-dive-14-show-me-my-passbook-for-the-last-2-years-where-=
+does-it-come-from">Deep Dive 14: Passbook: 2 years of history</a></li></ol>=
+</li><li><a href=3D"#failure-scenarios-cheat-sheet" class=3D"l2">9. Failure=
+ Cheat Sheet</a></li><li><a href=3D"#quick-revision" class=3D"l2">10. Quick=
+ Revision</a></li></ol></nav>
 <main class=3D"content"><div class=3D"inner">
 
 <header class=3D"hero">
@@ -545,7 +547,7 @@ ed and debited exactly once, the balance never goes negative, and the books=
   <div class=3D"meta"><span class=3D"tag-red">High Priority</span><span cla=
 ss=3D"tag-amber">=E2=97=8F Hard</span><span>=E2=8F=B1 50 min read</span><sp=
 an>=F0=9F=94=8C 7 APIs</span><span>=F0=9F=97=84 8 tables</span><span>=F0=9F=
-=A7=AD 12 diagrams</span><span>=F0=9F=94=8D 13 deep dives</span></div>
+=A7=AD 12 diagrams</span><span>=F0=9F=94=8D 14 deep dives</span></div>
   <div class=3D"whatis">
     <div class=3D"wi-text">
       <h4>=F0=9F=91=9B What is a Digital Wallet?</h4>
@@ -1228,10 +1230,11 @@ ti-row transactions</td></tr><tr><td>Balance cache, rate limits</td><td>Red=
 is</td><td>display-only balance, per-user request limits</td></tr><tr><td>W=
 allet events</td><td>Kafka (partitioned by wallet id)</td><td>fan-out to no=
 tifications, history, risk, analytics</td></tr><tr><td>History read model</=
-td><td>MySQL read replicas, or Cassandra at larger scale</td><td>keeps heav=
-y history queries off the primaries</td></tr><tr><td>Archive (&gt; 13 month=
-s)</td><td>Object storage (Parquet) + warehouse</td><td>cheap 10-year reten=
-tion for audit</td></tr></tbody></table></div>
+td><td>Cassandra, partition <code>(wallet_id, month)</code>, 2-year TTL</td=
+><td>keeps heavy history queries off the primaries (Deep Dive 14)</td></tr>=
+<tr><td>Archive (&gt; 13 months)</td><td>Object storage (Parquet) + warehou=
+se</td><td>cheap 10-year retention for audit</td></tr></tbody></table></div=
+>
 </section>
 
 <section class=3D"sec"><h2 id=3D"high-level-design" data-toc=3D"6. High Lev=
@@ -1330,7 +1333,7 @@ imary + semi-sync replica</text></g><g><rect x=3D"700" y=3D"390" width=3D"2=
 50" height=3D"58" rx=3D"10" fill=3D"#a78bfa" fill-opacity=3D".13" stroke=3D=
 "#a78bfa" stroke-width=3D"1.6"/><text x=3D"825" y=3D"414" class=3D"a-t" tex=
 t-anchor=3D"middle">History Store</text><text x=3D"825" y=3D"432" class=3D"=
-a-s" text-anchor=3D"middle">read model for statements</text></g><g><rect x=
+a-s" text-anchor=3D"middle">Cassandra =C2=B7 2 years</text></g><g><rect x=
 =3D"1010" y=3D"90" width=3D"210" height=3D"58" rx=3D"10" fill=3D"#2dd4bf" f=
 ill-opacity=3D".13" stroke=3D"#2dd4bf" stroke-width=3D"1.6"/><text x=3D"111=
 5" y=3D"114" class=3D"a-t" text-anchor=3D"middle">Reconciliation</text><tex=
@@ -1936,10 +1939,11 @@ d><td>shard primary, inside the debit transaction</td><td>exact</td></tr><t=
 r><td>Balance on the home screen</td><td>Redis (key =3D wallet id, value =
 =3D balance + version), refreshed from Kafka; miss =E2=86=92 primary</td><t=
 d>=E2=89=A4 ~1 s</td></tr><tr><td>Transaction history</td><td>History Store=
-, keyset pagination on <code>(wallet_id, entry_id)</code></td><td>=E2=89=A4=
- ~1=E2=80=932 s</td></tr><tr><td>Right after the user's own payment</td><td=
->the API response already carries <code>balanceAfterMinor</code>; the app s=
-hows that</td><td>read-your-writes</td></tr></tbody></table></div>
+ (Cassandra), partition <code>(wallet_id, month)</code>, cursor <code>(mont=
+h, created_at, entry_id)</code></td><td>=E2=89=A4 ~1=E2=80=932 s</td></tr><=
+tr><td>Right after the user's own payment</td><td>the API response already =
+carries <code>balanceAfterMinor</code>; the app shows that</td><td>read-you=
+r-writes</td></tr></tbody></table></div>
 <div class=3D"callout interview"><div class=3D"ct">=F0=9F=92=AC Interview l=
 ine</div><p>"Only the debit path needs the exact balance, and it gets it fo=
 r free because the check is inside the debit's UPDATE. Everything users mer=
@@ -3104,6 +3108,182 @@ okenizes it (keeps us out of most PCI scope).</p></div></li><li><div class=
  re-fetch; bank APIs over mTLS.</p></div></li><li><div class=3D"li-b"><p>Ad=
 min tools: every manual adjustment is a ledger transaction with maker=E2=80=
 =93checker approval and an audit trail.</p></div></li></ul>
+<h3 id=3D"deep-dive-14-show-me-my-passbook-for-the-last-2-years-where-does-=
+it-come-from" class=3D"dd" data-toc=3D"Deep Dive 14: Passbook: 2 years of h=
+istory"><span class=3D"dd-n">Deep Dive 14</span><span class=3D"dd-q">Show m=
+e my passbook for the last 2 years. Where does it come from?</span></h3>
+<p><strong>The query:</strong> "this wallet's entries, newest first, 20 per=
+ page, keep scrolling back up to 2 years". It always reads <strong>one wall=
+et</strong>, sorted by <strong>time</strong>. It never joins tables or need=
+s a transaction.</p>
+<div class=3D"code"><div class=3D"code-bar"><span class=3D"dots"><i></i><i>=
+</i><i></i></span><span class=3D"lang">Text</span></div><pre><code class=3D=
+"hljs">Passbook rows   50M movements/day =C3=97 ~2 user-visible sides  =E2=
+=89=88 100M rows / day
+2 years         100M =C3=97 730                                 =E2=89=88 7=
+3B rows
+On disk         73B =C3=97 ~300 B =E2=89=88 22 TB =C3=97 RF 3 =E2=89=88 66 =
+TB raw    =E2=89=88 35 TB after compression
+Writes          6K movements/s at sale peak =C3=97 2            =E2=89=88 1=
+2K rows / s
+Reads           ~30K passbook pages / s at sale peak (each =3D 1 partition =
+read)</code></pre></div>
+<h4 class=3D"approach"><span class=3D"ap-tag">Approach 1</span>Read history=
+ straight from the MySQL ledger shards</h4>
+<ol class=3D"nl"><li class=3D"pro"><span class=3D"n">1</span><div class=3D"=
+li-b"><p><strong>Pros:</strong> no new system; the data is exact.</p></div>=
+</li><li class=3D"con"><span class=3D"n">2</span><div class=3D"li-b"><p><st=
+rong>Cons:</strong> long scroll-back queries compete with the fsync-bound m=
+oney writes on the same primaries. 73B rows in B-trees. Deleting rows older=
+ than 2 years means huge <code>DELETE</code>s or managing partitions by han=
+d.</p></div></li></ol>
+<h4 class=3D"approach"><span class=3D"ap-tag">Approach 2</span>A separate, =
+sharded MySQL just for history</h4>
+<ol class=3D"nl"><li class=3D"pro"><span class=3D"n">1</span><div class=3D"=
+li-b"><p><strong>Pros:</strong> familiar; SQL for ad-hoc queries.</p></div>=
+</li><li class=3D"con"><span class=3D"n">2</span><div class=3D"li-b"><p><st=
+rong>Cons:</strong> you hand-build sharding, resharding and retention for a=
+n append-only time series that never uses joins or transactions.</p></div><=
+/li></ol>
+<h4 class=3D"approach"><span class=3D"ap-tag">Approach 3</span>Cassandra (o=
+r DynamoDB / ScyllaDB) as a read model</h4>
+<ol class=3D"nl"><li class=3D"pro"><span class=3D"n">1</span><div class=3D"=
+li-b"><p><strong>Pros:</strong> fast appends (LSM: sequential writes, no B-=
+tree page splits). One page read =3D one partition, read sequentially. Scal=
+es by adding nodes, with automatic rebalancing. <strong>TTL</strong> delete=
+s old rows for free. Multi-DC replication is built in.</p></div></li><li cl=
+ass=3D"con"><span class=3D"n">2</span><div class=3D"li-b"><p><strong>Cons:<=
+/strong> eventually consistent, which is fine because the passbook may lag =
+about 1 s. No ad-hoc queries: you design the table for this one query. TTL =
+and tombstones need the right compaction.</p></div></li></ol>
+<div class=3D"callout "><div class=3D"ct">=E2=9C=85 Our choice</div><p>Appr=
+oach 3: Cassandra. The MySQL ledger stays the <strong>source of truth</stro=
+ng> (money, audit, reconciliation, ~13 months hot). Cassandra is a <strong>=
+read model</strong> built from events. Entries older than 2 years are serve=
+d from the <strong>S3 / Parquet archive</strong>.</p></div>
+
+<h4>Table and shard key</h4>
+<div class=3D"code"><div class=3D"code-bar"><span class=3D"dots"><i></i><i>=
+</i><i></i></span><span class=3D"lang">CQL</span></div><pre><code class=3D"=
+hljs"><span class=3D"hljs-keyword">CREATE</span> <span class=3D"hljs-keywor=
+d">TABLE</span> passbook (
+  wallet_id           <span class=3D"hljs-type">bigint</span>,
+  <span class=3D"hljs-keyword">month</span>               <span class=3D"hl=
+js-type">int</span>,          <span class=3D"hljs-comment">-- 202611</span>
+  created_at          <span class=3D"hljs-type">timestamp</span>,
+  entry_id            <span class=3D"hljs-type">bigint</span>,
+  txn_id              text,
+  type                text,         <span class=3D"hljs-comment">-- TOPUP /=
+ TRANSFER_OUT / PAYMENT / REFUND =E2=80=A6</span>
+  amount_minor        <span class=3D"hljs-type">bigint</span>,       <span =
+class=3D"hljs-comment">-- signed</span>
+  balance_after_minor <span class=3D"hljs-type">bigint</span>,       <span =
+class=3D"hljs-comment">-- copied from the ledger, never recomputed</span>
+  counterparty_name   text,         <span class=3D"hljs-comment">-- denorma=
+lised, so no lookups at read time</span>
+  status              text,         <span class=3D"hljs-comment">-- e.g. PR=
+OCESSING =E2=86=92 COMPLETED for payouts</span>
+  <span class=3D"hljs-keyword">PRIMARY</span> KEY ((wallet_id, <span class=
+=3D"hljs-keyword">month</span>), created_at, entry_id)
+) <span class=3D"hljs-keyword">WITH</span> CLUSTERING <span class=3D"hljs-k=
+eyword">ORDER</span> <span class=3D"hljs-keyword">BY</span> (created_at <sp=
+an class=3D"hljs-keyword">DESC</span>, entry_id <span class=3D"hljs-keyword=
+">DESC</span>)
+  <span class=3D"hljs-keyword">AND</span> default_time_to_live <span class=
+=3D"hljs-operator">=3D</span> <span class=3D"hljs-number">63072000</span>  =
+                     <span class=3D"hljs-comment">-- 2 years</span>
+  <span class=3D"hljs-keyword">AND</span> compaction <span class=3D"hljs-op=
+erator">=3D</span> {<span class=3D"hljs-string">&#x27;class&#x27;</span>: <=
+span class=3D"hljs-string">&#x27;TimeWindowCompactionStrategy&#x27;</span>,
+                    <span class=3D"hljs-string">&#x27;compaction_window_uni=
+t&#x27;</span>: <span class=3D"hljs-string">&#x27;DAYS&#x27;</span>, <span =
+class=3D"hljs-string">&#x27;compaction_window_size&#x27;</span>: <span clas=
+s=3D"hljs-number">30</span>};</code></pre></div>
+<ul class=3D"bl"><li><div class=3D"li-b"><p><strong>Shard key =3D partition=
+ key =3D <code>(wallet_id, month)</code>.</strong> Cassandra hashes it (Mur=
+mur3) onto the token ring, so you never shard by hand. Adding a node takes =
+over a range of tokens.</p></div></li><li><div class=3D"li-b"><p><strong>Wh=
+y <code>wallet_id</code>:</strong> every query is for one wallet, so one pa=
+ge is answered by one partition on one replica set.</p></div></li><li><div =
+class=3D"li-b"><p><strong>Why <code>month</code> as well:</strong> with <co=
+de>wallet_id</code> alone, a partition grows forever (merchants, 10 years).=
+ With month only, all of today's writes land on one hot partition. A month =
+bucket keeps a user's partition tiny (~100 rows, ~30 KB). It also matches t=
+he monthly statement, which is exactly one partition read.</p></div></li><l=
+i><div class=3D"li-b"><p><strong>Clustering <code>(created_at DESC, entry_i=
+d DESC)</code>:</strong> rows are stored on disk newest first, so "latest 2=
+0" is a sequential read with no sorting. <code>entry_id</code> breaks ties =
+when two entries share a timestamp.</p></div></li><li><div class=3D"li-b"><=
+p><strong>Hot merchants</strong> (2,000 payments/s =E2=89=88 5B rows/month =
+in one partition): for wallets flagged as high-volume, the bucket is <code>=
+(wallet_id, day, sub_bucket 0..N-1)</code>. Merchants mostly use exported r=
+eports from the warehouse, not a scrolling passbook.</p></div></li></ul>
+
+<h4>Reading 2 years back</h4>
+<div class=3D"code"><div class=3D"code-bar"><span class=3D"dots"><i></i><i>=
+</i><i></i></span><span class=3D"lang">CQL</span></div><pre><code class=3D"=
+hljs"><span class=3D"hljs-comment">-- page 1</span>
+<span class=3D"hljs-keyword">SELECT</span> <span class=3D"hljs-operator">*<=
+/span> <span class=3D"hljs-keyword">FROM</span> passbook <span class=3D"hlj=
+s-keyword">WHERE</span> wallet_id <span class=3D"hljs-operator">=3D</span> =
+? <span class=3D"hljs-keyword">AND</span> <span class=3D"hljs-keyword">mont=
+h</span> <span class=3D"hljs-operator">=3D</span> <span class=3D"hljs-numbe=
+r">202611</span> LIMIT <span class=3D"hljs-number">20</span>;
+<span class=3D"hljs-comment">-- next page: cursor =3D (month, created_at, e=
+ntry_id) of the last row</span>
+<span class=3D"hljs-keyword">SELECT</span> <span class=3D"hljs-operator">*<=
+/span> <span class=3D"hljs-keyword">FROM</span> passbook <span class=3D"hlj=
+s-keyword">WHERE</span> wallet_id <span class=3D"hljs-operator">=3D</span> =
+? <span class=3D"hljs-keyword">AND</span> <span class=3D"hljs-keyword">mont=
+h</span> <span class=3D"hljs-operator">=3D</span> <span class=3D"hljs-numbe=
+r">202611</span>
+   <span class=3D"hljs-keyword">AND</span> (created_at, entry_id) <span cla=
+ss=3D"hljs-operator">&lt;</span> (?, ?) LIMIT <span class=3D"hljs-number">2=
+0</span>;
+<span class=3D"hljs-comment">-- month exhausted =E2=86=92 move to the previ=
+ous month that has entries</span></code></pre></div>
+<ul class=3D"bl"><li><div class=3D"li-b"><p>A small <code>passbook_months (=
+wallet_id, month)</code> table (clustered <code>month DESC</code>) lists th=
+e months that actually have entries. A dormant user with 1 payment in 2 yea=
+rs then costs 2 reads, not 24 empty-month probes. The cursor is opaque to t=
+he app, which never sees months.</p></div></li><li><div class=3D"li-b"><p><=
+strong>Date-range filter ("March 2025"):</strong> jump straight to that mon=
+th's partition.</p></div></li><li><div class=3D"li-b"><p><strong>Type filte=
+r ("only debits"):</strong> filter in the service. A user's month is small.=
+</p></div></li><li><div class=3D"li-b"><p><strong>Text search ("Swiggy"):</=
+strong> optional Elasticsearch index over the last ~6 months. It's not the =
+passbook.</p></div></li></ul>
+
+<h4>Who writes it</h4>
+<ol class=3D"nl"><li><span class=3D"n">1</span><div class=3D"li-b"><p>The m=
+oney transaction commits in MySQL together with its outbox row (Deep Dive 9=
+).</p></div></li><li><span class=3D"n">2</span><div class=3D"li-b"><p>CDC p=
+ublishes the event to Kafka, keyed by <code>wallet_id</code>, so each walle=
+t's events stay in order.</p></div></li><li><span class=3D"n">3</span><div =
+class=3D"li-b"><p>The <strong>Passbook consumer</strong> inserts the row wi=
+th <code>LOCAL_QUORUM</code>. Cassandra <code>INSERT</code> is an upsert on=
+ the primary key, so a duplicate event writes the same row again and does n=
+o harm. That's idempotent with no dedup table.</p></div></li><li><span clas=
+s=3D"n">4</span><div class=3D"li-b"><p>A payout changing <code>PROCESSING =
+=E2=86=92 COMPLETED</code> is an upsert of the <code>status</code> column o=
+n the same row.</p></div></li></ol>
+<p>Reads use <code>LOCAL_ONE</code>. The few-ms staleness doesn't matter be=
+cause the app already shows the user's own payment from the API response (<=
+code>balanceAfterMinor</code>).</p>
+
+<h4>Older than 2 years</h4>
+<p>TTL plus TWCS deletes whole 30-day SSTables once they expire, with no <c=
+ode>DELETE</code> and no tombstone scans. The 10-year audit copy lives in <=
+strong>S3 as Parquet</strong> (the Kafka =E2=86=92 archive pipeline, partit=
+ioned by <code>month/shard</code>). "Statement for 2021" is an <strong>asyn=
+c job</strong> (Trino / Athena query =E2=86=92 PDF =E2=86=92 email / downlo=
+ad link), not an infinite scroll.</p>
+<div class=3D"callout interview"><div class=3D"ct">=F0=9F=92=AC Interview l=
+ine</div><p>"The ledger in MySQL is the source of truth; the passbook is a =
+read model in Cassandra, partitioned by (wallet_id, month) and clustered by=
+ time descending, fed from the outbox through Kafka with idempotent upserts=
+. Two years via TTL, older statements from the S3 archive as an async job."=
+</p></div>
 </section>
 
 <section class=3D"sec"><h2 id=3D"failure-scenarios-cheat-sheet" data-toc=3D=
@@ -3171,9 +3351,9 @@ light work, and our totals match gateway and bank files.</p></div></li></ol=
 >
 </section>
 <footer class=3D"foot">Built by <code>tools/mhtml/pages/wallet/build.js</co=
-de> =C2=B7 18 Nov 2026</footer>
+de> =C2=B7 19 Nov 2026</footer>
 </div></main>
 </div></div>
 </body></html>
 
-------MultipartBoundary--7d34aa6379e7e76705c14554779f2367------
+------MultipartBoundary--66515255e2d1fa220c05ebe62f81ef32------

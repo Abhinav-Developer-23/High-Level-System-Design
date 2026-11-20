@@ -331,10 +331,82 @@ ${bl(['<strong>Synchronous risk check</strong> before high-risk debits (new devi
 <h4>Security</h4>
 ${bl(['OAuth access tokens bound to a registered device; MPIN or biometric for debits above a threshold.', 'Bank account numbers and KYC documents encrypted at rest (envelope encryption, KMS); masked in logs and APIs.', 'Card data never touches us: the gateway tokenizes it (keeps us out of most PCI scope).', 'Webhooks: HMAC signature + timestamp (reject replays) + status re-fetch; bank APIs over mTLS.', 'Admin tools: every manual adjustment is a ledger transaction with maker–checker approval and an audit trail.'])}`;
 
+// ---------- DD14 passbook (2-year history) ----------
+const dd14 = `
+${DD(14, 'Show me my passbook for the last 2 years. Where does it come from?', 'Passbook: 2 years of history')}
+<p><strong>The query:</strong> "this wallet's entries, newest first, 20 per page, keep scrolling back up to 2 years". It always reads <strong>one wallet</strong>, sorted by <strong>time</strong>. It never joins tables or needs a transaction.</p>
+${code('text', `
+Passbook rows   50M movements/day × ~2 user-visible sides  ≈ 100M rows / day
+2 years         100M × 730                                 ≈ 73B rows
+On disk         73B × ~300 B ≈ 22 TB × RF 3 ≈ 66 TB raw    ≈ 35 TB after compression
+Writes          6K movements/s at sale peak × 2            ≈ 12K rows / s
+Reads           ~30K passbook pages / s at sale peak (each = 1 partition read)`)}
+${approach(1, 'Read history straight from the MySQL ledger shards')}
+${nl([pro('no new system; the data is exact.'), con('long scroll-back queries compete with the fsync-bound money writes on the same primaries. 73B rows in B-trees. Deleting rows older than 2 years means huge <code>DELETE</code>s or managing partitions by hand.')])}
+${approach(2, 'A separate, sharded MySQL just for history')}
+${nl([pro('familiar; SQL for ad-hoc queries.'), con('you hand-build sharding, resharding and retention for an append-only time series that never uses joins or transactions.')])}
+${approach(3, 'Cassandra (or DynamoDB / ScyllaDB) as a read model')}
+${nl([pro('fast appends (LSM: sequential writes, no B-tree page splits). One page read = one partition, read sequentially. Scales by adding nodes, with automatic rebalancing. <strong>TTL</strong> deletes old rows for free. Multi-DC replication is built in.'), con('eventually consistent, which is fine because the passbook may lag about 1 s. No ad-hoc queries: you design the table for this one query. TTL and tombstones need the right compaction.')])}
+${verdict('Approach 3: Cassandra. The MySQL ledger stays the <strong>source of truth</strong> (money, audit, reconciliation, ~13 months hot). Cassandra is a <strong>read model</strong> built from events. Entries older than 2 years are served from the <strong>S3 / Parquet archive</strong>.')}
+
+<h4>Table and shard key</h4>
+${code('sql', `
+CREATE TABLE passbook (
+  wallet_id           bigint,
+  month               int,          -- 202611
+  created_at          timestamp,
+  entry_id            bigint,
+  txn_id              text,
+  type                text,         -- TOPUP / TRANSFER_OUT / PAYMENT / REFUND …
+  amount_minor        bigint,       -- signed
+  balance_after_minor bigint,       -- copied from the ledger, never recomputed
+  counterparty_name   text,         -- denormalised, so no lookups at read time
+  status              text,         -- e.g. PROCESSING → COMPLETED for payouts
+  PRIMARY KEY ((wallet_id, month), created_at, entry_id)
+) WITH CLUSTERING ORDER BY (created_at DESC, entry_id DESC)
+  AND default_time_to_live = 63072000                       -- 2 years
+  AND compaction = {'class': 'TimeWindowCompactionStrategy',
+                    'compaction_window_unit': 'DAYS', 'compaction_window_size': 30};`, 'CQL')}
+${bl([
+  '<strong>Shard key = partition key = <code>(wallet_id, month)</code>.</strong> Cassandra hashes it (Murmur3) onto the token ring, so you never shard by hand. Adding a node takes over a range of tokens.',
+  '<strong>Why <code>wallet_id</code>:</strong> every query is for one wallet, so one page is answered by one partition on one replica set.',
+  '<strong>Why <code>month</code> as well:</strong> with <code>wallet_id</code> alone, a partition grows forever (merchants, 10 years). With month only, all of today\'s writes land on one hot partition. A month bucket keeps a user\'s partition tiny (~100 rows, ~30 KB). It also matches the monthly statement, which is exactly one partition read.',
+  '<strong>Clustering <code>(created_at DESC, entry_id DESC)</code>:</strong> rows are stored on disk newest first, so "latest 20" is a sequential read with no sorting. <code>entry_id</code> breaks ties when two entries share a timestamp.',
+  '<strong>Hot merchants</strong> (2,000 payments/s ≈ 5B rows/month in one partition): for wallets flagged as high-volume, the bucket is <code>(wallet_id, day, sub_bucket 0..N-1)</code>. Merchants mostly use exported reports from the warehouse, not a scrolling passbook.',
+])}
+
+<h4>Reading 2 years back</h4>
+${code('sql', `
+-- page 1
+SELECT * FROM passbook WHERE wallet_id = ? AND month = 202611 LIMIT 20;
+-- next page: cursor = (month, created_at, entry_id) of the last row
+SELECT * FROM passbook WHERE wallet_id = ? AND month = 202611
+   AND (created_at, entry_id) < (?, ?) LIMIT 20;
+-- month exhausted → move to the previous month that has entries`, 'CQL')}
+${bl([
+  'A small <code>passbook_months (wallet_id, month)</code> table (clustered <code>month DESC</code>) lists the months that actually have entries. A dormant user with 1 payment in 2 years then costs 2 reads, not 24 empty-month probes. The cursor is opaque to the app, which never sees months.',
+  '<strong>Date-range filter ("March 2025"):</strong> jump straight to that month\'s partition.',
+  '<strong>Type filter ("only debits"):</strong> filter in the service. A user\'s month is small.',
+  '<strong>Text search ("Swiggy"):</strong> optional Elasticsearch index over the last ~6 months. It\'s not the passbook.',
+])}
+
+<h4>Who writes it</h4>
+${nl([
+  'The money transaction commits in MySQL together with its outbox row (Deep Dive 9).',
+  'CDC publishes the event to Kafka, keyed by <code>wallet_id</code>, so each wallet\'s events stay in order.',
+  'The <strong>Passbook consumer</strong> inserts the row with <code>LOCAL_QUORUM</code>. Cassandra <code>INSERT</code> is an upsert on the primary key, so a duplicate event writes the same row again and does no harm. That\'s idempotent with no dedup table.',
+  'A payout changing <code>PROCESSING → COMPLETED</code> is an upsert of the <code>status</code> column on the same row.',
+])}
+<p>Reads use <code>LOCAL_ONE</code>. The few-ms staleness doesn't matter because the app already shows the user's own payment from the API response (<code>balanceAfterMinor</code>).</p>
+
+<h4>Older than 2 years</h4>
+<p>TTL plus TWCS deletes whole 30-day SSTables once they expire, with no <code>DELETE</code> and no tombstone scans. The 10-year audit copy lives in <strong>S3 as Parquet</strong> (the Kafka → archive pipeline, partitioned by <code>month/shard</code>). "Statement for 2021" is an <strong>async job</strong> (Trino / Athena query → PDF → email / download link), not an infinite scroll.</p>
+${say('"The ledger in MySQL is the source of truth; the passbook is a read model in Cassandra, partitioned by (wallet_id, month) and clustered by time descending, fed from the outbox through Kafka with idempotent upserts. Two years via TTL, older statements from the S3 archive as an async job."')}`;
+
 const deepDives = `
 <section class="sec">${H2('Deep Dives', 'Deep Dives')}
 <p class="lead">The follow-ups an interviewer will push on: locking, deadlocks, cross-shard atomicity, exactly-once, and the external systems that can fail in strange ways.</p>
-${dd1}${dd2}${dd3}${dd4}${dd5}${dd6}${dd7}${dd8}${dd9}${dd10}${dd11}${dd12}${dd13}
+${dd1}${dd2}${dd3}${dd4}${dd5}${dd6}${dd7}${dd8}${dd9}${dd10}${dd11}${dd12}${dd13}${dd14}
 </section>`;
 
 const failures = `

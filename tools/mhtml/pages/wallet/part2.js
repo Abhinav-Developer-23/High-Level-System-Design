@@ -21,7 +21,7 @@ function arch() {
   s += box(700, 90, 250, 58, 'Redis', 'balance cache · rate limits', Y);
   const shards = [0, 1, 'N'].map((n, i) => `<rect x="${716 + i * 78}" y="${205}" width="64" height="40" rx="7" fill="${P}" fill-opacity=".22" stroke="${P}" stroke-width="1.2"/><text x="${748 + i * 78}" y="${230}" class="a-s" text-anchor="middle" style="font-weight:700">shard ${n}</text>`).join('');
   s += box(700, 165, 250, 208, 'Wallet DB — MySQL shards', '', P, shards + ['wallets · ledger_entries', 'transactions · transfers', 'idempotency_keys · outbox', 'primary + semi-sync replica'].map((l, i) => `<text x="825" y="${276 + i * 18}" class="a-s" text-anchor="middle">${l}</text>`).join(''));
-  s += box(700, 390, 250, 58, 'History Store', 'read model for statements', P);
+  s += box(700, 390, 250, 58, 'History Store', 'Cassandra · 2 years', P);
   s += box(1010, 90, 210, 58, 'Reconciliation', 'ledger vs gateway & bank files', T) + box(1010, 165, 210, 58, 'Kafka', 'wallet events (from outbox)', T) + box(1010, 240, 210, 58, 'Notification Service', 'SMS · push', T) + box(1010, 315, 210, 58, 'Risk & Fraud', 'velocity · anomaly scoring', T);
   // arrows
   s += ar('M190 119 H218') + ar('M190 187 H218');
@@ -201,7 +201,7 @@ ${H3('Flow 6: Balance & History Reads', 'Flow 6: Balance & history')}
 ${table(['Read', 'Served from', 'Freshness'], [
   ['Balance used to approve a debit', 'shard primary, inside the debit transaction', 'exact'],
   ['Balance on the home screen', 'Redis (key = wallet id, value = balance + version), refreshed from Kafka; miss → primary', '≤ ~1 s'],
-  ['Transaction history', 'History Store, keyset pagination on <code>(wallet_id, entry_id)</code>', '≤ ~1–2 s'],
+  ['Transaction history', 'History Store (Cassandra), partition <code>(wallet_id, month)</code>, cursor <code>(month, created_at, entry_id)</code>', '≤ ~1–2 s'],
   ['Right after the user\'s own payment', 'the API response already carries <code>balanceAfterMinor</code>; the app shows that', 'read-your-writes'],
 ])}
 ${callout('interview', '💬 Interview line', '"Only the debit path needs the exact balance, and it gets it for free because the check is inside the debit\'s UPDATE. Everything users merely look at comes from a cache or a read model that lags by about a second."')}`;

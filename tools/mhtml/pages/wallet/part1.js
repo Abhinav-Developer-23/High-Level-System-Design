@@ -282,7 +282,7 @@ ${table(['Data', 'Store', 'Why'], [
   ['Wallets, ledger, transactions, idempotency, outbox', 'MySQL 8 InnoDB, 16 shards; each a primary + semi-sync replica', 'ACID, row locks, CHECK constraints, mature tooling; money needs multi-row transactions'],
   ['Balance cache, rate limits', 'Redis', 'display-only balance, per-user request limits'],
   ['Wallet events', 'Kafka (partitioned by wallet id)', 'fan-out to notifications, history, risk, analytics'],
-  ['History read model', 'MySQL read replicas, or Cassandra at larger scale', 'keeps heavy history queries off the primaries'],
+  ['History read model', 'Cassandra, partition <code>(wallet_id, month)</code>, 2-year TTL', 'keeps heavy history queries off the primaries (Deep Dive 14)'],
   ['Archive (&gt; 13 months)', 'Object storage (Parquet) + warehouse', 'cheap 10-year retention for audit'],
 ])}
 </section>`;
